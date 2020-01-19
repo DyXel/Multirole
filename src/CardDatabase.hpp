@@ -2,6 +2,7 @@
 #define CARDDATABASE_HPP
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 #include "ocgapi_types.h"
 
@@ -31,6 +32,7 @@ protected:
 private:
 	sqlite3_stmt* aStmt{nullptr};
 	sqlite3_stmt* sStmt{nullptr};
+	std::vector<uint16_t> setcodes;
 };
 
 } // namespace Placeholder4

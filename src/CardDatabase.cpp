@@ -3,7 +3,7 @@
 #include <stdexcept> // std::runtime_error
 #include <sqlite3.h>
 
-#include "enums/type.hpp"
+constexpr int TYPE_LINK = 0x4000000; // NOTE: remove if we import other types
 
 namespace Placeholder4
 {
@@ -133,6 +133,19 @@ bool CardDatabase::Merge(std::string_view absFilePath)
 
 OCG_CardData CardDatabase::CardDataFromCode(unsigned int code, bool& found)
 {
+	auto SplitSetcodes = [&](uint64_t dbVal) -> decltype(setcodes)&
+	{
+		setcodes.clear();
+		setcodes.reserve(5);
+		for(int i = 0; i < 4; i++)
+		{
+			const uint16_t setcode = (dbVal >> (i * 16)) & 0xffff;
+			if(setcode)
+				setcodes.push_back(setcode);
+		}
+		setcodes.push_back(0);
+		return setcodes;
+	};
 	OCG_CardData cd;
 	sqlite3_reset(sStmt);
 	sqlite3_bind_int(sStmt, 1, code);
@@ -140,7 +153,7 @@ OCG_CardData CardDatabase::CardDataFromCode(unsigned int code, bool& found)
 	{
 		cd.code = sqlite3_column_int(sStmt, 0);
 		cd.alias = sqlite3_column_int(sStmt, 1);
-		cd.setcode = sqlite3_column_int64(sStmt, 2);
+		cd.setcodes = SplitSetcodes(sqlite3_column_int64(sStmt, 2)).data();
 		cd.type = sqlite3_column_int(sStmt, 3);
 		cd.attack = sqlite3_column_int(sStmt, 4);
 		cd.defense = sqlite3_column_int(sStmt, 5);
