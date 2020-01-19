@@ -15,10 +15,18 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include <cstdlib> // Exit flags
+#include "ServerInstance.hpp"
 
-#include <iostream>
-
-int main() {
-	std::cout << "Project Ignis: Multirole, the robust server for YGOPro" << std::endl;
-	return EXIT_SUCCESS;
+int main()
+{
+	int exitFlag = EXIT_SUCCESS;
+	// FIXME: Libraries initialization here
+	if(exitFlag != EXIT_SUCCESS)
+	{
+		Placeholder4::ServerInstance server;
+		exitFlag = server.run();
+	}
+	// FIXME: Libraries deinitialization here
+	return exitFlag;
 }
