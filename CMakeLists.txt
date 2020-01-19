@@ -17,6 +17,8 @@ project(ignis-multirole)
 add_executable(multirole)
 set_property (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "multirole")
 
+find_package (Threads REQUIRED)
+
 if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
 	find_package(asio CONFIG REQUIRED)
 	find_package(fmt CONFIG REQUIRED)
@@ -45,10 +47,14 @@ if(NOT DEFINED LIBGIT2_LIBRARIES)
 	set(LIBGIT2_LIBRARIES git2)
 endif()
 
+target_compile_definitions(multirole PUBLIC
+	ASIO_STANDALONE
+)
+
 target_link_libraries(multirole PRIVATE
 	${LIBGIT2_LIBRARIES}
 	${SQLite3_LIBRARY}
-	${CMAKE_THREAD_LIBS_INIT}
+	Threads::Threads
 )
 if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
 	target_link_libraries(multirole PRIVATE
