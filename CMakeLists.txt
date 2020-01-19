@@ -11,46 +11,61 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 option(IGNIS_MULTIROLE_MSVC_STATIC "Static CRT on Visual Studio" ON)
+option(IGNIS_MULTIROLE_SYSTEM_DEPS "Use system dependencies" OFF)
 
 project(ignis-multirole)
 add_executable(multirole)
 set_property (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "multirole")
 
-find_package(asio CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-find_package(libgit2 REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-find_package(sqlite3 REQUIRED)
-# Only set on Windows
+if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
+	find_package(asio CONFIG REQUIRED)
+	find_package(fmt CONFIG REQUIRED)
+	find_package(libgit2 REQUIRED)
+	find_package(nlohmann_json CONFIG REQUIRED)
+	find_package(sqlite3 REQUIRED)
+	# libgit2 dependencies
+	if(NOT WIN32)
+		find_package(OpenSSL REQUIRED)
+	endif()
+	find_package(ZLIB REQUIRED)
+
+	target_include_directories(multirole PRIVATE
+		${ASIO_INCLUDE_DIR}
+		${LIBGIT2_INCLUDE_DIRS}
+		${SQLite3_INCLUDE_DIR}
+	)
+endif()
+
+# Doesn't get set on Linux
 if(NOT DEFINED SQLite3_LIBRARY)
 	set(SQLite3_LIBRARY sqlite3)
 endif()
-# libgit2 dependencies
-if(NOT WIN32)
-	find_package(OpenSSL REQUIRED)
-endif()
-find_package(ZLIB REQUIRED)
 
-target_include_directories(multirole PRIVATE
-	${ASIO_INCLUDE_DIR}
-	${LIBGIT2_INCLUDE_DIRS}
-	${SQLite3_INCLUDE_DIR}
-)
+if(NOT DEFINED LIBGIT2_LIBRARIES)
+	set(LIBGIT2_LIBRARIES git2)
+endif()
 
 target_link_libraries(multirole PRIVATE
-	asio::asio
-	fmt::fmt
 	${LIBGIT2_LIBRARIES}
 	${SQLite3_LIBRARY}
-	nlohmann_json::nlohmann_json
 	${CMAKE_THREAD_LIBS_INIT}
-	ZLIB::ZLIB
 )
+if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
+	target_link_libraries(multirole PRIVATE
+		asio::asio
+		fmt::fmt
+		nlohmann_json::nlohmann_json
+		ZLIB::ZLIB
+	)
+	if(NOT WIN32)
+		target_link_libraries(multirole PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+	endif()
+endif()
 
 if(WIN32)
 	target_link_libraries(multirole PRIVATE crypt32 rpcrt4 winhttp)
 else()
-	target_link_libraries(multirole PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+	
 endif()
 
 add_subdirectory(src)
