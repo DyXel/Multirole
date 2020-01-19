@@ -16,17 +16,18 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <cstdlib> // Exit flags
+#include <git2.h>
 #include "ServerInstance.hpp"
 
 int main()
 {
 	int exitFlag = EXIT_SUCCESS;
-	// FIXME: Libraries initialization here
-	if(exitFlag != EXIT_SUCCESS)
+	git_libgit2_init(); // TODO: check for initialization failure?
+	if(exitFlag == EXIT_SUCCESS)
 	{
 		Placeholder4::ServerInstance server;
-		exitFlag = server.run();
+		exitFlag = server.Run();
 	}
-	// FIXME: Libraries deinitialization here
+	git_libgit2_shutdown();
 	return exitFlag;
 }
