@@ -11,6 +11,7 @@ public:
 #define OCGFUNC(ret, name, params) virtual ret name params = 0;
 #include "ocgapi_funcs.inl"
 #undef OCGFUNC
+	virtual ~ICoreAPI() = default;
 };
 
 } // namespace Placeholder4
