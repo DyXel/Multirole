@@ -1,11 +1,11 @@
-#ifndef IDUELAPI_HPP
-#define IDUELAPI_HPP
+#ifndef ICOREAPI_HPP
+#define ICOREAPI_HPP
 #include "ocgapi_types.hpp"
 
 namespace Placeholder4
 {
 
-class IDuelAPI
+class ICoreAPI
 {
 public:
 #define OCGFUNC(ret, name, params) virtual ret name params = 0;
@@ -15,4 +15,4 @@ public:
 
 } // namespace Placeholder4
 
-#endif // IDUELAPI_HPP
+#endif // ICOREAPI_HPP
