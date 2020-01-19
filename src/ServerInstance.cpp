@@ -13,7 +13,7 @@ ServerInstance::ServerInstance()
 
 int ServerInstance::Run()
 {
-	return EXIT_SUCCESS
+	return EXIT_SUCCESS;
 }
 
 } // namespace Placeholder4
