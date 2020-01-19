@@ -65,7 +65,7 @@ endif()
 if(WIN32)
 	target_link_libraries(multirole PRIVATE crypt32 rpcrt4 winhttp)
 else()
-
+	target_link_libraries(multirole PRIVATE ${CMAKE_DL_LIBS})
 endif()
 
 add_subdirectory(src)
