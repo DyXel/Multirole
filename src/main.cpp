@@ -15,13 +15,10 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
-#include <string>
 
-#if defined(UNICODE)
-int wmain(int argc, wchar_t *argv[]) {
-#else
-int main(int argc, char *argv[]) {
-#endif
+#include <iostream>
+
+int main() {
+	std::cout << "Project Ignis: Multirole, the robust server for YGOPro" << std::endl;
 	return EXIT_SUCCESS;
 }
