@@ -107,6 +107,8 @@ CardDatabase::CardDatabase(std::string_view absFilePath)
 		sqlite3_close(db);
 		throw std::runtime_error(errStr);
 	}
+	// Setcodes can only be a maximum of 4 + 1 trailing zero so reserve here
+	setcodes.reserve(5);
 }
 
 CardDatabase::~CardDatabase()
@@ -136,7 +138,6 @@ OCG_CardData CardDatabase::CardDataFromCode(unsigned int code, bool& found)
 	auto SplitSetcodes = [&](uint64_t dbVal) -> decltype(setcodes)&
 	{
 		setcodes.clear();
-		setcodes.reserve(5);
 		for(int i = 0; i < 4; i++)
 		{
 			const uint16_t setcode = (dbVal >> (i * 16)) & 0xffff;
