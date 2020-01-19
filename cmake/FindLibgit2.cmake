@@ -1,0 +1,19 @@
+# Find libgit2
+#
+#  - LIBGIT2_INCLUDE_DIRS
+#  - LIBGIT2_LIBRARIES
+#  - LIBGIT2_FOUND
+
+find_path(LIBGIT2_INCLUDE_PATH NAMES git2.h)
+find_library(LIBGIT2_LIBRARY NAMES git2)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(git2 REQUIRED_VARS LIBGIT2_LIBRARY LIBGIT2_INCLUDE_PATH)
+
+if (GIT2_FOUND)
+  set(LIBGIT2_INCLUDE_DIRS ${LIBGIT2_INCLUDE_PATH})
+  set(LIBGIT2_LIBRARIES    ${LIBGIT2_LIBRARY})
+  set(LIBGIT2_FOUND        ${GIT2_FOUND})
+  message(${LIBGIT2_LIBRARY})
+endif()
+
+mark_as_advanced(LIBGIT2_INCLUDE_PATH LIBGIT2_LIBRARY GIT2_FOUND)
