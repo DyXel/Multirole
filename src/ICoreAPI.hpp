@@ -1,6 +1,6 @@
 #ifndef ICOREAPI_HPP
 #define ICOREAPI_HPP
-#include "ocgapi_types.hpp"
+#include "ocgapi_types.h"
 
 namespace Placeholder4
 {
