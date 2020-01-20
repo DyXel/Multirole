@@ -25,7 +25,7 @@ int main()
 	git_libgit2_init(); // TODO: check for initialization failure?
 	if(exitFlag == EXIT_SUCCESS)
 	{
-		Placeholder4::ServerInstance server;
+		Ignis::ServerInstance server;
 		exitFlag = server.Run();
 	}
 	git_libgit2_shutdown();

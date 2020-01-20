@@ -3,7 +3,7 @@
 #include <string_view>
 #include "ICoreAPI.hpp"
 
-namespace Placeholder4
+namespace Ignis
 {
 
 class SharedCore final : public ICoreAPI
@@ -25,6 +25,6 @@ private:
 #undef OCGFUNC
 };
 
-} // namespace Placeholder4
+} // namespace Ignis
 
 #endif // SHAREDCORE_HPP

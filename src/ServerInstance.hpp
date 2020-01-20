@@ -3,7 +3,7 @@
 #include <memory>
 #include <asio.hpp>
 
-namespace Placeholder4
+namespace Ignis
 {
 
 class ServerInstance final
@@ -18,6 +18,6 @@ private:
 	void Terminate();
 };
 
-} // namespace Placeholder4
+} // namespace Ignis
 
 #endif // SERVERINSTANCE_HPP

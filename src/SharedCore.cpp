@@ -4,7 +4,7 @@
 #include <stdexcept> // std::runtime_error
 #include <fmt/printf.h>
 
-namespace Placeholder4
+namespace Ignis
 {
 
 // "Native" functions below modified from implementations found in SDL2 library
@@ -133,4 +133,4 @@ SharedCore::~SharedCore()
 #include "ocgapi_funcs.inl"
 #undef OCGFUNC
 
-} // namespace Placeholder4
+} // namespace Ignis

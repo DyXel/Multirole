@@ -9,7 +9,7 @@
 struct sqlite3;
 struct sqlite3_stmt;
 
-namespace Placeholder4
+namespace Ignis
 {
 
 class CardDatabase
@@ -35,6 +35,6 @@ private:
 	std::vector<uint16_t> setcodes;
 };
 
-} // namespace Placeholder4
+} // namespace Ignis
 
 #endif // CARDDATABASE_HPP

@@ -2,7 +2,7 @@
 #define ICOREAPI_HPP
 #include "ocgapi_types.h"
 
-namespace Placeholder4
+namespace Ignis
 {
 
 class ICoreAPI
@@ -14,6 +14,6 @@ public:
 	virtual ~ICoreAPI() = default;
 };
 
-} // namespace Placeholder4
+} // namespace Ignis
 
 #endif // ICOREAPI_HPP

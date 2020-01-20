@@ -5,7 +5,7 @@
 
 constexpr int TYPE_LINK = 0x4000000; // NOTE: remove if we import other types
 
-namespace Placeholder4
+namespace Ignis
 {
 
 static const char* DB_SCHEMAS =
@@ -175,4 +175,4 @@ OCG_CardData CardDatabase::CardDataFromCode(unsigned int code, bool& found)
 	return cd;
 }
 
-} // namespace Placeholder4
+} // namespace Ignis

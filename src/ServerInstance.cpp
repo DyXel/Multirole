@@ -6,7 +6,7 @@
 #include <asio.hpp>
 #include <fmt/printf.h>
 
-namespace Placeholder4
+namespace Ignis
 {
 
 // public
@@ -50,4 +50,4 @@ void ServerInstance::Terminate()
 	ioContext.stop();
 }
 
-} // namespace Placeholder4
+} // namespace Ignis
