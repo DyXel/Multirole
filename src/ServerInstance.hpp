@@ -1,7 +1,7 @@
 #ifndef SERVERINSTANCE_HPP
 #define SERVERINSTANCE_HPP
 #include <memory>
-#include "ICoreAPI.hpp"
+#include <asio.hpp>
 
 namespace Placeholder4
 {
@@ -12,7 +12,10 @@ public:
 	ServerInstance();
 	int Run();
 private:
-	std::shared_ptr<ICoreAPI> core;
+	asio::io_context ioContext;
+	asio::signal_set signalSet;
+
+	void Terminate();
 };
 
 } // namespace Placeholder4
