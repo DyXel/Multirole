@@ -15,13 +15,14 @@ ServerInstance::ServerInstance() : signalSet(ioContext)
 {
 	fmt::print("Project Ignis: Multirole, the robust server for YGOPro\n");
 
+	// Load up configuration
+	// TODO
+
 	// Setup signal handling
 	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);
 	signalSet.async_wait([this](const std::error_code& ec, int sigNum)
 	{
-		if(ec)
-			fmt::print("Error on signal processing: {}\n", ec.message());
 		// Print signal received
 		const char* sigName;
 		switch(sigNum)
@@ -31,8 +32,13 @@ ServerInstance::ServerInstance() : signalSet(ioContext)
 			default: sigName = "Unknown signal"; break;
 		}
 		fmt::print("{} received.\n", sigName);
+		if(ec)
+			fmt::print("Error on signal processing: {}\n", ec.message());
 		Terminate();
 	});
+
+	// TODO: Tests to guarantee the server will be able to host duels
+
 }
 
 int ServerInstance::Run()
@@ -47,6 +53,7 @@ int ServerInstance::Run()
 void ServerInstance::Terminate()
 {
 	fmt::print("Finishing Execution...\n");
+	signalSet.cancel();
 	ioContext.stop();
 }
 
