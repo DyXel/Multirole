@@ -26,21 +26,29 @@ void  NativeUnloadObject(void* handle);
 
 // NOTE: Might need to handle unicode
 
+std::string GetLastErrorAsString() {
+	//Get the error message, if any.
+	DWORD errorMessageID = GetLastError();
+	if(errorMessageID == 0)
+		return std::string(); //No error message has been recorded
+
+	LPSTR messageBuffer = nullptr;
+	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+								 NULL, errorMessageID, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), (LPSTR)&messageBuffer, 0, NULL);
+
+	std::string message(messageBuffer, size);
+
+	//Free the buffer.
+	LocalFree(messageBuffer);
+
+	return message;
+}
+
 void* NativeLoadObject(const char* file)
 {
-// NOTE: We might need a way to identify if the platform is WINRT
-#ifdef __WINRT__
-	/* WinRT only publically supports LoadPackagedLibrary() for loading .dll
-		files.  LoadLibrary() is a private API, and not available for apps
-		(that can be published to MS' Windows Store.)
-	*/
-	void* handle = (void*)LoadPackagedLibrary(file, 0);
-#else
-	void* handle = (void*)LoadLibrary(file);
-#endif
-	/* Generate an error message if all loads failed */
-	if (handle == nullptr) // TODO: get and print error string
-		fmt::print("Failed loading DLL {}\n", file);
+	void* handle = (void*)LoadLibraryA(file);
+	if (handle == nullptr)
+		fmt::print("Failed loading DLL {}: {}\n", file, GetLastErrorAsString());
 	return handle;
 }
 
