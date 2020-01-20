@@ -6,6 +6,9 @@
 #include <asio.hpp>
 #include <fmt/printf.h>
 
+#include "Lobby.hpp"
+#include "LobbyListEndpoint.hpp"
+
 namespace Ignis
 {
 
@@ -39,6 +42,11 @@ ServerInstance::ServerInstance() : signalSet(ioContext)
 
 	// TODO: Tests to guarantee the server will be able to host duels
 
+	// Start up lobby and both endpoints
+	{
+		auto lobby = std::make_shared<Lobby>();
+		lle = std::make_shared<LobbyListEndpoint>(ioContext, 7922, lobby);
+	}
 }
 
 int ServerInstance::Run()
@@ -53,6 +61,7 @@ int ServerInstance::Run()
 void ServerInstance::Terminate()
 {
 	fmt::print("Finishing Execution...\n");
+	lle->Terminate();
 	signalSet.cancel();
 	ioContext.stop();
 }
