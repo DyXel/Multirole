@@ -1,8 +1,8 @@
 #include "SharedCore.hpp"
 
 #include <type_traits>
-#include <cstdio>
 #include <stdexcept> // std::runtime_error
+#include <fmt/printf.h>
 
 namespace Placeholder4
 {
@@ -39,22 +39,16 @@ void* NativeLoadObject(const char* file)
 	void* handle = (void*)LoadLibrary(file);
 #endif
 	/* Generate an error message if all loads failed */
-	if (handle == nullptr)
-	{
-		std::string errStr = std::string("Failed loading ") + file;
-		printf(errStr.c_str());
-	}
+	if (handle == nullptr) // TODO: get and print error string
+		fmt::print("Failed loading DLL {}\n", file);
 	return handle;
 }
 
 void* NativeLoadFunction(void* handle, const char* name)
 {
-	void* symbol = (void*) GetProcAddress((HMODULE) handle, name);
-	if (symbol == nullptr)
-	{
-		std::string errStr = std::string("Failed loading ") + name;
-		printf(errStr.c_str());
-	}
+	void* symbol = (void*)GetProcAddress((HMODULE) handle, name);
+	if (symbol == nullptr) // TODO: get and print error string
+		fmt::print("Failed loading function {}\n", name);
 	return symbol;
 }
 
@@ -70,11 +64,9 @@ void  NativeUnloadObject(void* handle)
 void* NativeLoadObject(const char* file)
 {
 	void* handle;
-	const char* loaderror;
 	handle = dlopen(file, RTLD_NOW|RTLD_LOCAL);
-	loaderror = (char*)dlerror();
 	if (handle == nullptr)
-		printf("Failed loading %s: %s", file, loaderror);
+		fmt::print("Failed loading shared object {}: {}\n", file, dlerror());
 	return (handle);
 }
 
@@ -87,7 +79,7 @@ void* NativeLoadFunction(void* handle, const char* name)
 		std::string _name = std::string("_") + name;
 		symbol = dlsym(handle, _name.c_str());
 		if (symbol == nullptr)
-			printf("Failed loading %s: %s", name, (const char*)dlerror());
+			fmt::print("Failed loading function {}: {}\n", name, dlerror());
 	}
 	return (symbol);
 }
@@ -103,7 +95,7 @@ SharedCore::SharedCore(std::string_view absFilePath)
 {
 	handle = NativeLoadObject(absFilePath.data());
 	if(handle == nullptr)
-		throw std::runtime_error("Could not load dynamic core.");
+		throw std::runtime_error("Could not load core.");
 	// Load every function from the shared object into the Ptr functions
 #define OCGFUNC(ret, name, args, argnames) \
 	do{ \
@@ -112,7 +104,7 @@ SharedCore::SharedCore(std::string_view absFilePath)
 	if(name##_Ptr == nullptr) \
 	{ \
 		NativeUnloadObject(handle); \
-		throw std::runtime_error("Could not load function "#name"."); \
+		throw std::runtime_error("Could not load API function."); \
 	} \
 	}while(0);
 #include "ocgapi_funcs.inl"
