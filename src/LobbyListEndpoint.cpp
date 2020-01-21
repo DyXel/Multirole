@@ -8,7 +8,7 @@ namespace Ignis
 // public
 
 LobbyListEndpoint::LobbyListEndpoint(
-	asio::io_context& ioContext, short port,
+	asio::io_context& ioContext, unsigned short port,
 	std::shared_ptr<Lobby> lobby) :
 	acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
 	lobby(lobby)
@@ -43,9 +43,9 @@ void LobbyListEndpoint::DoAccept()
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
 	{
+		DoAccept();
 		if(!ec)
 			DoSendRoomList(std::move(soc));
-		DoAccept();
 	});
 }
 

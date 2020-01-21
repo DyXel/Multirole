@@ -11,7 +11,7 @@ class Lobby;
 class LobbyListEndpoint final
 {
 public:
-	LobbyListEndpoint(asio::io_context& ioContext, short port, std::shared_ptr<Lobby> lobby);
+	LobbyListEndpoint(asio::io_context& ioContext, unsigned short port, std::shared_ptr<Lobby> lobby);
 
 	void Terminate();
 private:
