@@ -3,7 +3,6 @@
 #include <csignal>
 #include <cstdlib> // Exit flags
 
-#include <asio.hpp>
 #include <fmt/printf.h>
 
 #include "Lobby.hpp"

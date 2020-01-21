@@ -27,12 +27,11 @@ std::string LobbyListEndpoint::ComposeMsg()
 {
 	auto ComposeHeader = [](std::size_t length, std::string_view mime)
 	{
-		std::string header("HTTP/1.0 200 OK\r\n");
-		header += "Content-Length: " + fmt::to_string(length) + "\r\n";
-		header += "Content-Type: ";
-		header += mime;
-		header += "\r\n\r\n";
-		return header;
+		constexpr const char* HTTP_HEADER_FORMAT_STRING =
+		"HTTP/1.0 200 OK\r\n"
+		"Content-Length: {}\r\n"
+		"Content-Type: {}\r\n\r\n";
+		return fmt::format(HTTP_HEADER_FORMAT_STRING, length, mime);
 	};
 	std::string sJson = "{}";
 	return ComposeHeader(sJson.size(), "application/json") + sJson;
@@ -53,8 +52,8 @@ void LobbyListEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
 {
 	using namespace asio::ip;
 	auto socPtr = std::make_shared<tcp::socket>(std::move(soc));
-	auto msg = std::make_shared<std::string>(ComposeMsg());
-	socPtr->async_send(asio::buffer(msg->data(), msg->size()),
+	auto msg = std::make_shared<std::string>(std::move(ComposeMsg()));
+	asio::async_write(*socPtr, asio::buffer(*msg),
 	[socPtr, msg](const std::error_code& ec, std::size_t)
 	{
 		if(!ec)
