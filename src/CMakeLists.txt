@@ -7,5 +7,6 @@ target_sources(multirole PRIVATE
 	${CSR}/Room.cpp
 	${CSR}/ServerInstance.cpp
 	${CSR}/SharedCore.cpp
+	${CSR}/WebhookEndpoint.cpp
 )
 unset(CSR)
