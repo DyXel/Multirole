@@ -6,7 +6,7 @@
 namespace Ignis
 {
 
-class Room
+class Room final
 {
 public:
 	struct Options

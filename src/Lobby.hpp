@@ -7,7 +7,7 @@
 namespace Ignis
 {
 
-class Lobby
+class Lobby final
 {
 public:
 	using RoomContainerType = std::list<std::weak_ptr<Room>>;

@@ -8,7 +8,7 @@ namespace Ignis
 
 class Lobby;
 
-class LobbyListEndpoint
+class LobbyListEndpoint final
 {
 public:
 	LobbyListEndpoint(asio::io_context& ioContext, short port, std::shared_ptr<Lobby> lobby);
