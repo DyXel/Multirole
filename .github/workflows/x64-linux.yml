@@ -1,0 +1,22 @@
+name: x64-linux
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Fetch cached vcpkg dependencies
+      run: |
+        mkdir vcpkg
+        cd vcpkg
+        curl --retry 5 --connect-timeout 30 --location --remote-header-name --output installed.7z \
+          https://github.com/kevinlul/edopro-vcpkg-cache/releases/download/latest/igmr_x64-linux.7z
+        7z x installed.7z
+    - name: CMake build
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+        cmake --build . --config Debug --parallel 2
