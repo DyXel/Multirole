@@ -8,8 +8,7 @@ namespace Ignis
 // public
 
 LobbyListEndpoint::LobbyListEndpoint(
-	asio::io_context& ioContext, unsigned short port,
-	std::shared_ptr<Lobby> lobby) :
+	asio::io_context& ioContext, unsigned short port, Lobby& lobby) :
 	acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
 	lobby(lobby)
 {

@@ -11,13 +11,13 @@ class Lobby;
 class LobbyListEndpoint final
 {
 public:
-	LobbyListEndpoint(asio::io_context& ioContext, unsigned short port, std::shared_ptr<Lobby> lobby);
+	LobbyListEndpoint(asio::io_context& ioContext, unsigned short port, Lobby& lobby);
 
 	void Stop();
 	void Terminate();
 private:
 	asio::ip::tcp::acceptor acceptor;
-	std::shared_ptr<Lobby> lobby;
+	Lobby& lobby;
 
 	std::string ComposeMsg();
 	void DoAccept();

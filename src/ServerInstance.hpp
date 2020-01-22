@@ -1,14 +1,13 @@
 #ifndef SERVERINSTANCE_HPP
 #define SERVERINSTANCE_HPP
-#include <memory>
 #include <asio.hpp>
 #include <nlohmann/json.hpp>
 
+#include "Lobby.hpp"
+#include "LobbyListEndpoint.hpp"
 
 namespace Ignis
 {
-
-class LobbyListEndpoint;
 
 class ServerInstance final
 {
@@ -16,11 +15,13 @@ public:
 	ServerInstance();
 	int Run();
 private:
-	asio::io_context ioContext;
+	asio::io_context lobbyIoContext;
 	nlohmann::json cfg;
+	Lobby lobby;
+	LobbyListEndpoint lle;
 	asio::signal_set signalSet;
-	std::shared_ptr<LobbyListEndpoint> lle;
 
+	void DoWaitSignal();
 	void Stop();
 	void Terminate();
 };

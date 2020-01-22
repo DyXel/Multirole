@@ -6,9 +6,6 @@
 
 #include <fmt/printf.h>
 
-#include "Lobby.hpp"
-#include "LobbyListEndpoint.hpp"
-
 namespace Ignis
 {
 
@@ -24,14 +21,29 @@ nlohmann::json LoadConfigJson(std::string_view path)
 ServerInstance::ServerInstance() :
 	lobbyIoContext(),
 	cfg(LoadConfigJson("config.json")),
+	lobby(),
+	lle(lobbyIoContext, cfg["lobbyListPort"].get<unsigned short>(), lobby),
 	signalSet(lobbyIoContext)
 {
 	fmt::print("Setting up signal handling...\n");
 	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);
-	signalSet.async_wait([this](const std::error_code& ec, int sigNum)
+	DoWaitSignal();
+}
+
+int ServerInstance::Run()
+{
+	const std::size_t hExec = lobbyIoContext.run();
+	fmt::print("Context stopped. Total handlers executed: {}\n", hExec);
+	return EXIT_SUCCESS;
+}
+
+// private
+
+void ServerInstance::DoWaitSignal()
+{
+	signalSet.async_wait([this](const std::error_code&, int sigNum)
 	{
-		// Print signal received
 		const char* sigName;
 		switch(sigNum)
 		{
@@ -40,34 +52,19 @@ ServerInstance::ServerInstance() :
 			default: sigName = "Unknown signal"; break;
 		}
 		fmt::print("{} received.\n", sigName);
-		if(ec)
-			fmt::print("Error on signal processing: {}\n", ec.message());
 		Terminate();
 	});
-
-	// TODO: Tests to guarantee the server will be able to host duels
-
-	// Start up lobby and both endpoints
-	{
-		auto lobby = std::make_shared<Lobby>();
-		lle = std::make_shared<LobbyListEndpoint>(ioContext, 7922, lobby);
-	}
 }
 
-int ServerInstance::Run()
+void ServerInstance::Stop()
 {
-	const std::size_t hExec = ioContext.run();
-	fmt::print("Context stopped. Total handlers executed: {}\n", hExec);
-	return EXIT_SUCCESS;
+	lle.Stop();
 }
-
-// private
 
 void ServerInstance::Terminate()
 {
 	fmt::print("Finishing Execution...\n");
-	lle->Terminate();
-	signalSet.cancel();
+	lle.Terminate();
 	lobbyIoContext.stop();
 }
 
