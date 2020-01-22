@@ -3,6 +3,7 @@
 #include <csignal>
 #include <cstdlib> // Exit flags
 #include <fstream>
+#include <future>
 
 #include <fmt/printf.h>
 
@@ -19,29 +20,16 @@ nlohmann::json LoadConfigJson(std::string_view path)
 // public
 
 ServerInstance::ServerInstance() :
-	lobbyIoContext(),
+	lIoCtx(),
+	wsIoCtx(),
 	cfg(LoadConfigJson("config.json")),
 	lobby(),
-	lle(lobbyIoContext, cfg["lobbyListPort"].get<unsigned short>(), lobby),
-	signalSet(lobbyIoContext)
+	lle(lIoCtx, cfg["lobbyListPort"].get<unsigned short>(), lobby),
+	signalSet(lIoCtx)
 {
 	fmt::print("Setting up signal handling...\n");
 	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);
-	DoWaitSignal();
-}
-
-int ServerInstance::Run()
-{
-	const std::size_t hExec = lobbyIoContext.run();
-	fmt::print("Context stopped. Total handlers executed: {}\n", hExec);
-	return EXIT_SUCCESS;
-}
-
-// private
-
-void ServerInstance::DoWaitSignal()
-{
 	signalSet.async_wait([this](const std::error_code&, int sigNum)
 	{
 		const char* sigName;
@@ -52,20 +40,38 @@ void ServerInstance::DoWaitSignal()
 			default: sigName = "Unknown signal"; break;
 		}
 		fmt::print("{} received.\n", sigName);
-		Terminate();
+		Stop();
 	});
 }
 
-void ServerInstance::Stop()
+int ServerInstance::Run()
 {
-	lle.Stop();
+	std::future<std::size_t> wsHExec = std::async(std::launch::async,
+	[this]()
+	{
+		return wsIoCtx.run();
+	});
+	// This call will only return after all connections are properly closed
+	std::size_t tHExec = lIoCtx.run();
+	tHExec += wsHExec.get();
+	fmt::print("All Contexts stopped. Total handlers executed: {}\n", tHExec);
+	return EXIT_SUCCESS;
 }
 
-void ServerInstance::Terminate()
+// private
+
+void ServerInstance::Stop()
 {
-	fmt::print("Finishing Execution...\n");
-	lle.Terminate();
-	lobbyIoContext.stop();
+	fmt::print("Closing all acceptors and finishing IO operations...\n");
+	wsIoCtx.stop(); // Terminates thread
+	lle.Stop();
+// 	signalSet.clear(); // Unnecessary
+	if(true/*activeConnections > 0 or something*/)
+	{
+		fmt::print("All done, server will gracefully finish execution\n");
+		fmt::print("after all duels finish. If you wish to forcefully end\n");
+		fmt::print("you can terminate the process safely now (SIGKILL, etc)\n");
+	}
 }
 
 } // namespace Ignis

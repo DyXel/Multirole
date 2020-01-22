@@ -15,7 +15,8 @@ public:
 	ServerInstance();
 	int Run();
 private:
-	asio::io_context lobbyIoContext;
+	asio::io_context lIoCtx; // Lobby Io Context
+	asio::io_context wsIoCtx; // Websocket Io Context
 	nlohmann::json cfg;
 	Lobby lobby;
 	LobbyListEndpoint lle;
@@ -23,7 +24,6 @@ private:
 
 	void DoWaitSignal();
 	void Stop();
-	void Terminate();
 };
 
 } // namespace Ignis
