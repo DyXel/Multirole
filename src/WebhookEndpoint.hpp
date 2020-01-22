@@ -9,6 +9,7 @@ class WebhookEndpoint
 {
 public:
 	WebhookEndpoint(asio::io_context& ioContext, unsigned short port);
+	void Stop();
 protected:
 	virtual void Callback(std::string_view payload);
 private:

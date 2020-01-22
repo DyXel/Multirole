@@ -13,6 +13,11 @@ WebhookEndpoint::WebhookEndpoint(asio::io_context& ioContext, unsigned short por
 	DoAccept();
 }
 
+void WebhookEndpoint::Stop()
+{
+	acceptor.close();
+}
+
 // protected
 void WebhookEndpoint::Callback([[maybe_unused]] std::string_view payload)
 {}
