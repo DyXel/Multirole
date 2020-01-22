@@ -18,6 +18,7 @@ private:
 	asio::signal_set signalSet;
 	std::shared_ptr<LobbyListEndpoint> lle;
 
+	void Stop();
 	void Terminate();
 };
 

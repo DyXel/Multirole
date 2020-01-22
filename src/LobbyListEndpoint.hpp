@@ -13,6 +13,7 @@ class LobbyListEndpoint final
 public:
 	LobbyListEndpoint(asio::io_context& ioContext, unsigned short port, std::shared_ptr<Lobby> lobby);
 
+	void Stop();
 	void Terminate();
 private:
 	asio::ip::tcp::acceptor acceptor;

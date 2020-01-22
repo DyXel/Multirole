@@ -16,9 +16,14 @@ LobbyListEndpoint::LobbyListEndpoint(
 	DoAccept();
 }
 
-void LobbyListEndpoint::Terminate()
+void LobbyListEndpoint::Stop()
 {
 	acceptor.close();
+}
+
+void LobbyListEndpoint::Terminate()
+{
+	acceptor.cancel();
 }
 
 // private
