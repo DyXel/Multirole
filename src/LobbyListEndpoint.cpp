@@ -20,11 +20,6 @@ void LobbyListEndpoint::Stop()
 	acceptor.close();
 }
 
-void LobbyListEndpoint::Terminate()
-{
-	acceptor.cancel();
-}
-
 // private
 
 std::string LobbyListEndpoint::ComposeMsg()
@@ -46,9 +41,11 @@ void LobbyListEndpoint::DoAccept()
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
 	{
-		DoAccept();
 		if(!ec)
+		{
+			DoAccept();
 			DoSendRoomList(std::move(soc));
+		}
 	});
 }
 

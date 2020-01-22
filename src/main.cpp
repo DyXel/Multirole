@@ -31,6 +31,7 @@ int main()
 		{
 			Ignis::ServerInstance server;
 			exitFlag = server.Run();
+			fmt::print("Server context finished execution\n");
 		}
 		catch(const std::exception& e)
 		{
