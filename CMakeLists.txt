@@ -29,7 +29,6 @@ if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
 	if(NOT WIN32)
 		find_package(OpenSSL REQUIRED)
 	endif()
-	find_package(ZLIB REQUIRED)
 
 	target_include_directories(multirole PRIVATE
 		${ASIO_INCLUDE_DIR}
@@ -61,7 +60,6 @@ if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
 	target_link_libraries(multirole PRIVATE
 		asio::asio
 		nlohmann_json::nlohmann_json
-		ZLIB::ZLIB
 	)
 	if(NOT WIN32)
 		target_link_libraries(multirole PRIVATE OpenSSL::SSL OpenSSL::Crypto)
