@@ -1,6 +1,6 @@
 /**
  *  Project Ignis: Multirole
- *  Copyright (C) 2020  edo9300, DyXel, kevinlul
+ *  Copyright (C) 2020  DyXel, edo9300, kevinlul
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published
@@ -17,16 +17,26 @@
  */
 #include <cstdlib> // Exit flags
 #include <git2.h>
+#include <fmt/printf.h>
 #include "ServerInstance.hpp"
 
 int main()
 {
+	fmt::print("Project Ignis: Multirole, the robust server for YGOPro\n");
 	int exitFlag = EXIT_SUCCESS;
 	git_libgit2_init(); // TODO: check for initialization failure?
 	if(exitFlag == EXIT_SUCCESS)
 	{
-		Ignis::ServerInstance server;
-		exitFlag = server.Run();
+		try
+		{
+			Ignis::ServerInstance server;
+			exitFlag = server.Run();
+		}
+		catch(const std::exception& e)
+		{
+			fmt::print("Error: {}\n\n", e.what());
+			exitFlag = EXIT_FAILURE;
+		}
 	}
 	git_libgit2_shutdown();
 	return exitFlag;

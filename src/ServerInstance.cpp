@@ -15,8 +15,6 @@ namespace Ignis
 
 ServerInstance::ServerInstance() : signalSet(ioContext)
 {
-	fmt::print("Project Ignis: Multirole, the robust server for YGOPro\n");
-
 	// Load up configuration
 	// TODO
 
