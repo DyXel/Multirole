@@ -2,6 +2,8 @@
 #define SERVERINSTANCE_HPP
 #include <memory>
 #include <asio.hpp>
+#include <nlohmann/json.hpp>
+
 
 namespace Ignis
 {
@@ -15,6 +17,7 @@ public:
 	int Run();
 private:
 	asio::io_context ioContext;
+	nlohmann::json cfg;
 	asio::signal_set signalSet;
 	std::shared_ptr<LobbyListEndpoint> lle;
 

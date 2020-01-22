@@ -2,6 +2,7 @@
 
 #include <csignal>
 #include <cstdlib> // Exit flags
+#include <fstream>
 
 #include <fmt/printf.h>
 
@@ -11,14 +12,21 @@
 namespace Ignis
 {
 
+nlohmann::json LoadConfigJson(std::string_view path)
+{
+	fmt::print("Loading up config.json...\n");
+	std::ifstream i(path.data());
+	return nlohmann::json::parse(i);
+}
+
 // public
 
-ServerInstance::ServerInstance() : signalSet(ioContext)
+ServerInstance::ServerInstance() :
+	lobbyIoContext(),
+	cfg(LoadConfigJson("config.json")),
+	signalSet(lobbyIoContext)
 {
-	// Load up configuration
-	// TODO
-
-	// Setup signal handling
+	fmt::print("Setting up signal handling...\n");
 	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);
 	signalSet.async_wait([this](const std::error_code& ec, int sigNum)
@@ -60,7 +68,7 @@ void ServerInstance::Terminate()
 	fmt::print("Finishing Execution...\n");
 	lle->Terminate();
 	signalSet.cancel();
-	ioContext.stop();
+	lobbyIoContext.stop();
 }
 
 } // namespace Ignis
