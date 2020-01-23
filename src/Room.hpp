@@ -1,12 +1,18 @@
 #ifndef ROOM_HPP
 #define ROOM_HPP
 #include <string>
-#include "ocgapi_types.h"
+#include <memory>
+#include <set>
+#include <mutex>
+
+#include "IClientManager.hpp"
 
 namespace Ignis
 {
 
-class Room final
+class IRoomManager;
+
+class Room final : public IClientManager, public std::enable_shared_from_this<Room>
 {
 public:
 	struct Options
@@ -27,10 +33,14 @@ public:
 		bool dontShuffleDeck;
 		bool dontCheckDeck;
 	};
-	Room(const Options& initial);
+	Room(IRoomManager& owner, const Options& initial);
+	void Add(std::shared_ptr<Client> client) override;
+	void Remove(std::shared_ptr<Client> client) override;
 	Options GetOptions() const;
 private:
+	IRoomManager& owner;
 	Options options;
+	std::mutex m;
 };
 
 } // namespace Ignis
