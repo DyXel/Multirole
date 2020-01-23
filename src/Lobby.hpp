@@ -1,21 +1,24 @@
 #ifndef LOBBY_HPP
 #define LOBBY_HPP
-#include <list>
+#include <set>
 #include <memory>
-#include "Room.hpp"
+#include <mutex>
+#include "IRoomManager.hpp"
 
 namespace Ignis
 {
 
-class Lobby final
+class Lobby final : public IRoomManager
 {
 public:
-	using RoomContainerType = std::list<std::weak_ptr<Room>>;
+	using RoomContainerType = std::set<std::shared_ptr<Room>>;
 	Lobby();
-
-	const RoomContainerType& GetRooms() const;
+	void Add(std::shared_ptr<Room> room) override;
+	void Remove(std::shared_ptr<Room> room) override;
+	const RoomContainerType GetRoomsCopy();
 private:
 	RoomContainerType rooms;
+	std::mutex m;
 };
 
 } // namespace Ignis
