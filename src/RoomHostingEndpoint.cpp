@@ -13,6 +13,13 @@ RoomHostingEndpoint::RoomHostingEndpoint(
 	DoAccept();
 }
 
+void RoomHostingEndpoint::Stop()
+{
+	acceptor.close();
+}
+
+// private
+
 void RoomHostingEndpoint::DoAccept()
 {
 	acceptor.async_accept(

@@ -5,6 +5,7 @@
 
 #include "Lobby.hpp"
 #include "LobbyListingEndpoint.hpp"
+#include "RoomHostingEndpoint.hpp"
 
 namespace Ignis
 {
@@ -20,6 +21,7 @@ private:
 	nlohmann::json cfg;
 	Lobby lobby;
 	LobbyListingEndpoint lle;
+	RoomHostingEndpoint rhe;
 	asio::signal_set signalSet;
 
 	void DoWaitSignal();

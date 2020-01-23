@@ -25,6 +25,7 @@ ServerInstance::ServerInstance() :
 	cfg(LoadConfigJson("config.json")),
 	lobby(),
 	lle(lIoCtx, cfg["lobbyListingPort"].get<unsigned short>(), lobby),
+	rhe(lIoCtx, cfg["roomHostingPort"].get<unsigned short>(), lobby),
 	signalSet(lIoCtx)
 {
 	fmt::print("Setting up signal handling...\n");
@@ -65,6 +66,7 @@ void ServerInstance::Stop()
 	fmt::print("Closing all acceptors and finishing IO operations...\n");
 	wsIoCtx.stop(); // Terminates thread
 	lle.Stop();
+	rhe.Stop();
 	if(true/*activeConnections > 0 or something*/)
 	{
 		fmt::print("All done, server will gracefully finish execution\n");
