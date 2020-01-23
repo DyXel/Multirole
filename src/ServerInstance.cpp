@@ -65,7 +65,6 @@ void ServerInstance::Stop()
 	fmt::print("Closing all acceptors and finishing IO operations...\n");
 	wsIoCtx.stop(); // Terminates thread
 	lle.Stop();
-// 	signalSet.clear(); // Unnecessary
 	if(true/*activeConnections > 0 or something*/)
 	{
 		fmt::print("All done, server will gracefully finish execution\n");

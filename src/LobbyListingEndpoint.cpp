@@ -1,4 +1,4 @@
-#include "LobbyListEndpoint.hpp"
+#include "LobbyListingEndpoint.hpp"
 
 #include <fmt/format.h> // fmt::to_string
 
@@ -7,7 +7,7 @@ namespace Ignis
 
 // public
 
-LobbyListEndpoint::LobbyListEndpoint(
+LobbyListingEndpoint::LobbyListingEndpoint(
 	asio::io_context& ioContext, unsigned short port, Lobby& lobby) :
 	acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
 	lobby(lobby)
@@ -15,14 +15,14 @@ LobbyListEndpoint::LobbyListEndpoint(
 	DoAccept();
 }
 
-void LobbyListEndpoint::Stop()
+void LobbyListingEndpoint::Stop()
 {
 	acceptor.close();
 }
 
 // private
 
-std::string LobbyListEndpoint::ComposeMsg()
+std::string LobbyListingEndpoint::ComposeMsg()
 {
 	auto ComposeHeader = [](std::size_t length, std::string_view mime)
 	{
@@ -36,20 +36,19 @@ std::string LobbyListEndpoint::ComposeMsg()
 	return ComposeHeader(sJson.size(), "application/json") + sJson;
 }
 
-void LobbyListEndpoint::DoAccept()
+void LobbyListingEndpoint::DoAccept()
 {
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
 	{
-		if(!ec)
-		{
-			DoAccept();
-			DoSendRoomList(std::move(soc));
-		}
+		if(ec)
+			return;
+		DoAccept();
+		DoSendRoomList(std::move(soc));
 	});
 }
 
-void LobbyListEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
+void LobbyListingEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
 {
 	using namespace asio::ip;
 	auto socPtr = std::make_shared<tcp::socket>(std::move(soc));
@@ -57,11 +56,10 @@ void LobbyListEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
 	asio::async_write(*socPtr, asio::buffer(*msg),
 	[socPtr, msg](const std::error_code& ec, std::size_t)
 	{
-		if(!ec)
-		{
-			std::error_code ignoredEc;
-			socPtr->shutdown(tcp::socket::shutdown_both, ignoredEc);
-		}
+		if(ec)
+			return;
+		std::error_code ignoredEc;
+		socPtr->shutdown(tcp::socket::shutdown_both, ignoredEc);
 	});
 }
 

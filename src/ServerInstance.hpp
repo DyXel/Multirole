@@ -4,7 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Lobby.hpp"
-#include "LobbyListEndpoint.hpp"
+#include "LobbyListingEndpoint.hpp"
 
 namespace Ignis
 {
@@ -19,7 +19,7 @@ private:
 	asio::io_context wsIoCtx; // Websocket Io Context
 	nlohmann::json cfg;
 	Lobby lobby;
-	LobbyListEndpoint lle;
+	LobbyListingEndpoint lle;
 	asio::signal_set signalSet;
 
 	void DoWaitSignal();
