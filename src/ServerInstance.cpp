@@ -24,7 +24,7 @@ ServerInstance::ServerInstance() :
 	wsIoCtx(),
 	cfg(LoadConfigJson("config.json")),
 	lobby(),
-	lle(lIoCtx, cfg["lobbyListPort"].get<unsigned short>(), lobby),
+	lle(lIoCtx, cfg["lobbyListingPort"].get<unsigned short>(), lobby),
 	signalSet(lIoCtx)
 {
 	fmt::print("Setting up signal handling...\n");
