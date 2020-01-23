@@ -1,6 +1,7 @@
 set(CSR ${CMAKE_CURRENT_SOURCE_DIR})
 target_sources(multirole PRIVATE
 	${CSR}/CardDatabase.cpp
+	${CSR}/Client.cpp
 	${CSR}/Lobby.cpp
 	${CSR}/LobbyListingEndpoint.cpp
 	${CSR}/main.cpp
