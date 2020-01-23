@@ -27,10 +27,13 @@ void RoomHostingEndpoint::DoAccept()
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
 	{
-		if(ec)
+		if(!acceptor.is_open())
 			return;
+		if(!ec)
+		{
+// 			DoSendRoomList(std::move(soc));
+		}
 		DoAccept();
-// 		DoSendRoomList(std::move(soc));
 	});
 }
 

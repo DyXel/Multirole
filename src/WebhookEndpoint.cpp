@@ -31,10 +31,11 @@ void WebhookEndpoint::DoAccept()
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
 	{
-		if(ec)
+		if(!acceptor.is_open())
 			return;
+		if(!ec)
+			DoReadHeader(std::move(soc));
 		DoAccept();
-		DoReadHeader(std::move(soc));
 	});
 }
 
