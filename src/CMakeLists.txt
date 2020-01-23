@@ -5,6 +5,7 @@ target_sources(multirole PRIVATE
 	${CSR}/LobbyListingEndpoint.cpp
 	${CSR}/main.cpp
 	${CSR}/Room.cpp
+	${CSR}/RoomHostingEndpoint.cpp
 	${CSR}/ServerInstance.cpp
 	${CSR}/SharedCore.cpp
 	${CSR}/WebhookEndpoint.cpp
