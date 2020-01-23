@@ -67,7 +67,8 @@ void ServerInstance::Stop()
 	wsIoCtx.stop(); // Terminates thread
 	lle.Stop();
 	rhe.Stop();
-	if(true/*activeConnections > 0 or something*/)
+	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
+	if(startedRoomsCount > 0u)
 	{
 		fmt::print("All done, server will gracefully finish execution\n");
 		fmt::print("after all duels finish. If you wish to forcefully end\n");

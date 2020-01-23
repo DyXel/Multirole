@@ -18,6 +18,12 @@ void Lobby::Remove(std::shared_ptr<Room> room)
 	rooms.erase(room);
 }
 
+std::size_t Lobby::GetStartedRoomsCount() const
+{
+// 	std::lock_guard<std::mutex> lock(m);
+	return 0u; // TODO
+}
+
 const Lobby::RoomContainerType Lobby::GetRoomsCopy()
 {
 	std::lock_guard<std::mutex> lock(m);

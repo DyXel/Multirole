@@ -15,6 +15,7 @@ public:
 	Lobby();
 	void Add(std::shared_ptr<Room> room) override;
 	void Remove(std::shared_ptr<Room> room) override;
+	std::size_t GetStartedRoomsCount() const;
 	const RoomContainerType GetRoomsCopy();
 private:
 	RoomContainerType rooms;
