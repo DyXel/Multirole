@@ -5,6 +5,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 // public
 
 WebhookEndpoint::WebhookEndpoint(asio::io_context& ioContext, unsigned short port) :
@@ -53,5 +55,7 @@ void WebhookEndpoint::DoReadHeader(asio::ip::tcp::socket soc)
 		Callback(*payload);
 	});
 }
+
+} // namespace Multirole
 
 } // namespace Ignis

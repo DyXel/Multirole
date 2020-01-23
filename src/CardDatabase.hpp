@@ -12,6 +12,8 @@ struct sqlite3_stmt;
 namespace Ignis
 {
 
+namespace Multirole {
+
 class CardDatabase
 {
 public:
@@ -34,6 +36,8 @@ private:
 	sqlite3_stmt* sStmt{nullptr};
 	std::vector<uint16_t> setcodes;
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

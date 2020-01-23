@@ -3,6 +3,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 // public
 
 RoomHostingEndpoint::RoomHostingEndpoint(
@@ -31,5 +33,7 @@ void RoomHostingEndpoint::DoAccept()
 // 		DoSendRoomList(std::move(soc));
 	});
 }
+
+} // namespace Multirole
 
 } // namespace Ignis

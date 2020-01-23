@@ -18,7 +18,7 @@
 #include <cstdlib> // Exit flags
 #include <git2.h>
 #include <fmt/printf.h>
-#include "ServerInstance.hpp"
+#include "Instance.hpp"
 
 int main()
 {
@@ -29,7 +29,7 @@ int main()
 	{
 		try
 		{
-			Ignis::ServerInstance server;
+			Ignis::Multirole::Instance server;
 			exitFlag = server.Run();
 			fmt::print("Server context finished execution\n");
 		}

@@ -5,6 +5,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 class WebhookEndpoint
 {
 public:
@@ -18,6 +20,8 @@ private:
 	void DoAccept();
 	void DoReadHeader(asio::ip::tcp::socket soc);
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

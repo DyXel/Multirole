@@ -5,6 +5,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 Room::Room(IRoomManager& owner, const Options& initial) : owner(owner), options(initial)
 {
 	owner.Add(shared_from_this());
@@ -26,5 +28,7 @@ Room::Options Room::GetOptions() const
 {
 	return options;
 }
+
+} // namespace Multirole
 
 } // namespace Ignis

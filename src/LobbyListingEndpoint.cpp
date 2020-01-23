@@ -5,6 +5,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 // public
 
 LobbyListingEndpoint::LobbyListingEndpoint(
@@ -62,5 +64,7 @@ void LobbyListingEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
 		socPtr->shutdown(tcp::socket::shutdown_both, ignoredEc);
 	});
 }
+
+} // namespace Multirole
 
 } // namespace Ignis

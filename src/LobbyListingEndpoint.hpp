@@ -6,6 +6,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 class Lobby;
 
 class LobbyListingEndpoint final
@@ -21,6 +23,8 @@ private:
 	void DoAccept();
 	void DoSendRoomList(asio::ip::tcp::socket soc);
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

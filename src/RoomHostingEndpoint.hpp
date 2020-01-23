@@ -5,6 +5,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 class Lobby;
 
 class RoomHostingEndpoint
@@ -20,5 +22,7 @@ private:
 };
 
 } // namespace Ignis
+
+} // namespace Multirole
 
 #endif // ROOMHOSTINGENDPOINT_HPP

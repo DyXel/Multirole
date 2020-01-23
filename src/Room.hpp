@@ -10,6 +10,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 class IRoomManager;
 
 class Room final : public IClientManager, public std::enable_shared_from_this<Room>
@@ -42,6 +44,8 @@ private:
 	Options options;
 	std::mutex m;
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

@@ -5,6 +5,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 class ICoreAPI
 {
 public:
@@ -13,6 +15,8 @@ public:
 #undef OCGFUNC
 	virtual ~ICoreAPI() = default;
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

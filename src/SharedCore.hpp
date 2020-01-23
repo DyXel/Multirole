@@ -6,6 +6,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 class SharedCore final : public ICoreAPI
 {
 public:
@@ -24,6 +26,8 @@ private:
 #include "ocgapi_funcs.inl"
 #undef OCGFUNC
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

@@ -3,6 +3,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 Lobby::Lobby()
 {}
 
@@ -29,5 +31,7 @@ const Lobby::RoomContainerType Lobby::GetRoomsCopy()
 	std::lock_guard<std::mutex> lock(m);
 	return rooms;
 }
+
+} // namespace Multirole
 
 } // namespace Ignis

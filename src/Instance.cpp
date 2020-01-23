@@ -1,4 +1,4 @@
-#include "ServerInstance.hpp"
+#include "Instance.hpp"
 
 #include <csignal>
 #include <cstdlib> // Exit flags
@@ -10,6 +10,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 nlohmann::json LoadConfigJson(std::string_view path)
 {
 	fmt::print("Loading up config.json...\n");
@@ -19,7 +21,7 @@ nlohmann::json LoadConfigJson(std::string_view path)
 
 // public
 
-ServerInstance::ServerInstance() :
+Instance::Instance() :
 	lIoCtx(),
 	wsIoCtx(),
 	cfg(LoadConfigJson("config.json")),
@@ -45,7 +47,7 @@ ServerInstance::ServerInstance() :
 	});
 }
 
-int ServerInstance::Run()
+int Instance::Run()
 {
 	std::future<std::size_t> wsHExec = std::async(std::launch::async,
 	[this]()
@@ -61,7 +63,7 @@ int ServerInstance::Run()
 
 // private
 
-void ServerInstance::Stop()
+void Instance::Stop()
 {
 	fmt::print("Closing all acceptors and finishing IO operations...\n");
 	wsIoCtx.stop(); // Terminates thread
@@ -75,5 +77,7 @@ void ServerInstance::Stop()
 		fmt::print("you can terminate the process safely now (SIGKILL, etc)\n");
 	}
 }
+
+} // namespace Multirole
 
 } // namespace Ignis

@@ -8,6 +8,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 class Lobby final : public IRoomManager
 {
 public:
@@ -21,6 +23,8 @@ private:
 	RoomContainerType rooms;
 	std::mutex m;
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

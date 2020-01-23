@@ -10,10 +10,12 @@
 namespace Ignis
 {
 
-class ServerInstance final
+namespace Multirole {
+
+class Instance final
 {
 public:
-	ServerInstance();
+	Instance();
 	int Run();
 private:
 	asio::io_context lIoCtx; // Lobby Io Context
@@ -27,6 +29,8 @@ private:
 	void DoWaitSignal();
 	void Stop();
 };
+
+} // namespace Multirole
 
 } // namespace Ignis
 

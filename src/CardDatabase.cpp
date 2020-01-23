@@ -9,6 +9,8 @@ constexpr int TYPE_LINK = 0x4000000; // NOTE: remove if we import other types
 namespace Ignis
 {
 
+namespace Multirole {
+
 static const char* DB_SCHEMAS =
 R"(
 CREATE TABLE "datas" (
@@ -175,5 +177,7 @@ OCG_CardData CardDatabase::CardDataFromCode(unsigned int code, bool& found)
 	}
 	return cd;
 }
+
+} // namespace Multirole
 
 } // namespace Ignis

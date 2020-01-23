@@ -7,6 +7,8 @@
 namespace Ignis
 {
 
+namespace Multirole {
+
 // "Native" functions below modified from implementations found in SDL2 library
 // Author: Sam Lantinga <slouken@libsdl.org>
 // Date: 26-10-2018
@@ -132,5 +134,7 @@ SharedCore::~SharedCore()
 	}
 #include "ocgapi_funcs.inl"
 #undef OCGFUNC
+
+} // namespace Multirole
 
 } // namespace Ignis
