@@ -7,8 +7,9 @@ namespace Ignis
 
 namespace Multirole {
 
-Client::Client(IClientManager& owner, asio::ip::tcp::socket soc) :
+Client::Client(IClientManager& owner, const Properties& initial, asio::ip::tcp::socket soc) :
 	owner(owner),
+	properties(initial),
 	soc(std::move(soc))
 {
 	owner.Add(shared_from_this());

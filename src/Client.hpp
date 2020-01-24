@@ -12,9 +12,15 @@ class IClientManager;
 class Client final : public std::enable_shared_from_this<Client>
 {
 public:
-	Client(IClientManager& owner, asio::ip::tcp::socket soc);
+	struct Properties
+	{
+		std::string name;
+// 		Deck deck;
+	};
+	Client(IClientManager& owner, const Properties& initial, asio::ip::tcp::socket soc);
 private:
 	IClientManager& owner;
+	Properties properties;
 	asio::ip::tcp::socket soc;
 };
 
