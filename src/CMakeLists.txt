@@ -5,6 +5,7 @@ target_sources(multirole PRIVATE
 	${CSR}/Instance.cpp
 	${CSR}/Lobby.cpp
 	${CSR}/LobbyListingEndpoint.cpp
+	${CSR}/LoggerToStdout.cpp
 	${CSR}/main.cpp
 	${CSR}/Room.cpp
 	${CSR}/RoomHostingEndpoint.cpp
