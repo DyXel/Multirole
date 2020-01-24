@@ -1,7 +1,6 @@
 #include "RoomHostingEndpoint.hpp"
 
-#include <fmt/printf.h>
-
+#include "Client.hpp"
 #include "CTOSMsg.hpp"
 #include "StringUtils.hpp"
 
@@ -14,6 +13,8 @@ struct TmpClient
 {
 	asio::ip::tcp::socket soc;
 	YGOPro::CTOSMsg msg;
+	Client::Properties prop;
+
 	TmpClient(asio::ip::tcp::socket soc) : soc(std::move(soc))
 	{}
 };
@@ -95,7 +96,7 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
 	{
 		using namespace StringUtils;
-		fmt::print("Client '{}' starts a new connection\n", UTF16ToUTF8(BufferToUTF16(msg.Body(), msgLength)));
+		tc->prop.name = UTF16ToUTF8(BufferToUTF16(msg.Body(), msgLength));
 		return true;
 	}
 	default: return false;
