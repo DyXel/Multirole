@@ -9,6 +9,8 @@ namespace Ignis
 
 namespace Multirole {
 
+// Holds information about the client before a proper connection to a Room
+// has been established.
 struct TmpClient
 {
 	asio::ip::tcp::socket soc;
@@ -67,7 +69,7 @@ void RoomHostingEndpoint::DoReadHeader(std::shared_ptr<TmpClient> tc)
 	asio::async_read(tc->soc, buffer,
 	[this, tc](const std::error_code& ec, std::size_t)
 	{
-		if (!ec && tc->msg.IsHeaderValid())
+		if(!ec && tc->msg.IsHeaderValid())
 			DoReadBody(tc);
 		else
 			Remove(tc);
@@ -80,7 +82,7 @@ void RoomHostingEndpoint::DoReadBody(std::shared_ptr<TmpClient> tc)
 	asio::async_read(tc->soc, buffer,
 	[this, tc](const std::error_code& ec, std::size_t)
 	{
-		if (!ec && HandleMsg(tc))
+		if(!ec && HandleMsg(tc))
 			DoReadHeader(tc);
 		else
 			Remove(tc);
