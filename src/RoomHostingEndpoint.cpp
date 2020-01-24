@@ -1,9 +1,19 @@
 #include "RoomHostingEndpoint.hpp"
 
+#include "CTOSMsg.hpp"
+
 namespace Ignis
 {
 
 namespace Multirole {
+
+struct TmpClient
+{
+	asio::ip::tcp::socket soc;
+	YGOPro::CTOSMsg msg;
+	TmpClient(asio::ip::tcp::socket soc) : soc(std::move(soc))
+	{}
+};
 
 // public
 
@@ -22,6 +32,18 @@ void RoomHostingEndpoint::Stop()
 
 // private
 
+void RoomHostingEndpoint::Add(std::shared_ptr<TmpClient> tc)
+{
+	std::lock_guard<std::mutex> lock(m);
+	tmpClients.insert(tc);
+}
+
+void RoomHostingEndpoint::Remove(std::shared_ptr<TmpClient> tc)
+{
+	std::lock_guard<std::mutex> lock(m);
+	tmpClients.erase(tc);
+}
+
 void RoomHostingEndpoint::DoAccept()
 {
 	acceptor.async_accept(
@@ -30,11 +52,47 @@ void RoomHostingEndpoint::DoAccept()
 		if(!acceptor.is_open())
 			return;
 		if(!ec)
-		{
-// 			DoSendRoomList(std::move(soc));
-		}
+			DoReadHeader(std::make_shared<TmpClient>(std::move(soc)));
 		DoAccept();
 	});
+}
+
+void RoomHostingEndpoint::DoReadHeader(std::shared_ptr<TmpClient> tc)
+{
+	auto buffer = asio::buffer(tc->msg.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
+	asio::async_read(tc->soc, buffer,
+	[this, tc](const std::error_code& ec, std::size_t)
+	{
+		if (!ec && tc->msg.IsHeaderValid())
+			DoReadBody(tc);
+		else
+			Remove(tc);
+	});
+}
+
+void RoomHostingEndpoint::DoReadBody(std::shared_ptr<TmpClient> tc)
+{
+	auto buffer = asio::buffer(tc->msg.Body(), tc->msg.GetLength());
+	asio::async_read(tc->soc, buffer,
+	[this, tc](const std::error_code& ec, std::size_t)
+	{
+		if (!ec && HandleMsg(tc))
+			DoReadHeader(tc);
+		else
+			Remove(tc);
+	});
+}
+
+bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
+{
+	switch(tc->msg.GetType())
+	{
+	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
+	{
+		return true;
+	}
+	default: return false;
+	}
 }
 
 } // namespace Multirole

@@ -1,5 +1,8 @@
 #ifndef ROOMHOSTINGENDPOINT_HPP
 #define ROOMHOSTINGENDPOINT_HPP
+#include <mutex>
+#include <memory>
+#include <set>
 #include <asio.hpp>
 
 namespace Ignis
@@ -8,6 +11,7 @@ namespace Ignis
 namespace Multirole {
 
 class Lobby;
+struct TmpClient;
 
 class RoomHostingEndpoint
 {
@@ -17,8 +21,17 @@ public:
 private:
 	asio::ip::tcp::acceptor acceptor;
 	Lobby& lobby;
+	std::mutex m;
+	std::set<std::shared_ptr<TmpClient>> tmpClients;
+
+	void Add(std::shared_ptr<TmpClient> tc);
+	void Remove(std::shared_ptr<TmpClient> tc);
 
 	void DoAccept();
+	void DoReadHeader(std::shared_ptr<TmpClient> tc);
+	void DoReadBody(std::shared_ptr<TmpClient> tc);
+
+	bool HandleMsg(std::shared_ptr<TmpClient> tc);
 };
 
 } // namespace Ignis
