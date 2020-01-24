@@ -1,6 +1,9 @@
 #include "RoomHostingEndpoint.hpp"
 
+#include <fmt/printf.h>
+
 #include "CTOSMsg.hpp"
+#include "StringUtils.hpp"
 
 namespace Ignis
 {
@@ -85,10 +88,14 @@ void RoomHostingEndpoint::DoReadBody(std::shared_ptr<TmpClient> tc)
 
 bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 {
-	switch(tc->msg.GetType())
+	auto& msg = tc->msg;
+	const auto msgLength = msg.GetLength();
+	switch(msg.GetType())
 	{
 	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
 	{
+		using namespace StringUtils;
+		fmt::print("Client '{}' starts a new connection\n", UTF16ToUTF8(BufferToUTF16(msg.Body(), msgLength)));
 		return true;
 	}
 	default: return false;
