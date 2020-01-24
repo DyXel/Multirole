@@ -13,7 +13,7 @@ std::u16string UTF8ToUTF16(std::string_view str);
 
 std::u16string BufferToUTF16(void* data, std::size_t maxCount);
 
-} // namespace StringUtil
+} // namespace StringUtils
 
 } // namespace Ignis
 
