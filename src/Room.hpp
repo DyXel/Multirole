@@ -38,11 +38,13 @@ public:
 	Room(IRoomManager& owner, Options initial);
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
-	Options GetOptions() const;
+	Options GetOptions();
 private:
 	IRoomManager& owner;
 	Options options;
 	std::mutex m;
+	std::set<std::shared_ptr<Client>> clients;
+	std::mutex m2;
 };
 
 } // namespace Multirole
