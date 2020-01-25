@@ -1,5 +1,7 @@
 #include "RoomHostingEndpoint.hpp"
 
+#include <type_traits> // std::remove_extent
+
 #include "Client.hpp"
 #include "CTOSMsg.hpp"
 #include "StringUtils.hpp"
@@ -34,6 +36,9 @@ RoomHostingEndpoint::RoomHostingEndpoint(
 void RoomHostingEndpoint::Stop()
 {
 	acceptor.close();
+	std::lock_guard<std::mutex> lock(m);
+	for(auto& c : tmpClients)
+		c->soc.cancel();
 }
 
 // private
@@ -58,7 +63,11 @@ void RoomHostingEndpoint::DoAccept()
 		if(!acceptor.is_open())
 			return;
 		if(!ec)
-			DoReadHeader(std::make_shared<TmpClient>(std::move(soc)));
+		{
+			auto tc = std::make_shared<TmpClient>(std::move(soc));
+			Add(tc);
+			DoReadHeader(std::move(tc));
+		}
 		DoAccept();
 	});
 }
@@ -91,18 +100,30 @@ void RoomHostingEndpoint::DoReadBody(std::shared_ptr<TmpClient> tc)
 
 bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 {
+#define UTF16_BUFFER_TO_STR(a) \
+	StringUtils::UTF16ToUTF8(StringUtils::BufferToUTF16(a, \
+	sizeof(decltype(a)) / sizeof(std::remove_extent<decltype(a)>::type)))
 	auto& msg = tc->msg;
-	const auto msgLength = msg.GetLength();
 	switch(msg.GetType())
 	{
 	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
 	{
-		using namespace StringUtils;
-		tc->prop.name = UTF16ToUTF8(BufferToUTF16(msg.Body(), msgLength));
+		auto p = msg.GetPlayerInfo();
+		if(!p.first)
+			return false;
+		tc->prop.name = UTF16_BUFFER_TO_STR(p.second.name);
+		return true;
+	}
+	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
+	{
+		auto p = msg.GetCreateGame();
+		if(!p.first)
+			return false;
 		return true;
 	}
 	default: return false;
 	}
+#undef UTF16_BUFFER_TO_STR
 }
 
 } // namespace Multirole
