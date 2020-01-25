@@ -17,7 +17,7 @@ public:
 		std::string name;
 // 		Deck deck;
 	};
-	Client(IClientManager& owner, const Properties& initial, asio::ip::tcp::socket soc);
+	Client(IClientManager& owner, Properties initial, asio::ip::tcp::socket soc);
 private:
 	IClientManager& owner;
 	Properties properties;

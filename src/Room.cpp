@@ -7,7 +7,9 @@ namespace Ignis
 
 namespace Multirole {
 
-Room::Room(IRoomManager& owner, const Options& initial) : owner(owner), options(initial)
+Room::Room(IRoomManager& owner, Options initial) :
+	owner(owner),
+	options(std::move(initial))
 {
 	owner.Add(shared_from_this());
 }

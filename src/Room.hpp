@@ -35,7 +35,7 @@ public:
 		bool dontShuffleDeck;
 		bool dontCheckDeck;
 	};
-	Room(IRoomManager& owner, const Options& initial);
+	Room(IRoomManager& owner, Options initial);
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 	Options GetOptions() const;
