@@ -21,8 +21,8 @@ public:
 private:
 	asio::ip::tcp::acceptor acceptor;
 	Lobby& lobby;
-	std::mutex m;
 	std::set<std::shared_ptr<TmpClient>> tmpClients;
+	std::mutex mTmpClients;
 
 	void Add(std::shared_ptr<TmpClient> tc);
 	void Remove(std::shared_ptr<TmpClient> tc);

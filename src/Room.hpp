@@ -36,15 +36,15 @@ public:
 		bool dontCheckDeck;
 	};
 	Room(IRoomManager& owner, Options initial);
+	Options GetOptionsCopy();
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
-	Options GetOptions();
 private:
 	IRoomManager& owner;
 	Options options;
-	std::mutex m;
+	std::mutex mOptions;
 	std::set<std::shared_ptr<Client>> clients;
-	std::mutex m2;
+	std::mutex mClients;
 };
 
 } // namespace Multirole

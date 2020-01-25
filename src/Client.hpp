@@ -32,7 +32,7 @@ private:
 	asio::ip::tcp::socket soc;
 	YGOPro::CTOSMsg incoming;
 	std::queue<YGOPro::STOCMsg> outgoing;
-	std::mutex m;
+	std::mutex mOutgoing;
 
 	void DoReadHeader();
 	void DoReadBody();

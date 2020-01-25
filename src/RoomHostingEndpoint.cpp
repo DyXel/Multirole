@@ -38,7 +38,7 @@ RoomHostingEndpoint::RoomHostingEndpoint(
 void RoomHostingEndpoint::Stop()
 {
 	acceptor.close();
-	std::lock_guard<std::mutex> lock(m);
+	std::lock_guard<std::mutex> lock(mTmpClients);
 	for(auto& c : tmpClients)
 		c->soc.cancel();
 }
@@ -47,13 +47,13 @@ void RoomHostingEndpoint::Stop()
 
 void RoomHostingEndpoint::Add(std::shared_ptr<TmpClient> tc)
 {
-	std::lock_guard<std::mutex> lock(m);
+	std::lock_guard<std::mutex> lock(mTmpClients);
 	tmpClients.insert(tc);
 }
 
 void RoomHostingEndpoint::Remove(std::shared_ptr<TmpClient> tc)
 {
-	std::lock_guard<std::mutex> lock(m);
+	std::lock_guard<std::mutex> lock(mTmpClients);
 	tmpClients.erase(tc);
 }
 

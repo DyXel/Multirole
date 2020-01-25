@@ -21,7 +21,7 @@ public:
 	const RoomContainerType GetRoomsCopy();
 private:
 	RoomContainerType rooms;
-	std::mutex m;
+	std::mutex mRooms;
 };
 
 } // namespace Multirole

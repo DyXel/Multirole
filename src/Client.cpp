@@ -19,7 +19,7 @@ Client::Client(IClientManager& owner, Properties initial, asio::ip::tcp::socket 
 
 void Client::Send(const YGOPro::STOCMsg& msg)
 {
-	std::lock_guard<std::mutex> lock(m);
+	std::lock_guard<std::mutex> lock(mOutgoing);
 	const bool WriteInProgress = !outgoing.empty();
 	outgoing.push(msg);
 	if(!WriteInProgress)
@@ -68,7 +68,7 @@ void Client::DoWrite()
 	{
 		if (!ec)
 		{
-			std::lock_guard<std::mutex> lock(m);
+			std::lock_guard<std::mutex> lock(mOutgoing);
 			outgoing.pop();
 			if (!outgoing.empty())
 				DoWrite();

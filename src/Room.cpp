@@ -15,25 +15,25 @@ Room::Room(IRoomManager& owner, Options initial) :
 	owner.Add(shared_from_this());
 }
 
+Room::Options Room::GetOptionsCopy()
+{
+	std::lock_guard<std::mutex> lock(mOptions);
+	return options;
+}
+
 void Room::Add(std::shared_ptr<Client> client)
 {
-	std::lock_guard<std::mutex> lock(m2);
+	std::lock_guard<std::mutex> lock(mClients);
 	clients.insert(client);
 	// TODO: actually properly select position of the new client
 }
 
 void Room::Remove(std::shared_ptr<Client> client)
 {
-	std::lock_guard<std::mutex> lock(m2);
+	std::lock_guard<std::mutex> lock(mClients);
 	clients.erase(client);
 	if(clients.empty())
 		owner.Remove(shared_from_this());
-}
-
-Room::Options Room::GetOptions()
-{
-	std::lock_guard<std::mutex> lock(m);
-	return options;
 }
 
 } // namespace Multirole
