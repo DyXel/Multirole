@@ -3,6 +3,8 @@
 #include <type_traits> // std::remove_extent
 
 #include "Client.hpp"
+#include "Lobby.hpp"
+#include "Room.hpp"
 #include "CTOSMsg.hpp"
 #include "StringUtils.hpp"
 
@@ -119,7 +121,14 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		auto p = msg.GetCreateGame();
 		if(!p.first)
 			return false;
-		return true;
+		p.second.notes[200] = '\0'; // Guarantee null-terminated string
+		Room::Options opts;
+		opts.name = UTF16_BUFFER_TO_STR(p.second.name);
+		opts.pass = UTF16_BUFFER_TO_STR(p.second.pass);
+		opts.notes = std::string(p.second.notes);
+		auto room = std::make_shared<Room>(lobby, std::move(opts));
+		std::make_shared<Client>(*room, std::move(tc->prop), std::move(tc->soc));
+		return false;
 	}
 	default: return false;
 	}
