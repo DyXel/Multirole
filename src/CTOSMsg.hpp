@@ -1,6 +1,6 @@
 #ifndef CTOSMSG_HPP
 #define CTOSMSG_HPP
-#include <cstdint>
+#include "MsgCommon.hpp"
 
 namespace YGOPro
 {
@@ -33,27 +33,6 @@ public:
 		HS_NOTREADY   = 0x23,
 		HS_KICK       = 0x24,
 		HS_START      = 0x25
-	};
-
-	struct HostInfo
-	{
-		uint32_t lflist;
-		uint8_t rule;
-		uint8_t mode;
-		uint8_t duel_rule;
-		uint8_t no_check_deck;
-		uint8_t no_shuffle_deck;
-		uint32_t start_lp;
-		uint8_t start_hand;
-		uint8_t draw_count;
-		uint16_t time_limit;
-		uint64_t handshake;
-		int32_t team1;
-		int32_t team2;
-		int32_t best_of;
-		uint32_t duel_flag;
-		int32_t forbiddentypes;
-		uint16_t extra_rules;
 	};
 
 	struct PlayerInfo
@@ -95,16 +74,6 @@ public:
 		return true;
 	}
 
-	uint8_t* Data()
-	{
-		return data;
-	}
-
-	uint8_t* Body()
-	{
-		return data + HEADER_LENGTH;
-	}
-
 #define X(s) \
 	std::pair<bool, s> Get##s() const \
 	{ \
@@ -118,6 +87,16 @@ public:
 	X(PlayerInfo)
 	X(CreateGame)
 #undef X
+
+	uint8_t* Data()
+	{
+		return data;
+	}
+
+	uint8_t* Body()
+	{
+		return data + HEADER_LENGTH;
+	}
 
 private:
 	uint8_t data[HEADER_LENGTH + MSG_MAX_LENGTH];
