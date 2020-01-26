@@ -6,6 +6,7 @@
 #include <mutex>
 
 #include "IClientManager.hpp"
+#include "MsgCommon.hpp"
 
 namespace Ignis
 {
@@ -17,31 +18,20 @@ class IRoomManager;
 class Room final : public IClientManager, public std::enable_shared_from_this<Room>
 {
 public:
-	struct Options
+	struct OptionsData
 	{
 		std::string name;
 		std::string notes;
 		std::string pass;
-		int bestOf;
-		int duelFlags;
-		int rule;
-		int extraRules;
-		int forbiddenTypes;
-		short startingDrawCount;
-		short drawCountPerTurn;
-		int startingLP;
-		int timeLimitInSeconds;
-		int banlistHash;
-		bool dontShuffleDeck;
-		bool dontCheckDeck;
+		YGOPro::HostInfo info;
 	};
-	Room(IRoomManager& owner, Options initial);
-	Options GetOptions() const;
+	Room(IRoomManager& owner, OptionsData options);
+	OptionsData Options() const;
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 private:
 	IRoomManager& owner;
-	Options options;
+	OptionsData options;
 	std::set<std::shared_ptr<Client>> clients;
 	std::mutex mClients;
 };
