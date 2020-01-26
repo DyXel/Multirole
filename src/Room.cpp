@@ -15,9 +15,8 @@ Room::Room(IRoomManager& owner, Options initial) :
 	owner.Add(shared_from_this());
 }
 
-Room::Options Room::GetOptionsCopy()
+Room::Options Room::GetOptions() const
 {
-	std::lock_guard<std::mutex> lock(mOptions);
 	return options;
 }
 

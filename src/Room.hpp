@@ -36,13 +36,12 @@ public:
 		bool dontCheckDeck;
 	};
 	Room(IRoomManager& owner, Options initial);
-	Options GetOptionsCopy();
+	Options GetOptions() const;
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 private:
 	IRoomManager& owner;
 	Options options;
-	std::mutex mOptions;
 	std::set<std::shared_ptr<Client>> clients;
 	std::mutex mClients;
 };
