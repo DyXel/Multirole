@@ -50,6 +50,10 @@ target_compile_definitions(multirole PUBLIC
 	ASIO_STANDALONE
 )
 
+if(WIN32)
+	target_compile_definitions(multirole PUBLIC _WIN32_WINNT=_WIN32_WINNT_WIN7)
+endif()
+
 target_link_libraries(multirole PRIVATE
 	${LIBGIT2_LIBRARIES}
 	${SQLite3_LIBRARY}
