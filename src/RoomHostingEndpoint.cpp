@@ -19,7 +19,7 @@ struct TmpClient
 {
 	asio::ip::tcp::socket soc;
 	YGOPro::CTOSMsg msg;
-	Client::Properties prop;
+	std::string name;
 
 	TmpClient(asio::ip::tcp::socket soc) : soc(std::move(soc))
 	{}
@@ -113,7 +113,7 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		auto p = msg.GetPlayerInfo();
 		if(!p.first)
 			return false;
-		tc->prop.name = UTF16_BUFFER_TO_STR(p.second.name);
+		tc->name = UTF16_BUFFER_TO_STR(p.second.name);
 		return true;
 	}
 	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
@@ -128,6 +128,7 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		opts.notes = std::string(p.second.notes);
 		auto room = std::make_shared<Room>(lobby, std::move(opts));
 		std::make_shared<Client>(*room, std::move(tc->prop), std::move(tc->soc));
+		std::make_shared<Client>(*room, std::move(tc->name), std::move(tc->soc));
 		return false;
 	}
 	default: return false;
