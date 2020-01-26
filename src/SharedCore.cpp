@@ -1,7 +1,8 @@
 #include "SharedCore.hpp"
 
-#include <type_traits>
 #include <stdexcept> // std::runtime_error
+#include <type_traits>
+
 #include <fmt/printf.h>
 
 namespace Ignis

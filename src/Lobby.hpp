@@ -3,6 +3,7 @@
 #include <set>
 #include <memory>
 #include <mutex>
+
 #include "IRoomManager.hpp"
 
 namespace Ignis

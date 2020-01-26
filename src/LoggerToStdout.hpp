@@ -1,6 +1,7 @@
 #ifndef LOGGERTOSTDOUT_HPP
 #define LOGGERTOSTDOUT_HPP
-#include <asio.hpp>
+#include <asio/io_context_strand.hpp>
+
 #include "IAsyncLogger.hpp"
 
 namespace Ignis

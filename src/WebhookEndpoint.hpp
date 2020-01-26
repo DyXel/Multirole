@@ -1,6 +1,7 @@
 #ifndef WEBHOOKENDPOINT_HPP
 #define WEBHOOKENDPOINT_HPP
-#include <asio.hpp>
+#include <asio/io_context.hpp>
+#include <asio/ip/tcp.hpp>
 
 namespace Ignis
 {

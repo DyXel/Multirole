@@ -2,7 +2,8 @@
 #define CLIENT_HPP
 #include <queue>
 #include <mutex>
-#include <asio.hpp>
+
+#include <asio/ip/tcp.hpp>
 
 #include "CTOSMsg.hpp"
 #include "STOCMsg.hpp"

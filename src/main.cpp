@@ -16,8 +16,10 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <cstdlib> // Exit flags
-#include <git2.h>
+
 #include <fmt/printf.h>
+#include <git2.h>
+
 #include "Instance.hpp"
 
 int main()

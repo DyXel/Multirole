@@ -1,6 +1,8 @@
 #include "LoggerToStdout.hpp"
 
 #include <string>
+
+#include <asio/post.hpp>
 #include <fmt/printf.h>
 
 namespace Ignis

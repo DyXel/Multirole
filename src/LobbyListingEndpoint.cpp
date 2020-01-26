@@ -1,5 +1,6 @@
 #include "LobbyListingEndpoint.hpp"
 
+#include <asio/write.hpp>
 #include <fmt/format.h> // fmt::to_string
 
 namespace Ignis

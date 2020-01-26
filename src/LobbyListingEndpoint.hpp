@@ -1,7 +1,8 @@
 #ifndef LOBBYLISTINGENDPOINT_HPP
 #define LOBBYLISTINGENDPOINT_HPP
 #include <memory>
-#include <asio.hpp>
+
+#include <asio/ip/tcp.hpp>
 
 namespace Ignis
 {

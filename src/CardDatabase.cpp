@@ -2,6 +2,7 @@
 
 #include <stdexcept> // std::runtime_error
 #include <string>
+
 #include <sqlite3.h>
 
 constexpr int TYPE_LINK = 0x4000000; // NOTE: remove if we import other types

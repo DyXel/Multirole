@@ -1,6 +1,7 @@
 #ifndef SERVERINSTANCE_HPP
 #define SERVERINSTANCE_HPP
-#include <asio.hpp>
+#include <asio/io_context.hpp>
+#include <asio/signal_set.hpp>
 #include <nlohmann/json.hpp>
 
 #include "Lobby.hpp"

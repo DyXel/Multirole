@@ -2,6 +2,8 @@
 
 #include <thread>
 
+#include <asio/write.hpp>
+
 namespace Ignis
 {
 

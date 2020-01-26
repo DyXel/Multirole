@@ -3,7 +3,8 @@
 #include <mutex>
 #include <memory>
 #include <set>
-#include <asio.hpp>
+
+#include <asio/ip/tcp.hpp>
 
 namespace Ignis
 {

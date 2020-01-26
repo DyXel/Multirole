@@ -2,6 +2,8 @@
 
 #include <type_traits> // std::remove_extent
 
+#include <asio/read.hpp>
+
 #include "Client.hpp"
 #include "Lobby.hpp"
 #include "Room.hpp"

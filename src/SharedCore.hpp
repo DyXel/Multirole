@@ -1,6 +1,7 @@
 #ifndef SHAREDCORE_HPP
 #define SHAREDCORE_HPP
 #include <string_view>
+
 #include "ICoreAPI.hpp"
 
 namespace Ignis
