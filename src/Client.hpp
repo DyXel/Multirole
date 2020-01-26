@@ -20,15 +20,15 @@ class Client final : public std::enable_shared_from_this<Client>
 public:
 	struct Properties
 	{
-		std::string name;
+		bool ready;
 // 		Deck deck;
 	};
-	Client(IClientManager& owner, Properties initial, asio::ip::tcp::socket soc);
-
+	Client(IClientManager& owner, std::string name, asio::ip::tcp::socket soc);
+	std::string Name() const;
 	void Send(const YGOPro::STOCMsg& msg);
 private:
 	IClientManager& owner;
-	Properties properties;
+	std::string name;
 	asio::ip::tcp::socket soc;
 	YGOPro::CTOSMsg incoming;
 	std::queue<YGOPro::STOCMsg> outgoing;

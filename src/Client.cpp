@@ -8,13 +8,18 @@ namespace Ignis
 namespace Multirole
 {
 
-Client::Client(IClientManager& owner, Properties initial, asio::ip::tcp::socket soc) :
+Client::Client(IClientManager& owner, std::string name, asio::ip::tcp::socket soc) :
 	owner(owner),
-	properties(std::move(initial)),
+	name(std::move(name)),
 	soc(std::move(soc))
 {
 	owner.Add(shared_from_this());
 	DoReadHeader();
+}
+
+std::string Client::Name() const
+{
+	return name;
 }
 
 void Client::Send(const YGOPro::STOCMsg& msg)
