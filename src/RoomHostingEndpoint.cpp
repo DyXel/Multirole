@@ -122,12 +122,12 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		if(!p.first)
 			return false;
 		p.second.notes[200] = '\0'; // Guarantee null-terminated string
-		Room::Options opts;
-		opts.name = UTF16_BUFFER_TO_STR(p.second.name);
-		opts.pass = UTF16_BUFFER_TO_STR(p.second.pass);
-		opts.notes = std::string(p.second.notes);
-		auto room = std::make_shared<Room>(lobby, std::move(opts));
-		std::make_shared<Client>(*room, std::move(tc->prop), std::move(tc->soc));
+		Room::OptionsData options;
+		options.name = UTF16_BUFFER_TO_STR(p.second.name);
+		options.pass = UTF16_BUFFER_TO_STR(p.second.pass);
+		options.notes = std::string(p.second.notes);
+		options.info = p.second.info;
+		auto room = std::make_shared<Room>(lobby, std::move(options));
 		std::make_shared<Client>(*room, std::move(tc->name), std::move(tc->soc));
 		return false;
 	}
