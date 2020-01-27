@@ -14,6 +14,7 @@ namespace Ignis
 namespace Multirole
 {
 
+class IClientListener;
 class IClientManager;
 
 class Client final : public std::enable_shared_from_this<Client>
@@ -24,11 +25,12 @@ public:
 		bool ready;
 // 		Deck deck;
 	};
-	Client(IClientManager& owner, std::string name, asio::ip::tcp::socket soc);
+	Client(IClientListener& listener, IClientManager& owner, std::string name, asio::ip::tcp::socket soc);
 	void Start();
 	std::string Name() const;
 	void Send(const YGOPro::STOCMsg& msg);
 private:
+	IClientListener& listener;
 	IClientManager& owner;
 	std::string name;
 	asio::ip::tcp::socket soc;

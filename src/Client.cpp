@@ -3,6 +3,7 @@
 #include <asio/read.hpp>
 #include <asio/write.hpp>
 
+#include "IClientListener.hpp"
 #include "IClientManager.hpp"
 
 namespace Ignis
@@ -11,7 +12,8 @@ namespace Ignis
 namespace Multirole
 {
 
-Client::Client(IClientManager& owner, std::string name, asio::ip::tcp::socket soc) :
+Client::Client(IClientListener& listener, IClientManager& owner, std::string name, asio::ip::tcp::socket soc) :
+	listener(listener),
 	owner(owner),
 	name(std::move(name)),
 	soc(std::move(soc))

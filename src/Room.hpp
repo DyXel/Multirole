@@ -5,6 +5,7 @@
 #include <set>
 #include <mutex>
 
+#include "IClientListener.hpp"
 #include "IClientManager.hpp"
 #include "MsgCommon.hpp"
 
@@ -15,7 +16,7 @@ namespace Multirole {
 
 class IRoomManager;
 
-class Room final : public IClientManager, public std::enable_shared_from_this<Room>
+class Room final : public IClientListener, public IClientManager, public std::enable_shared_from_this<Room>
 {
 public:
 	struct OptionsData
@@ -26,6 +27,7 @@ public:
 		YGOPro::HostInfo info;
 	};
 	Room(IRoomManager& owner, OptionsData options);
+	void Start();
 	OptionsData Options() const;
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
