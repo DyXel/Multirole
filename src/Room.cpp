@@ -11,6 +11,9 @@ namespace Multirole
 Room::Room(IRoomManager& owner, OptionsData options) :
 	owner(owner),
 	options(std::move(options))
+{}
+
+void Room::Start()
 {
 	owner.Add(shared_from_this());
 }

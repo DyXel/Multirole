@@ -25,6 +25,7 @@ public:
 // 		Deck deck;
 	};
 	Client(IClientManager& owner, std::string name, asio::ip::tcp::socket soc);
+	void Start();
 	std::string Name() const;
 	void Send(const YGOPro::STOCMsg& msg);
 private:

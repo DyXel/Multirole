@@ -15,6 +15,9 @@ Client::Client(IClientManager& owner, std::string name, asio::ip::tcp::socket so
 	owner(owner),
 	name(std::move(name)),
 	soc(std::move(soc))
+{}
+
+void Client::Start()
 {
 	owner.Add(shared_from_this());
 	DoReadHeader();
@@ -70,7 +73,6 @@ void Client::DoReadBody()
 void Client::DoWrite()
 {
 	const auto& front = outgoing.front();
-// 	auto buffer = asio::buffer(front.Data(), front.Length());
 	asio::async_write(soc, asio::buffer(front.Data(), front.Length()),
 	[this](const std::error_code& ec, std::size_t)
 	{

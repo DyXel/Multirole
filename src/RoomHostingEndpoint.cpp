@@ -130,7 +130,9 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		options.notes = std::string(p.second.notes);
 		options.info = p.second.info;
 		auto room = std::make_shared<Room>(lobby, std::move(options));
-		std::make_shared<Client>(*room, std::move(tc->name), std::move(tc->soc));
+		room->Start();
+		auto client = std::make_shared<Client>(*room, std::move(tc->name), std::move(tc->soc));
+		client->Start();
 		return false;
 	}
 	default: return false;
