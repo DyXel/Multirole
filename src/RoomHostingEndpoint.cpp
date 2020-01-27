@@ -123,7 +123,7 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		auto p = msg.GetCreateGame();
 		if(!p.first)
 			return false;
-		p.second.notes[200] = '\0'; // Guarantee null-terminated string
+		p.second.notes[199] = '\0'; // Guarantee null-terminated string
 		Room::OptionsData options;
 		options.name = UTF16_BUFFER_TO_STR(p.second.name);
 		options.pass = UTF16_BUFFER_TO_STR(p.second.pass);
