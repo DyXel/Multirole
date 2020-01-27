@@ -1,5 +1,8 @@
 #ifndef STOCMSG_HPP
 #define STOCMSG_HPP
+#include <cstring>
+#include <type_traits>
+#include <vector>
 #include "MsgCommon.hpp"
 
 namespace YGOPro
@@ -37,30 +40,40 @@ public:
 		HS_WATCH_CHANGE  = 0x22,
 	};
 
-	const uint8_t* Data() const
+	struct ErrorMsg
 	{
-		return bytes.data();
-	}
+		static const auto val = MsgType::ERROR_MSG;
+		uint8_t msg;
+		uint32_t code;
+	};
 
-	std::size_t Length() const
+	struct CreateGame
 	{
-		return bytes.size();
-	}
+		static const auto val = MsgType::CREATE_GAME;
+		uint32_t id;
+	};
+
+	struct HsWatchChange
+	{
+		static const auto val = MsgType::HS_WATCH_CHANGE;
+		uint16_t count;
+	};
 
 	template<typename T>
-	void Write(MsgType type, const T& msg)
+	STOCMsg(const T& msg)
 	{
+		static_assert(std::is_same_v<std::remove_cv_t<decltype(T::val)>, MsgType>);
 		const auto sizeOfT = static_cast<LengthType>(sizeof(T));
 		bytes.resize(sizeOfT + HEADER_LENGTH);
 		uint8_t* p = bytes.data();
 		std::memcpy(p, &sizeOfT, sizeof(sizeOfT));
 		p += sizeof(sizeOfT);
-		std::memcpy(p, &type, sizeof(MsgType));
+		std::memcpy(p, &T::val, sizeof(MsgType));
 		p += sizeof(MsgType);
 		std::memcpy(p, &msg, sizeof(T));
 	}
 
-	void Write(MsgType type, const std::vector<uint8_t>& msg)
+	STOCMsg(MsgType type, const std::vector<uint8_t>& msg)
 	{
 		const auto msgSize = static_cast<LengthType>(msg.size());
 		bytes.resize(msgSize + HEADER_LENGTH);
@@ -70,6 +83,16 @@ public:
 		std::memcpy(p, &type, sizeof(MsgType));
 		p += sizeof(MsgType);
 		std::memcpy(p, msg.data(), msgSize);
+	}
+
+	const uint8_t* Data() const
+	{
+		return bytes.data();
+	}
+
+	std::size_t Length() const
+	{
+		return bytes.size();
 	}
 private:
 	std::vector<uint8_t> bytes;
