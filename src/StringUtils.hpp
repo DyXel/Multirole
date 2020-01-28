@@ -8,10 +8,11 @@ namespace Ignis
 namespace StringUtils
 {
 
+std::u16string BufferToUTF16(void* data, std::size_t maxCount);
+void UTF16ToBuffer(void* data, std::u16string str);
+
 std::string UTF16ToUTF8(std::u16string_view str);
 std::u16string UTF8ToUTF16(std::string_view str);
-
-std::u16string BufferToUTF16(void* data, std::size_t maxCount);
 
 } // namespace StringUtils
 

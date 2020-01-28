@@ -1,5 +1,6 @@
 #include "StringUtils.hpp"
 
+#include <cstring>
 #include <codecvt>
 #include <locale>
 
@@ -21,6 +22,10 @@ std::u16string BufferToUTF16(void* data, std::size_t maxCount)
 	return std::u16string(p2, ntPos);
 }
 
+void UTF16ToBuffer(void* data, std::u16string str)
+{
+	std::memcpy(data, str.data(), str.size() * sizeof(std::u16string::value_type));
+}
 
 #define WCI std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}
 std::string UTF16ToUTF8(std::u16string_view str)
