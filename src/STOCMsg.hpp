@@ -13,7 +13,7 @@ class STOCMsg
 public:
 	enum
 	{
-		HEADER_LENGTH = 3,
+		HEADER_LENGTH = 2,
 	};
 	using LengthType = int16_t;
 	enum class MsgType : int8_t
@@ -53,6 +53,31 @@ public:
 		uint32_t id;
 	};
 
+	struct TypeChange
+	{
+		static const auto val = MsgType::TYPE_CHANGE;
+		uint8_t type;
+	};
+
+	struct JoinGame
+	{
+		static const auto val = MsgType::JOIN_GAME;
+		HostInfo info;
+	};
+
+	struct HsPlayerEnter
+	{
+		static const auto val = MsgType::HS_PLAYER_ENTER;
+		uint16_t name[20];
+		uint8_t pos;
+	};
+
+	struct HsPlayerChange
+	{
+		static const auto val = MsgType::HS_PLAYER_CHANGE;
+		uint8_t status;
+	};
+
 	struct HsWatchChange
 	{
 		static const auto val = MsgType::HS_WATCH_CHANGE;
@@ -63,11 +88,11 @@ public:
 	STOCMsg(const T& msg)
 	{
 		static_assert(std::is_same_v<std::remove_cv_t<decltype(T::val)>, MsgType>);
-		const auto sizeOfT = static_cast<LengthType>(sizeof(T));
-		bytes.resize(sizeOfT + HEADER_LENGTH);
+		const auto msgSize = static_cast<LengthType>(sizeof(T) + sizeof(MsgType));
+		bytes.resize(HEADER_LENGTH + msgSize);
 		uint8_t* p = bytes.data();
-		std::memcpy(p, &sizeOfT, sizeof(sizeOfT));
-		p += sizeof(sizeOfT);
+		std::memcpy(p, &msgSize, sizeof(msgSize));
+		p += sizeof(msgSize);
 		std::memcpy(p, &T::val, sizeof(MsgType));
 		p += sizeof(MsgType);
 		std::memcpy(p, &msg, sizeof(T));
@@ -75,14 +100,14 @@ public:
 
 	STOCMsg(MsgType type, const std::vector<uint8_t>& msg)
 	{
-		const auto msgSize = static_cast<LengthType>(msg.size());
-		bytes.resize(msgSize + HEADER_LENGTH);
+		const auto msgSize = static_cast<LengthType>(msg.size() + sizeof(MsgType));
+		bytes.resize(HEADER_LENGTH + msgSize);
 		uint8_t* p = bytes.data();
 		std::memcpy(p, &msgSize, sizeof(msgSize));
 		p += sizeof(msgSize);
 		std::memcpy(p, &type, sizeof(MsgType));
 		p += sizeof(MsgType);
-		std::memcpy(p, msg.data(), msgSize);
+		std::memcpy(p, msg.data(), msg.size());
 	}
 
 	const uint8_t* Data() const
