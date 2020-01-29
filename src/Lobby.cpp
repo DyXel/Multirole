@@ -1,14 +1,21 @@
 #include "Lobby.hpp"
 
+#include <chrono>
+
 namespace Ignis
 {
 
 namespace Multirole
 {
 
+std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
+{
+	return std::chrono::system_clock::now().time_since_epoch().count();
+}
+
 // public
 
-Lobby::Lobby()
+Lobby::Lobby() : rd(static_cast<std::mt19937::result_type>(TimeNowInt()))
 {}
 
 std::shared_ptr<Room> Lobby::GetRoomById(uint32_t id)
@@ -55,7 +62,7 @@ void Lobby::StopNonStartedRooms()
 uint32_t Lobby::Add(std::shared_ptr<Room> room)
 {
 	std::lock_guard<std::mutex> lock(mRooms);
-	for(uint32_t newId = 1u; true; newId++)
+	for(uint32_t newId = rd(); true; newId = rd())
 		if(rooms.count(newId) == 0 && rooms.emplace(newId, room).second)
 			return newId;
 }

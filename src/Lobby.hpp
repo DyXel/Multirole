@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <random>
 
 #include "IRoomManager.hpp"
 #include "Room.hpp"
@@ -23,6 +24,7 @@ public:
 	std::list<Room::Properties> GetAllRoomsProperties();
 	void StopNonStartedRooms();
 private:
+	std::mt19937 rd;
 	std::map<uint32_t, std::shared_ptr<Room>> rooms;
 	std::mutex mRooms;
 
