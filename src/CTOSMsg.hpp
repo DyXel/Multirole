@@ -48,6 +48,13 @@ public:
 		char notes[200];
 	};
 
+	struct JoinGame
+	{
+		uint16_t version;
+		uint32_t id;
+		uint16_t pass[20];
+	};
+
 	CTOSMsg() : r(data + HEADER_LENGTH)
 	{}
 
@@ -86,6 +93,7 @@ public:
 	}
 	X(PlayerInfo)
 	X(CreateGame)
+	X(JoinGame)
 #undef X
 
 	uint8_t* Data()
