@@ -1,5 +1,6 @@
 #ifndef IROOMMANAGER_HPP
 #define IROOMMANAGER_HPP
+#include <cstdint>
 #include <memory>
 
 namespace Ignis
@@ -11,9 +12,10 @@ class Room;
 
 class IRoomManager
 {
-public:
-	virtual void Add(std::shared_ptr<Room> room) = 0;
-	virtual void Remove(std::shared_ptr<Room> room) = 0;
+	friend Room;
+private:
+	virtual uint32_t Add(std::shared_ptr<Room> room) = 0;
+	virtual void Remove(uint32_t roomId) = 0;
 };
 
 } // namespace Multirole

@@ -1,28 +1,33 @@
 #ifndef LOBBY_HPP
 #define LOBBY_HPP
-#include <set>
+#include <list>
+#include <map>
 #include <memory>
 #include <mutex>
 
 #include "IRoomManager.hpp"
+#include "Room.hpp"
 
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
 
 class Lobby final : public IRoomManager
 {
 public:
-	using RoomContainerType = std::set<std::shared_ptr<Room>>;
 	Lobby();
-	void Add(std::shared_ptr<Room> room) override;
-	void Remove(std::shared_ptr<Room> room) override;
-	std::size_t GetStartedRoomsCount() const;
-	const RoomContainerType GetRoomsCopy();
+	std::shared_ptr<Room> GetRoomById(uint32_t id);
+	std::size_t GetStartedRoomsCount();
+	std::list<Room::Properties> GetAllRoomsProperties();
+	void StopNonStartedRooms();
 private:
-	RoomContainerType rooms;
+	std::map<uint32_t, std::shared_ptr<Room>> rooms;
 	std::mutex mRooms;
+
+	uint32_t Add(std::shared_ptr<Room> room) override;
+	void Remove(uint32_t roomId) override;
 };
 
 } // namespace Multirole

@@ -2,11 +2,15 @@
 
 #include <asio/write.hpp>
 #include <fmt/format.h> // fmt::to_string
+#include <nlohmann/json.hpp>
+
+#include "Lobby.hpp"
 
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
 
 // public
 
@@ -35,8 +39,49 @@ std::string LobbyListingEndpoint::ComposeMsg()
 		"Content-Type: {}\r\n\r\n";
 		return fmt::format(HTTP_HEADER_FORMAT_STRING, length, mime);
 	};
-	std::string sJson = "{}";
-	return ComposeHeader(sJson.size(), "application/json") + sJson;
+
+	std::string serialized;
+	{
+		nlohmann::json j{{"rooms", nlohmann::json::array()}};
+		nlohmann::json& ar = j["rooms"];
+		for(auto& rp : lobby.GetAllRoomsProperties())
+		{
+			auto& room = ar.emplace_back();
+			room["roomid"] = rp.id;
+			room["roomname"] = ""; // NOTE: UNUSED but expected atm
+			room["roomnotes"] = rp.notes;
+			room["roommode"] = 0; // NOTE: UNUSED but expected atm
+			room["needpass"] = rp.passworded;
+			room["team1"] = rp.info.t1Count;
+			room["team2"] = rp.info.t2Count;
+			room["best_of"] = rp.info.bestOf;
+			room["duel_flag"] = rp.info.duelFlags;
+			room["forbidden_types"] = rp.info.forbiddenTypes;
+			room["extra_rules"] = rp.info.extraRules;
+			room["start_lp"] = rp.info.startingLP;
+			room["start_hand"] = rp.info.startingDrawCount;
+			room["draw_count"] = rp.info.drawCountPerTurn;
+			room["time_limit"] = rp.info.timeLimitInSeconds;
+			room["rule"] = rp.info.scope;
+			room["no_check"] = static_cast<bool>(rp.info.dontCheckDeck);
+			room["no_shuffle"] = static_cast<bool>(rp.info.dontShuffleDeck);
+			room["banlist_hash"] = rp.info.banlistHash;
+			room["istart"] = rp.state == (Room::WAITING) ? "waiting" : "start";
+			auto& ac = room["users"];
+			for(auto& kv : rp.duelists)
+			{
+				auto& client = ac.emplace_back();
+// 				client["id"] = ???; // NOTE: UNUSED
+				client["name"] = kv.second;
+// 				client["ip"] = json::nlohmann::null; // NOTE: UNUSED
+// 				client["status"] = json::nlohmann::null; // NOTE: UNUSED
+				client["pos"] = kv.first;
+			}
+		}
+		serialized = j.dump(); // DUMP EET
+	}
+
+	return ComposeHeader(serialized.size(), "application/json") + serialized;
 }
 
 void LobbyListingEndpoint::DoAccept()

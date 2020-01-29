@@ -70,11 +70,13 @@ void Instance::Stop()
 	lle.Stop();
 	rhe.Stop();
 	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
+	lobby.StopNonStartedRooms(); // implicitly changes WAITING rooms to STOPPING
 	if(startedRoomsCount > 0u)
 	{
 		fmt::print("All done, server will gracefully finish execution\n");
 		fmt::print("after all duels finish. If you wish to forcefully end\n");
 		fmt::print("you can terminate the process safely now (SIGKILL, etc)\n");
+		fmt::print("Number of current duels: {}\n", startedRoomsCount);
 	}
 }
 

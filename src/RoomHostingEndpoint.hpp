@@ -4,6 +4,7 @@
 #include <memory>
 #include <set>
 
+#include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
 namespace Ignis
@@ -17,9 +18,10 @@ struct TmpClient;
 class RoomHostingEndpoint
 {
 public:
-	RoomHostingEndpoint(asio::io_context& ioContext, unsigned short port, Lobby& lobby);
+	RoomHostingEndpoint(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
 	void Stop();
 private:
+	asio::io_context& ioCtx;
 	asio::ip::tcp::acceptor acceptor;
 	Lobby& lobby;
 	std::set<std::shared_ptr<TmpClient>> tmpClients;

@@ -30,8 +30,9 @@ struct TmpClient
 // public
 
 RoomHostingEndpoint::RoomHostingEndpoint(
-	asio::io_context& ioContext, unsigned short port, Lobby& lobby) :
-	acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
+	asio::io_context& ioCtx, unsigned short port, Lobby& lobby) :
+	ioCtx(ioCtx),
+	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
 	lobby(lobby)
 {
 	DoAccept();
@@ -123,16 +124,32 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		auto p = msg.GetCreateGame();
 		if(!p.first)
 			return false;
+		// TODO: maybe check server handshake?
 		p.second.notes[199] = '\0'; // Guarantee null-terminated string
-		Room::OptionsData options;
+		Room::Options options;
+		options.info = p.second.info;
 		options.name = UTF16_BUFFER_TO_STR(p.second.name);
 		options.pass = UTF16_BUFFER_TO_STR(p.second.pass);
 		options.notes = std::string(p.second.notes);
-		options.info = p.second.info;
-		auto room = std::make_shared<Room>(lobby, std::move(options));
+		// TODO: verify banlist hash
+		auto room = std::make_shared<Room>(lobby, ioCtx, std::move(options));
 		room->Start();
-		auto client = std::make_shared<Client>(*room, *room, std::move(tc->name), std::move(tc->soc));
+		auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));
 		client->Start();
+		return false;
+	}
+	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
+	{
+		auto p = msg.GetJoinGame();
+		if(!p.first)
+			return false;
+		// TODO: maybe check game version?
+		auto room = lobby.GetRoomById(p.second.id);
+		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p.second.pass)))
+		{
+			auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));
+			client->Start();
+		}
 		return false;
 	}
 	default: return false;

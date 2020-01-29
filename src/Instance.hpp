@@ -11,7 +11,8 @@
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
 
 class Instance final
 {

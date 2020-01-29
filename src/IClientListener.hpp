@@ -12,7 +12,8 @@ class Client;
 
 class IClientListener
 {
-public:
+	friend Client;
+private:
 // 	virtual void OnChat(std::shared_ptr<Client> client, std::string txt) = 0;
 };
 

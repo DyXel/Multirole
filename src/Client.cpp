@@ -1,5 +1,6 @@
 #include "Client.hpp"
 
+#include <asio/bind_executor.hpp>
 #include <asio/read.hpp>
 #include <asio/write.hpp>
 
@@ -12,12 +13,41 @@ namespace Ignis
 namespace Multirole
 {
 
-Client::Client(IClientListener& listener, IClientManager& owner, std::string name, asio::ip::tcp::socket soc) :
+Client::Client(IClientListener& listener, IClientManager& owner, asio::io_context::strand& strand, asio::ip::tcp::socket soc, std::string name) :
 	listener(listener),
 	owner(owner),
+	strand(strand),
+	soc(std::move(soc)),
+	removingSelf(false),
 	name(std::move(name)),
-	soc(std::move(soc))
+	position(SPECTATOR),
+	ready(false)
 {}
+
+std::string Client::Name() const
+{
+	return name;
+}
+
+Client::PositionType Client::Position() const
+{
+	return position;
+}
+
+bool Client::Ready() const
+{
+	return ready;
+}
+
+void Client::SetPosition(const PositionType& p)
+{
+	position = p;
+}
+
+void Client::SetReady(bool r)
+{
+	ready = r;
+}
 
 void Client::Start()
 {
@@ -25,9 +55,9 @@ void Client::Start()
 	DoReadHeader();
 }
 
-std::string Client::Name() const
+void Client::Stop()
 {
-	return name;
+	soc.cancel();
 }
 
 void Client::Send(const YGOPro::STOCMsg& msg)
@@ -39,23 +69,35 @@ void Client::Send(const YGOPro::STOCMsg& msg)
 		DoWrite();
 }
 
+void Client::PostRemoveSelf()
+{
+	if(removingSelf)
+		return;
+	removingSelf = true;
+	asio::post(strand,
+	[this, self = shared_from_this()]()
+	{
+		owner.Remove(self);
+	});
+}
+
 void Client::DoReadHeader()
 {
 	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
-	asio::async_read(soc, buffer,
+	asio::async_read(soc, buffer, asio::bind_executor(strand,
 	[this](const std::error_code& ec, std::size_t)
 	{
 		if(!ec && incoming.IsHeaderValid())
 			DoReadBody();
 		else
-			owner.Remove(shared_from_this());
-	});
+			PostRemoveSelf();
+	}));
 }
 
 void Client::DoReadBody()
 {
 	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
-	asio::async_read(soc, buffer,
+	asio::async_read(soc, buffer, asio::bind_executor(strand,
 	[this](const std::error_code& ec, std::size_t)
 	{
 		if(!ec)
@@ -67,9 +109,9 @@ void Client::DoReadBody()
 		}
 		else
 		{
-			owner.Remove(shared_from_this());
+			PostRemoveSelf();
 		}
-	});
+	}));
 }
 
 void Client::DoWrite()
@@ -87,7 +129,7 @@ void Client::DoWrite()
 		}
 		else
 		{
-			owner.Remove(shared_from_this());
+			PostRemoveSelf();
 		}
 	});
 }
