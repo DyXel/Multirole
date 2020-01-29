@@ -15,33 +15,38 @@ namespace Multirole
 // public
 
 LobbyListingEndpoint::LobbyListingEndpoint(
-	asio::io_context& ioContext, unsigned short port, Lobby& lobby) :
-	acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
+	asio::io_context& ioCtx, unsigned short port, Lobby& lobby) :
+	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
+	serializeTimer(ioCtx),
 	lobby(lobby)
 {
 	DoAccept();
+	DoSerialize();
 }
 
 void LobbyListingEndpoint::Stop()
 {
 	acceptor.close();
+	serializeTimer.cancel();
 }
 
 // private
 
-std::string LobbyListingEndpoint::ComposeMsg()
+void LobbyListingEndpoint::DoSerialize()
 {
-	auto ComposeHeader = [](std::size_t length, std::string_view mime)
+	serializeTimer.expires_after(std::chrono::seconds(2));
+	serializeTimer.async_wait([this](const std::error_code& ec)
 	{
-		constexpr const char* HTTP_HEADER_FORMAT_STRING =
-		"HTTP/1.0 200 OK\r\n"
-		"Content-Length: {}\r\n"
-		"Content-Type: {}\r\n\r\n";
-		return fmt::format(HTTP_HEADER_FORMAT_STRING, length, mime);
-	};
-
-	std::string serialized;
-	{
+		if(ec)
+			return;
+		auto ComposeHeader = [](std::size_t length, std::string_view mime)
+		{
+			constexpr const char* HTTP_HEADER_FORMAT_STRING =
+			"HTTP/1.0 200 OK\r\n"
+			"Content-Length: {}\r\n"
+			"Content-Type: {}\r\n\r\n";
+			return fmt::format(HTTP_HEADER_FORMAT_STRING, length, mime);
+		};
 		nlohmann::json j{{"rooms", nlohmann::json::array()}};
 		nlohmann::json& ar = j["rooms"];
 		for(auto& rp : lobby.GetAllRoomsProperties())
@@ -78,10 +83,14 @@ std::string LobbyListingEndpoint::ComposeMsg()
 				client["pos"] = kv.first;
 			}
 		}
-		serialized = j.dump(); // DUMP EET
-	}
-
-	return ComposeHeader(serialized.size(), "application/json") + serialized;
+		constexpr auto eHandler = nlohmann::json::error_handler_t::ignore;
+		const std::string strJ = j.dump(-1, 0, false, eHandler); // DUMP EET
+		{
+			std::lock_guard<std::mutex> lock(mSerialized);
+			serialized = ComposeHeader(strJ.size(), "application/json") + strJ;
+		}
+		DoSerialize();
+	});
 }
 
 void LobbyListingEndpoint::DoAccept()
@@ -99,9 +108,10 @@ void LobbyListingEndpoint::DoAccept()
 
 void LobbyListingEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
 {
+	std::lock_guard<std::mutex> lock(mSerialized);
 	using namespace asio::ip;
 	auto socPtr = std::make_shared<tcp::socket>(std::move(soc));
-	auto msg = std::make_shared<std::string>(std::move(ComposeMsg()));
+	auto msg = std::make_shared<std::string>(serialized);
 	asio::async_write(*socPtr, asio::buffer(*msg),
 	[socPtr, msg](const std::error_code& ec, std::size_t)
 	{
