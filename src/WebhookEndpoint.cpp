@@ -43,8 +43,7 @@ void WebhookEndpoint::DoAccept()
 
 void WebhookEndpoint::DoReadHeader(asio::ip::tcp::socket soc)
 {
-	using namespace asio::ip;
-	auto socPtr = std::make_shared<tcp::socket>(std::move(soc));
+	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
 	auto payload = std::make_shared<std::string>(' ', 255);
 	socPtr->async_read_some(asio::buffer(*payload),
 	[this, socPtr, payload](const std::error_code& ec, std::size_t)
@@ -52,8 +51,6 @@ void WebhookEndpoint::DoReadHeader(asio::ip::tcp::socket soc)
 		if(ec)
 			return;
 		asio::write(*socPtr, asio::buffer("HTTP/1.0 200 OK\r\n"));
-		std::error_code ignoredEc;
-		socPtr->shutdown(tcp::socket::shutdown_both, ignoredEc);
 		*payload += '\0'; // Guarantee null-terminated string
 		Callback(*payload);
 	});

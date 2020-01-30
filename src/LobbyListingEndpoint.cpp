@@ -109,17 +109,10 @@ void LobbyListingEndpoint::DoAccept()
 void LobbyListingEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
 {
 	std::lock_guard<std::mutex> lock(mSerialized);
-	using namespace asio::ip;
-	auto socPtr = std::make_shared<tcp::socket>(std::move(soc));
+	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
 	auto msg = std::make_shared<std::string>(serialized);
 	asio::async_write(*socPtr, asio::buffer(*msg),
-	[socPtr, msg](const std::error_code& ec, std::size_t)
-	{
-		if(ec)
-			return;
-		std::error_code ignoredEc;
-		socPtr->shutdown(tcp::socket::shutdown_both, ignoredEc);
-	});
+	[socPtr, msg](const std::error_code&, std::size_t){});
 }
 
 } // namespace Multirole
