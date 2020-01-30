@@ -63,8 +63,12 @@ uint32_t Lobby::Add(std::shared_ptr<Room> room)
 {
 	std::lock_guard<std::mutex> lock(mRooms);
 	for(uint32_t newId = rd(); true; newId = rd())
-		if(rooms.count(newId) == 0 && rooms.emplace(newId, room).second)
+	{
+		if(newId == 0 || rooms.count(newId) > 0)
+			continue;
+		if(rooms.emplace(newId, room).second)
 			return newId;
+	}
 }
 
 void Lobby::Remove(uint32_t roomId)
