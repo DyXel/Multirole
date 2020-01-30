@@ -49,12 +49,11 @@ std::list<Room::Properties> Lobby::GetAllRoomsProperties()
 	return list;
 }
 
-void Lobby::StopNonStartedRooms()
+void Lobby::CloseNonStartedRooms()
 {
 	std::lock_guard<std::mutex> lock(mRooms);
 	for(auto& kv : rooms)
-		if(kv.second->State() == Room::WAITING)
-			kv.second->Stop();
+		kv.second->TryClose();
 }
 
 // private

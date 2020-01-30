@@ -70,7 +70,7 @@ void Instance::Stop()
 	lle.Stop();
 	rhe.Stop();
 	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
-	lobby.StopNonStartedRooms(); // implicitly changes WAITING rooms to STOPPING
+	lobby.CloseNonStartedRooms();
 	if(startedRoomsCount > 0u)
 	{
 		fmt::print("All done, server will gracefully finish execution\n");

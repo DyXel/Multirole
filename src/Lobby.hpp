@@ -22,7 +22,7 @@ public:
 	std::shared_ptr<Room> GetRoomById(uint32_t id);
 	std::size_t GetStartedRoomsCount();
 	std::list<Room::Properties> GetAllRoomsProperties();
-	void StopNonStartedRooms();
+	void CloseNonStartedRooms();
 private:
 	std::mt19937 rd;
 	std::unordered_map<uint32_t, std::shared_ptr<Room>> rooms;

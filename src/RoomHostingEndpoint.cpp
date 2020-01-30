@@ -133,8 +133,9 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		options.notes = std::string(p.second.notes);
 		// TODO: verify banlist hash
 		auto room = std::make_shared<Room>(lobby, ioCtx, std::move(options));
-		room->Start();
+		room->RegisterToOwner();
 		auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));
+		client->RegisterToOwner();
 		client->Start();
 		return false;
 	}
@@ -148,6 +149,7 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p.second.pass)))
 		{
 			auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));
+			client->RegisterToOwner();
 			client->Start();
 		}
 		return false;

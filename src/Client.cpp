@@ -18,7 +18,7 @@ Client::Client(IClientListener& listener, IClientManager& owner, asio::io_contex
 	owner(owner),
 	strand(strand),
 	soc(std::move(soc)),
-	removingSelf(false),
+	disconnecting(false),
 	name(std::move(name)),
 	position(SPECTATOR),
 	ready(false)
@@ -39,6 +39,11 @@ bool Client::Ready() const
 	return ready;
 }
 
+void Client::RegisterToOwner()
+{
+	owner.Add(shared_from_this());
+}
+
 void Client::SetPosition(const PositionType& p)
 {
 	position = p;
@@ -51,29 +56,44 @@ void Client::SetReady(bool r)
 
 void Client::Start()
 {
-	owner.Add(shared_from_this());
+	listener.OnJoin(shared_from_this());
 	DoReadHeader();
 }
 
-void Client::Stop()
+void Client::Disconnect()
 {
-	soc.cancel();
+	std::error_code ignoredEc;
+	soc.shutdown(asio::ip::tcp::socket::shutdown_both, ignoredEc);
+	soc.close(ignoredEc);
+	PostUnregisterFromOwner();
+}
+
+void Client::DeferredDisconnect()
+{
+	{
+		std::lock_guard<std::mutex> lock(mOutgoing);
+		if(outgoing.empty())
+		{
+			Disconnect();
+			return;
+		}
+	}
+	disconnecting = true;
 }
 
 void Client::Send(const YGOPro::STOCMsg& msg)
 {
+	if(!soc.is_open())
+		return;
 	std::lock_guard<std::mutex> lock(mOutgoing);
-	const bool WriteInProgress = !outgoing.empty();
+	const bool writeInProgress = !outgoing.empty();
 	outgoing.push(msg);
-	if(!WriteInProgress)
+	if(!writeInProgress)
 		DoWrite();
 }
 
-void Client::PostRemoveSelf()
+void Client::PostUnregisterFromOwner()
 {
-	if(removingSelf)
-		return;
-	removingSelf = true;
 	asio::post(strand,
 	[this, self = shared_from_this()]()
 	{
@@ -89,8 +109,8 @@ void Client::DoReadHeader()
 	{
 		if(!ec && incoming.IsHeaderValid())
 			DoReadBody();
-		else
-			PostRemoveSelf();
+		else if(ec != asio::error::operation_aborted)
+			listener.OnConnectionLost(shared_from_this());
 	}));
 }
 
@@ -107,9 +127,9 @@ void Client::DoReadBody()
 			HandleMsg();
 			DoReadHeader();
 		}
-		else
+		else if(ec != asio::error::operation_aborted)
 		{
-			PostRemoveSelf();
+			listener.OnConnectionLost(shared_from_this());
 		}
 	}));
 }
@@ -120,17 +140,14 @@ void Client::DoWrite()
 	asio::async_write(soc, asio::buffer(front.Data(), front.Length()),
 	[this](const std::error_code& ec, std::size_t)
 	{
-		if (!ec)
-		{
-			std::lock_guard<std::mutex> lock(mOutgoing);
-			outgoing.pop();
-			if (!outgoing.empty())
-				DoWrite();
-		}
-		else
-		{
-			PostRemoveSelf();
-		}
+		if(ec)
+			return;
+		std::lock_guard<std::mutex> lock(mOutgoing);
+		outgoing.pop();
+		if (!outgoing.empty())
+			DoWrite();
+		else if(disconnecting)
+			Disconnect();
 	});
 }
 

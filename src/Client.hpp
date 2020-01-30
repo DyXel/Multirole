@@ -29,17 +29,19 @@ public:
 	std::string Name() const;
 	PositionType Position() const;
 	bool Ready() const;
+	void RegisterToOwner();
 	void SetPosition(const PositionType& p);
 	void SetReady(bool r);
 	void Start();
-	void Stop();
+	void Disconnect();
+	void DeferredDisconnect();
 	void Send(const YGOPro::STOCMsg& msg);
 private:
 	IClientListener& listener;
 	IClientManager& owner;
 	asio::io_context::strand& strand;
 	asio::ip::tcp::socket soc;
-	bool removingSelf;
+	bool disconnecting;
 	std::string name;
 	PositionType position;
 	bool ready;
@@ -47,7 +49,7 @@ private:
 	std::queue<YGOPro::STOCMsg> outgoing;
 	std::mutex mOutgoing;
 
-	void PostRemoveSelf();
+	void PostUnregisterFromOwner();
 
 	void DoReadHeader();
 	void DoReadBody();

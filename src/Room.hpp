@@ -39,7 +39,6 @@ public:
 		DUELING, // Running duel Process and getting responses.
 		SIDE_DECKING, // Self explanatory.
 // 		REMATCHING, // Asking duelists for a rematch.
-		STOPPING, // Finishing connections, dont send anymore messages.
 	};
 
 	// Options are data that the room needs to function properly
@@ -68,29 +67,34 @@ public:
 	Room(IRoomManager& owner, asio::io_context& ioCtx, Options options);
 	StateEnum State() const;
 	bool CheckPassword(std::string_view str) const;
+	void RegisterToOwner();
 	Properties GetProperties();
 	asio::io_context::strand& Strand();
-	void Start();
-	void Stop();
+	void TryClose();
 private:
 	IRoomManager& owner;
 	asio::io_context::strand strand;
-	bool removingSelf;
 	Options options;
 	StateEnum state;
 
-	std::map<Client::PositionType, std::shared_ptr<Client>> duelists;
-	std::set<std::shared_ptr<Client>> spectators;
+	std::set<std::shared_ptr<Client>> clients;
 	std::shared_ptr<Client> host;
+	std::map<Client::PositionType, std::shared_ptr<Client>> duelists;
 	std::mutex mClients;
+	std::mutex mDuelists;
+
+	void OnJoin(std::shared_ptr<Client> client) override;
+	void OnConnectionLost(std::shared_ptr<Client> client) override;
 
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 
-	void PostRemoveSelf();
+	void JoinToWaiting(std::shared_ptr<Client> client);
+	void JoinToDuel(std::shared_ptr<Client> client);
+
+	void PostUnregisterFromOwner();
 
 	void SendToAll(const YGOPro::STOCMsg& msg);
-// 	void SendToAllExcept(std::shared_ptr<Client> client, const YGOPro::STOCMsg& msg);
 };
 
 } // namespace Multirole
