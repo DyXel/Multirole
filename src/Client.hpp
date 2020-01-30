@@ -23,7 +23,7 @@ class Client final : public std::enable_shared_from_this<Client>
 {
 public:
 	using PositionType = std::pair<uint8_t, uint8_t>;
-	static constexpr PositionType SPECTATOR = {UINT8_MAX, UINT8_MAX};
+	static constexpr PositionType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
 	Client(IClientListener& listener, IClientManager& owner, asio::io_context::strand& strand, asio::ip::tcp::socket soc, std::string name);
 	std::string Name() const;

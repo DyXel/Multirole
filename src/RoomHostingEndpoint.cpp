@@ -106,8 +106,7 @@ void RoomHostingEndpoint::DoReadBody(std::shared_ptr<TmpClient> tc)
 bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 {
 #define UTF16_BUFFER_TO_STR(a) \
-	StringUtils::UTF16ToUTF8(StringUtils::BufferToUTF16(a, \
-	sizeof(decltype(a)) / sizeof(std::remove_extent<decltype(a)>::type)))
+	StringUtils::UTF16ToUTF8(StringUtils::BufferToUTF16(a, sizeof(decltype(a))))
 	auto& msg = tc->msg;
 	switch(msg.GetType())
 	{

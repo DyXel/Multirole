@@ -96,6 +96,11 @@ public:
 	X(JoinGame)
 #undef X
 
+	const uint8_t* Body() const
+	{
+		return data + HEADER_LENGTH;
+	}
+
 	uint8_t* Data()
 	{
 		return data;

@@ -10,21 +10,23 @@ namespace Ignis
 namespace StringUtils
 {
 
-std::u16string BufferToUTF16(void* data, std::size_t maxCount)
+std::u16string BufferToUTF16(const void* data, std::size_t maxByteCount)
 {
-	auto p = reinterpret_cast<char16_t*>(data), p2 = p;
-	std::size_t ntPos = 0u; // Null terminator position.
-	while(ntPos < maxCount && *p != 0u)
+	auto p = reinterpret_cast<const char16_t*>(data), p2 = p;
+	std::size_t bytesForwarded = 0u;
+	while(bytesForwarded <= maxByteCount && *p)
 	{
 		p++;
-		ntPos++;
+		bytesForwarded += 2u;
 	}
-	return std::u16string(p2, ntPos);
+	return std::u16string(p2, p - p2);
 }
 
-void UTF16ToBuffer(void* data, std::u16string str)
+std::size_t UTF16ToBuffer(void* data, std::u16string str)
 {
-	std::memcpy(data, str.data(), str.size() * sizeof(std::u16string::value_type));
+	std::size_t bytesCopied = (str.size() + 1u) * sizeof(char16_t);
+	std::memcpy(data, str.data(), bytesCopied);
+	return bytesCopied;
 }
 
 #define WCI std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}

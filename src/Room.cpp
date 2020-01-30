@@ -1,5 +1,7 @@
 #include "Room.hpp"
 
+#include <fmt/format.h>
+
 #include "Client.hpp"
 #include "IRoomManager.hpp"
 #include "STOCMsg.hpp"
@@ -37,13 +39,16 @@ constexpr uint8_t MakeClientHost(uint8_t pos, bool isHost)
 	return (static_cast<uint8_t>(isHost) << 4) | pos;
 }
 
-// Shorthand to create a HsWatchChange message with number of spectators
-YGOPro::STOCMsg MakeHsWatchChange(std::size_t count)
+inline YGOPro::STOCMsg MakeChat(uint16_t posOrType, std::string_view str)
 {
-	return {YGOPro::STOCMsg::HsWatchChange{static_cast<uint16_t>(count)}};
+	using namespace StringUtils;
+	YGOPro::STOCMsg::Chat proto{};
+	proto.posOrType = posOrType;
+	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
+	return YGOPro::STOCMsg(proto).Shrink(size + sizeof(uint16_t));
 }
 
-YGOPro::STOCMsg MakeHsPlayerChangeReady(uint8_t pos, bool r)
+inline  YGOPro::STOCMsg MakeHsPlayerChangeReady(uint8_t pos, bool r)
 {
 	using YGOPro::STOCMsg;
 	STOCMsg::HsPlayerChange proto{};
@@ -51,10 +56,15 @@ YGOPro::STOCMsg MakeHsPlayerChangeReady(uint8_t pos, bool r)
 	return STOCMsg(proto);
 }
 
-YGOPro::STOCMsg MakeHsPlayerChange(uint8_t pos, PlayerChange pc)
+inline YGOPro::STOCMsg MakeHsPlayerChange(uint8_t pos, PlayerChange pc)
 {
 	using YGOPro::STOCMsg;
 	return STOCMsg(STOCMsg::HsPlayerChange{MakeClientStatus(pos, pc)});
+}
+
+inline YGOPro::STOCMsg MakeHsWatchChange(std::size_t count)
+{
+	return {YGOPro::STOCMsg::HsWatchChange{static_cast<uint16_t>(count)}};
 }
 
 // public
@@ -63,7 +73,8 @@ Room::Room(IRoomManager& owner, asio::io_context& ioCtx, Options options) :
 	owner(owner),
 	strand(ioCtx),
 	options(std::move(options)),
-	state(WAITING)
+	state(WAITING),
+	host(nullptr)
 {}
 
 Room::StateEnum Room::State() const
@@ -113,14 +124,13 @@ void Room::TryClose()
 	std::lock_guard<std::mutex> lock(mClients);
 	std::lock_guard<std::mutex> lock2(mDuelists);
 	duelists.clear();
-	host.reset();
 	for(auto& c : clients)
 		c->Disconnect();
 }
 
 // private
 
-void Room::OnJoin(std::shared_ptr<Client> client)
+void Room::OnJoin(Client& client)
 {
 	switch(state)
 	{
@@ -139,27 +149,26 @@ void Room::OnJoin(std::shared_ptr<Client> client)
 	}
 }
 
-void Room::OnConnectionLost(std::shared_ptr<Client> client)
+void Room::OnConnectionLost(Client& client)
 {
 	switch(state)
 	{
 	case WAITING:
 	{
-		if(host == client)
+		if(host == &client)
 		{
 			{
 				std::lock_guard<std::mutex> lock(mDuelists);
 				duelists.clear();
 			}
 			std::lock_guard<std::mutex> lock(mClients);
-			host.reset();
 			for(auto& c : clients)
 				c->Disconnect();
 			return;
 		}
-		client->Disconnect();
-		const auto posKey = client->Position();
-		if(posKey != Client::SPECTATOR) // TODO: handle with std::unique_ptr
+		client.Disconnect();
+		const auto posKey = client.Position();
+		if(posKey != Client::POSITION_SPECTATOR)
 		{
 			uint8_t pos = MakeClientPos(posKey, options.info.t1Count);
 			SendToAll(MakeHsPlayerChange(pos, LEAVE));
@@ -168,7 +177,7 @@ void Room::OnConnectionLost(std::shared_ptr<Client> client)
 		}
 		else
 		{
-			SendToAll(MakeHsWatchChange(404)); // TODO: properly calculate new amount of spectators
+			SendToAll(MakeHsWatchChange(clients.size() - duelists.size() - 1u));
 		}
 		return;
 	}
@@ -177,6 +186,20 @@ void Room::OnConnectionLost(std::shared_ptr<Client> client)
 		// TODO
 		return;
 	}
+	}
+}
+
+void Room::OnChat(Client& client, std::string_view str)
+{
+	const auto posKey = client.Position();
+	if(posKey != Client::POSITION_SPECTATOR)
+	{
+		SendToAll(MakeChat(MakeClientPos(posKey, options.info.t1Count), str));
+	}
+	else
+	{
+		const auto fmtStr = fmt::format("{}: {}", client.Name(), str);
+		SendToAll(MakeChat(10u, fmtStr));
 	}
 }
 
@@ -194,75 +217,72 @@ void Room::Remove(std::shared_ptr<Client> client)
 		PostUnregisterFromOwner();
 }
 
-void Room::JoinToWaiting(std::shared_ptr<Client> client)
+void Room::JoinToWaiting(Client& client)
 {
-	{
-		std::lock_guard<std::mutex> lock(mClients);
-		if(!host)
-			host = client;
-	}
+	if(host == nullptr)
+		host = &client;
 	using YGOPro::STOCMsg;
-	auto TryEmplaceDuelist = [&](auto c, uint8_t m1, uint8_t m2)
+	auto TryEmplaceDuelist = [&](Client& c, uint8_t m1, uint8_t m2)
 	{
 		Client::PositionType p{0u, 0u};
 		for(; p.second < m1; p.second++)
 		{
-			if(duelists.count(p) == 0 && duelists.emplace(p, c).second)
+			if(duelists.count(p) == 0 && duelists.emplace(p, &c).second)
 			{
-				c->SetPosition(p);
+				c.SetPosition(p);
 				return true;
 			}
 		}
 		p.first = 1u;
 		for(p.second = 0u; p.second < m2; p.second++)
 		{
-			if(duelists.count(p) == 0 && duelists.emplace(p, c).second)
+			if(duelists.count(p) == 0 && duelists.emplace(p, &c).second)
 			{
-				c->SetPosition(p);
+				c.SetPosition(p);
 				return true;
 			}
 		}
 		return false;
 	};
-	auto MakeHsPlayerEnter = [](auto c, uint8_t m1)
+	auto MakeHsPlayerEnter = [](Client& c, uint8_t m1)
 	{
 		STOCMsg::HsPlayerEnter proto{};
 		using namespace StringUtils;
-		UTF16ToBuffer(proto.name, UTF8ToUTF16(c->Name()));
-		proto.pos = MakeClientPos(c->Position(), m1);
+		UTF16ToBuffer(proto.name, UTF8ToUTF16(c.Name()));
+		proto.pos = MakeClientPos(c.Position(), m1);
 		return STOCMsg(proto);
 	};
-	client->Send(STOCMsg::JoinGame{options.info}); // TODO: create on ctor?
+	client.Send(STOCMsg::JoinGame{options.info}); // TODO: create on ctor?
 	std::lock_guard<std::mutex> lock(mDuelists);
 	const uint8_t t1max = options.info.t1Count;
 	if(TryEmplaceDuelist(client, t1max, options.info.t2Count))
 	{
 		// Inform new duelist if they are the host or not
-		uint8_t pos = MakeClientPos(client->Position(), t1max);
-		client->Send(STOCMsg::TypeChange{MakeClientHost(pos, host == client)});
+		uint8_t pos = MakeClientPos(client.Position(), t1max);
+		client.Send(STOCMsg::TypeChange{MakeClientHost(pos, host == &client)});
 		// Send information about new duelist to all clients
 		SendToAll(MakeHsPlayerEnter(client, t1max));
-		SendToAll(MakeHsPlayerChangeReady(pos, client->Ready()));
+		SendToAll(MakeHsPlayerChangeReady(pos, client.Ready()));
 		// Send spectator count to new duelist
-		client->Send(MakeHsWatchChange(404));
+		client.Send(MakeHsWatchChange(clients.size() - duelists.size()));
 	}
 	else
 	{
 		// Send spectator count to everyone
-		SendToAll(MakeHsWatchChange(404));
+		SendToAll(MakeHsWatchChange(clients.size() - duelists.size()));
 	}
 	// Send information about other duelists to new client
 	for(auto& kv : duelists)
 	{
-		if(kv.second == client)
+		if(kv.second == &client)
 			continue; // Skip the new duelist itself
-		client->Send(MakeHsPlayerEnter(kv.second, t1max));
+		client.Send(MakeHsPlayerEnter(*kv.second, t1max));
 		uint8_t pos2 = MakeClientPos(kv.second->Position(), t1max);
-		client->Send(MakeHsPlayerChangeReady(pos2, kv.second->Ready()));
+		client.Send(MakeHsPlayerChangeReady(pos2, kv.second->Ready()));
 	}
 }
 
-void Room::JoinToDuel(std::shared_ptr<Client> client)
+void Room::JoinToDuel(Client& client)
 {
 	// TODO
 }

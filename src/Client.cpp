@@ -6,6 +6,7 @@
 
 #include "IClientListener.hpp"
 #include "IClientManager.hpp"
+#include "StringUtils.hpp"
 
 namespace Ignis
 {
@@ -20,7 +21,7 @@ Client::Client(IClientListener& listener, IClientManager& owner, asio::io_contex
 	soc(std::move(soc)),
 	disconnecting(false),
 	name(std::move(name)),
-	position(SPECTATOR),
+	position(POSITION_SPECTATOR),
 	ready(false)
 {}
 
@@ -56,7 +57,7 @@ void Client::SetReady(bool r)
 
 void Client::Start()
 {
-	listener.OnJoin(shared_from_this());
+	listener.OnJoin(*this);
 	DoReadHeader();
 }
 
@@ -110,7 +111,7 @@ void Client::DoReadHeader()
 		if(!ec && incoming.IsHeaderValid())
 			DoReadBody();
 		else if(ec != asio::error::operation_aborted)
-			listener.OnConnectionLost(shared_from_this());
+			listener.OnConnectionLost(*this);
 	}));
 }
 
@@ -129,7 +130,7 @@ void Client::DoReadBody()
 		}
 		else if(ec != asio::error::operation_aborted)
 		{
-			listener.OnConnectionLost(shared_from_this());
+			listener.OnConnectionLost(*this);
 		}
 	}));
 }
@@ -153,7 +154,21 @@ void Client::DoWrite()
 
 void Client::HandleMsg()
 {
-	// TODO
+	switch(incoming.GetType())
+	{
+	case YGOPro::CTOSMsg::MsgType::CHAT:
+	{
+		using namespace StringUtils;
+		auto str16 = BufferToUTF16(incoming.Body(), incoming.GetLength());
+		auto str = UTF16ToUTF8(str16);
+		listener.OnChat(*this, str);
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
 }
 
 } // namespace Multirole

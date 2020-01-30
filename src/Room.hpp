@@ -78,19 +78,20 @@ private:
 	StateEnum state;
 
 	std::set<std::shared_ptr<Client>> clients;
-	std::shared_ptr<Client> host;
-	std::map<Client::PositionType, std::shared_ptr<Client>> duelists;
+	Client* host;
+	std::map<Client::PositionType, Client*> duelists;
 	std::mutex mClients;
 	std::mutex mDuelists;
 
-	void OnJoin(std::shared_ptr<Client> client) override;
-	void OnConnectionLost(std::shared_ptr<Client> client) override;
+	void OnJoin(Client& client) override;
+	void OnConnectionLost(Client& client) override;
+	void OnChat(Client& client, std::string_view str) override;
 
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 
-	void JoinToWaiting(std::shared_ptr<Client> client);
-	void JoinToDuel(std::shared_ptr<Client> client);
+	void JoinToWaiting(Client& client);
+	void JoinToDuel(Client& client);
 
 	void PostUnregisterFromOwner();
 

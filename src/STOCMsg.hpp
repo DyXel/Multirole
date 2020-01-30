@@ -21,7 +21,7 @@ public:
 		GAME_MSG         = 0x1,
 		ERROR_MSG        = 0x2,
 		SELECT_HAND      = 0x3,
-		SELECT_T         = 0x4,
+		SELECT_TP        = 0x4,
 		HAND_RESULT      = 0x5,
 		TP_RESULT        = 0x6,
 		CHANGE_SIDE      = 0x7,
@@ -63,6 +63,13 @@ public:
 	{
 		static const auto val = MsgType::JOIN_GAME;
 		HostInfo info;
+	};
+
+	struct Chat
+	{
+		static const auto val = MsgType::CHAT;
+		uint16_t posOrType;
+		uint16_t msg[256];
 	};
 
 	struct HsPlayerEnter
@@ -118,6 +125,18 @@ public:
 	std::size_t Length() const
 	{
 		return bytes.size();
+	}
+
+	STOCMsg& Shrink(LengthType length)
+	{
+		length += sizeof(MsgType);
+		LengthType cLength{};
+		std::memcpy(&cLength, bytes.data(), sizeof(LengthType));
+		if(length >= cLength)
+			return *this;
+		std::memcpy(bytes.data(), &length, sizeof(LengthType));
+		bytes.resize(bytes.size() - (cLength - length));
+		return *this;
 	}
 private:
 	std::vector<uint8_t> bytes;
