@@ -3,6 +3,7 @@
 #include <cstring>
 #include <type_traits>
 #include <vector>
+
 #include "MsgCommon.hpp"
 
 namespace YGOPro
@@ -35,9 +36,9 @@ public:
 		REPLAY           = 0x17,
 		TIME_LIMIT       = 0x18,
 		CHAT             = 0x19,
-		HS_PLAYER_ENTER  = 0x20,
-		HS_PLAYER_CHANGE = 0x21,
-		HS_WATCH_CHANGE  = 0x22,
+		PLAYER_ENTER     = 0x20,
+		PLAYER_CHANGE    = 0x21,
+		WATCH_CHANGE     = 0x22,
 	};
 
 	struct ErrorMsg
@@ -72,22 +73,22 @@ public:
 		uint16_t msg[256];
 	};
 
-	struct HsPlayerEnter
+	struct PlayerEnter
 	{
-		static const auto val = MsgType::HS_PLAYER_ENTER;
+		static const auto val = MsgType::PLAYER_ENTER;
 		uint16_t name[20];
 		uint8_t pos;
 	};
 
-	struct HsPlayerChange
+	struct PlayerChange
 	{
-		static const auto val = MsgType::HS_PLAYER_CHANGE;
+		static const auto val = MsgType::PLAYER_CHANGE;
 		uint8_t status;
 	};
 
-	struct HsWatchChange
+	struct WatchChange
 	{
-		static const auto val = MsgType::HS_WATCH_CHANGE;
+		static const auto val = MsgType::WATCH_CHANGE;
 		uint16_t count;
 	};
 

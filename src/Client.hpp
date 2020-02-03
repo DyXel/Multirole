@@ -22,15 +22,15 @@ class IClientManager;
 class Client final : public std::enable_shared_from_this<Client>
 {
 public:
-	using PositionType = std::pair<uint8_t, uint8_t>;
-	static constexpr PositionType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
+	using PosType = std::pair<uint8_t, uint8_t>;
+	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
 	Client(IClientListener& listener, IClientManager& owner, asio::io_context::strand& strand, asio::ip::tcp::socket soc, std::string name);
 	std::string Name() const;
-	PositionType Position() const;
+	PosType Position() const;
 	bool Ready() const;
 	void RegisterToOwner();
-	void SetPosition(const PositionType& p);
+	void SetPosition(const PosType& p);
 	void SetReady(bool r);
 	void Start();
 	void Disconnect();
@@ -43,7 +43,7 @@ private:
 	asio::ip::tcp::socket soc;
 	bool disconnecting;
 	std::string name;
-	PositionType position;
+	PosType position;
 	bool ready;
 	YGOPro::CTOSMsg incoming;
 	std::queue<YGOPro::STOCMsg> outgoing;

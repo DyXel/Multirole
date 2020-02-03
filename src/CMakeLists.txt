@@ -10,6 +10,7 @@ target_sources(multirole PRIVATE
 	${CSR}/Room.cpp
 	${CSR}/RoomHostingEndpoint.cpp
 	${CSR}/SharedCore.cpp
+	${CSR}/STOCMsgFactory.cpp
 	${CSR}/StringUtils.cpp
 	${CSR}/WebhookEndpoint.cpp
 )

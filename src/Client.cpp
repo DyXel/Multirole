@@ -30,7 +30,7 @@ std::string Client::Name() const
 	return name;
 }
 
-Client::PositionType Client::Position() const
+Client::PosType Client::Position() const
 {
 	return position;
 }
@@ -45,7 +45,7 @@ void Client::RegisterToOwner()
 	owner.Add(shared_from_this());
 }
 
-void Client::SetPosition(const PositionType& p)
+void Client::SetPosition(const PosType& p)
 {
 	position = p;
 }
@@ -162,7 +162,35 @@ void Client::HandleMsg()
 		auto str16 = BufferToUTF16(incoming.Body(), incoming.GetLength());
 		auto str = UTF16ToUTF8(str16);
 		listener.OnChat(*this, str);
-		break;
+		return;
+	}
+	case YGOPro::CTOSMsg::MsgType::TO_DUELIST:
+	{
+		listener.OnToDuelist(*this);
+		return;
+	}
+	case YGOPro::CTOSMsg::MsgType::TO_OBSERVER:
+	{
+		listener.OnToObserver(*this);
+		return;
+	}
+	case YGOPro::CTOSMsg::MsgType::READY:
+	{
+		listener.OnReady(*this, true);
+		return;
+	}
+	case YGOPro::CTOSMsg::MsgType::NOT_READY:
+	{
+		listener.OnReady(*this, false);
+		return;
+	}
+	case YGOPro::CTOSMsg::MsgType::TRY_KICK:
+	{
+		auto p = incoming.GetTryKick();
+		if(!p.first)
+			return;
+		listener.OnTryKick(*this, p.second.pos);
+		return;
 	}
 	default:
 	{

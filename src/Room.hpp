@@ -13,7 +13,7 @@
 #include "Client.hpp"
 #include "IClientListener.hpp"
 #include "IClientManager.hpp"
-#include "MsgCommon.hpp"
+#include "STOCMsgFactory.hpp"
 
 namespace YGOPro
 {
@@ -29,7 +29,11 @@ namespace Multirole {
 
 class IRoomManager;
 
-class Room final : public IClientListener, public IClientManager, public std::enable_shared_from_this<Room>
+class Room final :
+	public IClientListener,
+	public IClientManager,
+	public STOCMsgFactory,
+	public std::enable_shared_from_this<Room>
 {
 public:
 	enum StateEnum
@@ -79,17 +83,23 @@ private:
 
 	std::set<std::shared_ptr<Client>> clients;
 	Client* host;
-	std::map<Client::PositionType, Client*> duelists;
+	std::map<Client::PosType, Client*> duelists;
 	std::mutex mClients;
 	std::mutex mDuelists;
 
 	void OnJoin(Client& client) override;
 	void OnConnectionLost(Client& client) override;
 	void OnChat(Client& client, std::string_view str) override;
+	void OnToDuelist(Client& client) override;
+	void OnToObserver(Client& client) override;
+	void OnReady(Client& client, bool value) override;
+	void OnTryKick(Client& client, uint8_t pos) override;
+	void OnTryStart(Client& client) override;
 
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 
+	bool TryEmplaceDuelist(Client& client, Client::PosType after = {});
 	void JoinToWaiting(Client& client);
 	void JoinToDuel(Client& client);
 

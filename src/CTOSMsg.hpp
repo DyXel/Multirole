@@ -27,12 +27,12 @@ public:
 		SURRENDER     = 0x14,
 		TIME_CONFIRM  = 0x15,
 		CHAT          = 0x16,
-		HS_TODUELIST  = 0x20,
-		HS_TOOBSERVER = 0x21,
-		HS_READY      = 0x22,
-		HS_NOTREADY   = 0x23,
-		HS_KICK       = 0x24,
-		HS_START      = 0x25
+		TO_DUELIST    = 0x20,
+		TO_OBSERVER   = 0x21,
+		READY         = 0x22,
+		NOT_READY     = 0x23,
+		TRY_KICK      = 0x24,
+		TRY_START     = 0x25
 	};
 
 	struct PlayerInfo
@@ -53,6 +53,11 @@ public:
 		uint16_t version;
 		uint32_t id;
 		uint16_t pass[20];
+	};
+
+	struct TryKick
+	{
+		uint8_t pos;
 	};
 
 	CTOSMsg() : r(data + HEADER_LENGTH)
@@ -76,7 +81,7 @@ public:
 	{
 		if(GetLength() > MSG_MAX_LENGTH)
 			return false;
-		if(GetType() > MsgType::HS_START)
+		if(GetType() > MsgType::TRY_START)
 			return false;
 		return true;
 	}
@@ -94,6 +99,7 @@ public:
 	X(PlayerInfo)
 	X(CreateGame)
 	X(JoinGame)
+	X(TryKick)
 #undef X
 
 	const uint8_t* Body() const

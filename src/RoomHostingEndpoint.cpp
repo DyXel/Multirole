@@ -123,6 +123,7 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 		auto p = msg.GetCreateGame();
 		if(!p.first)
 			return false;
+		// TODO: verify game settings
 		// TODO: maybe check server handshake?
 		p.second.notes[199] = '\0'; // Guarantee null-terminated string
 		Room::Options options;
