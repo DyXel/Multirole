@@ -54,7 +54,8 @@ void LobbyListing::DoSerialize()
 		nlohmann::json& ar = j["rooms"];
 		for(auto& rp : lobby.GetAllRoomsProperties())
 		{
-			auto& room = ar.emplace_back();
+			ar.emplace_back();
+			auto& room = ar.back();
 			room["roomid"] = rp.id;
 			room["roomname"] = ""; // NOTE: UNUSED but expected atm
 			room["roomnotes"] = rp.notes;
@@ -78,7 +79,8 @@ void LobbyListing::DoSerialize()
 			auto& ac = room["users"];
 			for(auto& kv : rp.duelists)
 			{
-				auto& client = ac.emplace_back();
+				ac.emplace_back();
+				auto& client = ac.back();
 // 				client["id"] = ???; // NOTE: UNUSED
 				client["name"] = kv.second;
 // 				client["ip"] = json::nlohmann::null; // NOTE: UNUSED
