@@ -28,16 +28,14 @@ YGOPro::STOCMsg STOCMsgFactory::MakeTypeChange(const Client& c, bool isHost) con
 
 YGOPro::STOCMsg STOCMsgFactory::MakeChat(const Client& c, std::string_view str) const
 {
-	using namespace StringUtils;
 	YGOPro::STOCMsg::Chat proto{};
 	proto.posOrType = EncodePosition(c.Position());
-	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
+	const auto size = YGOPro::UTF16ToBuffer(proto.msg, YGOPro::UTF8ToUTF16(str));
 	return YGOPro::STOCMsg(proto).Shrink(size + sizeof(uint16_t));
 }
 
 YGOPro::STOCMsg STOCMsgFactory::MakeChat(ChatMsgType type, std::string_view str) const
 {
-	using namespace StringUtils;
 	YGOPro::STOCMsg::Chat proto{};
 	switch(type)
 	{
@@ -58,15 +56,14 @@ YGOPro::STOCMsg STOCMsgFactory::MakeChat(ChatMsgType type, std::string_view str)
 		break;
 	}
 	}
-	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
+	const auto size = YGOPro::UTF16ToBuffer(proto.msg, YGOPro::UTF8ToUTF16(str));
 	return YGOPro::STOCMsg(proto).Shrink(size + sizeof(uint16_t));
 }
 
 YGOPro::STOCMsg STOCMsgFactory::MakePlayerEnter(const Client& c) const
 {
 	YGOPro::STOCMsg::PlayerEnter proto{};
-	using namespace StringUtils;
-	UTF16ToBuffer(proto.name, UTF8ToUTF16(c.Name()));
+	YGOPro::UTF16ToBuffer(proto.name, YGOPro::UTF8ToUTF16(c.Name()));
 	proto.pos = EncodePosition(c.Position());
 	return YGOPro::STOCMsg(proto);
 }

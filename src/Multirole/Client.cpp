@@ -158,7 +158,7 @@ void Client::HandleMsg()
 	{
 	case YGOPro::CTOSMsg::MsgType::CHAT:
 	{
-		using namespace StringUtils;
+		using namespace YGOPro;
 		auto str16 = BufferToUTF16(incoming.Body(), incoming.GetLength());
 		auto str = UTF16ToUTF8(str16);
 		listener.OnChat(*this, str);

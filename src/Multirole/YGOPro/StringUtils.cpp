@@ -4,10 +4,7 @@
 #include <codecvt>
 #include <locale>
 
-namespace Ignis
-{
-
-namespace StringUtils
+namespace YGOPro
 {
 
 std::u16string BufferToUTF16(const void* data, std::size_t maxByteCount)
@@ -41,7 +38,4 @@ std::u16string UTF8ToUTF16(std::string_view str)
 }
 #undef WCI
 
-} // namespace StringUtils
-
-} // namespace Ignis
-
+} // namespace YGOPro
