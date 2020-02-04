@@ -8,12 +8,14 @@ namespace Ignis
 namespace Multirole
 {
 
+using namespace YGOPro;
+
 // public
 
 STOCMsgFactory::STOCMsgFactory(uint8_t t1max) : t1max(t1max)
 {}
 
-YGOPro::STOCMsg STOCMsgFactory::MakeTypeChange(const Client& c, bool isHost) const
+STOCMsg STOCMsgFactory::MakeTypeChange(const Client& c, bool isHost) const
 {
 	const auto posKey = c.Position();
 	uint8_t pos;
@@ -21,22 +23,22 @@ YGOPro::STOCMsg STOCMsgFactory::MakeTypeChange(const Client& c, bool isHost) con
 		pos = 7; // Sum of both teams max player + 1
 	else
 		pos = EncodePosition(posKey);
-	YGOPro::STOCMsg::TypeChange proto;
+	STOCMsg::TypeChange proto;
 	proto.type = (static_cast<uint8_t>(isHost) << 4) | pos;
-	return YGOPro::STOCMsg(proto);
+	return STOCMsg(proto);
 }
 
-YGOPro::STOCMsg STOCMsgFactory::MakeChat(const Client& c, std::string_view str) const
+STOCMsg STOCMsgFactory::MakeChat(const Client& c, std::string_view str) const
 {
-	YGOPro::STOCMsg::Chat proto{};
+	STOCMsg::Chat proto{};
 	proto.posOrType = EncodePosition(c.Position());
-	const auto size = YGOPro::UTF16ToBuffer(proto.msg, YGOPro::UTF8ToUTF16(str));
-	return YGOPro::STOCMsg(proto).Shrink(size + sizeof(uint16_t));
+	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
+	return STOCMsg(proto).Shrink(size + sizeof(uint16_t));
 }
 
-YGOPro::STOCMsg STOCMsgFactory::MakeChat(ChatMsgType type, std::string_view str) const
+STOCMsg STOCMsgFactory::MakeChat(ChatMsgType type, std::string_view str) const
 {
-	YGOPro::STOCMsg::Chat proto{};
+	STOCMsg::Chat proto{};
 	switch(type)
 	{
 	case CHAT_MSG_TYPE_SPECTATOR:
@@ -56,47 +58,47 @@ YGOPro::STOCMsg STOCMsgFactory::MakeChat(ChatMsgType type, std::string_view str)
 		break;
 	}
 	}
-	const auto size = YGOPro::UTF16ToBuffer(proto.msg, YGOPro::UTF8ToUTF16(str));
-	return YGOPro::STOCMsg(proto).Shrink(size + sizeof(uint16_t));
+	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
+	return STOCMsg(proto).Shrink(size + sizeof(uint16_t));
 }
 
-YGOPro::STOCMsg STOCMsgFactory::MakePlayerEnter(const Client& c) const
+STOCMsg STOCMsgFactory::MakePlayerEnter(const Client& c) const
 {
-	YGOPro::STOCMsg::PlayerEnter proto{};
-	YGOPro::UTF16ToBuffer(proto.name, YGOPro::UTF8ToUTF16(c.Name()));
+	STOCMsg::PlayerEnter proto{};
+	UTF16ToBuffer(proto.name, UTF8ToUTF16(c.Name()));
 	proto.pos = EncodePosition(c.Position());
-	return YGOPro::STOCMsg(proto);
+	return STOCMsg(proto);
 }
 
-YGOPro::STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c) const
+STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c) const
 {
-	YGOPro::STOCMsg::PlayerChange proto;
+	STOCMsg::PlayerChange proto;
 	const uint8_t pos = EncodePosition(c.Position());
 	PChangeType pct = (c.Ready()) ? PCHANGE_TYPE_READY : PCHANGE_TYPE_NOT_READY;
 	proto.status = (pos << 4) | static_cast<uint8_t>(pct);
-	return YGOPro::STOCMsg(proto);
+	return STOCMsg(proto);
 }
 
-YGOPro::STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c, PChangeType pct) const
+STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c, PChangeType pct) const
 {
-	YGOPro::STOCMsg::PlayerChange proto;
+	STOCMsg::PlayerChange proto;
 	const uint8_t pos = EncodePosition(c.Position());
 	proto.status = (pos << 4) | static_cast<uint8_t>(pct);
-	return YGOPro::STOCMsg(proto);
+	return STOCMsg(proto);
 }
 
-YGOPro::STOCMsg STOCMsgFactory::MakePlayerChange(Client::PosType p1, Client::PosType p2) const
+STOCMsg STOCMsgFactory::MakePlayerChange(Client::PosType p1, Client::PosType p2) const
 {
-	YGOPro::STOCMsg::PlayerChange proto;
+	STOCMsg::PlayerChange proto;
 	const uint8_t pos1 = EncodePosition(p1);
 	const uint8_t pos2 = EncodePosition(p2);
 	proto.status = (pos1 << 4) | pos2;
-	return YGOPro::STOCMsg(proto);
+	return STOCMsg(proto);
 }
 
-YGOPro::STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count) const
+STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count) const
 {
-	return {YGOPro::STOCMsg::WatchChange{static_cast<uint16_t>(count)}};
+	return {STOCMsg::WatchChange{static_cast<uint16_t>(count)}};
 }
 
 // protected
