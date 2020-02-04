@@ -7,8 +7,8 @@
 #include <asio/io_context_strand.hpp>
 #include <asio/ip/tcp.hpp>
 
-#include "CTOSMsg.hpp"
-#include "STOCMsg.hpp"
+#include "YGOPro/CTOSMsg.hpp"
+#include "YGOPro/STOCMsg.hpp"
 
 namespace Ignis
 {

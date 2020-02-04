@@ -1,7 +1,7 @@
 #ifndef STOCMSGFACTORY_HPP
 #define STOCMSGFACTORY_HPP
 #include "Client.hpp"
-#include "STOCMsg.hpp"
+#include "YGOPro/STOCMsg.hpp"
 
 namespace Ignis
 {

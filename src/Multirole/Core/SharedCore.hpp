@@ -17,14 +17,14 @@ public:
 
 	// Overrides for ICoreAPI
 #define OCGFUNC(ret, name, args, argnames) ret name args override;
-#include "ocgapi_funcs.inl"
+#include "../../ocgapi_funcs.inl"
 #undef OCGFUNC
 private:
 	void* handle{nullptr};
 
 	// Function pointers from shared object
 #define OCGFUNC(ret, name, args, argnames) ret (*name##_Ptr) args{nullptr};
-#include "ocgapi_funcs.inl"
+#include "../../ocgapi_funcs.inl"
 #undef OCGFUNC
 };
 

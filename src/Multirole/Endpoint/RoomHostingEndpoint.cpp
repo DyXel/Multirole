@@ -4,11 +4,11 @@
 
 #include <asio/read.hpp>
 
-#include "Client.hpp"
-#include "Lobby.hpp"
-#include "Room.hpp"
-#include "CTOSMsg.hpp"
-#include "StringUtils.hpp"
+#include "../Client.hpp"
+#include "../Lobby.hpp"
+#include "../Room.hpp"
+#include "../YGOPro/CTOSMsg.hpp"
+#include "../YGOPro/StringUtils.hpp"
 
 namespace Ignis
 {

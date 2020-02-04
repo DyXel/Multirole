@@ -4,7 +4,7 @@
 #include <fmt/format.h> // fmt::to_string
 #include <nlohmann/json.hpp>
 
-#include "Lobby.hpp"
+#include "../Lobby.hpp"
 
 namespace Ignis
 {

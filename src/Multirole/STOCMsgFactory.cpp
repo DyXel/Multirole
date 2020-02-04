@@ -1,6 +1,6 @@
 #include "STOCMsgFactory.hpp"
 
-#include "StringUtils.hpp"
+#include "YGOPro/StringUtils.hpp"
 
 namespace Ignis
 {

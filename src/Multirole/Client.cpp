@@ -3,10 +3,11 @@
 #include <asio/bind_executor.hpp>
 #include <asio/read.hpp>
 #include <asio/write.hpp>
+#include <fmt/printf.h>
 
 #include "IClientListener.hpp"
 #include "IClientManager.hpp"
-#include "StringUtils.hpp"
+#include "YGOPro/StringUtils.hpp"
 
 namespace Ignis
 {
@@ -194,7 +195,8 @@ void Client::HandleMsg()
 	}
 	default:
 	{
-		break;
+		fmt::print("Unhandled msg received: 0x{:X}\n", incoming.GetType());
+		return;
 	}
 	}
 }

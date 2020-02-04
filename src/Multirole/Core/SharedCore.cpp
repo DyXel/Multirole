@@ -8,7 +8,8 @@
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
 
 // "Native" functions below modified from implementations found in SDL2 library
 // Author: Sam Lantinga <slouken@libsdl.org>
@@ -118,7 +119,7 @@ SharedCore::SharedCore(std::string_view absFilePath)
 		throw std::runtime_error("Could not load API function."); \
 	} \
 	}while(0);
-#include "ocgapi_funcs.inl"
+#include "../../ocgapi_funcs.inl"
 #undef OCGFUNC
 }
 
@@ -133,7 +134,7 @@ SharedCore::~SharedCore()
 	{ \
 		return static_cast<ret>(name##_Ptr argnames); \
 	}
-#include "ocgapi_funcs.inl"
+#include "../../ocgapi_funcs.inl"
 #undef OCGFUNC
 
 } // namespace Multirole

@@ -5,8 +5,8 @@
 #include <nlohmann/json.hpp>
 
 #include "Lobby.hpp"
-#include "LobbyListingEndpoint.hpp"
-#include "RoomHostingEndpoint.hpp"
+#include "Endpoint/LobbyListingEndpoint.hpp"
+#include "Endpoint/RoomHostingEndpoint.hpp"
 
 namespace Ignis
 {

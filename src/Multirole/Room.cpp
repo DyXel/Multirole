@@ -4,8 +4,6 @@
 
 #include "Client.hpp"
 #include "IRoomManager.hpp"
-#include "STOCMsg.hpp"
-#include "StringUtils.hpp"
 
 namespace Ignis
 {
