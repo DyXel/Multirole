@@ -19,7 +19,7 @@ namespace DLOpen
 
 // NOTE: Might want to handle unicode
 
-std::string GetLastError()
+std::string GetLastErrorStr()
 {
 	DWORD errorMessageID = GetLastError();
 	if(errorMessageID == 0)
@@ -38,7 +38,7 @@ void* LoadObject(const char* file)
 {
 	void* handle = (void*)LoadLibraryA(file);
 	if (handle == nullptr)
-		fmt::print("Failed loading DLL {}: {}\n", file, GetLastError());
+		fmt::print("Failed loading DLL {}: {}\n", file, GetLastErrorStr());
 	return handle;
 }
 
@@ -52,7 +52,7 @@ void* LoadFunction(void* handle, const char* name)
 {
 	void* symbol = (void*)GetProcAddress((HMODULE) handle, name);
 	if (symbol == nullptr) // TODO: get and print error string
-		fmt::print("Failed loading function {}: {}\n", name, GetLastError());
+		fmt::print("Failed loading function {}: {}\n", name, GetLastErrorStr());
 	return symbol;
 }
 
