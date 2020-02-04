@@ -3,7 +3,6 @@
 #include <asio/bind_executor.hpp>
 #include <asio/read.hpp>
 #include <asio/write.hpp>
-#include <fmt/printf.h>
 
 #include "IClientListener.hpp"
 #include "IClientManager.hpp"
@@ -195,7 +194,6 @@ void Client::HandleMsg()
 	}
 	default:
 	{
-		fmt::print("Unhandled msg received: 0x{:X}\n", incoming.GetType());
 		return;
 	}
 	}
