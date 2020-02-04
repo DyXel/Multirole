@@ -1,4 +1,4 @@
-#include "LobbyListingEndpoint.hpp"
+#include "LobbyListing.hpp"
 
 #include <asio/write.hpp>
 #include <fmt/format.h> // fmt::to_string
@@ -12,9 +12,12 @@ namespace Ignis
 namespace Multirole
 {
 
+namespace Endpoint
+{
+
 // public
 
-LobbyListingEndpoint::LobbyListingEndpoint(
+LobbyListing::LobbyListing(
 	asio::io_context& ioCtx, unsigned short port, Lobby& lobby) :
 	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
 	serializeTimer(ioCtx),
@@ -24,7 +27,7 @@ LobbyListingEndpoint::LobbyListingEndpoint(
 	DoSerialize();
 }
 
-void LobbyListingEndpoint::Stop()
+void LobbyListing::Stop()
 {
 	acceptor.close();
 	serializeTimer.cancel();
@@ -32,7 +35,7 @@ void LobbyListingEndpoint::Stop()
 
 // private
 
-void LobbyListingEndpoint::DoSerialize()
+void LobbyListing::DoSerialize()
 {
 	serializeTimer.expires_after(std::chrono::seconds(2));
 	serializeTimer.async_wait([this](const std::error_code& ec)
@@ -93,7 +96,7 @@ void LobbyListingEndpoint::DoSerialize()
 	});
 }
 
-void LobbyListingEndpoint::DoAccept()
+void LobbyListing::DoAccept()
 {
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
@@ -106,7 +109,7 @@ void LobbyListingEndpoint::DoAccept()
 	});
 }
 
-void LobbyListingEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
+void LobbyListing::DoSendRoomList(asio::ip::tcp::socket soc)
 {
 	std::lock_guard<std::mutex> lock(mSerialized);
 	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
@@ -114,6 +117,8 @@ void LobbyListingEndpoint::DoSendRoomList(asio::ip::tcp::socket soc)
 	asio::async_write(*socPtr, asio::buffer(*msg),
 	[socPtr, msg](const std::error_code&, std::size_t){});
 }
+
+} // namespace Endpoint
 
 } // namespace Multirole
 

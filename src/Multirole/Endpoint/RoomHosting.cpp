@@ -1,4 +1,4 @@
-#include "RoomHostingEndpoint.hpp"
+#include "RoomHosting.hpp"
 
 #include <type_traits> // std::remove_extent
 
@@ -13,7 +13,11 @@
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
+
+namespace Endpoint
+{
 
 // Holds information about the client before a proper connection to a Room
 // has been established.
@@ -29,7 +33,7 @@ struct TmpClient
 
 // public
 
-RoomHostingEndpoint::RoomHostingEndpoint(
+RoomHosting::RoomHosting(
 	asio::io_context& ioCtx, unsigned short port, Lobby& lobby) :
 	ioCtx(ioCtx),
 	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
@@ -38,7 +42,7 @@ RoomHostingEndpoint::RoomHostingEndpoint(
 	DoAccept();
 }
 
-void RoomHostingEndpoint::Stop()
+void RoomHosting::Stop()
 {
 	acceptor.close();
 	std::lock_guard<std::mutex> lock(mTmpClients);
@@ -48,19 +52,19 @@ void RoomHostingEndpoint::Stop()
 
 // private
 
-void RoomHostingEndpoint::Add(std::shared_ptr<TmpClient> tc)
+void RoomHosting::Add(std::shared_ptr<TmpClient> tc)
 {
 	std::lock_guard<std::mutex> lock(mTmpClients);
 	tmpClients.insert(tc);
 }
 
-void RoomHostingEndpoint::Remove(std::shared_ptr<TmpClient> tc)
+void RoomHosting::Remove(std::shared_ptr<TmpClient> tc)
 {
 	std::lock_guard<std::mutex> lock(mTmpClients);
 	tmpClients.erase(tc);
 }
 
-void RoomHostingEndpoint::DoAccept()
+void RoomHosting::DoAccept()
 {
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
@@ -77,7 +81,7 @@ void RoomHostingEndpoint::DoAccept()
 	});
 }
 
-void RoomHostingEndpoint::DoReadHeader(std::shared_ptr<TmpClient> tc)
+void RoomHosting::DoReadHeader(std::shared_ptr<TmpClient> tc)
 {
 	auto buffer = asio::buffer(tc->msg.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
 	asio::async_read(tc->soc, buffer,
@@ -90,7 +94,7 @@ void RoomHostingEndpoint::DoReadHeader(std::shared_ptr<TmpClient> tc)
 	});
 }
 
-void RoomHostingEndpoint::DoReadBody(std::shared_ptr<TmpClient> tc)
+void RoomHosting::DoReadBody(std::shared_ptr<TmpClient> tc)
 {
 	auto buffer = asio::buffer(tc->msg.Body(), tc->msg.GetLength());
 	asio::async_read(tc->soc, buffer,
@@ -103,7 +107,7 @@ void RoomHostingEndpoint::DoReadBody(std::shared_ptr<TmpClient> tc)
 	});
 }
 
-bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
+bool RoomHosting::HandleMsg(std::shared_ptr<TmpClient> tc)
 {
 #define UTF16_BUFFER_TO_STR(a) \
 	YGOPro::UTF16ToUTF8(YGOPro::BufferToUTF16(a, sizeof(decltype(a))))
@@ -158,6 +162,8 @@ bool RoomHostingEndpoint::HandleMsg(std::shared_ptr<TmpClient> tc)
 	}
 #undef UTF16_BUFFER_TO_STR
 }
+
+} // namespace Endpoint
 
 } // namespace Multirole
 

@@ -6,12 +6,16 @@
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
 
-class WebhookEndpoint
+namespace Endpoint
+{
+
+class Webhook
 {
 public:
-	WebhookEndpoint(asio::io_context& ioContext, unsigned short port);
+	Webhook(asio::io_context& ioContext, unsigned short port);
 	void Stop();
 protected:
 	virtual void Callback(std::string_view payload);
@@ -21,6 +25,8 @@ private:
 	void DoAccept();
 	void DoReadHeader(asio::ip::tcp::socket soc);
 };
+
+} // namespace Endpoint
 
 } // namespace Multirole
 

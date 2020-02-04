@@ -23,11 +23,11 @@ nlohmann::json LoadConfigJson(std::string_view path)
 
 Instance::Instance() :
 	lIoCtx(),
-	wsIoCtx(),
+	whIoCtx(),
 	cfg(LoadConfigJson("config.json")),
 	lobby(),
-	lle(lIoCtx, cfg["lobbyListingPort"].get<unsigned short>(), lobby),
-	rhe(lIoCtx, cfg["roomHostingPort"].get<unsigned short>(), lobby),
+	lobbyListing(lIoCtx, cfg["lobbyListingPort"].get<unsigned short>(), lobby),
+	roomHosting(lIoCtx, cfg["roomHostingPort"].get<unsigned short>(), lobby),
 	signalSet(lIoCtx)
 {
 	fmt::print("Setting up signal handling...\n");
@@ -52,7 +52,7 @@ int Instance::Run()
 	std::future<std::size_t> wsHExec = std::async(std::launch::async,
 	[this]()
 	{
-		return wsIoCtx.run();
+		return whIoCtx.run();
 	});
 	// This call will only return after all connections are properly closed
 	std::size_t tHExec = lIoCtx.run();
@@ -66,9 +66,9 @@ int Instance::Run()
 void Instance::Stop()
 {
 	fmt::print("Closing all acceptors and finishing IO operations...\n");
-	wsIoCtx.stop(); // Terminates thread
-	lle.Stop();
-	rhe.Stop();
+	whIoCtx.stop(); // Terminates thread
+	lobbyListing.Stop();
+	roomHosting.Stop();
 	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
 	lobby.CloseNonStartedRooms();
 	if(startedRoomsCount > 0u)

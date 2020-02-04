@@ -5,8 +5,8 @@
 #include <nlohmann/json.hpp>
 
 #include "Lobby.hpp"
-#include "Endpoint/LobbyListingEndpoint.hpp"
-#include "Endpoint/RoomHostingEndpoint.hpp"
+#include "Endpoint/LobbyListing.hpp"
+#include "Endpoint/RoomHosting.hpp"
 
 namespace Ignis
 {
@@ -21,11 +21,11 @@ public:
 	int Run();
 private:
 	asio::io_context lIoCtx; // Lobby Io Context
-	asio::io_context wsIoCtx; // Websocket Io Context
+	asio::io_context whIoCtx; // Webhooks Io Context
 	nlohmann::json cfg;
 	Lobby lobby;
-	LobbyListingEndpoint lle;
-	RoomHostingEndpoint rhe;
+	Endpoint::LobbyListing lobbyListing;
+	Endpoint::RoomHosting roomHosting;
 	asio::signal_set signalSet;
 
 	void DoWaitSignal();

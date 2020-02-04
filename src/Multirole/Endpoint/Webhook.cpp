@@ -1,4 +1,4 @@
-#include "WebhookEndpoint.hpp"
+#include "Webhook.hpp"
 
 #include <thread>
 
@@ -7,28 +7,32 @@
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
+
+namespace Endpoint
+{
 
 // public
 
-WebhookEndpoint::WebhookEndpoint(asio::io_context& ioContext, unsigned short port) :
+Webhook::Webhook(asio::io_context& ioContext, unsigned short port) :
 	acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 {
 	DoAccept();
 }
 
-void WebhookEndpoint::Stop()
+void Webhook::Stop()
 {
 	acceptor.close();
 }
 
 // protected
-void WebhookEndpoint::Callback([[maybe_unused]] std::string_view payload)
+void Webhook::Callback([[maybe_unused]] std::string_view payload)
 {}
 
 // private
 
-void WebhookEndpoint::DoAccept()
+void Webhook::DoAccept()
 {
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
@@ -41,7 +45,7 @@ void WebhookEndpoint::DoAccept()
 	});
 }
 
-void WebhookEndpoint::DoReadHeader(asio::ip::tcp::socket soc)
+void Webhook::DoReadHeader(asio::ip::tcp::socket soc)
 {
 	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
 	auto payload = std::make_shared<std::string>(' ', 255);
@@ -55,6 +59,8 @@ void WebhookEndpoint::DoReadHeader(asio::ip::tcp::socket soc)
 		Callback(*payload);
 	});
 }
+
+} // namespace Endpoint
 
 } // namespace Multirole
 

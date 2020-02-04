@@ -1,5 +1,5 @@
-#ifndef LOBBYLISTINGENDPOINT_HPP
-#define LOBBYLISTINGENDPOINT_HPP
+#ifndef LOBBYLISTING_HPP
+#define LOBBYLISTING_HPP
 #include <memory>
 #include <mutex>
 
@@ -9,14 +9,18 @@
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
 
 class Lobby;
 
-class LobbyListingEndpoint final
+namespace Endpoint
+{
+
+class LobbyListing final
 {
 public:
-	LobbyListingEndpoint(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
+	LobbyListing(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
 	void Stop();
 private:
 	asio::ip::tcp::acceptor acceptor;
@@ -30,8 +34,10 @@ private:
 	void DoSendRoomList(asio::ip::tcp::socket soc);
 };
 
+} // namespace Endpoint
+
 } // namespace Multirole
 
 } // namespace Ignis
 
-#endif // LOBBYLISTINGENDPOINT_HPP
+#endif // LOBBYLISTING_HPP

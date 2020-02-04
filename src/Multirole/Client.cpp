@@ -123,7 +123,7 @@ void Client::DoReadBody()
 	{
 		if(!ec)
 		{
-			// Unlike RoomHostingEndpoint, we dont want to finish connection
+			// Unlike Endpoint::RoomHosting, we dont want to finish connection
 			// if the message is not properly handled. Just ignore it.
 			HandleMsg();
 			DoReadHeader();

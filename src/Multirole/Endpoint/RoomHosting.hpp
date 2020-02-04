@@ -10,15 +10,20 @@
 namespace Ignis
 {
 
-namespace Multirole {
+namespace Multirole
+{
 
 class Lobby;
+
+namespace Endpoint
+{
+
 struct TmpClient;
 
-class RoomHostingEndpoint
+class RoomHosting
 {
 public:
-	RoomHostingEndpoint(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
+	RoomHosting(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
 	void Stop();
 private:
 	asio::io_context& ioCtx;
@@ -36,6 +41,8 @@ private:
 
 	bool HandleMsg(std::shared_ptr<TmpClient> tc);
 };
+
+} // namespace Endpoint
 
 } // namespace Ignis
 
