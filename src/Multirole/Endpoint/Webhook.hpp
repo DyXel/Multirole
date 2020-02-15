@@ -15,7 +15,7 @@ namespace Endpoint
 class Webhook
 {
 public:
-	Webhook(asio::io_context& ioContext, unsigned short port);
+	Webhook(asio::io_context& ioCtx, unsigned short port);
 	void Stop();
 protected:
 	virtual void Callback(std::string_view payload);

@@ -15,8 +15,8 @@ namespace Endpoint
 
 // public
 
-Webhook::Webhook(asio::io_context& ioContext, unsigned short port) :
-	acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+Webhook::Webhook(asio::io_context& ioCtx, unsigned short port) :
+	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 {
 	DoAccept();
 }
