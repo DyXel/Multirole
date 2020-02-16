@@ -37,9 +37,9 @@ void Webhook::DoAccept()
 	acceptor.async_accept(
 	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
 	{
-		if(!acceptor.is_open())
+		if(ec == asio::error::operation_aborted)
 			return;
-		if(!ec)
+		else if(!ec)
 			DoReadHeader(std::move(soc));
 		DoAccept();
 	});
