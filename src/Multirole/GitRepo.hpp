@@ -2,7 +2,7 @@
 #define GITREPO_HPP
 #include <string>
 #include <vector>
-#include <nlohmann/json_fwd.hpp>
+#include <nlohmann/json.hpp>
 #include "Endpoint/Webhook.hpp"
 
 struct git_repository;

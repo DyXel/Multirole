@@ -5,7 +5,6 @@
 
 #include <git2.h>
 #include <fmt/printf.h>
-#include <nlohmann/json.hpp>
 
 #include "IAsyncLogger.hpp"
 #include "IGitRepoObserver.hpp"
