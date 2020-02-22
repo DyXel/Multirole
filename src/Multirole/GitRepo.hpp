@@ -2,6 +2,7 @@
 #define GITREPO_HPP
 #include <string>
 #include <vector>
+#include <filesystem>
 #include <nlohmann/json.hpp>
 #include "Endpoint/Webhook.hpp"
 
@@ -22,13 +23,20 @@ public:
 	GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts);
 	~GitRepo();
 
+	// Remove copy operations and move assignment
+	GitRepo(const GitRepo&) = delete;
+	GitRepo& operator=(const GitRepo&) = delete;
+	GitRepo& operator=(GitRepo&&) = delete;
+
+	// Default move constructor
+	GitRepo(GitRepo&& other) = default;
+
 	void AddObserver(IGitRepoObserver& obs);
 private:
 	IAsyncLogger& logger;
-	const std::string name;
 	const std::string token;
 	const std::string remote;
-	const std::string path;
+	const std::filesystem::path path;
 	git_repository* repo;
 	std::vector<IGitRepoObserver*> observers;
 

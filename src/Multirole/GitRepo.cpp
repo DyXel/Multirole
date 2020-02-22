@@ -148,13 +148,11 @@ namespace Multirole
 GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts) :
 	Webhook(ioCtx, opts["webhookPort"].get<unsigned short>()),
 	logger(l),
-	name(opts["name"].get<std::string>()),
 	token(opts["webhookToken"].get<std::string>()),
 	remote(opts["remote"].get<std::string>()),
-	path("sync/" + name + "/"),
+	path(std::filesystem::path(opts["path"].get<std::string>())),
 	repo(nullptr)
 {
-	fmt::print("Configuring repository '{}'...\n", name);
 	if(!CheckIfRepoExists())
 	{
 		fmt::print("Repository doesn't exist, cloning...\n");
@@ -170,7 +168,7 @@ GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json&
 	{
 		Fetch();
 		for(auto& s : GetFilesDiff())
-			fmt::print("{}{}\n", path, s);
+			fmt::print("{} -> {}\n", path, s);
 		ResetToFetchHead();
 	}
 	catch(...)
