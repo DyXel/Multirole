@@ -88,16 +88,16 @@ using DtorType_t = typename DtorType<T>::type;
 template<typename T>
 inline constexpr DtorType_t<T> DtorType_v = DtorType<T>::value;
 
-// Template-based interface to deduce a git_object_t enum value from T
+// Template-based interface to deduce a git_otype enum value from T
 template<typename T>
 struct TypeEnum;
 
 template<>
-struct TypeEnum<git_tree> : std::integral_constant<git_object_t, GIT_OBJECT_TREE>
+struct TypeEnum<git_tree> : std::integral_constant<git_otype, GIT_OBJ_TREE>
 {};
 
 template<typename T>
-inline constexpr git_object_t TypeEnum_v = TypeEnum<T>::value;
+inline constexpr git_otype TypeEnum_v = TypeEnum<T>::value;
 
 // libgit generic object wrapped on a std::unique_ptr
 using UniqueObjPtr = std::unique_ptr<git_object, DtorType_t<git_object>>;
@@ -126,7 +126,7 @@ decltype(auto) MakeUnique(Ctor ctor, Args&& ...args)
 }
 
 // Helper function to peel a generic object into a specific libgit type
-template<typename T, git_object_t BT = Detail::TypeEnum_v<T>>
+template<typename T, git_otype BT = Detail::TypeEnum_v<T>>
 decltype(auto) Peel(Detail::UniqueObjPtr objPtr)
 {
 	T* obj;
