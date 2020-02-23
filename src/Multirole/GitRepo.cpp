@@ -151,6 +151,14 @@ int CredCb(git_cred** out, const char*, const char*, unsigned int aTypes, void* 
 	return git_cred_userpass_plaintext_new(out, cred.first.c_str(), cred.second.c_str());
 }
 
+std::string NormalizePath(std::string_view str)
+{
+	std::string tmp(str);
+	if(tmp.back() != '/' || tmp.back() != '\\')
+		tmp.push_back('/');
+	return tmp;
+}
+
 // public
 
 GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts) :
@@ -158,7 +166,7 @@ GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json&
 	logger(l),
 	token(opts["webhookToken"].get<std::string>()),
 	remote(opts["remote"].get<std::string>()),
-	path(std::filesystem::path(opts["path"].get<std::string>())),
+	path(NormalizePath(opts["path"].get<std::string>())),
 	repo(nullptr)
 {
 	if(opts.count("credentials"))

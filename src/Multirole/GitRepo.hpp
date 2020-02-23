@@ -2,7 +2,6 @@
 #define GITREPO_HPP
 #include <string>
 #include <vector>
-#include <filesystem>
 #include <nlohmann/json.hpp>
 #include "Endpoint/Webhook.hpp"
 
@@ -38,7 +37,7 @@ private:
 	IAsyncLogger& logger;
 	const std::string token;
 	const std::string remote;
-	const std::filesystem::path path;
+	const std::string path;
 	std::unique_ptr<Credentials> credPtr;
 	git_repository* repo;
 	std::vector<IGitRepoObserver*> observers;
