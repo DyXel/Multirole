@@ -39,7 +39,7 @@ std::string LoggerToStdout::FormattedTime() const
 {
 	std::time_t t = std::time(nullptr);
 	char mbstr[100];
-	if(std::strftime(mbstr, sizeof(mbstr), "%A %c", std::localtime(&t)))
+	if(std::strftime(mbstr, sizeof(mbstr), "%c", std::localtime(&t)))
 		return std::string(mbstr);
 	return std::string("Unknown time");
 }
