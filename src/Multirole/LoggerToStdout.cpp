@@ -1,6 +1,7 @@
 #include "LoggerToStdout.hpp"
 
 #include <string>
+#include <ctime>
 
 #include <asio/post.hpp>
 #include <fmt/printf.h>
