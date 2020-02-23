@@ -55,6 +55,13 @@ struct DtorType<git_object>
 };
 
 template<>
+struct DtorType<git_commit>
+{
+	using type = void(&)(git_commit*);
+	static constexpr type value = git_commit_free;
+};
+
+template<>
 struct DtorType<git_diff>
 {
 	using type = void(&)(git_diff*);
@@ -282,6 +289,16 @@ void GitRepo::Fetch()
 	Git::Check(git_remote_fetch(remote.get(), nullptr, &fetchOpts, nullptr));
 }
 
+void GitRepo::ResetToFetchHead()
+{
+	// git reset --hard FETCH_HEAD
+	git_oid oid;
+	Git::Check(git_reference_name_to_id(&oid, repo, "FETCH_HEAD"));
+	auto commit = Git::MakeUnique(git_commit_lookup, repo, &oid);
+	Git::Check(git_reset(repo, reinterpret_cast<git_object*>(commit.get()),
+	                     GIT_RESET_HARD, nullptr));
+}
+
 std::vector<std::string> GitRepo::GetFilesDiff() const
 {
 	// git diff ..FETCH_HEAD
@@ -301,9 +318,9 @@ std::vector<std::string> GitRepo::GetFilesDiff() const
 	return list;
 }
 
-void GitRepo::ResetToFetchHead()
+std::vector<std::string> GitRepo::GetTrackedFiles() const
 {
-	// git reset --hard FETCH_HEAD
+	// git ls-tree -r master --name-only
 	// TODO
 }
 

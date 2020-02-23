@@ -47,8 +47,10 @@ private:
 	bool CheckIfRepoExists() const;
 	void Clone();
 	void Fetch();
-	std::vector<std::string> GetFilesDiff() const;
 	void ResetToFetchHead();
+
+	std::vector<std::string> GetFilesDiff() const;
+	std::vector<std::string> GetTrackedFiles() const;
 };
 
 } // namespace Multirole
