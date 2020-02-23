@@ -13,11 +13,13 @@ namespace Multirole
 class LoggerToStdout final : public IAsyncLogger
 {
 public:
-	LoggerToStdout(asio::io_context& ioContext);
+	LoggerToStdout(asio::io_context& ioCtx);
 	void Log(std::string_view str) override;
 	void LogError(std::string_view str) override;
 private:
 	asio::io_context::strand strand;
+
+	std::string FormattedTime() const;
 };
 
 } // namespace Multirole
