@@ -188,8 +188,6 @@ GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json&
 	try
 	{
 		Fetch();
-		for(auto& s : GetFilesDiff())
-			fmt::print("{} -> {}\n", path, s);
 		ResetToFetchHead();
 	}
 	catch(...)
@@ -214,12 +212,25 @@ void GitRepo::AddObserver(IGitRepoObserver& obs)
 
 void GitRepo::Callback(std::string_view payload)
 {
+	logger.Log(fmt::format("Webhook triggered for repository on '{}'", path));
 	if(payload.find(token) == std::string_view::npos)
 	{
-		logger.Log("Webhook callback called, but it doesn't have the token");
+		logger.LogError("Trigger doesn't have the token");
 		return;
 	}
-	// TODO
+	try
+	{
+		Fetch();
+		for(const auto& s : GetFilesDiff())
+			logger.Log(s);
+		ResetToFetchHead();
+	}
+	catch(const std::exception& e)
+	{
+		logger.LogError(fmt::format("Exception ocurred while updating repo: {}", e.what()));
+	}
+	logger.Log("Finished updating");
+	// TODO: inform registered observers
 }
 
 bool GitRepo::CheckIfRepoExists() const
