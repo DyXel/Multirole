@@ -20,6 +20,8 @@ class IGitRepoObserver;
 class GitRepo final : public Endpoint::Webhook
 {
 public:
+	using Credentials = std::pair<std::string, std::string>;
+
 	GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts);
 	~GitRepo();
 
@@ -37,13 +39,15 @@ private:
 	const std::string token;
 	const std::string remote;
 	const std::filesystem::path path;
+	std::unique_ptr<Credentials> credPtr;
 	git_repository* repo;
 	std::vector<IGitRepoObserver*> observers;
 
 	void Callback(std::string_view payload) override;
 
 	bool CheckIfRepoExists() const;
-	bool Fetch();
+	void Clone();
+	void Fetch();
 	std::vector<std::string> GetFilesDiff() const;
 	void ResetToFetchHead();
 };

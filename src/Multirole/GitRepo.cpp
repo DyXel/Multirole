@@ -143,6 +143,14 @@ namespace Ignis
 namespace Multirole
 {
 
+int CredCb(git_cred** out, const char*, const char*, unsigned int aTypes, void* pl)
+{
+	if(!(GIT_CREDTYPE_USERPASS_PLAINTEXT & aTypes))
+		return GIT_EUSER;
+	const auto& cred = *static_cast<GitRepo::Credentials*>(pl);
+	return git_cred_userpass_plaintext_new(out, cred.first.c_str(), cred.second.c_str());
+}
+
 // public
 
 GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts) :
@@ -153,12 +161,17 @@ GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json&
 	path(std::filesystem::path(opts["path"].get<std::string>())),
 	repo(nullptr)
 {
+	if(opts.count("credentials"))
+	{
+		const auto& credJson = opts["credentials"];
+		auto user = credJson["username"].get<std::string>();
+		auto pass = credJson["password"].get<std::string>();
+		credPtr = std::make_unique<Credentials>(std::move(user), std::move(pass));
+	}
 	if(!CheckIfRepoExists())
 	{
-		fmt::print("Repository doesn't exist, cloning...\n");
 		// TODO: probably clean-up the directory just in case
-		// TODO: add progress tracking
-		Git::Check(git_clone(&repo, remote.c_str(), path.c_str(), NULL));
+		Clone();
 		return;
 	}
 	fmt::print("Repository exist! Opening...\n");
@@ -209,12 +222,45 @@ bool GitRepo::CheckIfRepoExists() const
 	return status == 0;
 }
 
-bool GitRepo::Fetch()
+void GitRepo::Clone()
+{
+	// git clone <url>
+	git_clone_options cloneOpts = GIT_CLONE_OPTIONS_INIT;
+	cloneOpts.fetch_opts.callbacks.transfer_progress =
+	[](const git_transfer_progress* stats, void*) -> int
+	{
+		int percent;
+		if(stats->received_objects != stats->total_objects)
+			percent = (75 * stats->received_objects) / stats->total_objects;
+		else if(stats->total_deltas == 0)
+			percent = 75;
+		else
+			percent = 75 + ((25 * stats->indexed_deltas) / stats->total_deltas);
+		fmt::print("\rCloning... {}%", percent);
+		fflush(stdout);
+		return GIT_OK;
+	};
+	if(credPtr)
+	{
+		cloneOpts.fetch_opts.callbacks.credentials = &CredCb;
+		cloneOpts.fetch_opts.callbacks.payload = credPtr.get();
+	}
+	fmt::print("Cloning...");
+	Git::Check(git_clone(&repo, remote.c_str(), path.c_str(), &cloneOpts));
+	fmt::print("\n");
+}
+
+void GitRepo::Fetch()
 {
 	// git fetch
+	git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
+	if(credPtr)
+	{
+		fetchOpts.callbacks.credentials = &CredCb;
+		fetchOpts.callbacks.payload = credPtr.get();
+	}
 	auto remote = Git::MakeUnique(git_remote_lookup, repo, "origin");
-	Git::Check(git_remote_fetch(remote.get(), nullptr, nullptr, nullptr));
-	return true;
+	Git::Check(git_remote_fetch(remote.get(), nullptr, &fetchOpts, nullptr));
 }
 
 std::vector<std::string> GitRepo::GetFilesDiff() const
