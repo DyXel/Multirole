@@ -27,13 +27,13 @@ Instance::Instance() :
 	logger(lIoCtx),
 	cfg(LoadConfigJson("config.json")),
 	lobby(),
-	lobbyListing(lIoCtx, cfg["lobbyListingPort"].get<unsigned short>(), lobby),
-	roomHosting(lIoCtx, cfg["roomHostingPort"].get<unsigned short>(), lobby),
+	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
+	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), lobby),
 	signalSet(lIoCtx)
 {
-	for(const auto& repoOpts : cfg["repos"].get<std::vector<nlohmann::json>>())
+	for(const auto& repoOpts : cfg.at("repos").get<std::vector<nlohmann::json>>())
 	{
-		std::string name = repoOpts["name"].get<std::string>();
+		std::string name = repoOpts.at("name").get<std::string>();
 		fmt::print("Adding repository '{}'...\n", name);
 		repos.emplace(std::piecewise_construct, std::forward_as_tuple(name),
 		              std::forward_as_tuple(whIoCtx, logger, repoOpts));

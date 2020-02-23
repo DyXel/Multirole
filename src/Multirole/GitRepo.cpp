@@ -162,18 +162,18 @@ std::string NormalizePath(std::string_view str)
 // public
 
 GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts) :
-	Webhook(ioCtx, opts["webhookPort"].get<unsigned short>()),
+	Webhook(ioCtx, opts.at("webhookPort").get<unsigned short>()),
 	logger(l),
-	token(opts["webhookToken"].get<std::string>()),
-	remote(opts["remote"].get<std::string>()),
-	path(NormalizePath(opts["path"].get<std::string>())),
+	token(opts.at("webhookToken").get<std::string>()),
+	remote(opts.at("remote").get<std::string>()),
+	path(NormalizePath(opts.at("path").get<std::string>())),
 	repo(nullptr)
 {
 	if(opts.count("credentials"))
 	{
 		const auto& credJson = opts["credentials"];
-		auto user = credJson["username"].get<std::string>();
-		auto pass = credJson["password"].get<std::string>();
+		auto user = credJson.at("username").get<std::string>();
+		auto pass = credJson.at("password").get<std::string>();
 		credPtr = std::make_unique<Credentials>(std::move(user), std::move(pass));
 	}
 	if(!CheckIfRepoExists())
