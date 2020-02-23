@@ -322,6 +322,7 @@ std::vector<std::string> GitRepo::GetTrackedFiles() const
 {
 	// git ls-tree -r master --name-only
 	// TODO
+	return std::vector<std::string>();
 }
 
 } // namespace Multirole
