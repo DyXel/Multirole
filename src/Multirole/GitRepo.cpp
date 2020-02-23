@@ -109,7 +109,7 @@ inline void Check(int error)
 {
 	if(error >= 0)
 		return;
-	const git_error* e = git_error_last();
+	const git_error* e = giterr_last();
 	throw std::runtime_error(fmt::format("Git: {}/{} -> {}", error, e->klass, e->message));
 }
 
