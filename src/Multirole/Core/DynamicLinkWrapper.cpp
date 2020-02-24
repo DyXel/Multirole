@@ -37,10 +37,10 @@ static void LogHandler(void* payload, const char* str, int t)
 	static_cast<ILogger*>(payload)->Log(static_cast<ILogger::LogType>(t), str);
 }
 
-// void DataReaderDone(void* payload, OCG_CardData* data)
-// {
-// 	static_cast<IDataSupplier*>(payload)->DataUsageDone(*data);
-// }
+void DataReaderDone(void* payload, OCG_CardData* data)
+{
+	static_cast<IDataSupplier*>(payload)->DataUsageDone(*data);
+}
 
 // public
 
@@ -104,7 +104,7 @@ IHighLevelWrapper::Duel DynamicLinkWrapper::CreateDuel(const DuelOptions& opts)
 		&scriptReaderData,
 		&LogHandler,
 		logger,
-		nullptr/*&DataReaderDone*/,
+		&DataReaderDone,
 		dataSupplier
 	};
 	OCG_Duel duel = nullptr;
@@ -144,7 +144,7 @@ IHighLevelWrapper::Buffer DynamicLinkWrapper::GetMessages(Duel duel)
 
 void DynamicLinkWrapper::SetResponse(Duel duel, const Buffer& buffer)
 {
-	OCG_DuelSetResponse(duel, const_cast<uint8_t*>(buffer.data()), buffer.size());
+	OCG_DuelSetResponse(duel, buffer.data(), buffer.size());
 }
 
 std::size_t DynamicLinkWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
