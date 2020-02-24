@@ -24,7 +24,7 @@ nlohmann::json LoadConfigJson(std::string_view path)
 Instance::Instance() :
 	lIoCtx(),
 	whIoCtx(),
-	logger(lIoCtx),
+	logger(),
 	cfg(LoadConfigJson("config.json")),
 	lobby(),
 	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
@@ -63,7 +63,7 @@ int Instance::Run()
 	{
 		return whIoCtx.run();
 	});
-	// This call will only return after all connections are properly closed
+	// Next run call will only return after all connections are properly closed
 	std::size_t tHExec = lIoCtx.run();
 	tHExec += wsHExec.get();
 	fmt::print("All Contexts stopped. Total handlers executed: {}\n", tHExec);

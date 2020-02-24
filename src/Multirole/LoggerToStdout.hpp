@@ -1,6 +1,8 @@
 #ifndef LOGGERTOSTDOUT_HPP
 #define LOGGERTOSTDOUT_HPP
-#include <asio/io_context_strand.hpp>
+#include <thread>
+#include <asio/io_context.hpp>
+#include <asio/executor_work_guard.hpp>
 
 #include "IAsyncLogger.hpp"
 
@@ -13,11 +15,15 @@ namespace Multirole
 class LoggerToStdout final : public IAsyncLogger
 {
 public:
-	LoggerToStdout(asio::io_context& ioCtx);
+	LoggerToStdout();
+	~LoggerToStdout();
+
 	void Log(std::string_view str) override;
 	void LogError(std::string_view str) override;
 private:
-	asio::io_context::strand strand;
+	asio::io_context ioCtx;
+	asio::executor_work_guard<decltype(ioCtx)::executor_type> guard;
+	std::thread t;
 
 	std::string FormattedTime() const;
 };

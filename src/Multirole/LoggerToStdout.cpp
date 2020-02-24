@@ -12,13 +12,22 @@ namespace Ignis
 namespace Multirole
 {
 
-LoggerToStdout::LoggerToStdout(asio::io_context& ioCtx) : strand(ioCtx)
+LoggerToStdout::LoggerToStdout() :
+	guard(asio::make_work_guard(ioCtx)),
+	t([this](){ioCtx.run();})
 {}
+
+LoggerToStdout::~LoggerToStdout()
+{
+	// Allow ioCtx.run() to return and wait for thread to finish
+	guard.reset();
+	t.join();
+}
 
 void LoggerToStdout::Log(std::string_view str)
 {
 	std::string strObj(str);
-	asio::post(strand,
+	asio::post(ioCtx,
 	[time = FormattedTime(), strObj = std::move(strObj)]()
 	{
 		fmt::print("[{}] Info: {}\n", time, strObj);
@@ -28,7 +37,7 @@ void LoggerToStdout::Log(std::string_view str)
 void LoggerToStdout::LogError(std::string_view str)
 {
 	std::string strObj(str);
-	asio::post(strand,
+	asio::post(ioCtx,
 	[time = FormattedTime(), strObj = std::move(strObj)]()
 	{
 		fmt::print("[{}] Error: {}\n", time, strObj);
