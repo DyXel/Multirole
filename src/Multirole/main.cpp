@@ -16,31 +16,43 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <cstdlib> // Exit flags
+#include <memory> // std::unique_ptr
 
 #include <fmt/printf.h>
 #include <git2.h>
 
 #include "Instance.hpp"
 
+static constexpr const char* NOTICE_STRING =
+R"(Project Ignis: Multirole
+Copyright (C) 2020  DyXel, edo9300, kevinlul
+)";
+
+inline int CreateAndRunServerInstance()
+{
+	std::unique_ptr<Ignis::Multirole::Instance> serverPtr;
+	try
+	{
+		serverPtr = std::make_unique<Ignis::Multirole::Instance>();
+	}
+	catch(const std::exception& e)
+	{
+		fmt::print("Error while initializing server: {}\n", e.what());
+		return EXIT_FAILURE;
+	}
+	return serverPtr->Run();
+}
+
 int main()
 {
-	fmt::print("Project Ignis: Multirole, the robust server for YGOPro\n");
-	int exitFlag = EXIT_SUCCESS;
-	git_libgit2_init(); // TODO: check for initialization failure?
-	if(exitFlag == EXIT_SUCCESS)
+	fmt::print(NOTICE_STRING);
+	git_libgit2_init();
+	int exitFlag = CreateAndRunServerInstance();
+	if(int error = git_libgit2_shutdown(); error < 0)
 	{
-		try
-		{
-			Ignis::Multirole::Instance server;
-			exitFlag = server.Run();
-			fmt::print("Server context finished execution\n");
-		}
-		catch(const std::exception& e)
-		{
-			fmt::print("Error: {}\n\n", e.what());
-			exitFlag = EXIT_FAILURE;
-		}
+		const git_error* e = giterr_last();
+		fmt::print("Git: {}/{} -> {}", error, e->klass, e->message);
+		exitFlag = EXIT_FAILURE;
 	}
-	git_libgit2_shutdown();
 	return exitFlag;
 }
