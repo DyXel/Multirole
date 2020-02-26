@@ -46,8 +46,8 @@ void LobbyListing::DoSerialize()
 		{
 			constexpr const char* HTTP_HEADER_FORMAT_STRING =
 			"HTTP/1.0 200 OK\r\n"
-			"Content-Length: {}\r\n"
-			"Content-Type: {}\r\n\r\n";
+			"Content-Length: {:d}\r\n"
+			"Content-Type: {:s}\r\n\r\n";
 			return fmt::format(HTTP_HEADER_FORMAT_STRING, length, mime);
 		};
 		nlohmann::json j{{"rooms", nlohmann::json::array()}};

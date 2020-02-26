@@ -34,7 +34,7 @@ Instance::Instance() :
 	for(const auto& repoOpts : cfg.at("repos").get<std::vector<nlohmann::json>>())
 	{
 		std::string name = repoOpts.at("name").get<std::string>();
-		fmt::print("Adding repository '{}'...\n", name);
+		fmt::print(FMT_STRING("Adding repository '{:s}'...\n"), name);
 		repos.emplace(std::piecewise_construct, std::forward_as_tuple(name),
 		              std::forward_as_tuple(whIoCtx, logger, repoOpts));
 	}
@@ -51,7 +51,7 @@ Instance::Instance() :
 			case SIGTERM: sigName = "SIGTERM"; break;
 			default: sigName = "Unknown signal"; break;
 		}
-		logger.Log(fmt::format("{} received.", sigName));
+		logger.Log(fmt::format(FMT_STRING("{:s} received."), sigName));
 		Stop();
 	});
 }
@@ -72,6 +72,12 @@ int Instance::Run()
 
 // private
 
+constexpr const char* UNFINISHED_DUELS_STRING =
+R"(All done, server will gracefully finish execution
+after all duels finish. If you wish to forcefully end
+you can terminate the process safely now (SIGKILL)
+)";
+
 void Instance::Stop()
 {
 	fmt::print("Closing all acceptors and finishing IO operations...\n");
@@ -82,10 +88,8 @@ void Instance::Stop()
 	lobby.CloseNonStartedRooms();
 	if(startedRoomsCount > 0u)
 	{
-		fmt::print("All done, server will gracefully finish execution\n");
-		fmt::print("after all duels finish. If you wish to forcefully end\n");
-		fmt::print("you can terminate the process safely now (SIGKILL, etc)\n");
-		fmt::print("Number of current duels: {}\n", startedRoomsCount);
+		fmt::print(UNFINISHED_DUELS_STRING);
+		fmt::print(FMT_STRING("Remaining rooms: {:d}\n"), startedRoomsCount);
 	}
 }
 

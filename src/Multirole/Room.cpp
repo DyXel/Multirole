@@ -144,7 +144,7 @@ void Room::OnChat(Client& client, std::string_view str)
 	}
 	else
 	{
-		const auto fmtStr = fmt::format("{}: {}", client.Name(), str);
+		const auto fmtStr = fmt::format(FMT_STRING("{:s}: {:s}"), client.Name(), str);
 		SendToAll(MakeChat(CHAT_MSG_TYPE_SPECTATOR, fmtStr));
 	}
 }

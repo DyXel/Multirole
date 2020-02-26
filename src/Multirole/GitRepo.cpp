@@ -111,13 +111,15 @@ using UniqueObjPtr = std::unique_ptr<git_object, DtorType_t<git_object>>;
 
 } // namespace Detail
 
+constexpr const char* ESTR_GIT = "Git: {}/{} -> {:s}";
+
 // Check error value and throw in case there is an error
 inline void Check(int error)
 {
 	if(error >= 0)
 		return;
 	const git_error* e = giterr_last();
-	throw std::runtime_error(fmt::format("Git: {}/{} -> {}", error, e->klass, e->message));
+	throw std::runtime_error(fmt::format(FMT_STRING(ESTR_GIT), error, e->klass, e->message));
 }
 
 // Helper function to create RAII-managed objects for libgit C objects
@@ -219,7 +221,7 @@ void GitRepo::AddObserver(IGitRepoObserver& obs)
 
 void GitRepo::Callback(std::string_view payload)
 {
-	logger.Log(fmt::format("Webhook triggered for repository on '{}'", path));
+	logger.Log(fmt::format(FMT_STRING("Webhook triggered for repository on '{:s}'"), path));
 	if(payload.find(token) == std::string_view::npos)
 	{
 		logger.LogError("Trigger doesn't have the token");
@@ -234,7 +236,7 @@ void GitRepo::Callback(std::string_view payload)
 	}
 	catch(const std::exception& e)
 	{
-		logger.LogError(fmt::format("Exception ocurred while updating repo: {}", e.what()));
+		logger.LogError(fmt::format(FMT_STRING("Exception ocurred while updating repo: {:s}"), e.what()));
 	}
 	logger.Log("Finished updating");
 	// TODO: inform registered observers
@@ -262,7 +264,7 @@ void GitRepo::Clone()
 			percent = 75;
 		else
 			percent = 75 + ((25 * stats->indexed_deltas) / stats->total_deltas);
-		fmt::print("\rCloning... {}%", percent);
+		fmt::print(FMT_STRING("\rCloning... {}%"), percent);
 		fflush(stdout);
 		return GIT_OK;
 	};

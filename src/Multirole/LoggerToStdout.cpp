@@ -30,7 +30,7 @@ void LoggerToStdout::Log(std::string_view str)
 	asio::post(ioCtx,
 	[time = FormattedTime(), strObj = std::move(strObj)]()
 	{
-		fmt::print("[{}] Info: {}\n", time, strObj);
+		fmt::print(FMT_STRING("[{:s}] Info: {:s}\n"), time, strObj);
 	});
 }
 
@@ -40,7 +40,7 @@ void LoggerToStdout::LogError(std::string_view str)
 	asio::post(ioCtx,
 	[time = FormattedTime(), strObj = std::move(strObj)]()
 	{
-		fmt::print("[{}] Error: {}\n", time, strObj);
+		fmt::print(FMT_STRING("[{:s}] Error: {:s}\n"), time, strObj);
 	});
 }
 

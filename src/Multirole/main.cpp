@@ -37,7 +37,7 @@ inline int CreateAndRunServerInstance()
 	}
 	catch(const std::exception& e)
 	{
-		fmt::print("Error while initializing server: {}\n", e.what());
+		fmt::print(FMT_STRING("Error while initializing server: {:s}\n"), e.what());
 		return EXIT_FAILURE;
 	}
 	return serverPtr->Run();
@@ -51,7 +51,7 @@ int main()
 	if(int error = git_libgit2_shutdown(); error < 0)
 	{
 		const git_error* e = giterr_last();
-		fmt::print("Git: {}/{} -> {}", error, e->klass, e->message);
+		fmt::print(FMT_STRING("Git: {}/{} -> {}"), error, e->klass, e->message);
 		exitFlag = EXIT_FAILURE;
 	}
 	return exitFlag;

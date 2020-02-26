@@ -14,6 +14,9 @@
 namespace DLOpen
 {
 
+constexpr const char* ESTR_OBJECT = "Failed loading object {:s}: {:s}\n";
+constexpr const char* ESTR_FUNCTION = "Failed loading function {:s}: {:s}\n";
+
 #ifdef _WIN32
 #include <windows.h>
 
@@ -38,7 +41,7 @@ void* LoadObject(const char* file)
 {
 	void* handle = (void*)LoadLibraryA(file);
 	if (handle == nullptr)
-		fmt::print("Failed loading DLL {}: {}\n", file, GetLastErrorStr());
+		fmt::print(FMT_STRING(ESTR_OBJECT), file, GetLastErrorStr());
 	return handle;
 }
 
@@ -51,8 +54,8 @@ void  UnloadObject(void* handle)
 void* LoadFunction(void* handle, const char* name)
 {
 	void* symbol = (void*)GetProcAddress((HMODULE) handle, name);
-	if (symbol == nullptr) // TODO: get and print error string
-		fmt::print("Failed loading function {}: {}\n", name, GetLastErrorStr());
+	if (symbol == nullptr)
+		fmt::print(FMT_STRING(ESTR_FUNCTION), name, GetLastErrorStr());
 	return symbol;
 }
 
@@ -64,7 +67,7 @@ void* LoadObject(const char* file)
 	void* handle;
 	handle = dlopen(file, RTLD_NOW | RTLD_LOCAL);
 	if (handle == nullptr)
-		fmt::print("Failed loading shared object {}: {}\n", file, dlerror());
+		fmt::print(FMT_STRING(ESTR_OBJECT), file, dlerror());
 	return (handle);
 }
 
@@ -83,7 +86,7 @@ void* LoadFunction(void* handle, const char* name)
 		std::string _name = std::string("_") + name;
 		symbol = dlsym(handle, _name.c_str());
 		if (symbol == nullptr)
-			fmt::print("Failed loading function {}: {}\n", name, dlerror());
+			fmt::print(FMT_STRING(ESTR_FUNCTION), name, dlerror());
 	}
 	return symbol;
 }
