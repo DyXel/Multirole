@@ -37,7 +37,7 @@ static void LogHandler(void* payload, const char* str, int t)
 	static_cast<ILogger*>(payload)->Log(static_cast<ILogger::LogType>(t), str);
 }
 
-void DataReaderDone(void* payload, OCG_CardData* data)
+static void DataReaderDone(void* payload, OCG_CardData* data)
 {
 	static_cast<IDataSupplier*>(payload)->DataUsageDone(*data);
 }
