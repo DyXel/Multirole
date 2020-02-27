@@ -47,13 +47,6 @@ template<typename T>
 struct DtorType;
 
 template<>
-struct DtorType<git_object>
-{
-	using type = void(&)(git_object*);
-	static constexpr type value = git_object_free;
-};
-
-template<>
 struct DtorType<git_commit>
 {
 	using type = void(&)(git_commit*);
@@ -68,6 +61,13 @@ struct DtorType<git_diff>
 };
 
 template<>
+struct DtorType<git_object>
+{
+	using type = void(&)(git_object*);
+	static constexpr type value = git_object_free;
+};
+
+template<>
 struct DtorType<git_remote>
 {
 	using type = void(&)(git_remote*);
@@ -75,17 +75,17 @@ struct DtorType<git_remote>
 };
 
 template<>
-struct DtorType<git_tree>
-{
-	using type = void(&)(git_tree*);
-	static constexpr type value = git_tree_free;
-};
-
-template<>
 struct DtorType<git_repository>
 {
 	using type = void(&)(git_repository*);
 	static constexpr type value = git_repository_free;
+};
+
+template<>
+struct DtorType<git_tree>
+{
+	using type = void(&)(git_tree*);
+	static constexpr type value = git_tree_free;
 };
 
 template<typename T>
