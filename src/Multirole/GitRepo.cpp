@@ -7,7 +7,6 @@
 #include <fmt/printf.h>
 
 #include "IAsyncLogger.hpp"
-#include "IGitRepoObserver.hpp"
 
 namespace Git
 {
@@ -214,7 +213,7 @@ GitRepo::~GitRepo()
 void GitRepo::AddObserver(IGitRepoObserver& obs)
 {
 	observers.emplace_back(&obs);
-	obs.OnAdd();
+// 	obs.OnAdd(); // TODO
 }
 
 // private
@@ -227,11 +226,11 @@ void GitRepo::Callback(std::string_view payload)
 		logger.LogError("Trigger doesn't have the token");
 		return;
 	}
+	IGitRepoObserver::PathVector pv;
 	try
 	{
 		Fetch();
-		for(const auto& s : GetFilesDiff())
-			logger.Log(s);
+		pv = GetFilesDiff();
 		ResetToFetchHead();
 	}
 	catch(const std::exception& e)
@@ -239,7 +238,9 @@ void GitRepo::Callback(std::string_view payload)
 		logger.LogError(fmt::format(FMT_STRING("Exception ocurred while updating repo: {:s}"), e.what()));
 	}
 	logger.Log("Finished updating");
-	// TODO: inform registered observers
+	if(!pv.empty())
+		for(auto& obs : observers)
+			obs->OnReset(path, pv);
 }
 
 bool GitRepo::CheckIfRepoExists() const
@@ -301,14 +302,14 @@ void GitRepo::ResetToFetchHead()
 	                     GIT_RESET_HARD, nullptr));
 }
 
-std::vector<std::string> GitRepo::GetFilesDiff() const
+GitRepo::PathVector GitRepo::GetFilesDiff() const
 {
 	// git diff ..FETCH_HEAD
-	std::vector<std::string> list;
+	PathVector pv;
 	auto FileCb = [](const git_diff_delta* delta, float, void* payload) -> int
 	{
-		auto& list = *static_cast<std::vector<std::string>*>(payload);
-		list.emplace_back(delta->new_file.path);
+		auto& pv = *static_cast<PathVector*>(payload);
+		pv.emplace_back(delta->new_file.path);
 		return 0;
 	};
 	auto obj1 = Git::MakeUnique(git_revparse_single, repo, "HEAD");
@@ -316,15 +317,15 @@ std::vector<std::string> GitRepo::GetFilesDiff() const
 	auto t1 = Git::Peel<git_tree>(std::move(obj1));
 	auto t2 = Git::Peel<git_tree>(std::move(obj2));
 	auto diff = Git::MakeUnique(git_diff_tree_to_tree, repo, t1.get(), t2.get(), nullptr);
-	Git::Check(git_diff_foreach(diff.get(), FileCb, nullptr, nullptr, nullptr, &list));
-	return list;
+	Git::Check(git_diff_foreach(diff.get(), FileCb, nullptr, nullptr, nullptr, &pv));
+	return pv;
 }
 
-std::vector<std::string> GitRepo::GetTrackedFiles() const
+GitRepo::PathVector GitRepo::GetTrackedFiles() const
 {
 	// git ls-tree -r master --name-only
 	// TODO
-	return std::vector<std::string>();
+	return PathVector();
 }
 
 } // namespace Multirole

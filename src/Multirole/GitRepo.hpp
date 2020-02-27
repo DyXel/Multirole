@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
+
+#include "IGitRepoObserver.hpp"
 #include "Endpoint/Webhook.hpp"
 
 struct git_repository;
@@ -14,7 +16,6 @@ namespace Multirole
 {
 
 class IAsyncLogger;
-class IGitRepoObserver;
 
 class GitRepo final : public Endpoint::Webhook
 {
@@ -34,6 +35,8 @@ public:
 
 	void AddObserver(IGitRepoObserver& obs);
 private:
+	using PathVector = IGitRepoObserver::PathVector;
+
 	IAsyncLogger& logger;
 	const std::string token;
 	const std::string remote;
