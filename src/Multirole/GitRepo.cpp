@@ -193,7 +193,7 @@ GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json&
 	}
 	if(!CheckIfRepoExists())
 	{
-		// TODO: probably clean-up the directory just in case
+		fmt::print("Repository doesnt exist, Cloning...\n");
 		Clone();
 		return;
 	}
@@ -274,7 +274,7 @@ void GitRepo::Clone()
 			percent = 75;
 		else
 			percent = 75 + ((25 * stats->indexed_deltas) / stats->total_deltas);
-		fmt::print(FMT_STRING("\rCloning... {}%"), percent);
+		fmt::print(FMT_STRING("\rProgress: {}%"), percent);
 		fflush(stdout);
 		return GIT_OK;
 	};
@@ -283,7 +283,7 @@ void GitRepo::Clone()
 		cloneOpts.fetch_opts.callbacks.credentials = &CredCb;
 		cloneOpts.fetch_opts.callbacks.payload = credPtr.get();
 	}
-	fmt::print("Cloning...");
+	fmt::print("Progress:");
 	Git::Check(git_clone(&repo, remote.c_str(), path.c_str(), &cloneOpts));
 	fmt::print("\n");
 }
