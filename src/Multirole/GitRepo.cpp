@@ -61,6 +61,13 @@ struct DtorType<git_diff>
 };
 
 template<>
+struct DtorType<git_index>
+{
+	using type = void(&)(git_index*);
+	static constexpr type value = git_index_free;
+};
+
+template<>
 struct DtorType<git_object>
 {
 	using type = void(&)(git_object*);
@@ -213,7 +220,9 @@ GitRepo::~GitRepo()
 void GitRepo::AddObserver(IGitRepoObserver& obs)
 {
 	observers.emplace_back(&obs);
-// 	obs.OnAdd(); // TODO
+	const IGitRepoObserver::PathVector pv = GetTrackedFiles();
+	if(!pv.empty())
+		obs.OnAdd(path, pv);
 }
 
 // private
@@ -323,9 +332,17 @@ GitRepo::PathVector GitRepo::GetFilesDiff() const
 
 GitRepo::PathVector GitRepo::GetTrackedFiles() const
 {
-	// git ls-tree -r master --name-only
-	// TODO
-	return PathVector();
+	// git ls-files
+	PathVector pv;
+	auto index = Git::MakeUnique(git_repository_index, repo);
+	const std::size_t entryCount = git_index_entrycount(index.get());
+	const git_index_entry* entry;
+	for(std::size_t i = 0; i < entryCount; i++)
+	{
+		entry = git_index_get_byindex(index.get(), i);
+		pv.emplace_back(entry->path);
+	}
+	return pv;
 }
 
 } // namespace Multirole
