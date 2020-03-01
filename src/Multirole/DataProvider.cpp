@@ -100,7 +100,7 @@ void DataProvider::LoadDBs(std::string_view path, const PathVector& fileList)
 	for(const auto& fn : fileList)
 	{
 		if(!std::regex_match(fn, fnRegex))
-			return;
+			continue;
 		fullPath.resize(path.size());
 		fullPath += fn;
 		logger.Log(fmt::format(FMT_STRING("DataProvider: Loading up {:s}..."), fullPath));
