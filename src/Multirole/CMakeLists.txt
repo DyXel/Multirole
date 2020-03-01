@@ -9,6 +9,7 @@ target_sources(multirole PRIVATE
 	${CSR}/LoggerToStdout.cpp
 	${CSR}/main.cpp
 	${CSR}/Room.cpp
+	${CSR}/ScriptProvider.cpp
 	${CSR}/STOCMsgFactory.cpp
 )
 unset(CSR)
