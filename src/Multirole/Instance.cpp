@@ -26,11 +26,14 @@ Instance::Instance() :
 	whIoCtx(),
 	logger(),
 	cfg(LoadConfigJson("config.json")),
+	dataProvider(logger, cfg.at("dataProvider").at("dbFileRegex").get<std::string>()),
+	scriptProvider(logger, cfg.at("scriptProvider").at("scriptFileRegex").get<std::string>()),
 	lobby(),
 	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
 	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), lobby),
 	signalSet(lIoCtx)
 {
+	// Load up and update repositories while also adding them to the std::map
 	for(const auto& repoOpts : cfg.at("repos").get<std::vector<nlohmann::json>>())
 	{
 		std::string name = repoOpts.at("name").get<std::string>();
@@ -38,7 +41,12 @@ Instance::Instance() :
 		repos.emplace(std::piecewise_construct, std::forward_as_tuple(name),
 		              std::forward_as_tuple(whIoCtx, logger, repoOpts));
 	}
-
+	// Register respective providers on their observed repositories
+	for(const auto& observed : cfg.at("dataProvider").at("observedRepos").get<std::vector<std::string>>())
+		repos.at(observed).AddObserver(dataProvider);
+	for(const auto& observed : cfg.at("scriptProvider").at("observedRepos").get<std::vector<std::string>>())
+		repos.at(observed).AddObserver(scriptProvider);
+	// Register signals
 	fmt::print("Setting up signal handling...\n");
 	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);

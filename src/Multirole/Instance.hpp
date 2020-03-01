@@ -5,9 +5,11 @@
 #include <asio/signal_set.hpp>
 #include <nlohmann/json.hpp>
 
-#include "Lobby.hpp"
+#include "DataProvider.hpp"
 #include "GitRepo.hpp"
+#include "Lobby.hpp"
 #include "LoggerToStdout.hpp"
+#include "ScriptProvider.hpp"
 #include "Endpoint/LobbyListing.hpp"
 #include "Endpoint/RoomHosting.hpp"
 
@@ -27,6 +29,9 @@ private:
 	asio::io_context whIoCtx; // Webhooks Io Context
 	LoggerToStdout logger;
 	nlohmann::json cfg;
+	DataProvider dataProvider;
+	ScriptProvider scriptProvider;
+// 	CoreProvider coreProvider;
 	Lobby lobby;
 	Endpoint::LobbyListing lobbyListing;
 	Endpoint::RoomHosting roomHosting;
