@@ -41,10 +41,13 @@ Instance::Instance() :
 		              std::forward_as_tuple(whIoCtx, repoOpts));
 	}
 	// Register respective providers on their observed repositories
-	for(const auto& observed : cfg.at("dataProvider").at("observedRepos").get<std::vector<std::string>>())
-		repos.at(observed).AddObserver(dataProvider);
-	for(const auto& observed : cfg.at("scriptProvider").at("observedRepos").get<std::vector<std::string>>())
-		repos.at(observed).AddObserver(scriptProvider);
+	auto RegRepos = [&](IGitRepoObserver& obs, const nlohmann::json& a)
+	{
+		for(const auto& observed : a.get<std::vector<std::string>>())
+			repos.at(observed).AddObserver(obs);
+	};
+	RegRepos(dataProvider, cfg.at("dataProvider").at("observedRepos"));
+	RegRepos(scriptProvider, cfg.at("scriptProvider").at("observedRepos"));
 	// Register signals
 	spdlog::info("Setting up signal handling...");
 	signalSet.add(SIGINT);
