@@ -101,7 +101,7 @@ void DataProvider::LoadDBs(std::string_view path, const PathVector& fileList)
 			continue;
 		fullPath.resize(path.size());
 		fullPath += fn;
-		spdlog::info(FMT_STRING("DataProvider: Loading up {:s}..."), fullPath);
+		spdlog::info("DataProvider: Loading up {:s}...", fullPath);
 		if(!Merge(fullPath))
 		{
 			spdlog::error("DataProvider: Couldn't merge database");

@@ -226,7 +226,7 @@ void GitRepo::AddObserver(IGitRepoObserver& obs)
 
 void GitRepo::Callback(std::string_view payload)
 {
-	spdlog::info(FMT_STRING("Webhook triggered for repository on '{:s}'"), path);
+	spdlog::info("Webhook triggered for repository on '{:s}'", path);
 	if(payload.find(token) == std::string_view::npos)
 	{
 		spdlog::error("Trigger doesn't have the token");
@@ -241,7 +241,7 @@ void GitRepo::Callback(std::string_view payload)
 	}
 	catch(const std::exception& e)
 	{
-		spdlog::error(FMT_STRING("Exception ocurred while updating repo: {:s}"), e.what());
+		spdlog::error("Exception ocurred while updating repo: {:s}", e.what());
 	}
 	spdlog::info("Finished updating");
 	if(!pv.empty())

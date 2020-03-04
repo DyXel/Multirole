@@ -36,7 +36,7 @@ Instance::Instance() :
 	for(const auto& repoOpts : cfg.at("repos").get<std::vector<nlohmann::json>>())
 	{
 		std::string name = repoOpts.at("name").get<std::string>();
-		spdlog::info(FMT_STRING("Adding repository '{:s}'..."), name);
+		spdlog::info("Adding repository '{:s}'...", name);
 		repos.emplace(std::piecewise_construct, std::forward_as_tuple(name),
 		              std::forward_as_tuple(whIoCtx, repoOpts));
 	}
@@ -58,7 +58,7 @@ Instance::Instance() :
 			case SIGTERM: sigName = "SIGTERM"; break;
 			default: sigName = "Unknown signal"; break;
 		}
-		spdlog::info(FMT_STRING("{:s} received."), sigName);
+		spdlog::info("{:s} received.", sigName);
 		Stop();
 	});
 }
@@ -97,7 +97,7 @@ void Instance::Stop()
 	if(startedRoomsCount > 0u)
 	{
 		spdlog::info(UNFINISHED_DUELS_STRING);
-		spdlog::info(FMT_STRING("Remaining rooms: {:d}"), startedRoomsCount);
+		spdlog::info("Remaining rooms: {:d}", startedRoomsCount);
 	}
 }
 

@@ -53,7 +53,7 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 		std::ifstream file(fullPath, std::ifstream::binary);
 		if(!file.is_open())
 		{
-			spdlog::error(FMT_STRING("ScriptProvider: Couldnt open file {:s}"), fullPath);
+			spdlog::error("ScriptProvider: Couldnt open file {:s}", fullPath);
 			continue;
 		}
 		// Lambda to remove all subdirectories of a given filename
@@ -71,7 +71,7 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 		scripts.emplace(FilenameFromPath(fn), buffer.str());
 		total++;
 	}
-	spdlog::info(FMT_STRING("ScriptProvider: loaded {:d} files"), total);
+	spdlog::info("ScriptProvider: loaded {:d} files", total);
 }
 
 } // namespace Multirole
