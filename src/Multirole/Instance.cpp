@@ -5,7 +5,7 @@
 #include <fstream>
 #include <future>
 
-#include <fmt/printf.h>
+#include <spdlog/spdlog.h>
 
 namespace Ignis
 {
@@ -14,7 +14,7 @@ namespace Multirole {
 
 nlohmann::json LoadConfigJson(std::string_view path)
 {
-	fmt::print("Loading up config.json...\n");
+	spdlog::info("Loading up config.json...");
 	std::ifstream i(path.data());
 	return nlohmann::json::parse(i);
 }
@@ -24,10 +24,9 @@ nlohmann::json LoadConfigJson(std::string_view path)
 Instance::Instance() :
 	lIoCtx(),
 	whIoCtx(),
-	logger(),
 	cfg(LoadConfigJson("config.json")),
-	dataProvider(logger, cfg.at("dataProvider").at("dbFileRegex").get<std::string>()),
-	scriptProvider(logger, cfg.at("scriptProvider").at("scriptFileRegex").get<std::string>()),
+	dataProvider(cfg.at("dataProvider").at("dbFileRegex").get<std::string>()),
+	scriptProvider(cfg.at("scriptProvider").at("scriptFileRegex").get<std::string>()),
 	lobby(),
 	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
 	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), lobby),
@@ -37,9 +36,9 @@ Instance::Instance() :
 	for(const auto& repoOpts : cfg.at("repos").get<std::vector<nlohmann::json>>())
 	{
 		std::string name = repoOpts.at("name").get<std::string>();
-		fmt::print(FMT_STRING("Adding repository '{:s}'...\n"), name);
+		spdlog::info(FMT_STRING("Adding repository '{:s}'..."), name);
 		repos.emplace(std::piecewise_construct, std::forward_as_tuple(name),
-		              std::forward_as_tuple(whIoCtx, logger, repoOpts));
+		              std::forward_as_tuple(whIoCtx, repoOpts));
 	}
 	// Register respective providers on their observed repositories
 	for(const auto& observed : cfg.at("dataProvider").at("observedRepos").get<std::vector<std::string>>())
@@ -47,7 +46,7 @@ Instance::Instance() :
 	for(const auto& observed : cfg.at("scriptProvider").at("observedRepos").get<std::vector<std::string>>())
 		repos.at(observed).AddObserver(scriptProvider);
 	// Register signals
-	fmt::print("Setting up signal handling...\n");
+	spdlog::info("Setting up signal handling...");
 	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);
 	signalSet.async_wait([this](const std::error_code&, int sigNum)
@@ -59,7 +58,7 @@ Instance::Instance() :
 			case SIGTERM: sigName = "SIGTERM"; break;
 			default: sigName = "Unknown signal"; break;
 		}
-		logger.Log(fmt::format(FMT_STRING("{:s} received."), sigName));
+		spdlog::info(FMT_STRING("{:s} received."), sigName);
 		Stop();
 	});
 }
@@ -74,21 +73,22 @@ int Instance::Run()
 	// Next run call will only return after all connections are properly closed
 	std::size_t tHExec = lIoCtx.run();
 	tHExec += wsHExec.get();
-	fmt::print("All Contexts stopped. Total handlers executed: {}\n", tHExec);
+	spdlog::info("Total handlers executed: {}", tHExec);
 	return EXIT_SUCCESS;
 }
 
 // private
 
 constexpr const char* UNFINISHED_DUELS_STRING =
-R"(All done, server will gracefully finish execution
+R"(
+All done, server will gracefully finish execution
 after all duels finish. If you wish to forcefully end
 you can terminate the process safely now (SIGKILL)
 )";
 
 void Instance::Stop()
 {
-	fmt::print("Closing all acceptors and finishing IO operations...\n");
+	spdlog::info("Closing all acceptors and finishing IO operations...");
 	whIoCtx.stop(); // Terminates thread
 	lobbyListing.Stop();
 	roomHosting.Stop();
@@ -96,8 +96,8 @@ void Instance::Stop()
 	lobby.CloseNonStartedRooms();
 	if(startedRoomsCount > 0u)
 	{
-		fmt::print(UNFINISHED_DUELS_STRING);
-		fmt::print(FMT_STRING("Remaining rooms: {:d}\n"), startedRoomsCount);
+		spdlog::info(UNFINISHED_DUELS_STRING);
+		spdlog::info(FMT_STRING("Remaining rooms: {:d}"), startedRoomsCount);
 	}
 }
 

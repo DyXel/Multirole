@@ -25,6 +25,7 @@ if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
 	find_package(libgit2 REQUIRED)
 	find_package(nlohmann_json CONFIG REQUIRED)
 	find_package(sqlite3 REQUIRED)
+	find_package(spdlog REQUIRED)
 	# libgit2 dependencies
 	if(NOT WIN32)
 		find_package(OpenSSL REQUIRED)
@@ -48,6 +49,7 @@ endif()
 
 target_compile_definitions(multirole PUBLIC
 	ASIO_STANDALONE
+	SPDLOG_FMT_EXTERNAL
 )
 
 if(WIN32)

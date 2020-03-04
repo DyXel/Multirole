@@ -6,7 +6,6 @@ target_sources(multirole PRIVATE
 	${CSR}/GitRepo.cpp
 	${CSR}/Instance.cpp
 	${CSR}/Lobby.cpp
-	${CSR}/LoggerToStdout.cpp
 	${CSR}/main.cpp
 	${CSR}/Room.cpp
 	${CSR}/ScriptProvider.cpp

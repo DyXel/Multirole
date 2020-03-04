@@ -4,9 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <fmt/format.h>
-
-#include "IAsyncLogger.hpp"
+#include <spdlog/spdlog.h>
 
 namespace Ignis
 {
@@ -16,8 +14,7 @@ namespace Multirole
 
 // public
 
-ScriptProvider::ScriptProvider(IAsyncLogger& l, std::string_view fnRegexStr) :
-	logger(l),
+ScriptProvider::ScriptProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
@@ -43,7 +40,7 @@ std::string ScriptProvider::ScriptFromFilePath(std::string_view fp)
 
 void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileList)
 {
-	int totalLoadedFiles = 0;
+	int total = 0;
 	std::string fullPath(path);
 	std::lock_guard<std::mutex> lock(mScripts);
 	for(const auto& fn : fileList)
@@ -56,7 +53,7 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 		std::ifstream file(fullPath, std::ifstream::binary);
 		if(!file.is_open())
 		{
-			logger.LogError(fmt::format(FMT_STRING("ScriptProvider: Couldnt open file {:s}"), fullPath));
+			spdlog::error(FMT_STRING("ScriptProvider: Couldnt open file {:s}"), fullPath);
 			continue;
 		}
 		// Lambda to remove all subdirectories of a given filename
@@ -72,9 +69,9 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 		std::stringstream buffer;
 		buffer << file.rdbuf();
 		scripts.emplace(FilenameFromPath(fn), buffer.str());
-		totalLoadedFiles++;
+		total++;
 	}
-	logger.Log(fmt::format(FMT_STRING("ScriptProvider: loaded {:d} files"), totalLoadedFiles));
+	spdlog::info(FMT_STRING("ScriptProvider: loaded {:d} files"), total);
 }
 
 } // namespace Multirole

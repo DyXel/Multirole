@@ -15,14 +15,12 @@ namespace Ignis
 namespace Multirole
 {
 
-class IAsyncLogger;
-
 class GitRepo final : public Endpoint::Webhook
 {
 public:
 	using Credentials = std::pair<std::string, std::string>;
 
-	GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts);
+	GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts);
 	~GitRepo();
 
 	// Remove copy operations and move assignment
@@ -37,7 +35,6 @@ public:
 private:
 	using PathVector = IGitRepoObserver::PathVector;
 
-	IAsyncLogger& logger;
 	const std::string token;
 	const std::string remote;
 	const std::string path;

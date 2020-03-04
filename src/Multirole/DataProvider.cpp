@@ -4,9 +4,8 @@
 #include <stdexcept> // std::runtime_error
 
 #include <sqlite3.h>
+#include <spdlog/spdlog.h>
 #include <fmt/format.h>
-
-#include "IAsyncLogger.hpp"
 
 constexpr int TYPE_LINK = 0x4000000; // NOTE: remove if we import other types
 
@@ -24,9 +23,8 @@ FROM datas WHERE datas.id = ?;
 
 // public
 
-DataProvider::DataProvider(IAsyncLogger& l, std::string_view fnRegexStr) :
+DataProvider::DataProvider(std::string_view fnRegexStr) :
 	CardDatabase(),
-	logger(l),
 	fnRegex(fnRegexStr.data())
 {
 	// Prepare card data search by id statement
@@ -103,9 +101,11 @@ void DataProvider::LoadDBs(std::string_view path, const PathVector& fileList)
 			continue;
 		fullPath.resize(path.size());
 		fullPath += fn;
-		logger.Log(fmt::format(FMT_STRING("DataProvider: Loading up {:s}..."), fullPath));
+		spdlog::info(FMT_STRING("DataProvider: Loading up {:s}..."), fullPath);
 		if(!Merge(fullPath))
-			logger.LogError("DataProvider: Couldn't merge database");
+		{
+			spdlog::error("DataProvider: Couldn't merge database");
+		}
 	}
 }
 

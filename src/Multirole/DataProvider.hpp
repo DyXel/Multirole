@@ -12,13 +12,11 @@ namespace Ignis
 namespace Multirole
 {
 
-class IAsyncLogger;
-
 class DataProvider final : public CardDatabase, public IGitRepoObserver,
                            public Core::IDataSupplier
 {
 public:
-	DataProvider(IAsyncLogger& l, std::string_view fnRegexStr);
+	DataProvider(std::string_view fnRegexStr);
 	~DataProvider();
 
 	// IGitRepoObserver overrides
@@ -29,7 +27,6 @@ public:
 	OCG_CardData DataFromCode(uint32_t code) override;
 	void DataUsageDone(OCG_CardData& data) override;
 private:
-	IAsyncLogger& logger;
 	std::regex fnRegex;
 	sqlite3_stmt* sStmt;
 

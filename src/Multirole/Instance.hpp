@@ -8,7 +8,6 @@
 #include "DataProvider.hpp"
 #include "GitRepo.hpp"
 #include "Lobby.hpp"
-#include "LoggerToStdout.hpp"
 #include "ScriptProvider.hpp"
 #include "Endpoint/LobbyListing.hpp"
 #include "Endpoint/RoomHosting.hpp"
@@ -27,7 +26,6 @@ public:
 private:
 	asio::io_context lIoCtx; // Lobby Io Context
 	asio::io_context whIoCtx; // Webhooks Io Context
-	LoggerToStdout logger;
 	nlohmann::json cfg;
 	DataProvider dataProvider;
 	ScriptProvider scriptProvider;

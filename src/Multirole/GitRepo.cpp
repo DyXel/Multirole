@@ -4,9 +4,7 @@
 #include <tuple>
 
 #include <git2.h>
-#include <fmt/printf.h>
-
-#include "IAsyncLogger.hpp"
+#include <spdlog/spdlog.h>
 
 namespace Git
 {
@@ -176,9 +174,8 @@ std::string NormalizePath(std::string_view str)
 
 // public
 
-GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json& opts) :
+GitRepo::GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts) :
 	Webhook(ioCtx, opts.at("webhookPort").get<unsigned short>()),
-	logger(l),
 	token(opts.at("webhookToken").get<std::string>()),
 	remote(opts.at("remote").get<std::string>()),
 	path(NormalizePath(opts.at("path").get<std::string>())),
@@ -193,13 +190,13 @@ GitRepo::GitRepo(asio::io_context& ioCtx, IAsyncLogger& l, const nlohmann::json&
 	}
 	if(!CheckIfRepoExists())
 	{
-		fmt::print("Repository doesnt exist, Cloning...\n");
+		spdlog::info("Repository doesnt exist, Cloning...");
 		Clone();
 		return;
 	}
-	fmt::print("Repository exist! Opening...\n");
+	spdlog::info("Repository exist! Opening...");
 	Git::Check(git_repository_open(&repo, path.c_str()));
-	fmt::print("Checking for updates...\n");
+	spdlog::info("Checking for updates...");
 	try
 	{
 		Fetch();
@@ -229,10 +226,10 @@ void GitRepo::AddObserver(IGitRepoObserver& obs)
 
 void GitRepo::Callback(std::string_view payload)
 {
-	logger.Log(fmt::format(FMT_STRING("Webhook triggered for repository on '{:s}'"), path));
+	spdlog::info(FMT_STRING("Webhook triggered for repository on '{:s}'"), path);
 	if(payload.find(token) == std::string_view::npos)
 	{
-		logger.LogError("Trigger doesn't have the token");
+		spdlog::error("Trigger doesn't have the token");
 		return;
 	}
 	IGitRepoObserver::PathVector pv;
@@ -244,9 +241,9 @@ void GitRepo::Callback(std::string_view payload)
 	}
 	catch(const std::exception& e)
 	{
-		logger.LogError(fmt::format(FMT_STRING("Exception ocurred while updating repo: {:s}"), e.what()));
+		spdlog::error(FMT_STRING("Exception ocurred while updating repo: {:s}"), e.what());
 	}
-	logger.Log("Finished updating");
+	spdlog::info("Finished updating");
 	if(!pv.empty())
 		for(auto& obs : observers)
 			obs->OnReset(path, pv);
@@ -264,28 +261,13 @@ void GitRepo::Clone()
 {
 	// git clone <url>
 	git_clone_options cloneOpts = GIT_CLONE_OPTIONS_INIT;
-	cloneOpts.fetch_opts.callbacks.transfer_progress =
-	[](const git_transfer_progress* stats, void*) -> int
-	{
-		int percent;
-		if(stats->received_objects != stats->total_objects)
-			percent = (75 * stats->received_objects) / stats->total_objects;
-		else if(stats->total_deltas == 0)
-			percent = 75;
-		else
-			percent = 75 + ((25 * stats->indexed_deltas) / stats->total_deltas);
-		fmt::print(FMT_STRING("\rProgress: {}%"), percent);
-		fflush(stdout);
-		return GIT_OK;
-	};
 	if(credPtr)
 	{
 		cloneOpts.fetch_opts.callbacks.credentials = &CredCb;
 		cloneOpts.fetch_opts.callbacks.payload = credPtr.get();
 	}
-	fmt::print("Progress:");
 	Git::Check(git_clone(&repo, remote.c_str(), path.c_str(), &cloneOpts));
-	fmt::print("\n");
+	spdlog::info("Cloning completed!");
 }
 
 void GitRepo::Fetch()

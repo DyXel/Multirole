@@ -19,6 +19,7 @@
 #include <memory> // std::unique_ptr
 
 #include <fmt/printf.h>
+#include <spdlog/spdlog.h>
 #include <git2.h>
 
 #include "Instance.hpp"
@@ -48,11 +49,7 @@ int main()
 	fmt::print(NOTICE_STRING);
 	git_libgit2_init();
 	int exitFlag = CreateAndRunServerInstance();
-	if(int error = git_libgit2_shutdown(); error < 0)
-	{
-		const git_error* e = giterr_last();
-		fmt::print(FMT_STRING("Git: {}/{} -> {}"), error, e->klass, e->message);
-		exitFlag = EXIT_FAILURE;
-	}
+	spdlog::shutdown();
+	git_libgit2_shutdown();
 	return exitFlag;
 }
