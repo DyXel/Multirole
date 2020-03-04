@@ -207,6 +207,7 @@ GitRepo::GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts) :
 		git_repository_free(repo);
 		throw;
 	}
+	spdlog::info("Updating completed!");
 }
 
 GitRepo::~GitRepo()
