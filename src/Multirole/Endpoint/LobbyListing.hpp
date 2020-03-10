@@ -6,10 +6,7 @@
 #include <asio/ip/tcp.hpp>
 #include <asio/steady_timer.hpp>
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class Lobby;
@@ -36,8 +33,6 @@ private:
 
 } // namespace Endpoint
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // LOBBYLISTING_HPP

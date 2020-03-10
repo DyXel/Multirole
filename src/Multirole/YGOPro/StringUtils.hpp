@@ -5,7 +5,7 @@
 namespace YGOPro
 {
 
-std::u16string BufferToUTF16(const void* data, std::size_t maxCount);
+std::u16string BufferToUTF16(const void* data, std::size_t maxByteCount);
 std::size_t UTF16ToBuffer(void* data, std::u16string str);
 
 std::string UTF16ToUTF8(std::u16string_view str);

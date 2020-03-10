@@ -3,10 +3,7 @@
 #include "Client.hpp"
 #include "YGOPro/STOCMsg.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 enum ChatMsgType : uint8_t
@@ -34,7 +31,7 @@ public:
 	// Creates chat message from client position (client message)
 	YGOPro::STOCMsg MakeChat(const Client& c, std::string_view str) const;
 	// Creates chat message from specific type (system message)
-	YGOPro::STOCMsg MakeChat(ChatMsgType type, std::string_view str) const;
+	static YGOPro::STOCMsg MakeChat(ChatMsgType type, std::string_view str);
 
 	YGOPro::STOCMsg MakePlayerEnter(const Client& c) const;
 
@@ -45,7 +42,7 @@ public:
 	// Creates message that moves a player from one position to another
 	YGOPro::STOCMsg MakePlayerChange(Client::PosType p1, Client::PosType p2) const;
 
-	YGOPro::STOCMsg MakeWatchChange(std::size_t count) const;
+	static YGOPro::STOCMsg MakeWatchChange(std::size_t count);
 protected:
 	uint8_t EncodePosition(Client::PosType pos) const;
 
@@ -53,8 +50,6 @@ private:
 	const uint8_t t1max;
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // STOCMSGFACTORY_HPP

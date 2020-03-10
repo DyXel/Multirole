@@ -9,10 +9,7 @@
 
 constexpr int TYPE_LINK = 0x4000000; // NOTE: remove if we import other types
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 static constexpr const char* SEARCH_STMT =
@@ -24,7 +21,7 @@ FROM datas WHERE datas.id = ?;
 // public
 
 DataProvider::DataProvider(std::string_view fnRegexStr) :
-	CardDatabase(),
+
 	fnRegex(fnRegexStr.data())
 {
 	// Prepare card data search by id statement
@@ -52,7 +49,7 @@ OCG_CardData DataProvider::DataFromCode(uint32_t code)
 	auto AllocSetcodes = [](uint64_t dbVal) -> uint16_t*
 	{
 		static constexpr std::size_t DB_TOTAL_SETCODES = 4;
-		uint16_t* setcodes = new uint16_t[DB_TOTAL_SETCODES + 1];
+		auto* setcodes = new uint16_t[DB_TOTAL_SETCODES + 1];
 		for(std::size_t i = 0; i < DB_TOTAL_SETCODES; i++)
 			setcodes[i] = (dbVal >> (i * 16)) & 0xFFFF;
 		setcodes[DB_TOTAL_SETCODES] = 0;
@@ -69,8 +66,8 @@ OCG_CardData DataProvider::DataFromCode(uint32_t code)
 		cd.type = sqlite3_column_int(sStmt, 3);
 		cd.attack = sqlite3_column_int(sStmt, 4);
 		cd.defense = sqlite3_column_int(sStmt, 5);
-		cd.link_marker = (cd.type & TYPE_LINK) ? cd.defense : 0;
-		cd.defense = (cd.type & TYPE_LINK) ? 0 : cd.defense;
+		cd.link_marker = (cd.type & TYPE_LINK) != 0U ? cd.defense : 0;
+		cd.defense = (cd.type & TYPE_LINK) != 0U ? 0 : cd.defense;
 		const auto dbLevel = sqlite3_column_int(sStmt, 6);
 		cd.level = dbLevel & 0x800000FF;
 		cd.lscale = (dbLevel >> 24) & 0xFF;
@@ -109,6 +106,4 @@ void DataProvider::LoadDBs(std::string_view path, const PathVector& fileList)
 	}
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole

@@ -3,13 +3,7 @@
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Endpoint
+namespace Ignis::Multirole::Endpoint
 {
 
 class Webhook
@@ -26,10 +20,6 @@ private:
 	void DoReadHeader(asio::ip::tcp::socket soc);
 };
 
-} // namespace Endpoint
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Endpoint
 
 #endif // WEBHOOKENDPOINT_HPP

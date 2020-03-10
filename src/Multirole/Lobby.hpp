@@ -9,10 +9,7 @@
 #include "IRoomManager.hpp"
 #include "Room.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class Lobby final : public IRoomManager
@@ -32,8 +29,6 @@ private:
 	void Remove(uint32_t roomId) override;
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // LOBBY_HP

@@ -10,10 +10,7 @@
 #include "YGOPro/CTOSMsg.hpp"
 #include "YGOPro/STOCMsg.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class IClientListener;
@@ -58,8 +55,6 @@ private:
 	void HandleMsg();
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // CLIENT_HPP

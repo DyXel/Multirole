@@ -2,10 +2,7 @@
 
 #include <chrono>
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
@@ -29,11 +26,11 @@ std::shared_ptr<Room> Lobby::GetRoomById(uint32_t id)
 
 std::size_t Lobby::GetStartedRoomsCount()
 {
-	std::size_t count = 0u;
+	std::size_t count = 0U;
 	{
 		std::lock_guard<std::mutex> lock(mRooms);
 		for(auto& kv : rooms)
-			count += kv.second->State() != Room::WAITING;
+			count += static_cast<unsigned long>(kv.second->State() != Room::WAITING);
 	}
 	return count;
 }
@@ -76,6 +73,4 @@ void Lobby::Remove(uint32_t roomId)
 	rooms.erase(roomId);
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole

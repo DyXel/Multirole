@@ -7,10 +7,7 @@
 #include "IGitRepoObserver.hpp"
 #include "Core/IScriptSupplier.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class ScriptProvider final : public IGitRepoObserver, public Core::IScriptSupplier
@@ -32,8 +29,6 @@ private:
 	void LoadScripts(std::string_view path, const PathVector& fileList);
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // SCRIPTPROVIDER_HPP

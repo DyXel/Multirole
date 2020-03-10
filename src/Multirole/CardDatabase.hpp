@@ -5,10 +5,7 @@
 struct sqlite3;
 struct sqlite3_stmt;
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class CardDatabase
@@ -26,13 +23,11 @@ public:
 	// Add a new database to the amalgation
 	bool Merge(std::string_view absFilePath);
 protected:
-	sqlite3* db;
+	sqlite3* db{};
 private:
-	sqlite3_stmt* aStmt;
+	sqlite3_stmt* aStmt{};
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // CARDDATABASE_HPP

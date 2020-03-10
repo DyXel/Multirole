@@ -9,19 +9,20 @@ namespace YGOPro
 
 std::u16string BufferToUTF16(const void* data, std::size_t maxByteCount)
 {
-	auto p = reinterpret_cast<const char16_t*>(data), p2 = p;
-	std::size_t bytesForwarded = 0u;
-	while(bytesForwarded <= maxByteCount && *p)
+	auto p = reinterpret_cast<const char16_t*>(data);
+	auto p2 = p;
+	std::size_t bytesForwarded = 0U;
+	while(bytesForwarded <= maxByteCount && (*p != 0U))
 	{
 		p++;
-		bytesForwarded += 2u;
+		bytesForwarded += 2U;
 	}
 	return std::u16string(p2, p - p2);
 }
 
 std::size_t UTF16ToBuffer(void* data, std::u16string str)
 {
-	std::size_t bytesCopied = (str.size() + 1u) * sizeof(char16_t);
+	std::size_t bytesCopied = (str.size() + 1U) * sizeof(char16_t);
 	std::memcpy(data, str.data(), bytesCopied);
 	return bytesCopied;
 }

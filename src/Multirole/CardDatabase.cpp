@@ -5,10 +5,7 @@
 
 #include <sqlite3.h>
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 static constexpr const char* DB_SCHEMAS =
@@ -115,6 +112,4 @@ bool CardDatabase::Merge(std::string_view absFilePath)
 	return true;
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole

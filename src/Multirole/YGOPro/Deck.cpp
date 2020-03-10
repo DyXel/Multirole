@@ -31,11 +31,11 @@ bool Deck::Check(const Banlist& banlist) const
 	{
 		if(banlist.IsWhitelist() && banlist.Whitelist().count(kv.first) == 0)
 			return false;
-		else if(banlist.Forbidden().count(kv.first))
+		if(banlist.Forbidden().count(kv.first) != 0U)
 			return false;
-		else if(kv.second > 1 && banlist.Limited().count(kv.first))
+		if(kv.second > 1 && (banlist.Limited().count(kv.first) != 0U))
 			return false;
-		else if(kv.second > 2 && banlist.Semilimited().count(kv.first))
+		if(kv.second > 2 && (banlist.Semilimited().count(kv.first) != 0U))
 			return false;
 	}
 	return true;

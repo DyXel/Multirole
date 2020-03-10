@@ -5,10 +5,7 @@
 #include "Client.hpp"
 #include "IRoomManager.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 // public
@@ -29,7 +26,7 @@ Room::StateEnum Room::State() const
 
 bool Room::CheckPassword(std::string_view str) const
 {
-	return options.pass == "" || options.pass == str;
+	return options.pass.empty() || options.pass == str;
 }
 
 void Room::RegisterToOwner()
@@ -42,7 +39,7 @@ Room::Properties Room::GetProperties()
 	Properties prop;
 	prop.info = options.info;
 	prop.notes = options.notes;
-	prop.passworded = options.pass != "";
+	prop.passworded = !options.pass.empty();
 	prop.id = options.id;
 	prop.state = state;
 	{
@@ -123,7 +120,7 @@ void Room::OnConnectionLost(Client& client)
 		}
 		else
 		{
-			SendToAll(MakeWatchChange(clients.size() - duelists.size() - 1u));
+			SendToAll(MakeWatchChange(clients.size() - duelists.size() - 1U));
 		}
 		return;
 	}
@@ -212,8 +209,8 @@ void Room::OnTryKick(Client& client, uint8_t pos)
 	if(state != WAITING || &client != host)
 		return;
 	Client::PosType p;
-	p.first = pos >= options.info.t1Count;
-	p.second = p.first ? pos - options.info.t1Count : pos;
+	p.first = static_cast<unsigned char>(pos >= options.info.t1Count);
+	p.second = p.first != 0U ? pos - options.info.t1Count : pos;
 	if(duelists.count(p) == 0 || duelists[p] == host)
 		return;
 	Client* kicked = duelists[p];
@@ -263,13 +260,13 @@ bool Room::TryEmplaceDuelist(Client& client, Client::PosType hint)
 		}
 		return false;
 	};
-	if(hint.first == 0u)
+	if(hint.first == 0U)
 		if(EmplaceLoop(hint, options.info.t1Count))
 			return true;
 	auto p = hint;
-	if(hint.first != 1u)
-		p.second = 0u;
-	p.first = 1u;
+	if(hint.first != 1U)
+		p.second = 0U;
+	p.first = 1U;
 	if(EmplaceLoop(p, options.info.t2Count))
 		return true;
 	if(hint != Client::PosType{})
@@ -324,6 +321,4 @@ void Room::SendToAll(const YGOPro::STOCMsg& msg)
 		c->Send(msg);
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole

@@ -6,10 +6,7 @@
 #include "IGitRepoObserver.hpp"
 #include "Core/IDataSupplier.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class DataProvider final : public CardDatabase, public IGitRepoObserver,
@@ -28,13 +25,11 @@ public:
 	void DataUsageDone(OCG_CardData& data) override;
 private:
 	std::regex fnRegex;
-	sqlite3_stmt* sStmt;
+	sqlite3_stmt* sStmt{};
 
 	void LoadDBs(std::string_view path, const PathVector& fullFileList);
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // DATAPROVIDER_HPP

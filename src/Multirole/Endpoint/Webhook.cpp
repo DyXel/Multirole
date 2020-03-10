@@ -4,13 +4,7 @@
 
 #include <asio/write.hpp>
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Endpoint
+namespace Ignis::Multirole::Endpoint
 {
 
 // public
@@ -39,7 +33,7 @@ void Webhook::DoAccept()
 	{
 		if(ec == asio::error::operation_aborted)
 			return;
-		else if(!ec)
+		if(!ec)
 			DoReadHeader(std::move(soc));
 		DoAccept();
 	});
@@ -50,7 +44,7 @@ void Webhook::DoReadHeader(asio::ip::tcp::socket soc)
 	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
 	auto payload = std::make_shared<std::string>(255, ' ');
 	socPtr->async_read_some(asio::buffer(*payload),
-	[this, socPtr, payload](const std::error_code& ec, std::size_t)
+	[this, socPtr, payload](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
@@ -60,8 +54,4 @@ void Webhook::DoReadHeader(asio::ip::tcp::socket soc)
 	});
 }
 
-} // namespace Endpoint
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Endpoint

@@ -3,13 +3,7 @@
 #include <string_view>
 #include "IHighLevelWrapper.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Core
+namespace Ignis::Multirole::Core
 {
 
 class DynamicLinkWrapper : public IHighLevelWrapper
@@ -57,10 +51,6 @@ private:
 	ILogger* logger{nullptr};
 };
 
-} // namespace Core
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Core
 
 #endif // DYNAMICLINKWRAPPER_HPP

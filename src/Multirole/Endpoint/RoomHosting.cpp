@@ -10,13 +10,7 @@
 #include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/StringUtils.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Endpoint
+namespace Ignis::Multirole::Endpoint
 {
 
 // Holds information about the client before a proper connection to a Room
@@ -27,7 +21,7 @@ struct TmpClient
 	YGOPro::CTOSMsg msg;
 	std::string name;
 
-	TmpClient(asio::ip::tcp::socket soc) : soc(std::move(soc))
+	explicit TmpClient(asio::ip::tcp::socket soc) : soc(std::move(soc))
 	{}
 };
 
@@ -52,13 +46,13 @@ void RoomHosting::Stop()
 
 // private
 
-void RoomHosting::Add(std::shared_ptr<TmpClient> tc)
+void RoomHosting::Add(const std::shared_ptr<TmpClient>& tc)
 {
 	std::lock_guard<std::mutex> lock(mTmpClients);
 	tmpClients.insert(tc);
 }
 
-void RoomHosting::Remove(std::shared_ptr<TmpClient> tc)
+void RoomHosting::Remove(const std::shared_ptr<TmpClient>& tc)
 {
 	std::lock_guard<std::mutex> lock(mTmpClients);
 	tmpClients.erase(tc);
@@ -75,17 +69,17 @@ void RoomHosting::DoAccept()
 		{
 			auto tc = std::make_shared<TmpClient>(std::move(soc));
 			Add(tc);
-			DoReadHeader(std::move(tc));
+			DoReadHeader(tc);
 		}
 		DoAccept();
 	});
 }
 
-void RoomHosting::DoReadHeader(std::shared_ptr<TmpClient> tc)
+void RoomHosting::DoReadHeader(const std::shared_ptr<TmpClient>& tc)
 {
 	auto buffer = asio::buffer(tc->msg.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
 	asio::async_read(tc->soc, buffer,
-	[this, tc](const std::error_code& ec, std::size_t)
+	[this, tc](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec && tc->msg.IsHeaderValid())
 			DoReadBody(tc);
@@ -94,11 +88,11 @@ void RoomHosting::DoReadHeader(std::shared_ptr<TmpClient> tc)
 	});
 }
 
-void RoomHosting::DoReadBody(std::shared_ptr<TmpClient> tc)
+void RoomHosting::DoReadBody(const std::shared_ptr<TmpClient>& tc)
 {
 	auto buffer = asio::buffer(tc->msg.Body(), tc->msg.GetLength());
 	asio::async_read(tc->soc, buffer,
-	[this, tc](const std::error_code& ec, std::size_t)
+	[this, tc](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec && HandleMsg(tc))
 			DoReadHeader(tc);
@@ -107,7 +101,7 @@ void RoomHosting::DoReadBody(std::shared_ptr<TmpClient> tc)
 	});
 }
 
-bool RoomHosting::HandleMsg(std::shared_ptr<TmpClient> tc)
+bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 {
 #define UTF16_BUFFER_TO_STR(a) \
 	YGOPro::UTF16ToUTF8(YGOPro::BufferToUTF16(a, sizeof(decltype(a))))
@@ -163,8 +157,4 @@ bool RoomHosting::HandleMsg(std::shared_ptr<TmpClient> tc)
 #undef UTF16_BUFFER_TO_STR
 }
 
-} // namespace Endpoint
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Endpoint

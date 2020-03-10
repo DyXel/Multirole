@@ -3,15 +3,13 @@
 #include <asio/bind_executor.hpp>
 #include <asio/read.hpp>
 #include <asio/write.hpp>
+#include <fmt/printf.h>
 
 #include "IClientListener.hpp"
 #include "IClientManager.hpp"
 #include "YGOPro/StringUtils.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 Client::Client(IClientListener& listener, IClientManager& owner, asio::io_context::strand& strand, asio::ip::tcp::socket soc, std::string name) :
@@ -106,7 +104,7 @@ void Client::DoReadHeader()
 {
 	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
 	asio::async_read(soc, buffer, asio::bind_executor(strand,
-	[this](const std::error_code& ec, std::size_t)
+	[this](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
 			DoReadBody();
@@ -119,7 +117,7 @@ void Client::DoReadBody()
 {
 	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
 	asio::async_read(soc, buffer, asio::bind_executor(strand,
-	[this](const std::error_code& ec, std::size_t)
+	[this](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec)
 		{
@@ -139,7 +137,7 @@ void Client::DoWrite()
 {
 	const auto& front = outgoing.front();
 	asio::async_write(soc, asio::buffer(front.Data(), front.Length()),
-	[this](const std::error_code& ec, std::size_t)
+	[this](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
@@ -194,11 +192,10 @@ void Client::HandleMsg()
 	}
 	default:
 	{
+		fmt::print("Unhandled msg received: 0x{:X}\n", incoming.GetType());
 		return;
 	}
 	}
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole

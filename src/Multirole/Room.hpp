@@ -22,10 +22,8 @@ class STOCMsg;
 
 } // namespace YGOPro
 
-namespace Ignis
+namespace Ignis::Multirole
 {
-
-namespace Multirole {
 
 class IRoomManager;
 
@@ -99,7 +97,7 @@ private:
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 
-	bool TryEmplaceDuelist(Client& client, Client::PosType after = {});
+	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
 	void JoinToWaiting(Client& client);
 	void JoinToDuel(Client& client);
 
@@ -108,8 +106,6 @@ private:
 	void SendToAll(const YGOPro::STOCMsg& msg);
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // ROOM_HPP

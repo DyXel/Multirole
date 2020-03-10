@@ -2,10 +2,8 @@
 #define ICLIENTMANAGER_HPP
 #include <memory>
 
-namespace Ignis
+namespace Ignis::Multirole
 {
-
-namespace Multirole {
 
 class Client;
 
@@ -17,8 +15,6 @@ private:
 	virtual void Remove(std::shared_ptr<Client> client) = 0;
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // ICLIENTMANAGER_HPP

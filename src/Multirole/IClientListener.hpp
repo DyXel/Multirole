@@ -3,10 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class Client;
@@ -25,8 +22,6 @@ private:
 	virtual void OnTryStart(Client& client) = 0;
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // ICLIENTLISTENER_HPP

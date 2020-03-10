@@ -9,10 +9,7 @@
 
 struct git_repository;
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class GitRepo final : public Endpoint::Webhook
@@ -53,8 +50,6 @@ private:
 	std::vector<std::string> GetTrackedFiles() const;
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // GITREPO_HPP

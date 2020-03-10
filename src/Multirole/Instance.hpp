@@ -12,10 +12,7 @@
 #include "Endpoint/LobbyListing.hpp"
 #include "Endpoint/RoomHosting.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class Instance final
@@ -40,8 +37,6 @@ private:
 	void Stop();
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // SERVERINSTANCE_HPP

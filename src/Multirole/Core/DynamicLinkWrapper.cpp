@@ -8,13 +8,7 @@
 #include "ILogger.hpp"
 #include "../../DLOpen.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Core
+namespace Ignis::Multirole::Core
 {
 
 // Core callbacks
@@ -54,7 +48,7 @@ DynamicLinkWrapper::DynamicLinkWrapper(std::string_view absFilePath)
 	do{ \
 	void* funcPtr = DLOpen::LoadFunction(handle, #name); \
 	(name) = reinterpret_cast<decltype(name)>(funcPtr); \
-	if(name == nullptr) \
+	if((name) == nullptr) \
 	{ \
 		DLOpen::UnloadObject(handle); \
 		throw std::runtime_error("Could not load API function."); \
@@ -179,8 +173,4 @@ IHighLevelWrapper::Buffer DynamicLinkWrapper::QueryField(Duel duel)
 	return buffer;
 }
 
-} // namespace Core
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Core

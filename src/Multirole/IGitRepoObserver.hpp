@@ -4,10 +4,7 @@
 #include <string_view>
 #include <vector>
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class IGitRepoObserver
@@ -18,8 +15,6 @@ public:
 	virtual void OnReset(std::string_view path, const PathVector& deltaFileList) = 0;
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // IGITREPOOBSERVER_HPP

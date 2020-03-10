@@ -6,13 +6,7 @@
 
 #include "../Lobby.hpp"
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Endpoint
+namespace Ignis::Multirole::Endpoint
 {
 
 // public
@@ -117,11 +111,7 @@ void LobbyListing::DoSendRoomList(asio::ip::tcp::socket soc)
 	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
 	auto msg = std::make_shared<std::string>(serialized);
 	asio::async_write(*socPtr, asio::buffer(*msg),
-	[socPtr, msg](const std::error_code&, std::size_t){});
+	[socPtr, msg](const std::error_code& /*unused*/, std::size_t /*unused*/){});
 }
 
-} // namespace Endpoint
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Endpoint

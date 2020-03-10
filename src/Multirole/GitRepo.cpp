@@ -150,15 +150,12 @@ decltype(auto) Peel(Detail::UniqueObjPtr objPtr)
 
 } // namespace Git
 
-namespace Ignis
+namespace Ignis::Multirole
 {
 
-namespace Multirole
+int CredCb(git_cred** out, const char* /*unused*/, const char* /*unused*/, unsigned int aTypes, void* pl)
 {
-
-int CredCb(git_cred** out, const char*, const char*, unsigned int aTypes, void* pl)
-{
-	if(!(GIT_CREDTYPE_USERPASS_PLAINTEXT & aTypes))
+	if((GIT_CREDTYPE_USERPASS_PLAINTEXT & aTypes) == 0U)
 		return GIT_EUSER;
 	const auto& cred = *static_cast<GitRepo::Credentials*>(pl);
 	return git_cred_userpass_plaintext_new(out, cred.first.c_str(), cred.second.c_str());
@@ -181,7 +178,7 @@ GitRepo::GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts) :
 	path(NormalizePath(opts.at("path").get<std::string>())),
 	repo(nullptr)
 {
-	if(opts.count("credentials"))
+	if(opts.count("credentials") != 0U)
 	{
 		const auto& credJson = opts["credentials"];
 		auto user = credJson.at("username").get<std::string>();
@@ -298,7 +295,7 @@ GitRepo::PathVector GitRepo::GetFilesDiff() const
 {
 	// git diff ..FETCH_HEAD
 	PathVector pv;
-	auto FileCb = [](const git_diff_delta* delta, float, void* payload) -> int
+	auto FileCb = [](const git_diff_delta* delta, float /*unused*/, void* payload) -> int
 	{
 		auto& pv = *static_cast<PathVector*>(payload);
 		pv.emplace_back(delta->new_file.path);
@@ -328,6 +325,4 @@ GitRepo::PathVector GitRepo::GetTrackedFiles() const
 	return pv;
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole

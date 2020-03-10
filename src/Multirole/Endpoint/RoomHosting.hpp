@@ -7,10 +7,7 @@
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 class Lobby;
@@ -32,20 +29,18 @@ private:
 	std::set<std::shared_ptr<TmpClient>> tmpClients;
 	std::mutex mTmpClients;
 
-	void Add(std::shared_ptr<TmpClient> tc);
-	void Remove(std::shared_ptr<TmpClient> tc);
+	void Add(const std::shared_ptr<TmpClient>& tc);
+	void Remove(const std::shared_ptr<TmpClient>& tc);
 
 	void DoAccept();
-	void DoReadHeader(std::shared_ptr<TmpClient> tc);
-	void DoReadBody(std::shared_ptr<TmpClient> tc);
+	void DoReadHeader(const std::shared_ptr<TmpClient>& tc);
+	void DoReadBody(const std::shared_ptr<TmpClient>& tc);
 
-	bool HandleMsg(std::shared_ptr<TmpClient> tc);
+	bool HandleMsg(const std::shared_ptr<TmpClient>& tc);
 };
 
 } // namespace Endpoint
 
-} // namespace Ignis
-
-} // namespace Multirole
+} // namespace Ignis::Multirole
 
 #endif // ROOMHOSTINGENDPOINT_HPP

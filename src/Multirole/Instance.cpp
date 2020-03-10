@@ -7,10 +7,8 @@
 
 #include <spdlog/spdlog.h>
 
-namespace Ignis
+namespace Ignis::Multirole
 {
-
-namespace Multirole {
 
 nlohmann::json LoadConfigJson(std::string_view path)
 {
@@ -27,7 +25,7 @@ Instance::Instance() :
 	cfg(LoadConfigJson("config.json")),
 	dataProvider(cfg.at("dataProvider").at("dbFileRegex").get<std::string>()),
 	scriptProvider(cfg.at("scriptProvider").at("scriptFileRegex").get<std::string>()),
-	lobby(),
+
 	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
 	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), lobby),
 	signalSet(lIoCtx)
@@ -35,7 +33,7 @@ Instance::Instance() :
 	// Load up and update repositories while also adding them to the std::map
 	for(const auto& repoOpts : cfg.at("repos").get<std::vector<nlohmann::json>>())
 	{
-		std::string name = repoOpts.at("name").get<std::string>();
+		auto name = repoOpts.at("name").get<std::string>();
 		spdlog::info("Adding repository '{:s}'...", name);
 		repos.emplace(std::piecewise_construct, std::forward_as_tuple(name),
 		              std::forward_as_tuple(whIoCtx, repoOpts));
@@ -52,7 +50,7 @@ Instance::Instance() :
 	spdlog::info("Setting up signal handling...");
 	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);
-	signalSet.async_wait([this](const std::error_code&, int sigNum)
+	signalSet.async_wait([this](const std::error_code& /*unused*/, int sigNum)
 	{
 		const char* sigName;
 		switch(sigNum)
@@ -97,13 +95,11 @@ void Instance::Stop()
 	roomHosting.Stop();
 	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
 	lobby.CloseNonStartedRooms();
-	if(startedRoomsCount > 0u)
+	if(startedRoomsCount > 0U)
 	{
 		spdlog::info(UNFINISHED_DUELS_STRING);
 		spdlog::info("Remaining rooms: {:d}", startedRoomsCount);
 	}
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole

@@ -6,10 +6,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace Ignis
-{
-
-namespace Multirole
+namespace Ignis::Multirole
 {
 
 // public
@@ -74,6 +71,4 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 	spdlog::info("ScriptProvider: loaded {:d} files", total);
 }
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
