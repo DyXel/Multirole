@@ -1,12 +1,12 @@
 #ifndef YGOPRO_BANLIST_HPP
 #define YGOPRO_BANLIST_HPP
 #include <cstdint>
-#include <set>
+#include <unordered_set>
 
 namespace YGOPro
 {
 
-using CodeSet = std::set<uint32_t>;
+using CodeSet = std::unordered_set<uint32_t>;
 
 class Banlist
 {

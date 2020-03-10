@@ -2,6 +2,8 @@
 * Reload all databases on a different amalgamation upon triggering update (needed to remove old beta cards)
    * Make `GitRepo` report removed files as well as added/updated ones
 * Move `GitRepo`'s `libgit2` "abstraction layer" to a individual file
+* Make `GitRepo` webhook update system optional upon construction via config file
+   * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 
 # Porting to YGOpen project
 
