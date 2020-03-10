@@ -78,7 +78,6 @@ std::unordered_map<BanlistHash, Banlist> ParseForBanlists(Stream& stream)
 				std::runtime_error("Card code cannot be 0");
 			auto count = static_cast<uint32_t>(std::stol(l.substr(p, c)));
 			hash = Detail::Salt(hash, code, count);
-			printf("%d %d\n", code, count);
 			switch(count)
 			{
 #define X(val, uset) case val: {uset.insert(code); break;}
