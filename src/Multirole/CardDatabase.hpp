@@ -20,7 +20,7 @@ public:
 	// Closes the database
 	~CardDatabase();
 
-	// Add a new database to the amalgation
+	// Add a new database to the amalgamation
 	bool Merge(std::string_view absFilePath);
 protected:
 	sqlite3* db{};

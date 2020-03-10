@@ -91,6 +91,7 @@ void Instance::Stop()
 {
 	spdlog::info("Closing all acceptors and finishing IO operations...");
 	whIoCtx.stop(); // Terminates thread
+	repos.clear();
 	lobbyListing.Stop();
 	roomHosting.Stop();
 	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
