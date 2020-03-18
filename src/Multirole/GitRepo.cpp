@@ -161,7 +161,7 @@ int CredCb(git_cred** out, const char* /*unused*/, const char* /*unused*/, unsig
 	return git_cred_userpass_plaintext_new(out, cred.first.c_str(), cred.second.c_str());
 }
 
-std::string NormalizePath(std::string_view str)
+std::string NormalizeDirPath(std::string_view str)
 {
 	std::string tmp(str);
 	if(tmp.back() != '/' || tmp.back() != '\\')
@@ -175,7 +175,7 @@ GitRepo::GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts) :
 	Webhook(ioCtx, opts.at("webhookPort").get<unsigned short>()),
 	token(opts.at("webhookToken").get<std::string>()),
 	remote(opts.at("remote").get<std::string>()),
-	path(NormalizePath(opts.at("path").get<std::string>())),
+	path(NormalizeDirPath(opts.at("path").get<std::string>())),
 	repo(nullptr)
 {
 	if(opts.count("credentials") != 0U)
@@ -215,8 +215,7 @@ GitRepo::~GitRepo()
 void GitRepo::AddObserver(IGitRepoObserver& obs)
 {
 	observers.emplace_back(&obs);
-	const IGitRepoObserver::PathVector pv = GetTrackedFiles();
-	if(!pv.empty())
+	if(const PathVector pv = GetTrackedFiles(); !pv.empty())
 		obs.OnAdd(path, pv);
 }
 
@@ -230,27 +229,27 @@ void GitRepo::Callback(std::string_view payload)
 		spdlog::error("Trigger doesn't have the token");
 		return;
 	}
-	IGitRepoObserver::PathVector pv;
 	try
 	{
 		Fetch();
-		pv = GetFilesDiff();
+		const GitDiff diff = GetFilesDiff();
 		ResetToFetchHead();
+		spdlog::info("Finished updating");
+		if(!diff.removed.empty() || !diff.added.empty())
+			for(auto& obs : observers)
+				obs->OnDiff(path, diff);
 	}
 	catch(const std::exception& e)
 	{
 		spdlog::error("Exception ocurred while updating repo: {:s}", e.what());
 	}
-	spdlog::info("Finished updating");
-	if(!pv.empty())
-		for(auto& obs : observers)
-			obs->OnReset(path, pv);
 }
 
 bool GitRepo::CheckIfRepoExists() const
 {
 	git_repository* tmp = nullptr;
-	const int status = git_repository_open_ext(&tmp, path.c_str(), GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
+	const int status = git_repository_open_ext(&tmp, path.c_str(),
+	                   GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
 	git_repository_free(tmp);
 	return status == 0;
 }
@@ -291,26 +290,38 @@ void GitRepo::ResetToFetchHead()
 	                     GIT_RESET_HARD, nullptr));
 }
 
-GitRepo::PathVector GitRepo::GetFilesDiff() const
+GitDiff GitRepo::GetFilesDiff() const
 {
 	// git diff ..FETCH_HEAD
-	PathVector pv;
 	auto FileCb = [](const git_diff_delta* delta, float /*unused*/, void* payload) -> int
 	{
-		auto& pv = *static_cast<PathVector*>(payload);
-		pv.emplace_back(delta->new_file.path);
+		auto& diff = *static_cast<GitDiff*>(payload);
+		if(git_oid_is_zero(&delta->old_file.id) == 1)
+		{
+			diff.added.emplace_back(delta->new_file.path);
+		}
+		else if(git_oid_is_zero(&delta->new_file.id) == 1)
+		{
+			diff.removed.emplace_back(delta->old_file.path);
+		}
+		else
+		{
+			diff.removed.emplace_back(delta->old_file.path);
+			diff.added.emplace_back(delta->new_file.path);
+		}
 		return 0;
 	};
 	auto obj1 = Git::MakeUnique(git_revparse_single, repo, "HEAD");
 	auto obj2 = Git::MakeUnique(git_revparse_single, repo, "FETCH_HEAD");
 	auto t1 = Git::Peel<git_tree>(std::move(obj1));
 	auto t2 = Git::Peel<git_tree>(std::move(obj2));
-	auto diff = Git::MakeUnique(git_diff_tree_to_tree, repo, t1.get(), t2.get(), nullptr);
-	Git::Check(git_diff_foreach(diff.get(), FileCb, nullptr, nullptr, nullptr, &pv));
-	return pv;
+	auto obj3 = Git::MakeUnique(git_diff_tree_to_tree, repo, t1.get(), t2.get(), nullptr);
+	GitDiff diff;
+	Git::Check(git_diff_foreach(obj3.get(), FileCb, nullptr, nullptr, nullptr, &diff));
+	return diff;
 }
 
-GitRepo::PathVector GitRepo::GetTrackedFiles() const
+PathVector GitRepo::GetTrackedFiles() const
 {
 	// git ls-files
 	PathVector pv;

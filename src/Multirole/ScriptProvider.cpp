@@ -15,14 +15,14 @@ ScriptProvider::ScriptProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-void ScriptProvider::OnAdd(std::string_view path, const PathVector& fullFileList)
+void ScriptProvider::OnAdd(std::string_view path, const PathVector& fileList)
 {
-	LoadScripts(path, fullFileList);
+	LoadScripts(path, fileList);
 }
 
-void ScriptProvider::OnReset(std::string_view path, const PathVector& deltaFileList)
+void ScriptProvider::OnDiff(std::string_view path, const GitDiff& diff)
 {
-	LoadScripts(path, deltaFileList);
+	LoadScripts(path, diff.added);
 }
 
 std::string ScriptProvider::ScriptFromFilePath(std::string_view fp)

@@ -17,8 +17,8 @@ public:
 	~DataProvider();
 
 	// IGitRepoObserver overrides
-	void OnAdd(std::string_view path, const PathVector& fullFileList) override;
-	void OnReset(std::string_view path, const PathVector& deltaFileList) override;
+	void OnAdd(std::string_view path, const PathVector& fileList) override;
+	void OnDiff(std::string_view path, const GitDiff& diff) override;
 
 	// Core::IDataSupplier overrides
 	OCG_CardData DataFromCode(uint32_t code) override;

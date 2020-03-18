@@ -30,8 +30,6 @@ public:
 
 	void AddObserver(IGitRepoObserver& obs);
 private:
-	using PathVector = IGitRepoObserver::PathVector;
-
 	const std::string token;
 	const std::string remote;
 	const std::string path;
@@ -46,7 +44,7 @@ private:
 	void Fetch();
 	void ResetToFetchHead();
 
-	std::vector<std::string> GetFilesDiff() const;
+	GitDiff GetFilesDiff() const;
 	std::vector<std::string> GetTrackedFiles() const;
 };
 

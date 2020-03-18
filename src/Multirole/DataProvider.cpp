@@ -34,14 +34,14 @@ DataProvider::~DataProvider()
 	sqlite3_finalize(sStmt);
 }
 
-void DataProvider::OnAdd(std::string_view path, const PathVector& fullFileList)
+void DataProvider::OnAdd(std::string_view path, const PathVector& fileList)
 {
-	LoadDBs(path, fullFileList);
+	LoadDBs(path, fileList);
 }
 
-void DataProvider::OnReset(std::string_view path, const PathVector& deltaFileList)
+void DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
 {
-	LoadDBs(path, deltaFileList);
+	LoadDBs(path, diff.added);
 }
 
 OCG_CardData DataProvider::DataFromCode(uint32_t code)

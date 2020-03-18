@@ -16,8 +16,8 @@ public:
 	ScriptProvider(std::string_view fnRegexStr);
 
 	// IGitRepoObserver overrides
-	void OnAdd(std::string_view path, const PathVector& fullFileList) override;
-	void OnReset(std::string_view path, const PathVector& deltaFileList) override;
+	void OnAdd(std::string_view path, const PathVector& fileList) override;
+	void OnDiff(std::string_view path, const GitDiff& diff) override;
 
 	// Core::IScriptSupplier overrides
 	std::string ScriptFromFilePath(std::string_view fp) override;

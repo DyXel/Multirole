@@ -7,12 +7,20 @@
 namespace Ignis::Multirole
 {
 
+using PathVector = std::vector<std::string>;
+
+struct GitDiff
+{
+	// NOTE: filenames that were only modified will be present in both vectors
+	PathVector removed;
+	PathVector added;
+};
+
 class IGitRepoObserver
 {
 public:
-	using PathVector = std::vector<std::string>;
-	virtual void OnAdd(std::string_view path, const PathVector& fullFileList) = 0;
-	virtual void OnReset(std::string_view path, const PathVector& deltaFileList) = 0;
+	virtual void OnAdd(std::string_view path, const PathVector& fileList) = 0;
+	virtual void OnDiff(std::string_view path, const GitDiff& diff) = 0;
 };
 
 } // namespace Ignis::Multirole
