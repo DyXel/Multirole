@@ -5,6 +5,7 @@
 #include <asio/signal_set.hpp>
 #include <nlohmann/json.hpp>
 
+#include "BanlistProvider.hpp"
 #include "DataProvider.hpp"
 #include "GitRepo.hpp"
 #include "Lobby.hpp"
@@ -27,6 +28,7 @@ private:
 	DataProvider dataProvider;
 	ScriptProvider scriptProvider;
 // 	CoreProvider coreProvider;
+	BanlistProvider banlistProvider;
 	Lobby lobby;
 	Endpoint::LobbyListing lobbyListing;
 	Endpoint::RoomHosting roomHosting;

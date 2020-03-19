@@ -7,6 +7,7 @@ namespace YGOPro
 {
 
 using BanlistHash = uint32_t;
+using BanlistMap = std::unordered_map<BanlistHash, Banlist>;
 
 namespace Detail
 {
@@ -26,9 +27,8 @@ constexpr BanlistHash Salt(BanlistHash hash, uint32_t code, uint32_t count)
 } // namespace Detail
 
 template<typename Stream>
-std::unordered_map<BanlistHash, Banlist> ParseForBanlists(Stream& stream)
+void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 {
-	std::unordered_map<BanlistHash, Banlist> banlists;
 	BanlistHash hash = Detail::BANLIST_HASH_MAGIC;
 	CodeSet whit, semi, limi, forb;
 	auto ConditionallyAdd = [&]()
@@ -94,7 +94,6 @@ std::unordered_map<BanlistHash, Banlist> ParseForBanlists(Stream& stream)
 		}
 	}
 	ConditionallyAdd();
-	return banlists;
 }
 
 } // namespace YGOPro

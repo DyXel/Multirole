@@ -25,7 +25,7 @@ Instance::Instance() :
 	cfg(LoadConfigJson("config.json")),
 	dataProvider(cfg.at("dataProvider").at("dbFileRegex").get<std::string>()),
 	scriptProvider(cfg.at("scriptProvider").at("scriptFileRegex").get<std::string>()),
-
+	banlistProvider(cfg.at("banlistProvider").at("blFileRegex").get<std::string>()),
 	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
 	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), lobby),
 	signalSet(lIoCtx)
@@ -46,6 +46,7 @@ Instance::Instance() :
 	};
 	RegRepos(dataProvider, cfg.at("dataProvider").at("observedRepos"));
 	RegRepos(scriptProvider, cfg.at("scriptProvider").at("observedRepos"));
+	RegRepos(banlistProvider, cfg.at("banlistProvider").at("observedRepos"));
 	// Register signals
 	spdlog::info("Setting up signal handling...");
 	signalSet.add(SIGINT);
@@ -62,6 +63,7 @@ Instance::Instance() :
 		spdlog::info("{:s} received.", sigName);
 		Stop();
 	});
+	spdlog::info("Initialization finished succesfully!");
 }
 
 int Instance::Run()
