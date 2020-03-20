@@ -1,3 +1,5 @@
+#ifndef LIBGIT2_HPP
+#define LIBGIT2_HPP
 #include <memory>
 #include <tuple>
 #include <type_traits>
@@ -146,3 +148,5 @@ decltype(auto) Peel(Detail::UniqueObjPtr objPtr)
 }
 
 } // namespace Git
+
+#endif // LIBGIT2_HPP
