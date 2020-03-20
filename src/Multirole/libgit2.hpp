@@ -1,3 +1,7 @@
+// Copyright 2020 Dylam De La Torre <dyxel04@gmail.com>
+// Licensed under AGPL
+// Refer to the COPYING file included.
+
 #ifndef LIBGIT2_HPP
 #define LIBGIT2_HPP
 #include <memory>
