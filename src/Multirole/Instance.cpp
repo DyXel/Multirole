@@ -25,6 +25,7 @@ Instance::Instance() :
 	cfg(LoadConfigJson("config.json")),
 	dataProvider(cfg.at("dataProvider").at("dbFileRegex").get<std::string>()),
 	scriptProvider(cfg.at("scriptProvider").at("scriptFileRegex").get<std::string>()),
+	coreProvider(cfg.at("coreProvider").at("coreFileRegex").get<std::string>(), dataProvider, scriptProvider),
 	banlistProvider(cfg.at("banlistProvider").at("blFileRegex").get<std::string>()),
 	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
 	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), lobby),
@@ -47,6 +48,21 @@ Instance::Instance() :
 	RegRepos(dataProvider, cfg.at("dataProvider").at("observedRepos"));
 	RegRepos(scriptProvider, cfg.at("scriptProvider").at("observedRepos"));
 	RegRepos(banlistProvider, cfg.at("banlistProvider").at("observedRepos"));
+	// Set up coreProvider
+	{
+		const auto& cpProps = cfg.at("coreProvider");
+		const auto& coreTypeStr = cpProps.at("coreType").get<std::string>();
+		const auto loadPerRoom = cpProps.at("loadPerRoom").get<bool>();
+		CoreProvider::CoreType type;
+		if(coreTypeStr == "shared")
+			type = CoreProvider::CoreType::SHARED;
+		else if(coreTypeStr == "hornet")
+			type = CoreProvider::CoreType::HORNET;
+		else
+			throw std::runtime_error("Incorrect type of core.");
+		coreProvider.SetLoadProperties(type, loadPerRoom);
+		RegRepos(coreProvider, cfg.at("coreProvider").at("observedRepos"));
+	}
 	// Register signals
 	spdlog::info("Setting up signal handling...");
 	signalSet.add(SIGINT);
@@ -63,7 +79,7 @@ Instance::Instance() :
 		spdlog::info("{:s} received.", sigName);
 		Stop();
 	});
-	spdlog::info("Initialization finished succesfully!");
+	spdlog::info("Initialization finished successfully!");
 }
 
 int Instance::Run()

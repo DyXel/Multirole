@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "BanlistProvider.hpp"
+#include "CoreProvider.hpp"
 #include "DataProvider.hpp"
 #include "GitRepo.hpp"
 #include "Lobby.hpp"
@@ -27,7 +28,7 @@ private:
 	nlohmann::json cfg;
 	DataProvider dataProvider;
 	ScriptProvider scriptProvider;
-// 	CoreProvider coreProvider;
+	CoreProvider coreProvider;
 	BanlistProvider banlistProvider;
 	Lobby lobby;
 	Endpoint::LobbyListing lobbyListing;

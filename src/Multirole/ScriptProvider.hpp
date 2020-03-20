@@ -22,7 +22,7 @@ public:
 	// Core::IScriptSupplier overrides
 	std::string ScriptFromFilePath(std::string_view fp) override;
 private:
-	std::regex fnRegex;
+	const std::regex fnRegex;
 	std::unordered_map<std::string, std::string> scripts;
 	std::mutex mScripts;
 
