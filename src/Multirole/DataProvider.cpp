@@ -47,7 +47,7 @@ void DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
 			continue;
 		fullPath.resize(path.size());
 		fullPath += fn;
-		paths.insert(fullPath);
+		paths.erase(fullPath);
 	}
 	// Filter and add to set of dbs
 	for(const auto& fn : diff.added)
@@ -56,7 +56,7 @@ void DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
 			continue;
 		fullPath.resize(path.size());
 		fullPath += fn;
-		paths.erase(fullPath);
+		paths.insert(fullPath);
 	}
 	ReloadDBs();
 }
