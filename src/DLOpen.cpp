@@ -68,7 +68,7 @@ void* LoadObject(const char* file)
 	handle = dlopen(file, RTLD_NOW | RTLD_LOCAL);
 	if (handle == nullptr)
 		fmt::print(FMT_STRING(ESTR_OBJECT), file, dlerror());
-	return (handle);
+	return handle;
 }
 
 void UnloadObject(void* handle)

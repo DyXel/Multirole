@@ -42,7 +42,7 @@ void BanlistProvider::LoadBanlists(std::string_view path, const PathVector& file
 		spdlog::info("BanlistProvider: Loading up {:s}...", fullPath);
 		try
 		{
-			std::fstream f(fullPath, std::ios_base::in);
+			std::ifstream f(fullPath);
 			YGOPro::ParseForBanlists(f, tmp);
 		}
 		catch(const std::exception& e)

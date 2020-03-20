@@ -3,6 +3,7 @@ target_sources(multirole PRIVATE
 	${CSR}/BanlistProvider.cpp
 	${CSR}/CardDatabase.cpp
 	${CSR}/Client.cpp
+	${CSR}/CoreProvider.cpp
 	${CSR}/DataProvider.cpp
 	${CSR}/GitRepo.cpp
 	${CSR}/Instance.cpp
