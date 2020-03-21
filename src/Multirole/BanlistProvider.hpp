@@ -13,7 +13,7 @@ class BanlistProvider : public IGitRepoObserver
 public:
 	BanlistProvider(std::string_view fnRegexStr);
 
-	const YGOPro::Banlist& GetBanlistByHash(YGOPro::BanlistHash hash);
+	const YGOPro::Banlist* GetBanlistByHash(YGOPro::BanlistHash hash);
 
 	// IGitRepoObserver overrides
 	void OnAdd(std::string_view path, const PathVector& fileList) override;

@@ -7,6 +7,9 @@
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
+#include "../CoreProvider.hpp"
+#include "../BanlistProvider.hpp"
+
 namespace Ignis::Multirole
 {
 
@@ -20,11 +23,15 @@ struct TmpClient;
 class RoomHosting
 {
 public:
-	RoomHosting(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
+	RoomHosting(asio::io_context& ioCtx, unsigned short port,
+	            CoreProvider& coreProvider, BanlistProvider& banlistProvider,
+	            Lobby& lobby);
 	void Stop();
 private:
 	asio::io_context& ioCtx;
 	asio::ip::tcp::acceptor acceptor;
+	CoreProvider& coreProvider;
+	BanlistProvider& banlistProvider;
 	Lobby& lobby;
 	std::set<std::shared_ptr<TmpClient>> tmpClients;
 	std::mutex mTmpClients;

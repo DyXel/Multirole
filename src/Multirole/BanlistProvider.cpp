@@ -11,10 +11,12 @@ BanlistProvider::BanlistProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-const YGOPro::Banlist& BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash)
+const YGOPro::Banlist* BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash)
 {
 	std::lock_guard<std::mutex> lock (mBanlists);
-	return banlists.at(hash);
+	if(auto search = banlists.find(hash); search != banlists.end())
+		return &search->second;
+	return nullptr;
 }
 
 void BanlistProvider::OnAdd(std::string_view path, const PathVector& fileList)

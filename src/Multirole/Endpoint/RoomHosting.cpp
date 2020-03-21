@@ -27,10 +27,13 @@ struct TmpClient
 
 // public
 
-RoomHosting::RoomHosting(
-	asio::io_context& ioCtx, unsigned short port, Lobby& lobby) :
+RoomHosting::RoomHosting(asio::io_context& ioCtx, unsigned short port,
+                         CoreProvider& coreProvider,
+                         BanlistProvider& banlistProvider, Lobby& lobby) :
 	ioCtx(ioCtx),
 	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
+	coreProvider(coreProvider),
+	banlistProvider(banlistProvider),
 	lobby(lobby)
 {
 	DoAccept();
@@ -123,13 +126,19 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 			return false;
 		// TODO: verify game settings
 		// TODO: maybe check server handshake?
-		p.second.notes[199] = '\0'; // Guarantee null-terminated string
+		p.second.notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
 		Room::Options options;
 		options.info = p.second.info;
 		options.name = UTF16_BUFFER_TO_STR(p.second.name);
-		options.pass = UTF16_BUFFER_TO_STR(p.second.pass);
 		options.notes = std::string(p.second.notes);
-		// TODO: verify banlist hash
+		options.pass = UTF16_BUFFER_TO_STR(p.second.pass);
+		if(options.info.banlistHash != 0)
+		{
+			options.banlist = banlistProvider.GetBanlistByHash(options.info.banlistHash);
+			if(options.banlist == nullptr)
+				return false;
+		}
+		options.corePkg = coreProvider.GetCorePkg();
 		auto room = std::make_shared<Room>(lobby, ioCtx, std::move(options));
 		room->RegisterToOwner();
 		auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));

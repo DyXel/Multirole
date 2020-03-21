@@ -28,7 +28,7 @@ Instance::Instance() :
 	coreProvider(cfg.at("coreProvider").at("coreFileRegex").get<std::string>(), dataProvider, scriptProvider),
 	banlistProvider(cfg.at("banlistProvider").at("blFileRegex").get<std::string>()),
 	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
-	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), lobby),
+	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), coreProvider, banlistProvider, lobby),
 	signalSet(lIoCtx)
 {
 	// Load up and update repositories while also adding them to the std::map

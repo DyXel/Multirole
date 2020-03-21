@@ -10,6 +10,7 @@
 #include <asio/io_context.hpp>
 #include <asio/io_context_strand.hpp>
 
+#include "CoreProvider.hpp"
 #include "Client.hpp"
 #include "IClientListener.hpp"
 #include "IClientManager.hpp"
@@ -18,12 +19,20 @@
 namespace YGOPro
 {
 
+class Banlist;
 class STOCMsg;
 
 } // namespace YGOPro
 
 namespace Ignis::Multirole
 {
+
+namespace Core
+{
+
+class IHighLevelWrapper;
+
+} // namespace Core
 
 class IRoomManager;
 
@@ -50,8 +59,8 @@ public:
 		std::string name;
 		std::string notes;
 		std::string pass;
-// 		std::shared_ptr<Banlist> banlist;
-// 		std::shared_ptr<ICoreWrapper> core; // maybe has database and script reader with it?
+		const YGOPro::Banlist* banlist;
+		CoreProvider::CorePkg corePkg;
 		uint32_t id;
 	};
 
@@ -85,6 +94,7 @@ private:
 	std::mutex mClients;
 	std::mutex mDuelists;
 
+	// IClientListener overrides
 	void OnJoin(Client& client) override;
 	void OnConnectionLost(Client& client) override;
 	void OnChat(Client& client, std::string_view str) override;
@@ -94,6 +104,7 @@ private:
 	void OnTryKick(Client& client, uint8_t pos) override;
 	void OnTryStart(Client& client) override;
 
+	// IClientManager overrides
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 
