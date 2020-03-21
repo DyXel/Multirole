@@ -91,6 +91,13 @@ struct DtorType<git_repository>
 };
 
 template<>
+struct DtorType<git_revwalk>
+{
+	using type = void(&)(git_revwalk*);
+	static constexpr type value = git_revwalk_free;
+};
+
+template<>
 struct DtorType<git_tree>
 {
 	using type = void(&)(git_tree*);
@@ -114,17 +121,18 @@ struct TypeEnum<git_tree> : std::integral_constant<git_otype, GIT_OBJ_TREE>
 template<typename T>
 constexpr git_otype TypeEnum_v = TypeEnum<T>::value;
 
-// libgit generic object wrapped on a std::unique_ptr
-using UniqueObjPtr = std::unique_ptr<git_object, DtorType_t<git_object>>;
-
 } // namespace Detail
 
 constexpr const char* ESTR_GIT = "Git: {}/{} -> {:s}";
 
+// Wrapper for any libgit2 object on a std::unique_ptr
+template<typename T>
+using UniqueObj = std::unique_ptr<T, Detail::DtorType_t<T>>;
+
 // Check error value and throw in case there is an error
 inline void Check(int error)
 {
-	if(error >= 0)
+	if(error == 0)
 		return;
 	throw std::runtime_error(giterr_last()->message);
 }
@@ -137,18 +145,16 @@ decltype(auto) MakeUnique(Ctor ctor, Args&& ...args)
 {
 	T* obj;
 	Check(ctor(&obj, std::forward<Args>(args)...));
-	using namespace Detail;
-	return std::unique_ptr<T, DtorType_t<T>>(std::move(obj), DtorType_v<T>);
+	return UniqueObj<T>(std::move(obj), Detail::DtorType_v<T>);
 }
 
 // Helper function to peel a generic object into a specific libgit type
 template<typename T, git_otype BT = Detail::TypeEnum_v<T>>
-decltype(auto) Peel(Detail::UniqueObjPtr objPtr)
+decltype(auto) Peel(UniqueObj<git_object> objPtr)
 {
 	T* obj;
 	Check(git_object_peel(reinterpret_cast<git_object**>(&obj), objPtr.get(), BT));
-	using namespace Detail;
-	return std::unique_ptr<T, DtorType_t<T>>(std::move(obj), DtorType_v<T>);
+	return UniqueObj<T>(std::move(obj), Detail::DtorType_v<T>);
 }
 
 } // namespace Git
