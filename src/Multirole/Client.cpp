@@ -192,7 +192,7 @@ void Client::HandleMsg()
 	}
 	default:
 	{
-		fmt::print("Unhandled msg received: 0x{:X}\n", incoming.GetType());
+		fmt::print("Unhandled msg received: 0x{:X}\n", static_cast<int>(incoming.GetType()));
 		return;
 	}
 	}
