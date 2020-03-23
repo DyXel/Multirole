@@ -150,11 +150,11 @@ GitDiff GitRepo::GetFilesDiff() const
 	auto FileCb = [](const git_diff_delta* delta, float /*unused*/, void* payload) -> int
 	{
 		auto& diff = *static_cast<GitDiff*>(payload);
-		if(git_oid_is_zero(&delta->old_file.id) == 1)
+		if(git_oid_iszero(&delta->old_file.id) == 1)
 		{
 			diff.added.emplace_back(delta->new_file.path);
 		}
-		else if(git_oid_is_zero(&delta->new_file.id) == 1)
+		else if(git_oid_iszero(&delta->new_file.id) == 1)
 		{
 			diff.removed.emplace_back(delta->old_file.path);
 		}
