@@ -1,6 +1,6 @@
 /**
  *  Project Ignis: Multirole
- *  Copyright (C) 2020  DyXel, edo9300, kevinlul
+ *  Copyright (C) 2020  DyXel and kevinlul
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published
@@ -26,7 +26,7 @@
 
 static constexpr const char* NOTICE_STRING =
 R"(Project Ignis: Multirole
-Copyright (C) 2020  DyXel, edo9300, kevinlul
+Copyright (C) 2020  DyXel and kevinlul
 )";
 
 inline int CreateAndRunServerInstance()
