@@ -6,6 +6,38 @@
 namespace Ignis::Multirole
 {
 
+namespace Error
+{
+
+enum Join : uint8_t
+{
+	JOIN_NOT_FOUND  = 0x0,
+	JOIN_WRONG_PASS = 0x1,
+// 	JOIN_REFUSED    = 0x2,
+};
+
+enum DeckOrCard : uint8_t
+{
+	DECK_BAD_MAIN_COUNT  = 0x6,
+	DECK_BAD_EXTRA_COUNT = 0x7,
+	DECK_BAD_SIDE_COUNT  = 0x8,
+	CARD_BANLISTED       = 0x1,
+	CARD_OCG_ONLY        = 0x2,
+	CARD_TCG_ONLY        = 0x3,
+	CARD_UNKNOWN         = 0x4,
+	CARD_MORE_THAN_3     = 0x5,
+	CARD_UNNOFICIAL_CARD = 0xA,
+// 	CARD_FORBIDDEN_TYPE  = 0x9,
+};
+
+enum Generic : uint8_t
+{
+	GENERIC_INVALID_SIDE = 0x3,
+	GENERIC_EXPECTED_VER = 0x5,
+};
+
+} // namespace Error
+
 enum ChatMsgType : uint8_t
 {
 	CHAT_MSG_TYPE_SPECTATOR,
@@ -43,6 +75,11 @@ public:
 	YGOPro::STOCMsg MakePlayerChange(Client::PosType p1, Client::PosType p2) const;
 
 	static YGOPro::STOCMsg MakeWatchChange(std::size_t count);
+
+	// Error messages
+	static YGOPro::STOCMsg MakeError(Error::Join type);
+	static YGOPro::STOCMsg MakeError(Error::DeckOrCard type, uint32_t value);
+	static YGOPro::STOCMsg MakeError(Error::Generic type, uint32_t value);
 protected:
 	uint8_t EncodePosition(Client::PosType pos) const;
 

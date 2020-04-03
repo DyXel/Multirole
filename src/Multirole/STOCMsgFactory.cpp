@@ -98,6 +98,21 @@ STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count)
 	return {STOCMsg::WatchChange{static_cast<uint16_t>(count)}};
 }
 
+STOCMsg STOCMsgFactory::MakeError(Error::Join type)
+{
+	return {STOCMsg::ErrorMsg{1u, static_cast<uint32_t>(type)}};
+}
+
+STOCMsg STOCMsgFactory::MakeError(Error::DeckOrCard type, uint32_t value)
+{
+	return {STOCMsg::ErrorMsg{2u, static_cast<uint32_t>(type << 28u)  + value}};
+}
+
+STOCMsg STOCMsgFactory::MakeError(Error::Generic type, uint32_t value)
+{
+	return {STOCMsg::ErrorMsg{static_cast<uint8_t>(type), value}};
+}
+
 // protected
 
 uint8_t STOCMsgFactory::EncodePosition(Client::PosType pos) const
