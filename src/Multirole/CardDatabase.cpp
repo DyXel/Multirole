@@ -6,7 +6,7 @@
 
 #include <sqlite3.h>
 
-constexpr int TYPE_LINK = 0x4000000; // NOTE: remove if we import other types
+#include "YGOPro/Type.hpp"
 
 namespace Ignis::Multirole
 {
