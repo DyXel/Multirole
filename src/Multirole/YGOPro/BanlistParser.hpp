@@ -73,10 +73,10 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 			std::size_t c = l.find_first_not_of("0123456789", p + 1u);
 			if(c != std::string::npos)
 				c -= p;
-			auto code = static_cast<uint32_t>(std::stol(l.substr(0u, p)));
+			auto code = static_cast<uint32_t>(std::stoul(l.substr(0u, p)));
 			if(code == 0u)
 				std::runtime_error("Card code cannot be 0");
-			auto count = static_cast<uint32_t>(std::stol(l.substr(p, c)));
+			auto count = static_cast<uint32_t>(std::stoul(l.substr(p, c)));
 			hash = Detail::Salt(hash, code, count);
 			switch(count)
 			{
