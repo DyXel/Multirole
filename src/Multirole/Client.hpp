@@ -8,6 +8,7 @@
 #include <asio/ip/tcp.hpp>
 
 #include "YGOPro/CTOSMsg.hpp"
+#include "YGOPro/Deck.hpp"
 #include "YGOPro/STOCMsg.hpp"
 
 namespace Ignis::Multirole
@@ -26,9 +27,11 @@ public:
 	std::string Name() const;
 	PosType Position() const;
 	bool Ready() const;
+	const YGOPro::Deck* Deck() const;
 	void RegisterToOwner();
 	void SetPosition(const PosType& p);
 	void SetReady(bool r);
+	void SetDeck(std::unique_ptr<YGOPro::Deck>&& newDeck);
 	void Start();
 	void Disconnect();
 	void DeferredDisconnect();
@@ -42,6 +45,7 @@ private:
 	std::string name;
 	PosType position;
 	bool ready;
+	std::unique_ptr<YGOPro::Deck> deck;
 	YGOPro::CTOSMsg incoming;
 	std::queue<YGOPro::STOCMsg> outgoing;
 	std::mutex mOutgoing;

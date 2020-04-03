@@ -38,6 +38,11 @@ bool Client::Ready() const
 	return ready;
 }
 
+const YGOPro::Deck* Client::Deck() const
+{
+	return deck.get();
+}
+
 void Client::RegisterToOwner()
 {
 	owner.Add(shared_from_this());
@@ -51,6 +56,11 @@ void Client::SetPosition(const PosType& p)
 void Client::SetReady(bool r)
 {
 	ready = r;
+}
+
+void Client::SetDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
+{
+	deck = std::move(newDeck);
 }
 
 void Client::Start()
