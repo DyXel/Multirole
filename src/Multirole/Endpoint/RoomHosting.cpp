@@ -3,15 +3,27 @@
 #include <type_traits> // std::remove_extent
 
 #include <asio/read.hpp>
+#include <asio/write.hpp>
 
 #include "../Client.hpp"
 #include "../Lobby.hpp"
 #include "../Room.hpp"
+#include "../STOCMsgFactory.hpp"
 #include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/StringUtils.hpp"
 
 namespace Ignis::Multirole::Endpoint
 {
+
+constexpr uint32_t CLIENT_VERSION_MAJOR = 38;
+constexpr uint32_t CLIENT_VERSION_MINOR = 0;
+constexpr uint32_t CORE_VERSION_MAJOR = 7;
+constexpr uint32_t CORE_VERSION_MINOR = 0;
+constexpr uint32_t EXPECTED_VERSION = ((CLIENT_VERSION_MAJOR & 0xFF) << 0)  |
+/************************************/((CLIENT_VERSION_MINOR & 0xFF) << 8)  |
+/*     What Are You Looking At?     */((CORE_VERSION_MAJOR   & 0xFF) << 16) |
+/************************************/((CORE_VERSION_MINOR   & 0xFF) << 24);
+constexpr uint64_t HANDSHAKE = 4680591157758091777U;
 
 // Holds information about the client before a proper connection to a Room
 // has been established.
@@ -108,36 +120,36 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 {
 #define UTF16_BUFFER_TO_STR(a) \
 	YGOPro::UTF16ToUTF8(YGOPro::BufferToUTF16(a, sizeof(decltype(a))))
+	auto SendVersionError = [](asio::ip::tcp::socket& s)
+	{
+		static auto m = STOCMsgFactory::MakeError(Error::GENERIC_EXPECTED_VER, EXPECTED_VERSION);
+		asio::write(s, asio::buffer(m.Data(), m.Length()));
+		return false;
+	};
 	auto& msg = tc->msg;
 	switch(msg.GetType())
 	{
 	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
 	{
 		auto p = msg.GetPlayerInfo();
-		if(!p.first)
+		if(!p)
 			return false;
-		tc->name = UTF16_BUFFER_TO_STR(p.second.name);
+		tc->name = UTF16_BUFFER_TO_STR(p->name);
 		return true;
 	}
 	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
 	{
 		auto p = msg.GetCreateGame();
-		if(!p.first)
-			return false;
-		// TODO: verify game settings
-		// TODO: maybe check server handshake?
-		p.second.notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
+		if(!p || p->info.serverHandshake != HANDSHAKE)
+			return SendVersionError(tc->soc);
+		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
 		Room::Options options;
-		options.info = p.second.info;
-		options.name = UTF16_BUFFER_TO_STR(p.second.name);
-		options.notes = std::string(p.second.notes);
-		options.pass = UTF16_BUFFER_TO_STR(p.second.pass);
-		if(options.info.banlistHash != 0)
-		{
-			options.banlist = banlistProvider.GetBanlistByHash(options.info.banlistHash);
-			if(options.banlist == nullptr)
-				return false;
-		}
+		options.info = p->info;
+		options.name = UTF16_BUFFER_TO_STR(p->name);
+		options.notes = std::string(p->notes);
+		options.pass = UTF16_BUFFER_TO_STR(p->pass);
+		if(!(options.banlist = banlistProvider.GetBanlistByHash(options.info.banlistHash)))
+			options.info.banlistHash = 0;
 		options.corePkg = coreProvider.GetCorePkg();
 		auto room = std::make_shared<Room>(lobby, ioCtx, std::move(options));
 		room->RegisterToOwner();
@@ -149,11 +161,10 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
 	{
 		auto p = msg.GetJoinGame();
-		if(!p.first)
-			return false;
-		// TODO: maybe check game version?
-		auto room = lobby.GetRoomById(p.second.id);
-		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p.second.pass)))
+		if(!p || p->version2 != EXPECTED_VERSION)
+			return SendVersionError(tc->soc);
+		auto room = lobby.GetRoomById(p->id);
+		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p->pass)))
 		{
 			auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));
 			client->RegisterToOwner();

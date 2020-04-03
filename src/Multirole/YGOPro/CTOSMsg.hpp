@@ -1,5 +1,6 @@
 #ifndef CTOSMSG_HPP
 #define CTOSMSG_HPP
+#include <optional>
 #include "MsgCommon.hpp"
 
 namespace YGOPro
@@ -53,6 +54,7 @@ public:
 		uint16_t version;
 		uint32_t id;
 		uint16_t pass[20];
+		uint32_t version2;
 	};
 
 	struct TryKick
@@ -87,13 +89,13 @@ public:
 	}
 
 #define X(s) \
-	std::pair<bool, s> Get##s() const \
+	std::optional<s> Get##s() const \
 	{ \
-		std::pair<bool, s> p; \
+		std::optional<s> p; \
 		if(GetLength() != sizeof(s)) \
 			return p; \
-		p.first = true; \
-		std::memcpy(&p.second, data + HEADER_LENGTH, sizeof(s)); \
+		p.emplace(); \
+		std::memcpy(&p.value(), data + HEADER_LENGTH, sizeof(s)); \
 		return p; \
 	}
 	X(PlayerInfo)

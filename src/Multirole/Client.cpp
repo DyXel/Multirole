@@ -172,6 +172,26 @@ void Client::HandleMsg()
 		listener.OnToObserver(*this);
 		return;
 	}
+	case YGOPro::CTOSMsg::MsgType::UPDATE_DECK:
+	{
+		const uint8_t* ptr = incoming.Body();
+		std::vector<uint32_t> main, side;
+		try
+		{
+			auto mainCount = incoming.Read<uint32_t>(ptr);
+			auto sideCount = incoming.Read<uint32_t>(ptr);
+			for(decltype(mainCount) i = 0; i < mainCount; i++)
+				main.push_back(incoming.Read<uint32_t>(ptr));
+			for(decltype(sideCount) i = 0; i < sideCount; i++)
+				side.push_back(incoming.Read<uint32_t>(ptr));
+		}
+		catch(...)
+		{
+			return;
+		}
+		listener.OnUpdateDeck(*this, main, side);
+		return;
+	}
 	case YGOPro::CTOSMsg::MsgType::READY:
 	{
 		listener.OnReady(*this, true);
@@ -185,9 +205,9 @@ void Client::HandleMsg()
 	case YGOPro::CTOSMsg::MsgType::TRY_KICK:
 	{
 		auto p = incoming.GetTryKick();
-		if(!p.first)
+		if(!p)
 			return;
-		listener.OnTryKick(*this, p.second.pos);
+		listener.OnTryKick(*this, p->pos);
 		return;
 	}
 	default:
