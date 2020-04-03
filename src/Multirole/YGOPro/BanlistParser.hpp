@@ -1,6 +1,9 @@
 #ifndef YGOPRO_BANLIST_PARSER_HPP
 #define YGOPRO_BANLIST_PARSER_HPP
 #include <unordered_map>
+
+#include <fmt/format.h>
+
 #include "Banlist.hpp"
 
 namespace YGOPro
@@ -45,7 +48,12 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 		);
 	};
 	std::string l;
-	while(std::getline(stream, l))
+	std::size_t lc = 0;
+	auto MakeException = [&lc](std::string_view str)
+	{
+		return std::runtime_error(fmt::format("{:d}:{:s}", lc, str));
+	};
+	while(++lc, std::getline(stream, l))
 	{
 		switch(l[0])
 		{
@@ -60,22 +68,18 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 			forb.clear();
 			continue;
 		}
-		case '#':
-		case '$':
-		{
-			continue;
-		}
-		default:
+		case '0': case '1': case '2': case '3': case '4':
+		case '5': case '6': case '7': case '8': case '9':
 		{
 			std::size_t p = l.find(' ');
 			if(p == std::string::npos)
-				throw std::runtime_error("Card code separator not found");
+				throw MakeException("Card code separator not found");
 			std::size_t c = l.find_first_not_of("0123456789", p + 1u);
 			if(c != std::string::npos)
 				c -= p;
 			auto code = static_cast<uint32_t>(std::stoul(l.substr(0u, p)));
 			if(code == 0u)
-				std::runtime_error("Card code cannot be 0");
+				MakeException("Card code cannot be 0");
 			auto count = static_cast<uint32_t>(std::stoul(l.substr(p, c)));
 			hash = Detail::Salt(hash, code, count);
 			switch(count)
@@ -87,7 +91,7 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 			X(0u, forb)
 #undef X
 			default:
-				throw std::runtime_error("Card count is not 0, 1, 2 or 3");
+				throw MakeException("Card count is not 0, 1, 2 or 3");
 			}
 			continue;
 		}
