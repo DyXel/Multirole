@@ -107,6 +107,17 @@ public:
 		return data + HEADER_LENGTH;
 	}
 
+	template<typename T>
+	inline T Read(const uint8_t*& ptr) const
+	{
+		if(ptr + sizeof(T) > data + GetLength())
+			throw std::size_t(ptr + sizeof(T) - data + GetLength());
+		T val;
+		std::memcpy(&val, ptr, sizeof(T));
+		ptr += sizeof(T);
+		return val;
+	}
+
 	uint8_t* Data()
 	{
 		return data;
