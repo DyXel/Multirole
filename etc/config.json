@@ -1,4 +1,52 @@
 {
 	"lobbyListingPort": 7922,
-	"roomHostingPort": 7911
+	"roomHostingPort": 7911,
+	"repos": [
+		{
+			"name": "scripts",
+			"remote": "https://github.com/ProjectIgnis/CardScripts",
+			"path": "./sync/scripts",
+			"webhookPort": 34343,
+			"webhookToken": "<change_this>"
+		},
+		{
+			"name": "databases",
+			"remote": "https://github.com/ProjectIgnis/BabelCDB",
+			"path": "./sync/databases",
+			"webhookPort": 62672,
+			"webhookToken": "<change_this>"
+		},
+		{
+			"name": "banlists",
+			"remote": "https://github.com/ProjectIgnis/LFLists",
+			"path": "./sync/banlists",
+			"webhookPort": 49382,
+			"webhookToken": "<change_this>"
+		},
+		{
+			"name": "DeltaBeta",
+			"remote": "https://github.com/ProjectIgnis/DeltaBeta",
+			"path": "./sync/DeltaBeta",
+			"webhookPort": 43632,
+			"webhookToken": "<change_this>"
+		}
+	],
+	"dataProvider": {
+		"observedRepos" : ["databases"],
+		"dbFileRegex": ".*\\.cdb"
+	},
+	"scriptProvider": {
+		"observedRepos" : ["scripts"],
+		"scriptFileRegex": ".*\\.lua"
+	},
+	"coreProvider": {
+		"observedRepos" : ["DeltaBeta"],
+		"coreFileRegex": ".*libocgcore\\.so",
+		"coreType": "shared",
+		"loadPerRoom": false
+	},
+	"banlistProvider": {
+		"observedRepos" : ["banlists"],
+		"blFileRegex": ".*\\.lflist\\.conf"
+	}
 }
