@@ -1,8 +1,10 @@
 # TODO
-* Move `GitRepo`'s `libgit2` "abstraction layer" to a individual file
 * Make `GitRepo` webhook update system optional upon construction via config file
    * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 * Implement custom move assignment operator for `GitRepo`
+* Check used enums and try to use `enum class` where possible
+* Make inheritance of `std::enable_shared_from_this` private/protected
+* Check where `std::move` is used to "steal" data and use rvalue ref instead of passing by value
 
 # Porting to YGOpen project
 
