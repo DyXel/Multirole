@@ -59,13 +59,13 @@ void LobbyListing::DoSerialize()
 			room["team2"] = rp.info.t2Count;
 			room["best_of"] = rp.info.bestOf;
 			room["duel_flag"] = rp.info.duelFlags;
-			room["forbidden_types"] = rp.info.forbiddenTypes;
+			room["forbidden_types"] = rp.info.forb;
 			room["extra_rules"] = rp.info.extraRules;
 			room["start_lp"] = rp.info.startingLP;
 			room["start_hand"] = rp.info.startingDrawCount;
 			room["draw_count"] = rp.info.drawCountPerTurn;
 			room["time_limit"] = rp.info.timeLimitInSeconds;
-			room["rule"] = rp.info.scope;
+			room["rule"] = rp.info.allowed;
 			room["no_check"] = static_cast<bool>(rp.info.dontCheckDeck);
 			room["no_shuffle"] = static_cast<bool>(rp.info.dontShuffleDeck);
 			room["banlist_hash"] = rp.info.banlistHash;

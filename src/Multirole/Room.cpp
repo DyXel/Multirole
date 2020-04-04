@@ -2,8 +2,12 @@
 
 #include <fmt/format.h>
 
+#include "CardDatabase.hpp"
 #include "Client.hpp"
 #include "IRoomManager.hpp"
+#include "YGOPro/Banlist.hpp"
+#include "YGOPro/Scope.hpp"
+#include "YGOPro/Type.hpp"
 
 namespace Ignis::Multirole
 {
@@ -19,6 +23,11 @@ Room::Room(IRoomManager& owner, asio::io_context& ioCtx, Options options) :
 	host(nullptr)
 {}
 
+void Room::RegisterToOwner()
+{
+	options.id = owner.Add(shared_from_this());
+}
+
 Room::StateEnum Room::State() const
 {
 	return state;
@@ -27,11 +36,6 @@ Room::StateEnum Room::State() const
 bool Room::CheckPassword(std::string_view str) const
 {
 	return options.pass.empty() || options.pass == str;
-}
-
-void Room::RegisterToOwner()
-{
-	options.id = owner.Add(shared_from_this());
 }
 
 Room::Properties Room::GetProperties()
@@ -194,12 +198,33 @@ void Room::OnToObserver(Client& client)
 	client.Send(MakeTypeChange(client, host == &client));
 }
 
+void Room::OnUpdateDeck(Client& client, const std::vector<uint32_t>& main,
+                        const std::vector<uint32_t>& side)
+{
+	if(state != WAITING)
+		return;
+	if(client.Position() == Client::POSITION_SPECTATOR)
+		return;
+	client.SetDeck(LoadDeck(main, side));
+	// TODO: Handle side decking
+}
+
 void Room::OnReady(Client& client, bool value)
 {
 	if(state != WAITING)
 		return;
 	if(client.Position() == Client::POSITION_SPECTATOR)
 		return;
+	if(client.Deck() == nullptr)
+		value = false;
+	if(value && options.info.dontCheckDeck == 0)
+	{
+		if(auto error = CheckDeck(*client.Deck()); error)
+		{
+			client.Send(*error);
+			value = false;
+		}
+	}
 	client.SetReady(value);
 	SendToAll(MakePlayerChange(client));
 }
@@ -243,7 +268,20 @@ void Room::Remove(std::shared_ptr<Client> client)
 	std::lock_guard<std::mutex> lock(mClients);
 	clients.erase(client);
 	if(clients.empty())
-		PostUnregisterFromOwner();
+	{
+		asio::post(strand,
+		[this, self = shared_from_this()]()
+		{
+			owner.Remove(options.id);
+			// NOTE: Destructor of this Room is called here
+		});
+	}
+}
+
+void Room::SendToAll(const YGOPro::STOCMsg& msg)
+{
+	for(auto& c : clients)
+		c->Send(msg);
 }
 
 bool Room::TryEmplaceDuelist(Client& client, Client::PosType hint)
@@ -306,19 +344,146 @@ void Room::JoinToDuel(Client& client)
 	// TODO
 }
 
-void Room::PostUnregisterFromOwner()
+std::unique_ptr<YGOPro::Deck> Room::LoadDeck(
+	const std::vector<uint32_t>& main,
+	const std::vector<uint32_t>& side) const
 {
-	asio::post(strand,
-	[this, self = shared_from_this()]()
+	auto IsExtraDeckCardType = [](uint32_t type) constexpr -> bool
 	{
-		owner.Remove(options.id);
-	});
+		if(type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ))
+			return true;
+		// NOTE: Link Spells exist.
+		if((type & TYPE_LINK) && (type & TYPE_MONSTER))
+			return true;
+		return false;
+	};
+	auto& db = *options.corePkg.db;
+	YGOPro::CodeMap m, e, s;
+	uint32_t err = 0;
+	for(const auto code : main)
+	{
+		auto& data = db.DataFromCode(code);
+		if(data.code == 0)
+		{
+			err = code;
+			continue;
+		}
+		if(data.type & TYPE_TOKEN)
+			continue;
+		if(IsExtraDeckCardType(data.type))
+			e[code]++;
+		else
+			m[code]++;
+	}
+	for(const auto code : side)
+	{
+		auto& data = db.DataFromCode(code);
+		if(data.code == 0)
+		{
+			err = code;
+			continue;
+		}
+		if(data.type & TYPE_TOKEN)
+			continue;
+		s[code]++;
+	}
+	return std::make_unique<YGOPro::Deck>(
+		std::move(m),
+		std::move(e),
+		std::move(s),
+		err);
 }
 
-void Room::SendToAll(const YGOPro::STOCMsg& msg)
+std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 {
-	for(auto& c : clients)
-		c->Send(msg);
+	using namespace Error;
+	using namespace YGOPro;
+	// Handy shortcut.
+	auto MakeErrorPtr = [](DeckOrCard type, uint32_t value)
+	{
+		return std::make_unique<STOCMsg>(MakeError(type, value));
+	};
+	// Check if the deck had any error while loading.
+	if(deck.Error())
+		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
+	// Amalgamate all card codes into a single map for easier iteration.
+	CodeMap all;
+	auto AdditiveCopyMerge = [&all](const CodeMap& from)
+	{
+		for(const auto& kv : from)
+			all[kv.first] += all[kv.first] + kv.second;
+	};
+	AdditiveCopyMerge(deck.Main());
+	AdditiveCopyMerge(deck.Extra());
+	AdditiveCopyMerge(deck.Side());
+	// Check if the deck obeys the limits.
+	auto OutOfBound = [](const auto& lim, const CodeMap& map) -> auto
+	{
+		std::pair<std::size_t, bool> p;
+		for(const auto& kv : map)
+			p.first += kv.second;
+		return (p.second = p.first < lim.min || p.first > lim.max), p;
+	};
+	if(const auto p = OutOfBound(options.limits.main, deck.Main()); p.second)
+		return MakeErrorPtr(DECK_BAD_MAIN_COUNT, p.first);
+	if(const auto p = OutOfBound(options.limits.extra, deck.Extra()); p.second)
+		return MakeErrorPtr(DECK_BAD_EXTRA_COUNT, p.first);
+	if(const auto p = OutOfBound(options.limits.side, deck.Side()); p.second)
+		return MakeErrorPtr(DECK_BAD_SIDE_COUNT, p.first);
+	// Custom predicates...
+	//	true if card scope is unnofficial using currently allowed mode.
+	auto CheckUnofficial = [](uint32_t scope, uint8_t allowed) constexpr -> bool
+	{
+		switch(allowed)
+		{
+		case ALLOWED_CARDS_OCG_ONLY:
+		case ALLOWED_CARDS_TCG_ONLY:
+		case ALLOWED_CARDS_OCG_TCG:
+			return scope > SCOPE_OCG_TCG;
+		}
+		return false;
+	};
+	//	true if only ocg are allowed and scope is not ocg (its tcg).
+	auto CheckOCG = [](uint32_t scope, uint8_t allowed) constexpr -> bool
+	{
+		return allowed == ALLOWED_CARDS_OCG_ONLY && !(scope & SCOPE_OCG);
+	};
+	//	true if only tcg are allowed and scope is not tcg (its ocg).
+	auto CheckTCG = [](uint32_t scope, uint8_t allowed) constexpr -> bool
+	{
+		return allowed == ALLOWED_CARDS_TCG_ONLY && !(scope & SCOPE_TCG);
+	};
+	//	true if card code exists on the banlist and exceeds the listed amount.
+	auto CheckBanlist = [](const auto& kv, const Banlist& bl) -> bool
+	{
+		if(bl.IsWhitelist() && bl.Whitelist().count(kv.first) == 0)
+			return true;
+		if(bl.Forbidden().count(kv.first) != 0U)
+			return true;
+		if(kv.second > 1 && (bl.Limited().count(kv.first) != 0U))
+			return true;
+		if(kv.second > 2 && (bl.Semilimited().count(kv.first) != 0U))
+			return true;
+		return false;
+	};
+	auto& db = *options.corePkg.db;
+	for(const auto& kv : all)
+	{
+		if(kv.second > 3)
+			return MakeErrorPtr(CARD_MORE_THAN_3, kv.first);
+		if(db.DataFromCode(kv.first).type & options.info.forb)
+			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, kv.first);
+		const auto& ced = db.ExtraFromCode(kv.first);
+		if(CheckUnofficial(ced.scope, options.info.allowed))
+			return MakeErrorPtr(CARD_UNNOFICIAL_CARD, kv.first);
+		if(CheckOCG(ced.scope, options.info.allowed))
+			return MakeErrorPtr(CARD_TCG_ONLY, kv.first);
+		if(CheckTCG(ced.scope, options.info.allowed))
+			return MakeErrorPtr(CARD_OCG_ONLY, kv.first);
+		if(CheckBanlist(kv, *options.banlist))
+			return MakeErrorPtr(CARD_BANLISTED, kv.first);
+	}
+	return nullptr;
 }
 
 } // namespace Ignis::Multirole

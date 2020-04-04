@@ -23,6 +23,17 @@ Client::Client(IClientListener& listener, IClientManager& owner, asio::io_contex
 	ready(false)
 {}
 
+void Client::RegisterToOwner()
+{
+	owner.Add(shared_from_this());
+}
+
+void Client::Start()
+{
+	listener.OnJoin(*this);
+	DoReadHeader();
+}
+
 std::string Client::Name() const
 {
 	return name;
@@ -43,11 +54,6 @@ const YGOPro::Deck* Client::Deck() const
 	return deck.get();
 }
 
-void Client::RegisterToOwner()
-{
-	owner.Add(shared_from_this());
-}
-
 void Client::SetPosition(const PosType& p)
 {
 	position = p;
@@ -63,10 +69,15 @@ void Client::SetDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
 	deck = std::move(newDeck);
 }
 
-void Client::Start()
+void Client::Send(const YGOPro::STOCMsg& msg)
 {
-	listener.OnJoin(*this);
-	DoReadHeader();
+	if(!soc.is_open())
+		return;
+	std::lock_guard<std::mutex> lock(mOutgoing);
+	const bool writeInProgress = !outgoing.empty();
+	outgoing.push(msg);
+	if(!writeInProgress)
+		DoWrite();
 }
 
 void Client::Disconnect()
@@ -74,7 +85,12 @@ void Client::Disconnect()
 	std::error_code ignoredEc;
 	soc.shutdown(asio::ip::tcp::socket::shutdown_both, ignoredEc);
 	soc.close(ignoredEc);
-	PostUnregisterFromOwner();
+	asio::post(strand,
+	[this, self = shared_from_this()]()
+	{
+		owner.Remove(self);
+		// NOTE: Destructor of this Client is called here
+	});
 }
 
 void Client::DeferredDisconnect()
@@ -88,26 +104,6 @@ void Client::DeferredDisconnect()
 		}
 	}
 	disconnecting = true;
-}
-
-void Client::Send(const YGOPro::STOCMsg& msg)
-{
-	if(!soc.is_open())
-		return;
-	std::lock_guard<std::mutex> lock(mOutgoing);
-	const bool writeInProgress = !outgoing.empty();
-	outgoing.push(msg);
-	if(!writeInProgress)
-		DoWrite();
-}
-
-void Client::PostUnregisterFromOwner()
-{
-	asio::post(strand,
-	[this, self = shared_from_this()]()
-	{
-		owner.Remove(self);
-	});
 }
 
 void Client::DoReadHeader()

@@ -5,10 +5,19 @@
 namespace YGOPro
 {
 
+enum AllowedCards
+{
+	ALLOWED_CARDS_OCG_ONLY,
+	ALLOWED_CARDS_TCG_ONLY,
+	ALLOWED_CARDS_OCG_TCG,
+	ALLOWED_CARDS_WITH_PRERELEASE,
+	ALLOWED_CARDS_ANY
+};
+
 struct HostInfo
 {
 	uint32_t banlistHash;
-	uint8_t scope; // OCG/TCG, etc
+	uint8_t allowed; // OCG/TCG, etc
 	uint8_t mode; // NOTE: UNUSED
 	uint8_t duelRule; // NOTE: UNUSED
 	uint8_t dontCheckDeck;
@@ -22,7 +31,7 @@ struct HostInfo
 	int32_t t2Count;
 	int32_t bestOf;
 	uint32_t duelFlags;
-	int32_t forbiddenTypes;
+	int32_t forb; // Forbidden types
 	uint16_t extraRules; // Sealed Duel, Destiny Draw, etc
 };
 

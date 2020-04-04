@@ -77,6 +77,12 @@ SELECT id,alias,setcode,type,atk,def,level,race,attribute
 FROM datas WHERE datas.id = ?;
 )";
 
+static constexpr const char* SEARCH2_STMT =
+R"(
+SELECT ot,category
+FROM datas WHERE datas.id = ?;
+)";
+
 CardDatabase::CardDatabase() : CardDatabase(":memory:")
 {}
 
@@ -109,10 +115,20 @@ CardDatabase::CardDatabase(std::string_view absFilePath)
 		sqlite3_close(db);
 		throw std::runtime_error(errStr);
 	}
+	// Prepare extra data search by id statement
+	if(sqlite3_prepare_v2(db, SEARCH2_STMT, -1, &s2Stmt, nullptr) != SQLITE_OK)
+	{
+		std::string errStr(sqlite3_errmsg(db));
+		sqlite3_finalize(sStmt);
+		sqlite3_finalize(aStmt);
+		sqlite3_close(db);
+		throw std::runtime_error(errStr);
+	}
 }
 
 CardDatabase::~CardDatabase()
 {
+	sqlite3_finalize(s2Stmt);
 	sqlite3_finalize(sStmt);
 	sqlite3_finalize(aStmt);
 	sqlite3_close(db);
@@ -130,18 +146,22 @@ bool CardDatabase::Merge(std::string_view absFilePath)
 	return true;
 }
 
-OCG_CardData CardDatabase::DataFromCode(uint32_t code)
+const OCG_CardData& CardDatabase::DataFromCode(uint32_t code)
 {
-	auto AllocSetcodes = [](uint64_t dbVal) -> uint16_t*
+	std::lock_guard<std::mutex> lock(mDataCache);
+	if(auto search = dataCache.find(code); search != dataCache.end())
+		return search->second;
+	auto AllocSetcodes = [&](uint64_t dbVal) -> uint16_t*
 	{
-		static constexpr std::size_t DB_TOTAL_SETCODES = 4;
-		auto* setcodes = new uint16_t[DB_TOTAL_SETCODES + 1];
-		for(std::size_t i = 0; i < DB_TOTAL_SETCODES; i++)
+		static constexpr std::size_t SETCODES = 4;
+		auto p = decltype(scCache)::value_type(code, std::make_unique<uint16_t[]>(SETCODES + 1));
+		auto& setcodes = scCache.emplace(std::move(p)).first->second;
+		for(std::size_t i = 0; i < SETCODES; i++)
 			setcodes[i] = (dbVal >> (i * 16)) & 0xFFFF;
-		setcodes[DB_TOTAL_SETCODES] = 0;
-		return setcodes;
+		setcodes[SETCODES] = 0;
+		return setcodes.get();
 	};
-	OCG_CardData cd;
+	OCG_CardData& cd = dataCache[code]; // implicit insertion
 	sqlite3_reset(sStmt);
 	sqlite3_bind_int(sStmt, 1, code);
 	if(sqlite3_step(sStmt) == SQLITE_ROW)
@@ -161,16 +181,29 @@ OCG_CardData CardDatabase::DataFromCode(uint32_t code)
 		cd.race = sqlite3_column_int(sStmt, 7);
 		cd.attribute = sqlite3_column_int(sStmt, 8);
 	}
-	else
-	{
-		std::memset(&cd, 0, sizeof(decltype(cd)));
-	}
 	return cd;
 }
 
-void CardDatabase::DataUsageDone(OCG_CardData& data)
+void CardDatabase::DataUsageDone([[maybe_unused]] const OCG_CardData& data)
 {
-	delete[] data.setcodes;
+	// We could remove the elements here, but then what would be the
+	// the point of the cache?
+}
+
+const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code)
+{
+	std::lock_guard<std::mutex> lock(mExtraCache);
+	if(auto search = extraCache.find(code); search != extraCache.end())
+		return search->second;
+	CardExtraData& ced = extraCache[code]; // implicit insertion
+	sqlite3_reset(s2Stmt);
+	sqlite3_bind_int(s2Stmt, 1, code);
+	if(sqlite3_step(s2Stmt) == SQLITE_ROW)
+	{
+		ced.scope = sqlite3_column_int(sStmt, 0);
+		ced.category = sqlite3_column_int(sStmt, 1);
+	}
+	return ced;
 }
 
 } // namespace Ignis::Multirole

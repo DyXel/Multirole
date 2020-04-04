@@ -11,7 +11,7 @@ using CodeSet = std::unordered_set<uint32_t>;
 class Banlist
 {
 public:
-	Banlist(CodeSet whit, CodeSet semi, CodeSet limi, CodeSet forb);
+	Banlist(CodeSet&& whit, CodeSet&& semi, CodeSet&& limi, CodeSet&& forb);
 
 	bool IsWhitelist() const;
 	const CodeSet& Whitelist() const;

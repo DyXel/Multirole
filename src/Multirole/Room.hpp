@@ -49,13 +49,14 @@ public:
 		RPS, // Deciding which team/player goes first.
 		DUELING, // Running duel Process and getting responses.
 		SIDE_DECKING, // Self explanatory.
-// 		REMATCHING, // Asking duelists for a rematch.
+		REMATCHING, // Asking duelists for a rematch.
 	};
 
 	// Options are data that the room needs to function properly
 	struct Options
 	{
 		YGOPro::HostInfo info;
+		YGOPro::DeckLimits limits;
 		std::string name;
 		std::string notes;
 		std::string pass;
@@ -75,12 +76,22 @@ public:
 		std::map<int, std::string> duelists;
 	};
 
+	// Ctor and registering
 	Room(IRoomManager& owner, asio::io_context& ioCtx, Options options);
-	StateEnum State() const;
-	bool CheckPassword(std::string_view str) const;
 	void RegisterToOwner();
+
+	// Getter
+	StateEnum State() const;
+
+	// Check if the string matches options.pass,
+	// always return true if options.pass is empty.
+	bool CheckPassword(std::string_view str) const;
+
+	// Non-const Getters
 	Properties GetProperties();
 	asio::io_context::strand& Strand();
+
+	// Tries to remove the room if its waiting
 	void TryClose();
 private:
 	IRoomManager& owner;
@@ -100,6 +111,8 @@ private:
 	void OnChat(Client& client, std::string_view str) override;
 	void OnToDuelist(Client& client) override;
 	void OnToObserver(Client& client) override;
+	void OnUpdateDeck(Client& client, const std::vector<uint32_t>& main,
+	                  const std::vector<uint32_t>& side) override;
 	void OnReady(Client& client, bool value) override;
 	void OnTryKick(Client& client, uint8_t pos) override;
 	void OnTryStart(Client& client) override;
@@ -108,13 +121,18 @@ private:
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 
+	// Utility to send a message to multiple clients
+	void SendToAll(const YGOPro::STOCMsg& msg);
+
+	// Join stuff
 	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
 	void JoinToWaiting(Client& client);
 	void JoinToDuel(Client& client);
 
-	void PostUnregisterFromOwner();
-
-	void SendToAll(const YGOPro::STOCMsg& msg);
+	// Deck stuff
+	std::unique_ptr<YGOPro::Deck> LoadDeck(const std::vector<uint32_t>& main,
+	                                       const std::vector<uint32_t>& side) const;
+	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const;
 };
 
 } // namespace Ignis::Multirole

@@ -3,7 +3,7 @@
 namespace YGOPro
 {
 
-Banlist::Banlist(CodeSet whit, CodeSet semi, CodeSet limi, CodeSet forb) :
+Banlist::Banlist(CodeSet&& whit, CodeSet&& semi, CodeSet&& limi, CodeSet&& forb) :
 	whitelist(std::move(whit)),
 	semilimited(std::move(semi)),
 	limited(std::move(limi)),

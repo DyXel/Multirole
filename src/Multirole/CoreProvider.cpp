@@ -30,9 +30,9 @@ CoreProvider::CorePkg CoreProvider::GetCorePkg()
 {
 	std::lock_guard<std::mutex> lock(mCore);
 	if(loadPerCall)
-		return CorePkg(dataProvider.GetDB(), LoadCore());
+		return CorePkg{dataProvider.GetDB(), LoadCore()};
 	else
-		return CorePkg(dataProvider.GetDB(), core);
+		return CorePkg{dataProvider.GetDB(), core};
 }
 
 void CoreProvider::OnAdd(std::string_view path, const PathVector& fileList)

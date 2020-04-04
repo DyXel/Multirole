@@ -10,6 +10,7 @@
 namespace Ignis::Multirole
 {
 
+class CardDatabase;
 class DataProvider;
 class ScriptProvider;
 
@@ -22,10 +23,13 @@ public:
 		HORNET,
 	};
 	using CorePtr = std::shared_ptr<Core::IHighLevelWrapper>;
-
-	// The shared pointer to Core::IDataSupplier is needed so the object
-	// can outlive the Core::IHighLevelWrapper that uses it.
-	using CorePkg = std::pair<std::shared_ptr<Core::IDataSupplier>, CorePtr>;
+	struct CorePkg
+	{
+		// The shared pointer to CardDatabase is needed so the object
+		// can outlive the Core::IHighLevelWrapper that uses it.
+		std::shared_ptr<CardDatabase> db;
+		CorePtr core;
+	};
 
 	CoreProvider(std::string_view fnRegexStr, DataProvider& dataProvider,
 	             ScriptProvider& scriptProvider);
