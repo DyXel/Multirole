@@ -26,7 +26,7 @@ enum DeckOrCard : uint8_t
 	CARD_TCG_ONLY        = 0x3,
 	CARD_UNKNOWN         = 0x4,
 	CARD_MORE_THAN_3     = 0x5,
-	CARD_UNNOFICIAL_CARD = 0xA,
+	CARD_UNOFFICIAL      = 0xA,
 	CARD_FORBIDDEN_TYPE  = 0x9,
 };
 

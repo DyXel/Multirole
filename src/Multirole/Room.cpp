@@ -457,6 +457,12 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 		}
 		return false;
 	};
+	//	true if card scope is prerelease and they aren't allowed
+	auto CheckPrelease = [](uint32_t scope, uint8_t allowed) constexpr -> bool
+	{
+		return allowed == ALLOWED_CARDS_WITH_PRERELEASE &&
+		       !(scope & SCOPE_OFFICIAL);
+	};
 	//	true if only ocg are allowed and scope is not ocg (its tcg).
 	auto CheckOCG = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
@@ -488,7 +494,9 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, kv.first);
 		const auto& ced = db.ExtraFromCode(kv.first);
 		if(CheckUnofficial(ced.scope, options.info.allowed))
-			return MakeErrorPtr(CARD_UNNOFICIAL_CARD, kv.first);
+			return MakeErrorPtr(CARD_UNOFFICIAL, kv.first);
+		if(CheckPrelease(ced.scope, options.info.allowed))
+			return MakeErrorPtr(CARD_UNOFFICIAL, kv.first);
 		if(CheckOCG(ced.scope, options.info.allowed))
 			return MakeErrorPtr(CARD_TCG_ONLY, kv.first);
 		if(CheckTCG(ced.scope, options.info.allowed))
