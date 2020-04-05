@@ -493,7 +493,7 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 			return MakeErrorPtr(CARD_TCG_ONLY, kv.first);
 		if(CheckTCG(ced.scope, options.info.allowed))
 			return MakeErrorPtr(CARD_OCG_ONLY, kv.first);
-		if(CheckBanlist(kv, *options.banlist))
+		if(options.banlist && CheckBanlist(kv, *options.banlist))
 			return MakeErrorPtr(CARD_BANLISTED, kv.first);
 	}
 	return nullptr;
