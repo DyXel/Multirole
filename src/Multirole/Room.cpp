@@ -416,6 +416,20 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 	AdditiveCopyMerge(deck.Main());
 	AdditiveCopyMerge(deck.Extra());
 	AdditiveCopyMerge(deck.Side());
+	// Merge aliased cards to their original code and delete them
+	auto& db = *options.corePkg.db;
+	for(auto it = all.begin(), last = all.end(); it != last;)
+	{
+		if(uint32_t alias = db.DataFromCode(it->first).alias; alias != 0)
+		{
+			all[alias] = all[alias] + it->second;
+			it = all.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 	// Check if the deck obeys the limits.
 	auto OutOfBound = [](const auto& lim, const CodeMap& map) -> auto
 	{
@@ -466,7 +480,6 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 			return true;
 		return false;
 	};
-	auto& db = *options.corePkg.db;
 	for(const auto& kv : all)
 	{
 		if(kv.second > 3)
