@@ -200,8 +200,8 @@ const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code)
 	sqlite3_bind_int(s2Stmt, 1, code);
 	if(sqlite3_step(s2Stmt) == SQLITE_ROW)
 	{
-		ced.scope = sqlite3_column_int(sStmt, 0);
-		ced.category = sqlite3_column_int(sStmt, 1);
+		ced.scope = sqlite3_column_int(s2Stmt, 0);
+		ced.category = sqlite3_column_int(s2Stmt, 1);
 	}
 	return ced;
 }
