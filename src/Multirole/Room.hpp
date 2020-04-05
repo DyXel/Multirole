@@ -77,7 +77,7 @@ public:
 	};
 
 	// Ctor and registering
-	Room(IRoomManager& owner, asio::io_context& ioCtx, Options options);
+	Room(IRoomManager& owner, asio::io_context& ioCtx, Options&& options);
 	void RegisterToOwner();
 
 	// Getter

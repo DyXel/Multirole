@@ -180,7 +180,12 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		options.corePkg = coreProvider.GetCorePkg();
 		auto room = std::make_shared<Room>(lobby, ioCtx, std::move(options));
 		room->RegisterToOwner();
-		auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));
+		auto client = std::make_shared<Client>(
+			*room,
+			*room,
+			room->Strand(),
+			std::move(tc->soc),
+			std::move(tc->name));
 		client->RegisterToOwner();
 		client->Start();
 		return false;
@@ -193,7 +198,12 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		auto room = lobby.GetRoomById(p->id);
 		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p->pass)))
 		{
-			auto client = std::make_shared<Client>(*room, *room, room->Strand(), std::move(tc->soc), std::move(tc->name));
+			auto client = std::make_shared<Client>(
+				*room,
+				*room,
+				room->Strand(),
+				std::move(tc->soc),
+				std::move(tc->name));
 			client->RegisterToOwner();
 			client->Start();
 		}

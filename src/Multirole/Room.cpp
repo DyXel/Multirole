@@ -14,7 +14,7 @@ namespace Ignis::Multirole
 
 // public
 
-Room::Room(IRoomManager& owner, asio::io_context& ioCtx, Options options) :
+Room::Room(IRoomManager& owner, asio::io_context& ioCtx, Options&& options) :
 	STOCMsgFactory(options.info.t1Count),
 	owner(owner),
 	strand(ioCtx),
