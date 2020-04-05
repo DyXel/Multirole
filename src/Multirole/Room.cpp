@@ -411,7 +411,7 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 	auto AdditiveCopyMerge = [&all](const CodeMap& from)
 	{
 		for(const auto& kv : from)
-			all[kv.first] += all[kv.first] + kv.second;
+			all[kv.first] = all[kv.first] + kv.second;
 	};
 	AdditiveCopyMerge(deck.Main());
 	AdditiveCopyMerge(deck.Extra());
