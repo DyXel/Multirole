@@ -95,7 +95,7 @@ public:
 		if(GetLength() != sizeof(s)) \
 			return p; \
 		p.emplace(); \
-		std::memcpy(&p.value(), data + HEADER_LENGTH, sizeof(s)); \
+		std::memcpy(&p.value(), Body(), sizeof(s)); \
 		return p; \
 	}
 	X(PlayerInfo)
@@ -112,8 +112,11 @@ public:
 	template<typename T>
 	inline T Read(const uint8_t*& ptr) const
 	{
-		if(ptr + sizeof(T) > data + GetLength())
-			throw std::size_t(ptr + sizeof(T) - data + GetLength());
+		{
+			const uint8_t* s1 = ptr + sizeof(T);
+			const uint8_t* s2 = Body() + GetLength();
+			if(s1 > s2) throw uintptr_t(s1 - s2);
+		}
 		T val;
 		std::memcpy(&val, ptr, sizeof(T));
 		ptr += sizeof(T);

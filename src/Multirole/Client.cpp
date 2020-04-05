@@ -3,7 +3,6 @@
 #include <asio/bind_executor.hpp>
 #include <asio/read.hpp>
 #include <asio/write.hpp>
-#include <fmt/printf.h>
 
 #include "IClientListener.hpp"
 #include "IClientManager.hpp"
@@ -166,17 +165,17 @@ void Client::HandleMsg()
 		auto str16 = BufferToUTF16(incoming.Body(), incoming.GetLength());
 		auto str = UTF16ToUTF8(str16);
 		listener.OnChat(*this, str);
-		return;
+		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TO_DUELIST:
 	{
 		listener.OnToDuelist(*this);
-		return;
+		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TO_OBSERVER:
 	{
 		listener.OnToObserver(*this);
-		return;
+		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::UPDATE_DECK:
 	{
@@ -186,27 +185,27 @@ void Client::HandleMsg()
 		{
 			auto mainCount = incoming.Read<uint32_t>(ptr);
 			auto sideCount = incoming.Read<uint32_t>(ptr);
+			main.reserve(mainCount);
+			side.reserve(sideCount);
 			for(decltype(mainCount) i = 0; i < mainCount; i++)
 				main.push_back(incoming.Read<uint32_t>(ptr));
 			for(decltype(sideCount) i = 0; i < sideCount; i++)
 				side.push_back(incoming.Read<uint32_t>(ptr));
 		}
-		catch(...)
-		{
-			return;
-		}
+		catch(uintptr_t value)
+		{}
 		listener.OnUpdateDeck(*this, main, side);
-		return;
+		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::READY:
 	{
 		listener.OnReady(*this, true);
-		return;
+		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::NOT_READY:
 	{
 		listener.OnReady(*this, false);
-		return;
+		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TRY_KICK:
 	{
@@ -214,13 +213,10 @@ void Client::HandleMsg()
 		if(!p)
 			return;
 		listener.OnTryKick(*this, p->pos);
-		return;
+		break;
 	}
 	default:
-	{
-		fmt::print("Unhandled msg received: 0x{:X}\n", static_cast<int>(incoming.GetType()));
-		return;
-	}
+		break;
 	}
 }
 
