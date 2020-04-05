@@ -17,7 +17,7 @@ namespace Ignis::Multirole::Endpoint
 
 constexpr uint32_t CLIENT_VERSION_MAJOR = 38;
 constexpr uint32_t CLIENT_VERSION_MINOR = 0;
-constexpr uint32_t CORE_VERSION_MAJOR = 7;
+constexpr uint32_t CORE_VERSION_MAJOR = 8;
 constexpr uint32_t CORE_VERSION_MINOR = 0;
 constexpr uint32_t EXPECTED_VERSION = ((CLIENT_VERSION_MAJOR & 0xFF) << 0)  |
 /************************************/((CLIENT_VERSION_MINOR & 0xFF) << 8)  |
