@@ -213,7 +213,7 @@ void Room::OnReady(Client& client, bool value)
 {
 	if(state != WAITING)
 		return;
-	if(client.Position() == Client::POSITION_SPECTATOR)
+	if(client.Position() == Client::POSITION_SPECTATOR || client.Ready() == value)
 		return;
 	if(client.Deck() == nullptr)
 		value = false;

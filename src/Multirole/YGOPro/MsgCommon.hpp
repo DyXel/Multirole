@@ -11,7 +11,25 @@ enum AllowedCards
 	ALLOWED_CARDS_TCG_ONLY,
 	ALLOWED_CARDS_OCG_TCG,
 	ALLOWED_CARDS_WITH_PRERELEASE,
-	ALLOWED_CARDS_ANY
+	ALLOWED_CARDS_ANY,
+};
+
+enum ExtraRule
+{
+	EXTRA_RULE_SEALED_DUEL         = 0x1,
+	EXTRA_RULE_BOOSTER_DUEL        = 0x2,
+	EXTRA_RULE_DESTINY_DRAW        = 0x4,
+	EXTRA_RULE_CONCENTRATION_DUEL  = 0x8,
+	EXTRA_RULE_BOSS_DUEL           = 0x10,
+	EXTRA_RULE_BATTLE_CITY         = 0x20,
+	EXTRA_RULE_DUELIST_KINGDOM     = 0x40,
+	EXTRA_RULE_DIMENSION_DUEL      = 0x80,
+	EXTRA_RULE_TURBO_DUEL          = 0x100,
+	EXTRA_RULE_DOUBLE_DECK         = 0x200,
+	EXTRA_RULE_COMMAND_DUEL        = 0x400,
+	EXTRA_RULE_DECK_MASTER         = 0x800,
+	EXTRA_RULE_ACTION_DUEL         = 0x1000,
+	EXTRA_RULE_DECK_LIMIT_20       = 0x2000,
 };
 
 struct HostInfo
@@ -32,7 +50,7 @@ struct HostInfo
 	int32_t bestOf;
 	uint32_t duelFlags;
 	int32_t forb; // Forbidden types
-	uint16_t extraRules; // Sealed Duel, Destiny Draw, etc
+	uint16_t extraRules; // Double deck, Speed duel, etc
 };
 
 } // namespace YGOPro

@@ -25,6 +25,32 @@ constexpr uint32_t EXPECTED_VERSION = ((CLIENT_VERSION_MAJOR & 0xFF) << 0)  |
 /************************************/((CORE_VERSION_MINOR   & 0xFF) << 24);
 constexpr uint64_t HANDSHAKE = 4680591157758091777U;
 
+constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
+{
+	const bool doubleDeck = flag & YGOPro::EXTRA_RULE_DOUBLE_DECK;
+	const bool limit20 = flag & YGOPro::EXTRA_RULE_DECK_LIMIT_20;
+	YGOPro::DeckLimits l; // initialized with official values
+	if(doubleDeck && limit20)
+	{
+		// NOTE: main deck boundaries are same as official
+		l.extra.max = 10;
+		l.side.max = 12;
+	}
+	else if(doubleDeck)
+	{
+		l.main.min = l.main.max = 100;
+		l.extra.max = 30;
+		l.side.max = 30;
+	}
+	else if(limit20)
+	{
+		l.main.min = 20; l.main.max = 30;
+		l.extra.max = 5;
+		l.side.max = 6;
+	}
+	return l;
+}
+
 // Holds information about the client before a proper connection to a Room
 // has been established.
 struct TmpClient
@@ -145,6 +171,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
 		Room::Options options;
 		options.info = p->info;
+		options.limits = LimitsFromFlags(options.info.extraRules);
 		options.name = UTF16_BUFFER_TO_STR(p->name);
 		options.notes = std::string(p->notes);
 		options.pass = UTF16_BUFFER_TO_STR(p->pass);
