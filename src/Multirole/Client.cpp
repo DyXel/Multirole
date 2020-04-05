@@ -11,11 +11,16 @@
 namespace Ignis::Multirole
 {
 
-Client::Client(IClientListener& listener, IClientManager& owner, asio::io_context::strand& strand, asio::ip::tcp::socket soc, std::string name) :
+Client::Client(IClientListener& listener,
+	IClientManager& owner,
+	asio::io_context::strand& strand,
+	asio::ip::tcp::socket&& socket,
+	std::string&& name)
+	:
 	listener(listener),
 	owner(owner),
 	strand(strand),
-	soc(std::move(soc)),
+	socket(std::move(socket)),
 	disconnecting(false),
 	name(std::move(name)),
 	position(POSITION_SPECTATOR),
@@ -70,7 +75,7 @@ void Client::SetDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
 
 void Client::Send(const YGOPro::STOCMsg& msg)
 {
-	if(!soc.is_open())
+	if(!socket.is_open())
 		return;
 	std::lock_guard<std::mutex> lock(mOutgoing);
 	const bool writeInProgress = !outgoing.empty();
@@ -82,8 +87,8 @@ void Client::Send(const YGOPro::STOCMsg& msg)
 void Client::Disconnect()
 {
 	std::error_code ignoredEc;
-	soc.shutdown(asio::ip::tcp::socket::shutdown_both, ignoredEc);
-	soc.close(ignoredEc);
+	socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignoredEc);
+	socket.close(ignoredEc);
 	asio::post(strand,
 	[this, self = shared_from_this()]()
 	{
@@ -108,7 +113,7 @@ void Client::DeferredDisconnect()
 void Client::DoReadHeader()
 {
 	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
-	asio::async_read(soc, buffer, asio::bind_executor(strand,
+	asio::async_read(socket, buffer, asio::bind_executor(strand,
 	[this](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
@@ -121,7 +126,7 @@ void Client::DoReadHeader()
 void Client::DoReadBody()
 {
 	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
-	asio::async_read(soc, buffer, asio::bind_executor(strand,
+	asio::async_read(socket, buffer, asio::bind_executor(strand,
 	[this](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec)
@@ -141,7 +146,7 @@ void Client::DoReadBody()
 void Client::DoWrite()
 {
 	const auto& front = outgoing.front();
-	asio::async_write(soc, asio::buffer(front.Data(), front.Length()),
+	asio::async_write(socket, asio::buffer(front.Data(), front.Length()),
 	[this](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(ec)

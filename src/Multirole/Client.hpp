@@ -23,7 +23,11 @@ public:
 	using PosType = std::pair<uint8_t, uint8_t>;
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
-	Client(IClientListener& listener, IClientManager& owner, asio::io_context::strand& strand, asio::ip::tcp::socket soc, std::string name);
+	Client(IClientListener& listener,
+		IClientManager& owner,
+		asio::io_context::strand& strand,
+		asio::ip::tcp::socket&& socket,
+		std::string&& name);
 	void RegisterToOwner();
 	void Start();
 
@@ -53,7 +57,7 @@ private:
 	IClientListener& listener;
 	IClientManager& owner;
 	asio::io_context::strand& strand;
-	asio::ip::tcp::socket soc;
+	asio::ip::tcp::socket socket;
 	bool disconnecting;
 	std::string name;
 	PosType position;
