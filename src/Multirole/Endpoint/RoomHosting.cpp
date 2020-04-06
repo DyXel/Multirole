@@ -181,7 +181,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		options.pass = UTF16_BUFFER_TO_STR(p->pass);
 		if(!(options.banlist = banlistProvider.GetBanlistByHash(options.info.banlistHash)))
 			options.info.banlistHash = 0;
-		options.corePkg = coreProvider.GetCorePkg();
+		options.cpkg = coreProvider.GetCorePkg();
 		auto room = std::make_shared<Room>(lobby, ioCtx, std::move(options));
 		room->RegisterToOwner();
 		auto client = std::make_shared<Client>(

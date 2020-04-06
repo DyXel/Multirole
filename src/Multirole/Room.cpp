@@ -357,7 +357,7 @@ std::unique_ptr<YGOPro::Deck> Room::LoadDeck(
 			return true;
 		return false;
 	};
-	auto& db = *options.corePkg.db;
+	auto& db = *options.cpkg.db;
 	YGOPro::CodeMap m, e, s;
 	uint32_t err = 0;
 	for(const auto code : main)
@@ -417,7 +417,7 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 	AdditiveCopyMerge(deck.Extra());
 	AdditiveCopyMerge(deck.Side());
 	// Merge aliased cards to their original code and delete them
-	auto& db = *options.corePkg.db;
+	auto& db = *options.cpkg.db;
 	for(auto it = all.begin(), last = all.end(); it != last;)
 	{
 		if(uint32_t alias = db.DataFromCode(it->first).alias; alias != 0)

@@ -61,7 +61,7 @@ public:
 		std::string notes;
 		std::string pass;
 		const YGOPro::Banlist* banlist;
-		CoreProvider::CorePkg corePkg;
+		CoreProvider::CorePkg cpkg;
 		uint32_t id;
 	};
 
