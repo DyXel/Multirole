@@ -45,11 +45,11 @@ class Room final :
 public:
 	enum StateEnum
 	{
-		WAITING, // Choosing decks, getting ready, etc.
-		RPS, // Deciding which team/player goes first.
-		DUELING, // Running duel Process and getting responses.
-		SIDE_DECKING, // Self explanatory.
-		REMATCHING, // Asking duelists for a rematch.
+		STATE_WAITING, // Choosing decks, getting ready, etc.
+		STATE_RPS, // Deciding which team/player goes first.
+		STATE_DUELING, // Running duel Process and getting responses.
+		STATE_SIDE_DECKING, // Self explanatory.
+		STATE_REMATCHING, // Asking duelists for a rematch.
 	};
 
 	// Options are data that the room needs to function properly

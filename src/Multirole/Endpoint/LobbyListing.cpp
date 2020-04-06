@@ -72,7 +72,7 @@ void LobbyListing::DoSerialize()
 			room["no_check"] = static_cast<bool>(rp.info.dontCheckDeck);
 			room["no_shuffle"] = static_cast<bool>(rp.info.dontShuffleDeck);
 			room["banlist_hash"] = rp.info.banlistHash;
-			room["istart"] = rp.state == (Room::WAITING) ? "waiting" : "start";
+			room["istart"] = rp.state == (Room::STATE_WAITING) ? "waiting" : "start";
 			auto& ac = room["users"];
 			for(auto& kv : rp.duelists)
 			{

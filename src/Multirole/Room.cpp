@@ -19,8 +19,8 @@ Room::Room(IRoomManager& owner, asio::io_context& ioCtx, Options&& options) :
 	owner(owner),
 	strand(ioCtx),
 	options(std::move(options)),
-	state(WAITING),
 	host(nullptr)
+	state(STATE_WAITING)
 {}
 
 void Room::RegisterToOwner()
@@ -64,7 +64,7 @@ asio::io_context::strand& Room::Strand()
 
 void Room::TryClose()
 {
-	if(state != WAITING)
+	if(state != STATE_WAITING)
 		return;
 	// TODO: stop timers too
 	std::lock_guard<std::mutex> lock(mClients);
@@ -80,7 +80,7 @@ void Room::OnJoin(Client& client)
 {
 	switch(state)
 	{
-	case WAITING:
+	case STATE_WAITING:
 	{
 		// Join to waiting room
 		JoinToWaiting(client);
@@ -99,7 +99,7 @@ void Room::OnConnectionLost(Client& client)
 {
 	switch(state)
 	{
-	case WAITING:
+	case STATE_WAITING:
 	{
 		if(host == &client)
 		{
@@ -152,7 +152,7 @@ void Room::OnChat(Client& client, std::string_view str)
 
 void Room::OnToDuelist(Client& client)
 {
-	if(state != WAITING)
+	if(state != STATE_WAITING)
 		return;
 	const auto posKey = client.Position();
 	std::lock_guard<std::mutex> lock(mDuelists);
@@ -184,7 +184,7 @@ void Room::OnToDuelist(Client& client)
 
 void Room::OnToObserver(Client& client)
 {
-	if(state != WAITING)
+	if(state != STATE_WAITING)
 		return;
 	const auto posKey = client.Position();
 	if(posKey == Client::POSITION_SPECTATOR)
@@ -201,7 +201,7 @@ void Room::OnToObserver(Client& client)
 void Room::OnUpdateDeck(Client& client, const std::vector<uint32_t>& main,
                         const std::vector<uint32_t>& side)
 {
-	if(state != WAITING)
+	if(state != STATE_WAITING)
 		return;
 	if(client.Position() == Client::POSITION_SPECTATOR)
 		return;
@@ -211,7 +211,7 @@ void Room::OnUpdateDeck(Client& client, const std::vector<uint32_t>& main,
 
 void Room::OnReady(Client& client, bool value)
 {
-	if(state != WAITING)
+	if(state != STATE_WAITING)
 		return;
 	if(client.Position() == Client::POSITION_SPECTATOR || client.Ready() == value)
 		return;
@@ -231,7 +231,7 @@ void Room::OnReady(Client& client, bool value)
 
 void Room::OnTryKick(Client& client, uint8_t pos)
 {
-	if(state != WAITING || &client != host)
+	if(state != STATE_WAITING || &client != host)
 		return;
 	Client::PosType p;
 	p.first = static_cast<unsigned char>(pos >= options.info.t1Count);
@@ -249,7 +249,7 @@ void Room::OnTryKick(Client& client, uint8_t pos)
 
 void Room::OnTryStart(Client& client)
 {
-	if(state != WAITING || &client != host)
+	if(state != STATE_WAITING || &client != host)
 		return;
 	for(const auto& kv : duelists)
 		if(!kv.second->Ready())

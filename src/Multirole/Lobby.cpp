@@ -30,7 +30,7 @@ std::size_t Lobby::GetStartedRoomsCount()
 	{
 		std::lock_guard<std::mutex> lock(mRooms);
 		for(auto& kv : rooms)
-			count += static_cast<unsigned long>(kv.second->State() != Room::WAITING);
+			count += static_cast<unsigned long>(kv.second->State() != Room::STATE_WAITING);
 	}
 	return count;
 }
