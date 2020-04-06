@@ -5,6 +5,9 @@
 #include <fstream>
 #include <future>
 
+#include <asio/dispatch.hpp>
+#include <asio/thread.hpp>
+#include <asio/thread_pool.hpp>
 #include <spdlog/spdlog.h>
 
 namespace Ignis::Multirole
@@ -17,12 +20,23 @@ nlohmann::json LoadConfigJson(std::string_view path)
 	return nlohmann::json::parse(i);
 }
 
+constexpr unsigned int GetConcurrency(int hint)
+{
+	if(hint <= 0)
+		return std::max(1u, std::thread::hardware_concurrency());
+	else
+		return static_cast<unsigned int>(hint);
+}
+
 // public
 
 Instance::Instance() :
-	lIoCtx(),
 	whIoCtx(),
+	lIoCtx(),
+	lIoCtxGuard(asio::make_work_guard(lIoCtx)),
 	cfg(LoadConfigJson("config.json")),
+	hostingConcurrency(
+		GetConcurrency(cfg.at("concurrencyHint").get<int>())),
 	dataProvider(
 		cfg.at("dataProvider").at("fileRegex").get<std::string>()),
 	scriptProvider(
@@ -94,20 +108,21 @@ Instance::Instance() :
 		spdlog::info("{:s} received.", sigName);
 		Stop();
 	});
+	spdlog::info("Hosting will use {:d} threads", hostingConcurrency);
 	spdlog::info("Initialization finished successfully!");
 }
 
 int Instance::Run()
 {
-	std::future<std::size_t> wsHExec = std::async(std::launch::async,
-	[this]()
-	{
-		return whIoCtx.run();
-	});
-	// Next run call will only return after all connections are properly closed
-	std::size_t tHExec = lIoCtx.run();
-	tHExec += wsHExec.get();
-	spdlog::info("Total handlers executed: {}", tHExec);
+	// NOTE: Needed for overload resolution.
+	using RunType = asio::io_context::count_type(asio::io_context::*)();
+	constexpr auto run = static_cast<RunType>(&asio::io_context::run);
+	asio::thread webhooks(std::bind(run, &whIoCtx));
+	asio::thread_pool threads(hostingConcurrency);
+	for(unsigned int i = 0; i < hostingConcurrency; i++)
+		asio::dispatch(threads, std::bind(run, &lIoCtx));
+	webhooks.join();
+	threads.join();
 	return EXIT_SUCCESS;
 }
 
@@ -123,8 +138,9 @@ you can terminate the process safely now (SIGKILL)
 void Instance::Stop()
 {
 	spdlog::info("Closing all acceptors and finishing IO operations...");
-	whIoCtx.stop(); // Terminates thread
-	repos.clear();
+	whIoCtx.stop(); // Finishes execution of thread created in Instance::Run
+	lIoCtxGuard.reset(); // Allows hosting threads to finish execution
+	repos.clear(); // Closes repositories (so other process can acquire locks)
 	lobbyListing.Stop();
 	roomHosting.Stop();
 	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
