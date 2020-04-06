@@ -12,7 +12,10 @@ namespace Ignis::Multirole::Endpoint
 // public
 
 LobbyListing::LobbyListing(
-	asio::io_context& ioCtx, unsigned short port, Lobby& lobby) :
+	asio::io_context& ioCtx,
+	unsigned short port,
+	Lobby& lobby)
+	:
 	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
 	serializeTimer(ioCtx),
 	lobby(lobby)
@@ -105,7 +108,7 @@ void LobbyListing::DoAccept()
 	});
 }
 
-void LobbyListing::DoSendRoomList(asio::ip::tcp::socket soc)
+void LobbyListing::DoSendRoomList(asio::ip::tcp::socket&& soc)
 {
 	std::lock_guard<std::mutex> lock(mSerialized);
 	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));

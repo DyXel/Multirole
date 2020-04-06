@@ -23,21 +23,36 @@ Instance::Instance() :
 	lIoCtx(),
 	whIoCtx(),
 	cfg(LoadConfigJson("config.json")),
-	dataProvider(cfg.at("dataProvider").at("dbFileRegex").get<std::string>()),
-	scriptProvider(cfg.at("scriptProvider").at("scriptFileRegex").get<std::string>()),
-	coreProvider(cfg.at("coreProvider").at("coreFileRegex").get<std::string>(), dataProvider, scriptProvider),
-	banlistProvider(cfg.at("banlistProvider").at("blFileRegex").get<std::string>()),
-	lobbyListing(lIoCtx, cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
-	roomHosting(lIoCtx, cfg.at("roomHostingPort").get<unsigned short>(), coreProvider, banlistProvider, lobby),
+	dataProvider(
+		cfg.at("dataProvider").at("fileRegex").get<std::string>()),
+	scriptProvider(
+		cfg.at("scriptProvider").at("fileRegex").get<std::string>()),
+	coreProvider(
+		cfg.at("coreProvider").at("fileRegex").get<std::string>(),
+		dataProvider,
+		scriptProvider),
+	banlistProvider(
+		cfg.at("banlistProvider").at("fileRegex").get<std::string>()),
+	lobbyListing(
+		lIoCtx,
+		cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
+	roomHosting(
+		lIoCtx,
+		cfg.at("roomHostingPort").get<unsigned short>(),
+		coreProvider,
+		banlistProvider,
+		lobby),
 	signalSet(lIoCtx)
 {
 	// Load up and update repositories while also adding them to the std::map
-	for(const auto& repoOpts : cfg.at("repos").get<std::vector<nlohmann::json>>())
+	for(const auto& opts : cfg.at("repos").get<std::vector<nlohmann::json>>())
 	{
-		auto name = repoOpts.at("name").get<std::string>();
+		auto name = opts.at("name").get<std::string>();
 		spdlog::info("Adding repository '{:s}'...", name);
-		repos.emplace(std::piecewise_construct, std::forward_as_tuple(name),
-		              std::forward_as_tuple(whIoCtx, repoOpts));
+		repos.emplace(
+			std::piecewise_construct,
+			std::forward_as_tuple(name),
+			std::forward_as_tuple(whIoCtx, opts));
 	}
 	// Register respective providers on their observed repositories
 	auto RegRepos = [&](IGitRepoObserver& obs, const nlohmann::json& a)

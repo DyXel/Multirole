@@ -65,9 +65,13 @@ struct TmpClient
 
 // public
 
-RoomHosting::RoomHosting(asio::io_context& ioCtx, unsigned short port,
-                         CoreProvider& coreProvider,
-                         BanlistProvider& banlistProvider, Lobby& lobby) :
+RoomHosting::RoomHosting(
+	asio::io_context& ioCtx,
+	unsigned short port,
+	CoreProvider& coreProvider,
+	BanlistProvider& banlistProvider,
+	Lobby& lobby)
+	:
 	ioCtx(ioCtx),
 	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
 	coreProvider(coreProvider),

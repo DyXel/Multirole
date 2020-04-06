@@ -33,20 +33,20 @@
 	],
 	"dataProvider": {
 		"observedRepos" : ["databases"],
-		"dbFileRegex": ".*\\.cdb"
+		"fileRegex": ".*\\.cdb"
 	},
 	"scriptProvider": {
 		"observedRepos" : ["scripts"],
-		"scriptFileRegex": ".*\\.lua"
+		"fileRegex": ".*\\.lua"
 	},
 	"coreProvider": {
 		"observedRepos" : ["DeltaBeta"],
-		"coreFileRegex": ".*libocgcore\\.so",
+		"fileRegex": ".*libocgcore\\.so",
 		"coreType": "shared",
 		"loadPerRoom": false
 	},
 	"banlistProvider": {
 		"observedRepos" : ["banlists"],
-		"blFileRegex": ".*\\.lflist\\.conf"
+		"fileRegex": ".*\\.lflist\\.conf"
 	}
 }

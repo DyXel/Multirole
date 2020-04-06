@@ -28,7 +28,7 @@ private:
 
 	void DoAccept();
 	void DoSerialize();
-	void DoSendRoomList(asio::ip::tcp::socket soc);
+	void DoSendRoomList(asio::ip::tcp::socket&& soc);
 };
 
 } // namespace Endpoint

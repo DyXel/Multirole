@@ -23,9 +23,12 @@ struct TmpClient;
 class RoomHosting
 {
 public:
-	RoomHosting(asio::io_context& ioCtx, unsigned short port,
-	            CoreProvider& coreProvider, BanlistProvider& banlistProvider,
-	            Lobby& lobby);
+	RoomHosting(
+		asio::io_context& ioCtx,
+		unsigned short port,
+		CoreProvider& coreProvider,
+		BanlistProvider& banlistProvider,
+		Lobby& lobby);
 	void Stop();
 private:
 	asio::io_context& ioCtx;
