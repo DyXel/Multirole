@@ -64,17 +64,20 @@ public:
 	YGOPro::STOCMsg MakeChat(const Client& c, std::string_view str) const;
 	// Creates chat message from specific type (system message)
 	static YGOPro::STOCMsg MakeChat(ChatMsgType type, std::string_view str);
-
+	// Creates a message used to inform players entering the room
 	YGOPro::STOCMsg MakePlayerEnter(const Client& c) const;
-
 	// Creates client Ready status change
 	YGOPro::STOCMsg MakePlayerChange(const Client& c) const;
 	// Creates client status change based on PChangeType
 	YGOPro::STOCMsg MakePlayerChange(const Client& c, PChangeType pc) const;
 	// Creates message that moves a player from one position to another
 	YGOPro::STOCMsg MakePlayerChange(Client::PosType p1, Client::PosType p2) const;
-
+	// Creates a message that updates spectator count for clients
 	static YGOPro::STOCMsg MakeWatchChange(std::size_t count);
+	// Creates a message that signals the client the duel is starting
+	static YGOPro::STOCMsg MakeStartDuel();
+	// Signals clients to do a Rock Paper Scissor choice
+	static YGOPro::STOCMsg MakeChooseRPS();
 
 	// Error messages
 	static YGOPro::STOCMsg MakeError(Error::Join type);

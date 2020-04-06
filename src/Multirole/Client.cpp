@@ -220,6 +220,19 @@ void Client::HandleMsg()
 		listener.OnTryKick(*this, p->pos);
 		break;
 	}
+	case YGOPro::CTOSMsg::MsgType::TRY_START:
+	{
+		listener.OnTryStart(*this);
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::RPS_CHOICE:
+	{
+		auto p = incoming.GetHandResult();
+		if(!p)
+			return;
+		listener.OnRPSChoice(*this, p->value);
+		break;
+	}
 	default:
 		break;
 	}

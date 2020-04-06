@@ -96,14 +96,19 @@ public:
 private:
 	IRoomManager& owner;
 	asio::io_context::strand strand;
-	Options options;
-	StateEnum state;
 
 	std::set<std::shared_ptr<Client>> clients;
 	Client* host;
 	std::map<Client::PosType, Client*> duelists;
 	std::mutex mClients;
 	std::mutex mDuelists;
+
+	Options options;
+	StateEnum state;
+	struct
+	{
+		std::array<int, 2> results;
+	}rps;
 
 	// IClientListener overrides
 	void OnJoin(Client& client) override;
@@ -116,13 +121,15 @@ private:
 	void OnReady(Client& client, bool value) override;
 	void OnTryKick(Client& client, uint8_t pos) override;
 	void OnTryStart(Client& client) override;
+	void OnRPSChoice(Client& client, uint8_t value) override;
 
 	// IClientManager overrides
 	void Add(std::shared_ptr<Client> client) override;
 	void Remove(std::shared_ptr<Client> client) override;
 
-	// Utility to send a message to multiple clients
+	// Utilities to send a message to multiple clients
 	void SendToAll(const YGOPro::STOCMsg& msg);
+	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg);
 
 	// Join stuff
 	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
@@ -133,6 +140,10 @@ private:
 	std::unique_ptr<YGOPro::Deck> LoadDeck(const std::vector<uint32_t>& main,
 	                                       const std::vector<uint32_t>& side) const;
 	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const;
+
+	// Duel stuff
+	void StartDuel();
+	void FinishDuel();
 };
 
 } // namespace Ignis::Multirole

@@ -18,8 +18,8 @@ Room::Room(IRoomManager& owner, asio::io_context& ioCtx, Options&& options) :
 	STOCMsgFactory(options.info.t1Count),
 	owner(owner),
 	strand(ioCtx),
+	host(nullptr),
 	options(std::move(options)),
-	host(nullptr)
 	state(STATE_WAITING)
 {}
 
@@ -251,10 +251,37 @@ void Room::OnTryStart(Client& client)
 {
 	if(state != STATE_WAITING || &client != host)
 		return;
+	if(int32_t(duelists.size()) != options.info.t1Count + options.info.t2Count)
+		return;
 	for(const auto& kv : duelists)
 		if(!kv.second->Ready())
 			return;
-	// TODO
+	SendToAll(MakeStartDuel());
+	auto msg = MakeChooseRPS();
+	duelists[{0u, 0u}]->Send(msg);
+	duelists[{1u, 0u}]->Send(msg);
+	rps.results[0] = rps.results[1] = 0;
+	state = STATE_RPS;
+}
+
+void Room::OnRPSChoice(Client& client, uint8_t value)
+{
+	enum RockPaperScissor : uint8_t
+	{
+		RPS_ROCK    = 2,
+		RPS_PAPER   = 3,
+		RPS_SCISSOR = 1,
+	};
+	if(state != STATE_RPS)
+		return;
+	const auto& pos = client.Position();
+	if(pos.second != 0u || value > 3)
+		return;
+	rps.results[pos.first] = value;
+	if(rps.results[0] && rps.results[1])
+	{
+		// TODO
+	}
 }
 
 void Room::Add(std::shared_ptr<Client> client)
@@ -282,6 +309,17 @@ void Room::SendToAll(const YGOPro::STOCMsg& msg)
 {
 	for(auto& c : clients)
 		c->Send(msg);
+}
+
+void Room::SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg)
+{
+	assert(team < 2);
+	for(const auto& kv : duelists)
+	{
+		if(kv.first.first != team)
+			continue;
+		kv.second->Send(msg);
+	}
 }
 
 bool Room::TryEmplaceDuelist(Client& client, Client::PosType hint)

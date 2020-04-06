@@ -22,6 +22,7 @@ private:
 	virtual void OnReady(Client& client, bool value) = 0;
 	virtual void OnTryKick(Client& client, uint8_t pos) = 0;
 	virtual void OnTryStart(Client& client) = 0;
+	virtual void OnRPSChoice(Client& client, uint8_t value) = 0;
 };
 
 } // namespace Ignis::Multirole

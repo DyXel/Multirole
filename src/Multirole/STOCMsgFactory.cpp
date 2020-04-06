@@ -98,6 +98,16 @@ STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count)
 	return {STOCMsg::WatchChange{static_cast<uint16_t>(count)}};
 }
 
+STOCMsg STOCMsgFactory::MakeStartDuel()
+{
+	return STOCMsg{STOCMsg::MsgType::DUEL_START, true};
+}
+
+STOCMsg STOCMsgFactory::MakeChooseRPS()
+{
+	return STOCMsg{STOCMsg::MsgType::CHOOSE_RPS, true};
+}
+
 STOCMsg STOCMsgFactory::MakeError(Error::Join type)
 {
 	return {STOCMsg::ErrorMsg{1u, static_cast<uint32_t>(type)}};
