@@ -145,8 +145,9 @@ void Room::OnChat(Client& client, std::string_view str)
 	}
 	else
 	{
-		const auto fmtStr = fmt::format(FMT_STRING("{:s}: {:s}"), client.Name(), str);
-		SendToAll(MakeChat(CHAT_MSG_TYPE_SPECTATOR, fmtStr));
+		const auto formatted =
+			fmt::format(FMT_STRING("{:s}: {:s}"), client.Name(), str);
+		SendToAll(MakeChat(CHAT_MSG_TYPE_SPECTATOR, formatted));
 	}
 }
 
@@ -213,7 +214,8 @@ void Room::OnReady(Client& client, bool value)
 {
 	if(state != STATE_WAITING)
 		return;
-	if(client.Position() == Client::POSITION_SPECTATOR || client.Ready() == value)
+	if(client.Position() == Client::POSITION_SPECTATOR ||
+	   client.Ready() == value)
 		return;
 	if(client.Deck() == nullptr)
 		value = false;
