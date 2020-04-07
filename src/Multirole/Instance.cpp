@@ -3,10 +3,9 @@
 #include <csignal>
 #include <cstdlib> // Exit flags
 #include <fstream>
-#include <future>
+#include <thread>
 
 #include <asio/dispatch.hpp>
-#include <asio/thread.hpp>
 #include <asio/thread_pool.hpp>
 #include <spdlog/spdlog.h>
 
@@ -23,7 +22,7 @@ nlohmann::json LoadConfigJson(std::string_view path)
 constexpr unsigned int GetConcurrency(int hint)
 {
 	if(hint <= 0)
-		return std::max(1u, std::thread::hardware_concurrency());
+		return std::max(1u, std::thread::hardware_concurrency() * 2u);
 	else
 		return static_cast<unsigned int>(hint);
 }
@@ -117,7 +116,7 @@ int Instance::Run()
 	// NOTE: Needed for overload resolution.
 	using RunType = asio::io_context::count_type(asio::io_context::*)();
 	constexpr auto run = static_cast<RunType>(&asio::io_context::run);
-	asio::thread webhooks(std::bind(run, &whIoCtx));
+	std::thread webhooks(std::bind(run, &whIoCtx));
 	asio::thread_pool threads(hostingConcurrency);
 	for(unsigned int i = 0; i < hostingConcurrency; i++)
 		asio::dispatch(threads, std::bind(run, &lIoCtx));
