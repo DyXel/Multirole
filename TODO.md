@@ -4,6 +4,8 @@
 * Check used enums and try to use `enum class` where possible
   * Also try to forward declare as many of them as possible
 * Make inheritance of `std::enable_shared_from_this` private/protected
+* Use mutable lambda and move semantics instead of smart pointers where possible
+  * https://stackoverflow.com/a/47698904
 
 # Porting to YGOpen project
 
