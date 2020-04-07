@@ -29,10 +29,17 @@ void CoreProvider::SetLoadProperties(CoreType type, bool loadPerCall)
 CoreProvider::CorePkg CoreProvider::GetCorePkg()
 {
 	std::lock_guard<std::mutex> lock(mCore);
-	if(loadPerCall)
-		return CorePkg{dataProvider.GetDB(), LoadCore()};
-	else
-		return CorePkg{dataProvider.GetDB(), core};
+	auto LoadOrGetCore = [&]() constexpr -> CorePtr
+	{
+		if(loadPerCall)
+			return LoadCore();
+		else
+			return core;
+	};
+	auto db = dataProvider.GetDB();
+	auto core = LoadOrGetCore();
+	core->SetDataSupplier(db.get());
+	return {std::move(db), std::move(core)};
 }
 
 void CoreProvider::OnAdd(std::string_view path, const PathVector& fileList)
@@ -49,9 +56,15 @@ void CoreProvider::OnDiff(std::string_view path, const GitDiff& diff)
 
 CoreProvider::CorePtr CoreProvider::LoadCore() const
 {
-	if(type == CoreType::SHARED)
-		return std::make_shared<Core::DynamicLinkWrapper>(corePath);
-	throw std::runtime_error("No other core type is implemented.");
+	auto ChooseCoreType = [&]() constexpr -> CorePtr
+	{
+		if(type == CoreType::SHARED)
+			return std::make_shared<Core::DynamicLinkWrapper>(corePath);
+		throw std::runtime_error("No other core type is implemented.");
+	};
+	auto core = ChooseCoreType();
+	core->SetScriptSupplier(&scriptProvider);
+	return core;
 }
 
 void CoreProvider::OnGitUpdate(std::string_view path, const PathVector& fl)
