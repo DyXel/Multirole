@@ -103,12 +103,19 @@ private:
 	std::mutex mClients;
 	std::mutex mDuelists;
 
+	// Options this room was created with
 	Options options;
+
+	// States data
 	StateEnum state;
 	struct
 	{
-		std::array<int, 2> results;
-	}rps;
+		Client* goingFirstSelector;
+		struct
+		{
+			std::array<uint8_t, 2> c; // Choices
+		}rps;
+	}states;
 
 	// IClientListener overrides
 	void OnJoin(Client& client) override;
@@ -122,6 +129,7 @@ private:
 	void OnTryKick(Client& client, uint8_t pos) override;
 	void OnTryStart(Client& client) override;
 	void OnRPSChoice(Client& client, uint8_t value) override;
+	void OnTurnChoice(Client& client, bool goingFirst) override;
 
 	// IClientManager overrides
 	void Add(std::shared_ptr<Client> client) override;
@@ -141,9 +149,9 @@ private:
 	                                       const std::vector<uint32_t>& side) const;
 	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const;
 
-	// Duel stuff
-	void StartDuel();
-	void FinishDuel();
+	void SendRPS(); // Post: STATE_RPS
+	void StartDuel(bool isT0GoingFirst); // Post: STATE_DUELING
+	void FinishDuel(); // Post: STATE_SIDE_DECKING or STATE_REMATCHING
 };
 
 } // namespace Ignis::Multirole

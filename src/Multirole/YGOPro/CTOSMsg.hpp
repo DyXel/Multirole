@@ -20,7 +20,7 @@ public:
 		RESPONSE      = 0x01,
 		UPDATE_DECK   = 0x02,
 		RPS_CHOICE    = 0x03,
-		TP_RESULT     = 0x04,
+		TURN_CHOICE   = 0x04,
 		PLAYER_INFO   = 0x10,
 		CREATE_GAME   = 0x11,
 		JOIN_GAME     = 0x12,
@@ -36,7 +36,12 @@ public:
 		TRY_START     = 0x25
 	};
 
-	struct HandResult
+	struct RPSChoice
+	{
+		uint8_t value;
+	};
+
+	struct TurnChoice
 	{
 		uint8_t value;
 	};
@@ -103,7 +108,8 @@ public:
 		std::memcpy(&p.value(), Body(), sizeof(s)); \
 		return p; \
 	}
-	X(HandResult)
+	X(RPSChoice)
+	X(TurnChoice)
 	X(PlayerInfo)
 	X(CreateGame)
 	X(JoinGame)

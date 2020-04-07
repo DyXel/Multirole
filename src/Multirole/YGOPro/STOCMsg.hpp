@@ -22,9 +22,9 @@ public:
 		GAME_MSG      = 0x1,
 		ERROR_MSG     = 0x2,
 		CHOOSE_RPS    = 0x3,
-		SELECT_TP     = 0x4,
-		HAND_RESULT   = 0x5,
-		TP_RESULT     = 0x6,
+		CHOOSE_ORDER  = 0x4,
+		RPS_RESULT    = 0x5,
+		ORDER_RESULT  = 0x6,
 		CHANGE_SIDE   = 0x7,
 		WAITING_SIDE  = 0x8,
 		CREATE_GAME   = 0x11,
@@ -46,6 +46,13 @@ public:
 		static const auto val = MsgType::ERROR_MSG;
 		uint8_t msg;
 		uint32_t code;
+	};
+
+	struct RPSResult
+	{
+		static const auto val = MsgType::RPS_RESULT;
+		uint8_t res0;
+		uint8_t res1;
 	};
 
 	struct CreateGame

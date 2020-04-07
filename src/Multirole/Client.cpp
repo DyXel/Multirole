@@ -227,10 +227,18 @@ void Client::HandleMsg()
 	}
 	case YGOPro::CTOSMsg::MsgType::RPS_CHOICE:
 	{
-		auto p = incoming.GetHandResult();
+		auto p = incoming.GetRPSChoice();
 		if(!p)
 			return;
 		listener.OnRPSChoice(*this, p->value);
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::TURN_CHOICE:
+	{
+		auto p = incoming.GetTurnChoice();
+		if(!p)
+			return;
+		listener.OnTurnChoice(*this, !!p->value);
 		break;
 	}
 	default:

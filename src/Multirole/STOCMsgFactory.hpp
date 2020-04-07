@@ -77,7 +77,11 @@ public:
 	// Creates a message that signals the client the duel is starting
 	static YGOPro::STOCMsg MakeStartDuel();
 	// Signals clients to do a Rock Paper Scissor choice
-	static YGOPro::STOCMsg MakeChooseRPS();
+	static YGOPro::STOCMsg MakeAskRPS();
+	// Creates a message to ask a client if he desires to go first or not
+	static YGOPro::STOCMsg MakeAskIfGoingFirst();
+	// Creates a message that has both teams RPS face-off result
+	static YGOPro::STOCMsg MakeRPSResult(uint8_t t0, uint8_t t1);
 
 	// Error messages
 	static YGOPro::STOCMsg MakeError(Error::Join type);

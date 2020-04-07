@@ -257,31 +257,51 @@ void Room::OnTryStart(Client& client)
 		if(!kv.second->Ready())
 			return;
 	SendToAll(MakeStartDuel());
-	auto msg = MakeChooseRPS();
-	duelists[{0u, 0u}]->Send(msg);
-	duelists[{1u, 0u}]->Send(msg);
-	rps.results[0] = rps.results[1] = 0;
-	state = STATE_RPS;
+	SendRPS();
 }
 
 void Room::OnRPSChoice(Client& client, uint8_t value)
 {
-	enum RockPaperScissor : uint8_t
-	{
-		RPS_ROCK    = 2,
-		RPS_PAPER   = 3,
-		RPS_SCISSOR = 1,
-	};
 	if(state != STATE_RPS)
 		return;
 	const auto& pos = client.Position();
 	if(pos.second != 0u || value > 3)
 		return;
-	rps.results[pos.first] = value;
-	if(rps.results[0] && rps.results[1])
+	states.rps.c[pos.first] = value;
+	if(!states.rps.c[0] || !states.rps.c[1])
+		return;
+	SendToTeam(0u, MakeRPSResult(states.rps.c[0], states.rps.c[1]));
+	SendToTeam(1u, MakeRPSResult(states.rps.c[1], states.rps.c[0]));
+	if(states.rps.c[0] == states.rps.c[1])
 	{
-		// TODO
+		SendRPS();
+		return;
 	}
+	enum : uint8_t
+	{
+		ROCK    = 2,
+		PAPER   = 3,
+		SCISSOR = 1,
+	};
+	states.goingFirstSelector =
+		duelists[{
+		static_cast<uint8_t>(
+			(states.rps.c[1] == ROCK    && states.rps.c[0] == SCISSOR) ||
+			(states.rps.c[1] == PAPER   && states.rps.c[0] == ROCK)    ||
+			(states.rps.c[1] == SCISSOR && states.rps.c[0] == PAPER)
+		),0u}];
+	states.goingFirstSelector->Send(MakeAskIfGoingFirst());
+}
+
+void Room::OnTurnChoice(Client& client, bool goingFirst)
+{
+	if(state != STATE_RPS && state != STATE_DUELING)
+		return;
+	if(&client != states.goingFirstSelector)
+		return;
+	StartDuel(
+		(client.Position().first == 0u && goingFirst) ||
+		(client.Position().first == 1u && !goingFirst));
 }
 
 void Room::Add(std::shared_ptr<Client> client)
@@ -543,6 +563,27 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 			return MakeErrorPtr(CARD_BANLISTED, kv.first);
 	}
 	return nullptr;
+}
+
+void Room::SendRPS()
+{
+	state = STATE_RPS;
+	states.goingFirstSelector = nullptr;
+	states.rps.c[0] = states.rps.c[1] = 0;
+	auto msg = MakeAskRPS();
+	duelists[{0u, 0u}]->Send(msg);
+	duelists[{1u, 0u}]->Send(msg);
+}
+
+void Room::StartDuel(bool isT0GoingFirst)
+{
+	state = STATE_DUELING;
+}
+
+void Room::FinishDuel()
+{
+	assert(state == STATE_DUELING);
+	// TODO
 }
 
 } // namespace Ignis::Multirole

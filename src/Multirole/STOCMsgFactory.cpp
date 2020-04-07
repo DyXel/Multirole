@@ -100,12 +100,22 @@ STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count)
 
 STOCMsg STOCMsgFactory::MakeStartDuel()
 {
-	return STOCMsg{STOCMsg::MsgType::DUEL_START, true};
+	return {STOCMsg::MsgType::DUEL_START, true};
 }
 
-STOCMsg STOCMsgFactory::MakeChooseRPS()
+STOCMsg STOCMsgFactory::MakeAskRPS()
 {
-	return STOCMsg{STOCMsg::MsgType::CHOOSE_RPS, true};
+	return {STOCMsg::MsgType::CHOOSE_RPS, true};
+}
+
+STOCMsg STOCMsgFactory::MakeAskIfGoingFirst()
+{
+	return {STOCMsg::MsgType::CHOOSE_ORDER, true};
+}
+
+STOCMsg STOCMsgFactory::MakeRPSResult(uint8_t t0, uint8_t t1)
+{
+	return {STOCMsg::RPSResult{t0, t1}};
 }
 
 STOCMsg STOCMsgFactory::MakeError(Error::Join type)
