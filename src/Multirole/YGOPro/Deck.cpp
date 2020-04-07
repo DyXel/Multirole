@@ -5,24 +5,24 @@
 namespace YGOPro
 {
 
-Deck::Deck(CodeMap&& m, CodeMap&& e, CodeMap&& s, uint32_t err) :
+Deck::Deck(CodeVector&& m, CodeVector&& e, CodeVector&& s, uint32_t err) :
 	main(std::move(m)),
 	extra(std::move(e)),
 	side(std::move(s)),
 	error(err)
 {}
 
-const CodeMap& Deck::Main() const
+const CodeVector& Deck::Main() const
 {
 	return main;
 }
 
-const CodeMap& Deck::Extra() const
+const CodeVector& Deck::Extra() const
 {
 	return extra;
 }
 
-const CodeMap& Deck::Side() const
+const CodeVector& Deck::Side() const
 {
 	return side;
 }

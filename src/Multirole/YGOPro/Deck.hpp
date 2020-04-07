@@ -1,12 +1,12 @@
 #ifndef YGOPRO_DECK_HPP
 #define YGOPRO_DECK_HPP
 #include <cstdint>
-#include <unordered_map>
+#include <vector>
 
 namespace YGOPro
 {
 
-using CodeMap = std::unordered_map<uint32_t, std::size_t>;
+using CodeVector = std::vector<uint32_t>;
 
 struct DeckLimits
 {
@@ -19,16 +19,16 @@ struct DeckLimits
 class Deck
 {
 public:
-	Deck(CodeMap&& m, CodeMap&& e, CodeMap&& s, uint32_t err);
+	Deck(CodeVector&& m, CodeVector&& e, CodeVector&& s, uint32_t err);
 
-	const CodeMap& Main() const;
-	const CodeMap& Extra() const;
-	const CodeMap& Side() const;
+	const CodeVector& Main() const;
+	const CodeVector& Extra() const;
+	const CodeVector& Side() const;
 	uint32_t Error() const;
 private:
-	CodeMap main;
-	CodeMap extra;
-	CodeMap side;
+	CodeVector main;
+	CodeVector extra;
+	CodeVector side;
 	uint32_t error;
 };
 

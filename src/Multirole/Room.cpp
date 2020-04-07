@@ -418,7 +418,7 @@ std::unique_ptr<YGOPro::Deck> Room::LoadDeck(
 		return false;
 	};
 	auto& db = *options.cpkg.db;
-	YGOPro::CodeMap m, e, s;
+	YGOPro::CodeVector m, e, s;
 	uint32_t err = 0;
 	for(const auto code : main)
 	{
@@ -431,9 +431,9 @@ std::unique_ptr<YGOPro::Deck> Room::LoadDeck(
 		if(data.type & TYPE_TOKEN)
 			continue;
 		if(IsExtraDeckCardType(data.type))
-			e[code]++;
+			e.push_back(code);
 		else
-			m[code]++;
+			m.push_back(code);
 	}
 	for(const auto code : side)
 	{
@@ -445,7 +445,7 @@ std::unique_ptr<YGOPro::Deck> Room::LoadDeck(
 		}
 		if(data.type & TYPE_TOKEN)
 			continue;
-		s[code]++;
+		s.push_back(code);
 	}
 	return std::make_unique<YGOPro::Deck>(
 		std::move(m),
@@ -467,15 +467,15 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 	if(deck.Error())
 		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
 	// Amalgamate all card codes into a single map for easier iteration.
-	CodeMap all;
-	auto AdditiveCopyMerge = [&all](const CodeMap& from)
+	std::map<uint32_t, std::size_t> all;
+	auto AddToMap = [&all](const CodeVector& from)
 	{
-		for(const auto& kv : from)
-			all[kv.first] = all[kv.first] + kv.second;
+		for(const auto& code : from)
+			all[code]++;
 	};
-	AdditiveCopyMerge(deck.Main());
-	AdditiveCopyMerge(deck.Extra());
-	AdditiveCopyMerge(deck.Side());
+	AddToMap(deck.Main());
+	AddToMap(deck.Extra());
+	AddToMap(deck.Side());
 	// Merge aliased cards to their original code and delete them
 	auto& db = *options.cpkg.db;
 	for(auto it = all.begin(), last = all.end(); it != last;)
@@ -491,11 +491,9 @@ std::unique_ptr<YGOPro::STOCMsg> Room::CheckDeck(const YGOPro::Deck& deck) const
 		}
 	}
 	// Check if the deck obeys the limits.
-	auto OutOfBound = [](const auto& lim, const CodeMap& map) -> auto
+	auto OutOfBound = [](const auto& lim, const CodeVector& vector) -> auto
 	{
-		std::pair<std::size_t, bool> p;
-		for(const auto& kv : map)
-			p.first += kv.second;
+		std::pair<std::size_t, bool> p{vector.size(), false};
 		return (p.second = p.first < lim.min || p.first > lim.max), p;
 	};
 	if(const auto p = OutOfBound(options.limits.main, deck.Main()); p.second)
