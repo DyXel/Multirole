@@ -2,6 +2,7 @@
 #define IHIGHLEVELWRAPPER_HPP
 #include <cstdint>
 #include <vector>
+#include <string_view>
 #include "../../ocgapi_types.h"
 
 namespace Ignis
@@ -45,9 +46,9 @@ public:
 	virtual ~IHighLevelWrapper() = default;
 
 	virtual void SetDataSupplier(IDataSupplier* cds) = 0;
-	virtual IDataSupplier* GetDataSupplier() = 0;
+// 	virtual IDataSupplier* GetDataSupplier() = 0;
 	virtual void SetScriptSupplier(IScriptSupplier* ss) = 0;
-// 	virtual IScriptSupplier* SetScriptSupplier() = 0;
+	virtual IScriptSupplier* GetScriptSupplier() = 0;
 	virtual void SetLogger(ILogger* l) = 0;
 // 	virtual ILogger* GetLogger() = 0;
 
@@ -59,6 +60,7 @@ public:
 	virtual DuelStatus Process(Duel duel) = 0;
 	virtual Buffer GetMessages(Duel duel) = 0;
 	virtual void SetResponse(Duel duel, const Buffer& buffer) = 0;
+	virtual int LoadScript(Duel duel, std::string_view name, std::string_view str) = 0;
 
 	virtual std::size_t QueryCount(Duel duel, uint8_t team, uint32_t loc) = 0;
 	virtual Buffer Query(Duel duel, const QueryInfo& info) = 0;

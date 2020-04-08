@@ -1,6 +1,5 @@
 #ifndef DYNAMICLINKWRAPPER_HPP
 #define DYNAMICLINKWRAPPER_HPP
-#include <string_view>
 #include "IHighLevelWrapper.hpp"
 
 namespace Ignis::Multirole::Core
@@ -19,9 +18,9 @@ public:
 	virtual ~DynamicLinkWrapper();
 
 	void SetDataSupplier(IDataSupplier* ds) override;
-	IDataSupplier* GetDataSupplier() override;
+// 	IDataSupplier* GetDataSupplier() override;
 	void SetScriptSupplier(IScriptSupplier* ss) override;
-// 	IScriptSupplier* SetScriptSupplier() override;
+	IScriptSupplier* GetScriptSupplier() override;
 	void SetLogger(ILogger* l) override;
 // 	ILogger* GetLogger() override;
 
@@ -33,6 +32,7 @@ public:
 	DuelStatus Process(Duel duel) override;
 	Buffer GetMessages(Duel duel) override;
 	void SetResponse(Duel duel, const Buffer& buffer) override;
+	int LoadScript(Duel duel, std::string_view name, std::string_view str) override;
 
 	std::size_t QueryCount(Duel duel, uint8_t team, uint32_t loc) override;
 	Buffer Query(Duel duel, const QueryInfo& info) override;

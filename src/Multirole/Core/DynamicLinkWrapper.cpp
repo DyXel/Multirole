@@ -19,11 +19,11 @@ static void DataReader(void* payload, int code, OCG_CardData* data)
 
 static int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 {
-	auto srd = static_cast<DynamicLinkWrapper::ScriptReaderData*>(payload);
-	std::string script = srd->supplier->ScriptFromFilePath(name);
+	auto& srd = *static_cast<DynamicLinkWrapper::ScriptReaderData*>(payload);
+	std::string script = srd.supplier->ScriptFromFilePath(name);
 	if(script.empty())
 		return 0;
-	return srd->OCG_LoadScript(duel, script.data(), script.length(), name);
+	return srd.OCG_LoadScript(duel, script.data(), script.length(), name);
 }
 
 static void LogHandler(void* payload, const char* str, int t)
@@ -69,20 +69,30 @@ void DynamicLinkWrapper::SetDataSupplier(IDataSupplier* ds)
 	dataSupplier = ds;
 }
 
-IDataSupplier* DynamicLinkWrapper::GetDataSupplier()
-{
-	return dataSupplier;
-}
+// IDataSupplier* DynamicLinkWrapper::GetDataSupplier()
+// {
+// 	return dataSupplier;
+// }
 
 void DynamicLinkWrapper::SetScriptSupplier(IScriptSupplier* ss)
 {
 	scriptReaderData.supplier = ss;
 }
 
+IScriptSupplier* DynamicLinkWrapper::GetScriptSupplier()
+{
+	return scriptReaderData.supplier;
+}
+
 void DynamicLinkWrapper::SetLogger(ILogger* l)
 {
 	logger = l;
 }
+
+// ILogger* DynamicLinkWrapper::GetLogger()
+// {
+// 	return logger;
+// }
 
 IHighLevelWrapper::Duel DynamicLinkWrapper::CreateDuel(const DuelOptions& opts)
 {
@@ -139,6 +149,11 @@ IHighLevelWrapper::Buffer DynamicLinkWrapper::GetMessages(Duel duel)
 void DynamicLinkWrapper::SetResponse(Duel duel, const Buffer& buffer)
 {
 	OCG_DuelSetResponse(duel, buffer.data(), buffer.size());
+}
+
+int DynamicLinkWrapper::LoadScript(Duel duel, std::string_view name, std::string_view str)
+{
+	return OCG_LoadScript(duel, str.data(), str.size(), name.data());
 }
 
 std::size_t DynamicLinkWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
