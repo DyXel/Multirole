@@ -53,9 +53,16 @@ bool Client::Ready() const
 	return ready;
 }
 
-const YGOPro::Deck* Client::Deck() const
+const YGOPro::Deck* Client::OriginalDeck() const
 {
-	return deck.get();
+	return originalDeck.get();
+}
+
+const YGOPro::Deck* Client::CurrentDeck() const
+{
+	if(!currentDeck)
+		return originalDeck.get();
+	return currentDeck.get();
 }
 
 void Client::SetPosition(const PosType& p)
@@ -68,9 +75,14 @@ void Client::SetReady(bool r)
 	ready = r;
 }
 
-void Client::SetDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
+void Client::SetOriginalDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
 {
-	deck = std::move(newDeck);
+	originalDeck = std::move(newDeck);
+}
+
+void Client::SetCurrentDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
+{
+	currentDeck = std::move(newDeck);
 }
 
 void Client::Send(const YGOPro::STOCMsg& msg)

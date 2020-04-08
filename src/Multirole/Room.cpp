@@ -206,7 +206,7 @@ void Room::OnUpdateDeck(Client& client, const std::vector<uint32_t>& main,
 		return;
 	if(client.Position() == Client::POSITION_SPECTATOR)
 		return;
-	client.SetDeck(LoadDeck(main, side));
+	client.SetOriginalDeck(LoadDeck(main, side));
 	// TODO: Handle side decking
 }
 
@@ -217,11 +217,11 @@ void Room::OnReady(Client& client, bool value)
 	if(client.Position() == Client::POSITION_SPECTATOR ||
 	   client.Ready() == value)
 		return;
-	if(client.Deck() == nullptr)
+	if(client.OriginalDeck() == nullptr)
 		value = false;
 	if(value && options.info.dontCheckDeck == 0)
 	{
-		if(auto error = CheckDeck(*client.Deck()); error)
+		if(auto error = CheckDeck(*client.OriginalDeck()); error)
 		{
 			client.Send(*error);
 			value = false;
@@ -575,7 +575,7 @@ void Room::SendRPS()
 	duelists[{1u, 0u}]->Send(msg);
 }
 
-void Room::StartDuel(bool isT0GoingFirst)
+void Room::StartDuel(bool isTeam0GoingFirst)
 {
 	state = STATE_DUELING;
 }

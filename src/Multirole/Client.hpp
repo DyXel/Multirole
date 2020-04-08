@@ -35,12 +35,15 @@ public:
 	std::string Name() const;
 	PosType Position() const;
 	bool Ready() const;
-	const YGOPro::Deck* Deck() const;
+	const YGOPro::Deck* OriginalDeck() const;
+	// Returns current deck or original (NOTE: this might still null)
+	const YGOPro::Deck* CurrentDeck() const;
 
 	// Setters
 	void SetPosition(const PosType& p);
 	void SetReady(bool r);
-	void SetDeck(std::unique_ptr<YGOPro::Deck>&& newDeck);
+	void SetOriginalDeck(std::unique_ptr<YGOPro::Deck>&& newDeck);
+	void SetCurrentDeck(std::unique_ptr<YGOPro::Deck>&& newDeck);
 
 	// Adds a message to the queue that is written to the client socket
 	void Send(const YGOPro::STOCMsg& msg);
@@ -62,7 +65,8 @@ private:
 	std::string name;
 	PosType position;
 	bool ready;
-	std::unique_ptr<YGOPro::Deck> deck;
+	std::unique_ptr<YGOPro::Deck> originalDeck;
+	std::unique_ptr<YGOPro::Deck> currentDeck;
 
 	// Message data
 	YGOPro::CTOSMsg incoming;

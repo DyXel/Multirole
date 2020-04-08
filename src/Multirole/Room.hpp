@@ -150,7 +150,7 @@ private:
 	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const;
 
 	void SendRPS(); // Post: STATE_RPS
-	void StartDuel(bool isT0GoingFirst); // Post: STATE_DUELING
+	void StartDuel(bool isTeam0GoingFirst); // Post: STATE_DUELING
 	void FinishDuel(); // Post: STATE_SIDE_DECKING or STATE_REMATCHING
 };
 
