@@ -10,9 +10,11 @@
 namespace Ignis::Multirole
 {
 
-CoreProvider::CoreProvider(std::string_view fnRegexStr,
-                           DataProvider& dataProvider,
-                           ScriptProvider& scriptProvider) :
+CoreProvider::CoreProvider(
+	std::string_view fnRegexStr,
+	DataProvider& dataProvider,
+	ScriptProvider& scriptProvider)
+	:
 	fnRegex(fnRegexStr.data()),
 	dataProvider(dataProvider),
 	scriptProvider(scriptProvider),
@@ -39,6 +41,7 @@ CoreProvider::CorePkg CoreProvider::GetCorePkg()
 	auto db = dataProvider.GetDB();
 	auto core = LoadOrGetCore();
 	core->SetDataSupplier(db.get());
+	core->SetLogger(this);
 	return {std::move(db), std::move(core)};
 }
 
@@ -50,6 +53,11 @@ void CoreProvider::OnAdd(std::string_view path, const PathVector& fileList)
 void CoreProvider::OnDiff(std::string_view path, const GitDiff& diff)
 {
 	OnGitUpdate(path, diff.added);
+}
+
+void CoreProvider::Log(LogType type, std::string_view str)
+{
+	spdlog::error("From core [{:d}]: {:s}", type, str);
 }
 
 // private
