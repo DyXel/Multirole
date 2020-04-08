@@ -6,6 +6,7 @@
 #include <set>
 #include <mutex>
 #include <map>
+#include <random> // std::mt19937
 
 #include <asio/io_context.hpp>
 #include <asio/io_context_strand.hpp>
@@ -115,6 +116,12 @@ private:
 		{
 			std::array<uint8_t, 2> c; // Choices
 		}rps;
+		struct
+		{
+// 			bool it0gf; // Is Team 0 Going First?
+			std::unique_ptr<std::mt19937> rng; // Random number generator
+			OCG_Duel ptr; // Pointer to duel, used by the core
+		}duel;
 	}states;
 
 	// IClientListener overrides
