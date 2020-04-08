@@ -31,7 +31,7 @@ void CoreProvider::SetLoadProperties(CoreType type, bool loadPerCall)
 CoreProvider::CorePkg CoreProvider::GetCorePkg()
 {
 	std::lock_guard<std::mutex> lock(mCore);
-	auto LoadOrGetCore = [&]() constexpr -> CorePtr
+	auto LoadOrGetCore = [&]() -> CorePtr
 	{
 		if(loadPerCall)
 			return LoadCore();
@@ -64,7 +64,7 @@ void CoreProvider::Log(LogType type, std::string_view str)
 
 CoreProvider::CorePtr CoreProvider::LoadCore() const
 {
-	auto ChooseCoreType = [&]() constexpr -> CorePtr
+	auto ChooseCoreType = [&]() -> CorePtr
 	{
 		if(type == CoreType::SHARED)
 			return std::make_shared<Core::DynamicLinkWrapper>(corePath);
