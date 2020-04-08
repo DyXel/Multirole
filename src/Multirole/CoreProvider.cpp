@@ -64,7 +64,7 @@ void CoreProvider::Log(LogType type, std::string_view str)
 
 CoreProvider::CorePtr CoreProvider::LoadCore() const
 {
-	auto ChooseCoreType = [&]() constexpr -> CorePtr
+	auto ChooseCoreType = [&]() -> CorePtr
 	{
 		if(type == CoreType::SHARED)
 			return std::make_shared<Core::DynamicLinkWrapper>(corePath);
