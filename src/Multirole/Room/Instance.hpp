@@ -14,9 +14,7 @@ namespace Ignis::Multirole
 
 class IRoomManager;
 
-}
-
-namespace Ignis::Multirole::Room
+namespace Room
 {
 
 class Instance final : public std::enable_shared_from_this<Instance>
@@ -83,6 +81,8 @@ private:
 	std::mutex mClients;
 };
 
-} // namespace Ignis::Multirole::Room
+} // namespace Room
+
+} // namespace Ignis::Multirole
 
 #endif // ROOM_INSTANCE_HPP

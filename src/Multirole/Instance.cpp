@@ -128,11 +128,9 @@ int Instance::Run()
 // private
 
 constexpr const char* UNFINISHED_DUELS_STRING =
-R"(
-All done, server will gracefully finish execution
-after all duels finish. If you wish to forcefully end
-you can terminate the process safely now (SIGKILL)
-)";
+"All done, server will gracefully finish execution"
+" after all duels finish. If you wish to forcefully end"
+" you can terminate the process safely now (SIGKILL)";
 
 void Instance::Stop()
 {
