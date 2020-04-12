@@ -1,5 +1,7 @@
 #ifndef ROOM_STATE_HPP
 #define ROOM_STATE_HPP
+#include <array>
+#include <optional>
 #include <variant>
 
 namespace Ignis::Multirole::Room
