@@ -194,7 +194,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 			std::move(tc->soc),
 			std::move(tc->name));
 		client->RegisterToOwner();
-		client->Start();
+		client->Start(std::move(room));
 		return false;
 	}
 	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
@@ -210,7 +210,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 				std::move(tc->soc),
 				std::move(tc->name));
 			client->RegisterToOwner();
-			client->Start();
+			client->Start(std::move(room));
 		}
 		return false;
 	}

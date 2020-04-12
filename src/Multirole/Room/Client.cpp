@@ -29,9 +29,13 @@ void Client::RegisterToOwner()
 	room.Add(shared_from_this());
 }
 
-void Client::Start()
+void Client::Start(std::shared_ptr<Instance>&& ptr)
 {
-	room.Dispatch(Event::Join{*this});
+	asio::post(strand,
+	[this, self = shared_from_this(), roomPtr = std::move(ptr)]()
+	{
+		room.Dispatch(Event::Join{*this});
+	});
 	DoReadHeader();
 }
 

@@ -24,7 +24,7 @@ public:
 
 	Client(Instance& room, asio::ip::tcp::socket&& socket, std::string&& name);
 	void RegisterToOwner();
-	void Start();
+	void Start(std::shared_ptr<Instance>&& ptr);
 
 	// Getters
 	std::string Name() const;
