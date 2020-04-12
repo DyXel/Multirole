@@ -27,22 +27,18 @@ std::shared_ptr<Room::Instance> Lobby::GetRoomById(uint32_t id)
 std::size_t Lobby::GetStartedRoomsCount()
 {
 	std::size_t count = 0U;
-	{
-		std::lock_guard<std::mutex> lock(mRooms);
+	if(std::lock_guard<std::mutex> lock(mRooms); true)
 		for(auto& kv : rooms)
 			count += static_cast<std::size_t>(kv.second->Started());
-	}
 	return count;
 }
 
 std::list<Room::Instance::Properties> Lobby::GetAllRoomsProperties()
 {
 	std::list<Room::Instance::Properties> list;
-	{
-		std::lock_guard<std::mutex> lock(mRooms);
+	if(std::lock_guard<std::mutex> lock(mRooms); true)
 		for(auto& kv : rooms)
 			list.emplace_back(kv.second->GetProperties());
-	}
 	return list;
 }
 
