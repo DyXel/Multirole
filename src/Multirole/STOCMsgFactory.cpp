@@ -12,11 +12,11 @@ using namespace YGOPro;
 STOCMsgFactory::STOCMsgFactory(uint8_t t1max) : t1max(t1max)
 {}
 
-STOCMsg STOCMsgFactory::MakeTypeChange(const Client& c, bool isHost) const
+STOCMsg STOCMsgFactory::MakeTypeChange(const Room::Client& c, bool isHost) const
 {
 	const auto posKey = c.Position();
 	uint8_t pos;
-	if(posKey == Client::POSITION_SPECTATOR)
+	if(posKey == Room::Client::POSITION_SPECTATOR)
 		pos = 7; // Sum of both teams max player + 1
 	else
 		pos = EncodePosition(posKey);
@@ -25,7 +25,7 @@ STOCMsg STOCMsgFactory::MakeTypeChange(const Client& c, bool isHost) const
 	return STOCMsg(proto);
 }
 
-STOCMsg STOCMsgFactory::MakeChat(const Client& c, std::string_view str) const
+STOCMsg STOCMsgFactory::MakeChat(const Room::Client& c, std::string_view str) const
 {
 	STOCMsg::Chat proto{};
 	proto.posOrType = EncodePosition(c.Position());
@@ -59,7 +59,7 @@ STOCMsg STOCMsgFactory::MakeChat(ChatMsgType type, std::string_view str)
 	return STOCMsg(proto).Shrink(size + sizeof(uint16_t));
 }
 
-STOCMsg STOCMsgFactory::MakePlayerEnter(const Client& c) const
+STOCMsg STOCMsgFactory::MakePlayerEnter(const Room::Client& c) const
 {
 	STOCMsg::PlayerEnter proto{};
 	UTF16ToBuffer(proto.name, UTF8ToUTF16(c.Name()));
@@ -67,7 +67,7 @@ STOCMsg STOCMsgFactory::MakePlayerEnter(const Client& c) const
 	return STOCMsg(proto);
 }
 
-STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c) const
+STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c) const
 {
 	STOCMsg::PlayerChange proto{};
 	const uint8_t pos = EncodePosition(c.Position());
@@ -76,7 +76,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c) const
 	return STOCMsg(proto);
 }
 
-STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c, PChangeType pct) const
+STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c, PChangeType pct) const
 {
 	STOCMsg::PlayerChange proto{};
 	const uint8_t pos = EncodePosition(c.Position());
@@ -84,7 +84,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(const Client& c, PChangeType pct) const
 	return STOCMsg(proto);
 }
 
-STOCMsg STOCMsgFactory::MakePlayerChange(Client::PosType p1, Client::PosType p2) const
+STOCMsg STOCMsgFactory::MakePlayerChange(Room::Client::PosType p1, Room::Client::PosType p2) const
 {
 	STOCMsg::PlayerChange proto{};
 	const uint8_t pos1 = EncodePosition(p1);
@@ -135,7 +135,7 @@ STOCMsg STOCMsgFactory::MakeError(Error::Generic type, uint32_t value)
 
 // protected
 
-uint8_t STOCMsgFactory::EncodePosition(Client::PosType pos) const
+uint8_t STOCMsgFactory::EncodePosition(Room::Client::PosType pos) const
 {
 	return (pos.first * t1max) + pos.second;
 }

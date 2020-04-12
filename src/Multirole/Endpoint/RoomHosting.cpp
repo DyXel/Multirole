@@ -5,10 +5,10 @@
 #include <asio/read.hpp>
 #include <asio/write.hpp>
 
-#include "../Client.hpp"
 #include "../Lobby.hpp"
-#include "../Room.hpp"
 #include "../STOCMsgFactory.hpp"
+#include "../Room/Client.hpp"
+#include "../Room/Instance.hpp"
 #include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/StringUtils.hpp"
 
@@ -170,24 +170,27 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
 	{
 		auto p = msg.GetCreateGame();
-		if(!p || p->info.serverHandshake != HANDSHAKE)
+		if(!p || p->hostInfo.serverHandshake != HANDSHAKE)
 			return SendVersionError(tc->soc);
 		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
-		Room::Options options;
-		options.info = p->info;
-		options.limits = LimitsFromFlags(options.info.extraRules);
-		options.name = UTF16_BUFFER_TO_STR(p->name);
-		options.notes = std::string(p->notes);
-		options.pass = UTF16_BUFFER_TO_STR(p->pass);
-		if(!(options.banlist = banlistProvider.GetBanlistByHash(options.info.banlistHash)))
-			options.info.banlistHash = 0;
-		options.cpkg = coreProvider.GetCorePkg();
-		auto room = std::make_shared<Room>(lobby, ioCtx, std::move(options));
+		Room::Instance::CreateInfo info;
+		info.hostInfo = p->hostInfo;
+		info.limits = LimitsFromFlags(info.hostInfo.extraRules);
+		info.cpkg = coreProvider.GetCorePkg();
+		info.banlist =
+			banlistProvider.GetBanlistByHash(info.hostInfo.banlistHash);
+		if(!info.banlist)
+			info.hostInfo.banlistHash = 0;
+		info.name = UTF16_BUFFER_TO_STR(p->name);
+		info.notes = std::string(p->notes);
+		info.pass = UTF16_BUFFER_TO_STR(p->pass);
+		auto room = std::make_shared<Room::Instance>(
+			std::move(info),
+			lobby,
+			ioCtx);
 		room->RegisterToOwner();
-		auto client = std::make_shared<Client>(
+		auto client = std::make_shared<Room::Client>(
 			*room,
-			*room,
-			room->Strand(),
 			std::move(tc->soc),
 			std::move(tc->name));
 		client->RegisterToOwner();
@@ -202,10 +205,8 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		auto room = lobby.GetRoomById(p->id);
 		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p->pass)))
 		{
-			auto client = std::make_shared<Client>(
+			auto client = std::make_shared<Room::Client>(
 				*room,
-				*room,
-				room->Strand(),
 				std::move(tc->soc),
 				std::move(tc->name));
 			client->RegisterToOwner();

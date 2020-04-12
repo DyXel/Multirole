@@ -53,7 +53,7 @@ public:
 
 	struct CreateGame
 	{
-		HostInfo info;
+		HostInfo hostInfo;
 		uint16_t name[20];
 		uint16_t pass[20];
 		char notes[200];

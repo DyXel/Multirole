@@ -1,13 +1,12 @@
 #ifndef LOBBY_HPP
 #define LOBBY_HPP
 #include <list>
-#include <memory>
 #include <mutex>
 #include <random>
 #include <unordered_map>
 
 #include "IRoomManager.hpp"
-#include "Room.hpp"
+#include "Room/Instance.hpp"
 
 namespace Ignis::Multirole
 {
@@ -16,16 +15,17 @@ class Lobby final : public IRoomManager
 {
 public:
 	Lobby();
-	std::shared_ptr<Room> GetRoomById(uint32_t id);
+	std::shared_ptr<Room::Instance> GetRoomById(uint32_t id);
 	std::size_t GetStartedRoomsCount();
-	std::list<Room::Properties> GetAllRoomsProperties();
+	std::list<Room::Instance::Properties> GetAllRoomsProperties();
 	void CloseNonStartedRooms();
 private:
 	std::mt19937 rd;
-	std::unordered_map<uint32_t, std::shared_ptr<Room>> rooms;
+	std::unordered_map<uint32_t, std::shared_ptr<Room::Instance>> rooms;
 	std::mutex mRooms;
 
-	uint32_t Add(std::shared_ptr<Room> room) override;
+	// IRoomManager overrides
+	uint32_t Add(std::shared_ptr<Room::Instance> room) override;
 	void Remove(uint32_t roomId) override;
 };
 

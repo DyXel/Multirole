@@ -58,21 +58,21 @@ void LobbyListing::DoSerialize()
 			room["roomnotes"] = rp.notes;
 			room["roommode"] = 0; // NOTE: UNUSED but expected atm
 			room["needpass"] = rp.passworded;
-			room["team1"] = rp.info.t1Count;
-			room["team2"] = rp.info.t2Count;
-			room["best_of"] = rp.info.bestOf;
-			room["duel_flag"] = rp.info.duelFlags;
-			room["forbidden_types"] = rp.info.forb;
-			room["extra_rules"] = rp.info.extraRules;
-			room["start_lp"] = rp.info.startingLP;
-			room["start_hand"] = rp.info.startingDrawCount;
-			room["draw_count"] = rp.info.drawCountPerTurn;
-			room["time_limit"] = rp.info.timeLimitInSeconds;
-			room["rule"] = rp.info.allowed;
-			room["no_check"] = static_cast<bool>(rp.info.dontCheckDeck);
-			room["no_shuffle"] = static_cast<bool>(rp.info.dontShuffleDeck);
-			room["banlist_hash"] = rp.info.banlistHash;
-			room["istart"] = rp.state == (Room::STATE_WAITING) ? "waiting" : "start";
+			room["team1"] = rp.hostInfo.t1Count;
+			room["team2"] = rp.hostInfo.t2Count;
+			room["best_of"] = rp.hostInfo.bestOf;
+			room["duel_flag"] = rp.hostInfo.duelFlags;
+			room["forbidden_types"] = rp.hostInfo.forb;
+			room["extra_rules"] = rp.hostInfo.extraRules;
+			room["start_lp"] = rp.hostInfo.startingLP;
+			room["start_hand"] = rp.hostInfo.startingDrawCount;
+			room["draw_count"] = rp.hostInfo.drawCountPerTurn;
+			room["time_limit"] = rp.hostInfo.timeLimitInSeconds;
+			room["rule"] = rp.hostInfo.allowed;
+			room["no_check"] = static_cast<bool>(rp.hostInfo.dontCheckDeck);
+			room["no_shuffle"] = static_cast<bool>(rp.hostInfo.dontShuffleDeck);
+			room["banlist_hash"] = rp.hostInfo.banlistHash;
+			room["istart"] = rp.started ? "start" : "waiting";
 			auto& ac = room["users"];
 			for(auto& kv : rp.duelists)
 			{

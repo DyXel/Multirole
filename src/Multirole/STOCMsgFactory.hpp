@@ -1,6 +1,6 @@
 #ifndef STOCMSGFACTORY_HPP
 #define STOCMSGFACTORY_HPP
-#include "Client.hpp"
+#include "Room/Client.hpp"
 #include "YGOPro/STOCMsg.hpp"
 
 namespace Ignis::Multirole
@@ -58,20 +58,20 @@ class STOCMsgFactory
 public:
 	STOCMsgFactory(uint8_t t1max);
 
-	YGOPro::STOCMsg MakeTypeChange(const Client& c, bool isHost) const;
+	YGOPro::STOCMsg MakeTypeChange(const Room::Client& c, bool isHost) const;
 
 	// Creates chat message from client position (client message)
-	YGOPro::STOCMsg MakeChat(const Client& c, std::string_view str) const;
+	YGOPro::STOCMsg MakeChat(const Room::Client& c, std::string_view str) const;
 	// Creates chat message from specific type (system message)
 	static YGOPro::STOCMsg MakeChat(ChatMsgType type, std::string_view str);
 	// Creates a message used to inform players entering the room
-	YGOPro::STOCMsg MakePlayerEnter(const Client& c) const;
+	YGOPro::STOCMsg MakePlayerEnter(const Room::Client& c) const;
 	// Creates client Ready status change
-	YGOPro::STOCMsg MakePlayerChange(const Client& c) const;
+	YGOPro::STOCMsg MakePlayerChange(const Room::Client& c) const;
 	// Creates client status change based on PChangeType
-	YGOPro::STOCMsg MakePlayerChange(const Client& c, PChangeType pc) const;
+	YGOPro::STOCMsg MakePlayerChange(const Room::Client& c, PChangeType pc) const;
 	// Creates message that moves a player from one position to another
-	YGOPro::STOCMsg MakePlayerChange(Client::PosType p1, Client::PosType p2) const;
+	YGOPro::STOCMsg MakePlayerChange(Room::Client::PosType p1, Room::Client::PosType p2) const;
 	// Creates a message that updates spectator count for clients
 	static YGOPro::STOCMsg MakeWatchChange(std::size_t count);
 	// Creates a message that signals the client the duel is starting
@@ -88,7 +88,7 @@ public:
 	static YGOPro::STOCMsg MakeError(Error::DeckOrCard type, uint32_t value);
 	static YGOPro::STOCMsg MakeError(Error::Generic type, uint32_t value);
 protected:
-	uint8_t EncodePosition(Client::PosType pos) const;
+	uint8_t EncodePosition(Room::Client::PosType pos) const;
 
 private:
 	const uint8_t t1max;

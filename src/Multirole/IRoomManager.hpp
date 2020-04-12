@@ -3,23 +3,24 @@
 #include <cstdint>
 #include <memory>
 
-namespace Ignis
+namespace Ignis::Multirole
 {
 
-namespace Multirole {
+namespace Room
+{
 
-class Room;
+class Instance;
+
+} // namespace Room
 
 class IRoomManager
 {
-	friend Room;
+	friend Room::Instance;
 private:
-	virtual uint32_t Add(std::shared_ptr<Room> room) = 0;
+	virtual uint32_t Add(std::shared_ptr<Room::Instance> room) = 0;
 	virtual void Remove(uint32_t roomId) = 0;
 };
 
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole
 
 #endif // IROOMMANAGER_HPP

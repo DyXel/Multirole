@@ -1,4 +1,5 @@
 # TODO
+
 * Make `GitRepo` webhook update system optional upon construction via config file
    * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 * Check used enums and try to use `enum class` where possible
@@ -8,8 +9,11 @@
   * https://stackoverflow.com/a/47698904
 * Conditionally be able to send messages stored on a smart pointer instead of doing possibly expensive copies of the message
   * Needed mainly for Replays
-* Split Room.cpp into its possible states
-* Remove setters for Core::IHighLevelWrapper and instead set them on ctors
+* Remove setters for `Core::IHighLevelWrapper` and instead set them on ctors
+* Investigate possibility of using a lockless queue for `Room::Client` message sending
+* use `asio::post` and strand to dispatch Join event, avoids multithreading issues
+ * maybe merge RegisterToOwner and Start into a single function that is dispatched once
+* Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
 
 # Porting to YGOpen project
 
