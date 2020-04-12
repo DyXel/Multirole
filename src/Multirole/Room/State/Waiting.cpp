@@ -35,15 +35,7 @@ StateOpt Context::operator()(State::Waiting& s, Event::ConnectionLost& e)
 {
 	if(s.host == &e.client)
 	{
-		for(const auto& kv : duelists)
-			kv.second->Disconnect();
-		for(const auto& c : spectators)
-			c->Disconnect();
-		spectators.clear();
-		{
-			std::lock_guard<std::mutex> lock(mDuelists);
-			duelists.clear();
-		}
+		return State::Closing{};
 	}
 	else
 	{
@@ -59,8 +51,8 @@ StateOpt Context::operator()(State::Waiting& s, Event::ConnectionLost& e)
 			spectators.erase(&e.client);
 			SendToAll(MakeWatchChange(spectators.size()));
 		}
+		return std::nullopt;
 	}
-	return std::nullopt; // TODO: Maybe transition to Closing if host left?
 }
 
 StateOpt Context::operator()(State::Waiting& s, Event::ToObserver& e)
