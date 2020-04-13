@@ -101,11 +101,11 @@ void GitRepo::Callback(std::string_view payload)
 
 bool GitRepo::CheckIfRepoExists() const
 {
-	git_repository* tmp = nullptr;
-	const int status = git_repository_open_ext(&tmp, path.c_str(),
-	                   GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
-	git_repository_free(tmp);
-	return status == 0;
+	return git_repository_open_ext(
+		nullptr,
+		path.c_str(),
+		GIT_REPOSITORY_OPEN_NO_SEARCH,
+		nullptr) == 0;
 }
 
 void GitRepo::Clone()
