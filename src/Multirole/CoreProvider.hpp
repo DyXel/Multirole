@@ -36,7 +36,7 @@ public:
 		std::string_view fnRegexStr,
 		DataProvider& dataProvider,
 		ScriptProvider& scriptProvider);
-	void SetLoadProperties(CoreType type, bool loadPerCall);
+	void SetLoadProperties(CoreType typeValue, bool loadPerCallValue);
 
 	// Will return a core instance based on the options set by SetLoadProperties
 	// along with the Core::IDataSupplier used for that same core instance

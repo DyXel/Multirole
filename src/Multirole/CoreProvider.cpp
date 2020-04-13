@@ -22,10 +22,10 @@ CoreProvider::CoreProvider(
 	loadPerCall(false)
 {}
 
-void CoreProvider::SetLoadProperties(CoreType type, bool loadPerCall)
+void CoreProvider::SetLoadProperties(CoreType typeValue, bool loadPerCallValue)
 {
-	type = type;
-	loadPerCall = loadPerCall;
+	type = typeValue;
+	loadPerCall = loadPerCallValue;
 }
 
 CoreProvider::CorePkg CoreProvider::GetCorePkg()
