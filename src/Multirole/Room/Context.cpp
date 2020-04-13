@@ -92,15 +92,17 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 {
 	auto IsExtraDeckCardType = [](uint32_t type) constexpr -> bool
 	{
-		if(type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ))
+		if((type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) != 0u)
 			return true;
 		// NOTE: Link Spells exist.
-		if((type & TYPE_LINK) && (type & TYPE_MONSTER))
+		if(((type & TYPE_LINK) != 0u) && ((type & TYPE_MONSTER) != 0u))
 			return true;
 		return false;
 	};
 	auto& db = *cpkg.db;
-	YGOPro::CodeVector m, e, s;
+	YGOPro::CodeVector m;
+	YGOPro::CodeVector e;
+	YGOPro::CodeVector s;
 	uint32_t err = 0;
 	for(const auto code : main)
 	{
@@ -110,7 +112,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 			err = code;
 			continue;
 		}
-		if(data.type & TYPE_TOKEN)
+		if((data.type & TYPE_TOKEN) != 0u)
 			continue;
 		if(IsExtraDeckCardType(data.type))
 			e.push_back(code);
@@ -125,7 +127,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 			err = code;
 			continue;
 		}
-		if(data.type & TYPE_TOKEN)
+		if((data.type & TYPE_TOKEN) != 0u)
 			continue;
 		s.push_back(code);
 	}
@@ -146,7 +148,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		return std::make_unique<STOCMsg>(MakeError(type, value));
 	};
 	// Check if the deck had any error while loading.
-	if(deck.Error())
+	if(deck.Error() != 0u)
 		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
 	// Amalgamate all card codes into a single map for easier iteration.
 	std::map<uint32_t, std::size_t> all;
@@ -201,17 +203,17 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	auto CheckPrelease = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
 		return allowed == ALLOWED_CARDS_WITH_PRERELEASE &&
-		       !(scope & SCOPE_OFFICIAL);
+		       ((scope & SCOPE_OFFICIAL) == 0u);
 	};
 	//	true if only ocg are allowed and scope is not ocg (its tcg).
 	auto CheckOCG = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
-		return allowed == ALLOWED_CARDS_OCG_ONLY && !(scope & SCOPE_OCG);
+		return allowed == ALLOWED_CARDS_OCG_ONLY && ((scope & SCOPE_OCG) == 0u);
 	};
 	//	true if only tcg are allowed and scope is not tcg (its ocg).
 	auto CheckTCG = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
-		return allowed == ALLOWED_CARDS_TCG_ONLY && !(scope & SCOPE_TCG);
+		return allowed == ALLOWED_CARDS_TCG_ONLY && ((scope & SCOPE_TCG) == 0u);
 	};
 	//	true if card code exists on the banlist and exceeds the listed amount.
 	auto CheckBanlist = [](const auto& kv, const Banlist& bl) -> bool
@@ -230,7 +232,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	{
 		if(kv.second > 3)
 			return MakeErrorPtr(CARD_MORE_THAN_3, kv.first);
-		if(db.DataFromCode(kv.first).type & hostInfo.forb)
+		if((db.DataFromCode(kv.first).type & hostInfo.forb) != 0u)
 			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, kv.first);
 		const auto& ced = db.ExtraFromCode(kv.first);
 		if(CheckUnofficial(ced.scope, hostInfo.allowed))
@@ -241,7 +243,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 			return MakeErrorPtr(CARD_TCG_ONLY, kv.first);
 		if(CheckTCG(ced.scope, hostInfo.allowed))
 			return MakeErrorPtr(CARD_OCG_ONLY, kv.first);
-		if(banlist && CheckBanlist(kv, *banlist))
+		if((banlist != nullptr) && CheckBanlist(kv, *banlist))
 			return MakeErrorPtr(CARD_BANLISTED, kv.first);
 	}
 	return nullptr;

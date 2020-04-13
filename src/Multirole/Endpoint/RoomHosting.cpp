@@ -27,8 +27,8 @@ constexpr uint64_t HANDSHAKE = 4680591157758091777U;
 
 constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
 {
-	const bool doubleDeck = flag & YGOPro::EXTRA_RULE_DOUBLE_DECK;
-	const bool limit20 = flag & YGOPro::EXTRA_RULE_DECK_LIMIT_20;
+	const bool doubleDeck = (flag & YGOPro::EXTRA_RULE_DOUBLE_DECK) != 0;
+	const bool limit20 = (flag & YGOPro::EXTRA_RULE_DECK_LIMIT_20) != 0;
 	YGOPro::DeckLimits l; // initialized with official values
 	if(doubleDeck && limit20)
 	{
@@ -179,7 +179,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		info.cpkg = coreProvider.GetCorePkg();
 		info.banlist =
 			banlistProvider.GetBanlistByHash(info.hostInfo.banlistHash);
-		if(!info.banlist)
+		if(info.banlist == nullptr)
 			info.hostInfo.banlistHash = 0;
 		info.name = UTF16_BUFFER_TO_STR(p->name);
 		info.notes = std::string(p->notes);

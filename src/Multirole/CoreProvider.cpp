@@ -35,8 +35,7 @@ CoreProvider::CorePkg CoreProvider::GetCorePkg()
 	{
 		if(loadPerCall)
 			return LoadCore();
-		else
-			return core;
+		return core;
 	};
 	auto db = dataProvider.GetDB();
 	auto core = LoadOrGetCore();

@@ -87,7 +87,7 @@ private:
 	std::set<Client*> spectators;
 
 	// Used by State/Dueling.cpp to generate duel seed and shuffle deck
-	uint32_t id;
+	uint32_t id{};
 	std::unique_ptr<std::mt19937> rng;
 
 	// Utilities to send a message to multiple clients

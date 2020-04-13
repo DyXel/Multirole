@@ -59,13 +59,13 @@ void Instance::TryClose()
 		c->Disconnect();
 }
 
-void Instance::Add(std::shared_ptr<Client> client)
+void Instance::Add(const std::shared_ptr<Client>& client)
 {
 	std::lock_guard<std::mutex> lock(mClients);
 	clients.insert(client);
 }
 
-void Instance::Remove(std::shared_ptr<Client> client)
+void Instance::Remove(const std::shared_ptr<Client>& client)
 {
 	std::lock_guard<std::mutex> lock(mClients);
 	clients.erase(client);

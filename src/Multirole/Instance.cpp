@@ -22,9 +22,8 @@ nlohmann::json LoadConfigJson(std::string_view path)
 constexpr unsigned int GetConcurrency(int hint)
 {
 	if(hint <= 0)
-		return std::max(1u, std::thread::hardware_concurrency() * 2u);
-	else
-		return static_cast<unsigned int>(hint);
+		return std::max(1U, std::thread::hardware_concurrency() * 2U);
+	return static_cast<unsigned int>(hint);
 }
 
 // public

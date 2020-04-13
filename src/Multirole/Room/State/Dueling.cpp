@@ -46,7 +46,7 @@ void Context::operator()(State::Dueling& s)
 	// with the rulesets to the game as playable cards, they will
 	// trigger immediately after the duel starts.
 	std::vector<uint32_t> extraCards;
-#define X(f, c) if(hostInfo.extraRules & f) extraCards.push_back(c)
+#define X(f, c) if(hostInfo.extraRules & (f)) extraCards.push_back(c)
 	// NOTE: no lint used because we dont want clang-tidy to complain
 	// about magic numbers we know are not going to change soon.
 	X(EXTRA_RULE_SEALED_DUEL,        511005092); // NOLINT
@@ -76,7 +76,7 @@ void Context::operator()(State::Dueling& s)
 	// Add main and extra deck cards for all players
 	auto ReversedOrShuffled = [&](CodeVector deck) // NOTE: Copy is intentional.
 	{
-		if(hostInfo.dontShuffleDeck)
+		if(hostInfo.dontShuffleDeck != 0u)
 			std::reverse(deck.begin(), deck.end());
 		else
 			std::shuffle(deck.begin(), deck.end(), *rng);

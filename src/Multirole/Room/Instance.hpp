@@ -61,8 +61,8 @@ public:
 	void TryClose();
 
 	// IClientManager overrides
-	void Add(std::shared_ptr<Client> client);
-	void Remove(std::shared_ptr<Client> client);
+	void Add(const std::shared_ptr<Client>& client);
+	void Remove(const std::shared_ptr<Client>& client);
 
 	// IClientListener overrides
 	asio::io_context::strand& Strand();
@@ -75,7 +75,7 @@ private:
 	std::string name;
 	std::string notes;
 	std::string pass;
-	uint32_t id;
+	uint32_t id{};
 
 	std::set<std::shared_ptr<Client>> clients;
 	std::mutex mClients;

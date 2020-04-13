@@ -101,7 +101,7 @@ StateOpt Context::operator()(State::Waiting& s, Event::ToDuelist& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting&, Event::Ready& e)
+StateOpt Context::operator()(State::Waiting& /*unused*/, Event::Ready& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR ||
 	   e.client.Ready() == e.value)
@@ -122,7 +122,7 @@ StateOpt Context::operator()(State::Waiting&, Event::Ready& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting&, Event::UpdateDeck& e)
+StateOpt Context::operator()(State::Waiting& /*unused*/, Event::UpdateDeck& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;
