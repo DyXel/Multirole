@@ -196,8 +196,9 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		case ALLOWED_CARDS_TCG_ONLY:
 		case ALLOWED_CARDS_OCG_TCG:
 			return scope > SCOPE_OCG_TCG;
+		default:
+			return false;
 		}
-		return false;
 	};
 	//	true if card scope is prerelease and they aren't allowed
 	auto CheckPrelease = [](uint32_t scope, uint8_t allowed) constexpr -> bool

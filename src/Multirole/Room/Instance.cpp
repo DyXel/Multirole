@@ -90,7 +90,7 @@ void Instance::Dispatch(const EventVariant& e)
 	StateOpt newState = std::visit(ctx, state, e);
 	if(newState)
 	{
-		state = *std::move(newState);
+		state = *newState;
 		std::visit(ctx, state);
 	}
 }

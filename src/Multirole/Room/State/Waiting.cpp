@@ -34,25 +34,22 @@ StateOpt Context::operator()(State::Waiting& s, Event::Join& e)
 StateOpt Context::operator()(State::Waiting& s, Event::ConnectionLost& e)
 {
 	if(s.host == &e.client)
-	{
 		return State::Closing{};
+	e.client.Disconnect();
+	if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
+	{
+		{
+			std::lock_guard<std::mutex> lock(mDuelists);
+			duelists.erase(p);
+		}
+		SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_LEAVE));
 	}
 	else
 	{
-		e.client.Disconnect();
-		if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
-		{
-			if(std::lock_guard<std::mutex> lock(mDuelists); true)
-				duelists.erase(p);
-			SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_LEAVE));
-		}
-		else
-		{
-			spectators.erase(&e.client);
-			SendToAll(MakeWatchChange(spectators.size()));
-		}
-		return std::nullopt;
+		spectators.erase(&e.client);
+		SendToAll(MakeWatchChange(spectators.size()));
 	}
+	return std::nullopt;
 }
 
 StateOpt Context::operator()(State::Waiting& s, Event::ToObserver& e)
@@ -60,8 +57,10 @@ StateOpt Context::operator()(State::Waiting& s, Event::ToObserver& e)
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
 		return std::nullopt;
-	if(std::lock_guard<std::mutex> lock(mDuelists); true)
+	{
+		std::lock_guard<std::mutex> lock(mDuelists);
 		duelists.erase(p);
+	}
 	spectators.insert(&e.client);
 	SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_SPECTATE));
 	e.client.SetPosition(Client::POSITION_SPECTATOR);
@@ -141,8 +140,10 @@ StateOpt Context::operator()(State::Waiting& s, Event::TryKick& e)
 		return std::nullopt;
 	Client* kicked = duelists[p];
 	kicked->Disconnect();
-	if(std::lock_guard<std::mutex> lock(mDuelists); true)
+	{
+		std::lock_guard<std::mutex> lock(mDuelists);
 		duelists.erase(p);
+	}
 	SendToAll(MakePlayerChange(*kicked, PCHANGE_TYPE_LEAVE));
 	return std::nullopt;
 }

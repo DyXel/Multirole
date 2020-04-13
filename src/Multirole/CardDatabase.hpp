@@ -18,7 +18,7 @@ struct CardExtraData
 	uint32_t category;
 };
 
-class CardDatabase : public Core::IDataSupplier
+class CardDatabase final : public Core::IDataSupplier
 {
 public:
 	// Creates a in-memory database
