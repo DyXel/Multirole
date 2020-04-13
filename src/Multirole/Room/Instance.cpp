@@ -85,7 +85,7 @@ asio::io_context::strand& Instance::Strand()
 	return strand;
 }
 
-void Instance::Dispatch(EventVariant e)
+void Instance::Dispatch(const EventVariant& e)
 {
 	StateOpt newState = std::visit(ctx, state, e);
 	if(newState)

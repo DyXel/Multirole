@@ -252,7 +252,7 @@ void Client::HandleMsg()
 		auto p = incoming.GetTurnChoice();
 		if(!p)
 			return;
-		room.Dispatch(Event::ChooseTurn{{*this}, p->value != 0u});
+		room.Dispatch(Event::ChooseTurn{{*this}, p->value != 0U});
 		break;
 	}
 	default:

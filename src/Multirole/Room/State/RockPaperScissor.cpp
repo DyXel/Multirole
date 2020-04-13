@@ -14,7 +14,7 @@ StateOpt Context::operator()(State::RockPaperScissor& s, Event::ChooseRPS& e)
 	if(pos.second != 0U || e.value > 3)
 		return std::nullopt;
 	s.choices[pos.first] = e.value;
-	if((s.choices[0] == 0u) || (s.choices[1] == 0u))
+	if((s.choices[0] == 0U) || (s.choices[1] == 0U))
 		return std::nullopt;
 	SendToTeam(0U, MakeRPSResult(s.choices[0], s.choices[1]));
 	SendToTeam(1U, MakeRPSResult(s.choices[1], s.choices[0]));

@@ -66,7 +66,7 @@ public:
 
 	// IClientListener overrides
 	asio::io_context::strand& Strand();
-	void Dispatch(EventVariant e);
+	void Dispatch(const EventVariant& e);
 private:
 	IRoomManager& owner;
 	asio::io_context::strand strand;

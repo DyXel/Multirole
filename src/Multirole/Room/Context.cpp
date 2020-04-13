@@ -112,7 +112,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 			err = code;
 			continue;
 		}
-		if((data.type & TYPE_TOKEN) != 0u)
+		if((data.type & TYPE_TOKEN) != 0U)
 			continue;
 		if(IsExtraDeckCardType(data.type))
 			e.push_back(code);
@@ -127,7 +127,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 			err = code;
 			continue;
 		}
-		if((data.type & TYPE_TOKEN) != 0u)
+		if((data.type & TYPE_TOKEN) != 0U)
 			continue;
 		s.push_back(code);
 	}
@@ -148,7 +148,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		return std::make_unique<STOCMsg>(MakeError(type, value));
 	};
 	// Check if the deck had any error while loading.
-	if(deck.Error() != 0u)
+	if(deck.Error() != 0U)
 		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
 	// Amalgamate all card codes into a single map for easier iteration.
 	std::map<uint32_t, std::size_t> all;
@@ -232,7 +232,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	{
 		if(kv.second > 3)
 			return MakeErrorPtr(CARD_MORE_THAN_3, kv.first);
-		if((db.DataFromCode(kv.first).type & hostInfo.forb) != 0u)
+		if((db.DataFromCode(kv.first).type & hostInfo.forb) != 0U)
 			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, kv.first);
 		const auto& ced = db.ExtraFromCode(kv.first);
 		if(CheckUnofficial(ced.scope, hostInfo.allowed))
