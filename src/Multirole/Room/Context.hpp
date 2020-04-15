@@ -56,6 +56,8 @@ public:
 	StateOpt operator()(State::Dueling& s, Event::Response& e);
 	// State/Closing.cpp
 	void operator()(State::Closing&);
+	StateOpt operator()(State::Closing&, Event::Join& e);
+	StateOpt operator()(State::Closing&, Event::ConnectionLost& e);
 
 	// Chat handling is the same for all states
 	template<typename State>

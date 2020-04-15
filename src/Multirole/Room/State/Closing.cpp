@@ -13,4 +13,16 @@ void Context::operator()(State::Closing& /*unused*/)
 	duelists.clear();
 }
 
+StateOpt Context::operator()(State::Closing& /*unused*/, Event::Join& e)
+{
+	e.client.Disconnect();
+	return std::nullopt;
+}
+
+StateOpt Context::operator()(State::Closing& /*unused*/, Event::ConnectionLost& e)
+{
+	e.client.Disconnect();
+	return std::nullopt;
+}
+
 } // namespace Ignis::Multirole::Room
