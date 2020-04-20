@@ -2,7 +2,6 @@
 
 #include <csignal>
 #include <cstdlib> // Exit flags
-#include <fstream>
 #include <thread>
 
 #include <asio/dispatch.hpp>
@@ -11,13 +10,6 @@
 
 namespace Ignis::Multirole
 {
-
-nlohmann::json LoadConfigJson(std::string_view path)
-{
-	spdlog::info("Loading up config.json...");
-	std::ifstream i(path.data());
-	return nlohmann::json::parse(i);
-}
 
 constexpr unsigned int GetConcurrency(int hint)
 {
@@ -28,11 +20,10 @@ constexpr unsigned int GetConcurrency(int hint)
 
 // public
 
-Instance::Instance() :
+Instance::Instance(const nlohmann::json& cfg) :
 	whIoCtx(),
 	lIoCtx(),
 	lIoCtxGuard(asio::make_work_guard(lIoCtx)),
-	cfg(LoadConfigJson("config.json")),
 	hostingConcurrency(
 		GetConcurrency(cfg.at("concurrencyHint").get<int>())),
 	dataProvider(

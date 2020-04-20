@@ -20,13 +20,12 @@ namespace Ignis::Multirole
 class Instance final
 {
 public:
-	Instance();
+	Instance(const nlohmann::json& cfg);
 	int Run();
 private:
 	asio::io_context whIoCtx; // Webhooks Io Context
 	asio::io_context lIoCtx; // Lobby Io Context
 	asio::executor_work_guard<asio::io_context::executor_type> lIoCtxGuard;
-	nlohmann::json cfg;
 	unsigned int hostingConcurrency;
 	DataProvider dataProvider;
 	ScriptProvider scriptProvider;

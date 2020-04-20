@@ -16,6 +16,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <cstdlib> // Exit flags
+#include <fstream> // std::ifstream
 #include <memory> // std::unique_ptr
 
 #include <fmt/printf.h>
@@ -34,11 +35,13 @@ inline int CreateAndRunServerInstance()
 	std::unique_ptr<Ignis::Multirole::Instance> serverPtr;
 	try
 	{
-		serverPtr = std::make_unique<Ignis::Multirole::Instance>();
+		std::ifstream f("multirole-config.json");
+		const auto cfg = nlohmann::json::parse(f);
+		serverPtr = std::make_unique<Ignis::Multirole::Instance>(cfg);
 	}
 	catch(const std::exception& e)
 	{
-		fmt::print(FMT_STRING("Error while initializing server: {:s}\n"), e.what());
+		fmt::print("Error while initializing server: {:s}\n", e.what());
 		return EXIT_FAILURE;
 	}
 	return serverPtr->Run();
