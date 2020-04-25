@@ -37,31 +37,31 @@ public:
 
 	/*** STATE AND EVENT HANDLERS ***/
 	// State/Waiting.cpp
-	StateOpt operator()(State::Waiting& s, Event::Join& e);
-	StateOpt operator()(State::Waiting& s, Event::ConnectionLost& e);
-	StateOpt operator()(State::Waiting& s, Event::ToObserver& e);
-	StateOpt operator()(State::Waiting& s, Event::ToDuelist& e);
-	StateOpt operator()(State::Waiting&, Event::Ready& e);
-	StateOpt operator()(State::Waiting&, Event::UpdateDeck& e);
-	StateOpt operator()(State::Waiting&, Event::TryKick& e);
-	StateOpt operator()(State::Waiting& s, Event::TryStart& e);
+	StateOpt operator()(State::Waiting& s, const Event::Join& e);
+	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e);
+	StateOpt operator()(State::Waiting& s, const Event::ToObserver& e);
+	StateOpt operator()(State::Waiting& s, const Event::ToDuelist& e);
+	StateOpt operator()(State::Waiting&, const Event::Ready& e);
+	StateOpt operator()(State::Waiting&, const Event::UpdateDeck& e);
+	StateOpt operator()(State::Waiting&, const Event::TryKick& e);
+	StateOpt operator()(State::Waiting& s, const Event::TryStart& e);
 	// State/RockPaperScissor.cpp
 	void operator()(State::RockPaperScissor&);
-	StateOpt operator()(State::RockPaperScissor& s, Event::ChooseRPS& e);
+	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
 	// State/ChoosingTurn.cpp
 	void operator()(State::ChoosingTurn& s);
-	StateOpt operator()(State::ChoosingTurn& s, Event::ChooseTurn& e);
+	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
 	// State/Dueling.cpp
 	void operator()(State::Dueling& s);
-	StateOpt operator()(State::Dueling& s, Event::Response& e);
+	StateOpt operator()(State::Dueling& s, const Event::Response& e);
 	// State/Closing.cpp
 	void operator()(State::Closing&);
-	StateOpt operator()(State::Closing&, Event::Join& e);
-	StateOpt operator()(State::Closing&, Event::ConnectionLost& e);
+	StateOpt operator()(State::Closing&, const Event::Join& e);
+	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
 
 	// Chat handling is the same for all states
 	template<typename State>
-	constexpr StateOpt operator()(State&, Event::Chat& e)
+	constexpr StateOpt operator()(State&, const Event::Chat& e)
 	{
 		MakeAndSendChat(e.client, e.msg);
 		return std::nullopt;

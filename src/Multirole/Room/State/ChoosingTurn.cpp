@@ -8,7 +8,7 @@ void Context::operator()(State::ChoosingTurn& s)
 	s.turnChooser->Send(MakeAskIfGoingFirst());
 }
 
-StateOpt Context::operator()(State::ChoosingTurn& s, Event::ChooseTurn& e)
+StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 {
 	if(s.turnChooser != &e.client)
 		return std::nullopt;

@@ -3,7 +3,7 @@
 namespace Ignis::Multirole::Room
 {
 
-StateOpt Context::operator()(State::Waiting& s, Event::Join& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 {
 	if(s.host == nullptr)
 		s.host = &e.client;
@@ -31,7 +31,7 @@ StateOpt Context::operator()(State::Waiting& s, Event::Join& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, Event::ConnectionLost& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
 {
 	if(s.host == &e.client)
 		return State::Closing{};
@@ -52,7 +52,7 @@ StateOpt Context::operator()(State::Waiting& s, Event::ConnectionLost& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, Event::ToObserver& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
 {
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
@@ -68,7 +68,7 @@ StateOpt Context::operator()(State::Waiting& s, Event::ToObserver& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, Event::ToDuelist& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e)
 {
 	const auto p = e.client.Position();
 	std::lock_guard<std::mutex> lock(mDuelists);
@@ -100,7 +100,7 @@ StateOpt Context::operator()(State::Waiting& s, Event::ToDuelist& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& /*unused*/, Event::Ready& e)
+StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::Ready& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR ||
 	   e.client.Ready() == e.value)
@@ -121,7 +121,7 @@ StateOpt Context::operator()(State::Waiting& /*unused*/, Event::Ready& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& /*unused*/, Event::UpdateDeck& e)
+StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::UpdateDeck& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;
@@ -129,7 +129,7 @@ StateOpt Context::operator()(State::Waiting& /*unused*/, Event::UpdateDeck& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, Event::TryKick& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 {
 	if(s.host != &e.client)
 		return std::nullopt;
@@ -148,7 +148,7 @@ StateOpt Context::operator()(State::Waiting& s, Event::TryKick& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, Event::TryStart& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 {
 	if(s.host != &e.client)
 		return std::nullopt;

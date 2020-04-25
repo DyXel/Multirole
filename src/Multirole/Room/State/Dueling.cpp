@@ -137,7 +137,7 @@ void Context::operator()(State::Dueling& s)
 	SendToTeam(1, STOCMsg{STOCMsg::MsgType::GAME_MSG, msg});
 }
 
-StateOpt Context::operator()(State::Dueling& s, Event::Response& e)
+StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 {
 	return std::nullopt;
 }

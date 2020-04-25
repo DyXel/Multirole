@@ -13,13 +13,13 @@ void Context::operator()(State::Closing& /*unused*/)
 	duelists.clear();
 }
 
-StateOpt Context::operator()(State::Closing& /*unused*/, Event::Join& e)
+StateOpt Context::operator()(State::Closing& /*unused*/, const Event::Join& e)
 {
 	e.client.Disconnect();
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Closing& /*unused*/, Event::ConnectionLost& e)
+StateOpt Context::operator()(State::Closing& /*unused*/, const Event::ConnectionLost& e)
 {
 	e.client.Disconnect();
 	return std::nullopt;

@@ -8,7 +8,7 @@ void Context::operator()(State::RockPaperScissor& /*unused*/)
 	SendRPS();
 }
 
-StateOpt Context::operator()(State::RockPaperScissor& s, Event::ChooseRPS& e)
+StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e)
 {
 	const auto& pos = e.client.Position();
 	if(pos.second != 0U || e.value > 3)
