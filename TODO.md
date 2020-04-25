@@ -11,9 +11,9 @@
   * Needed mainly for Replays
 * Remove setters for `Core::IHighLevelWrapper` and instead set them on ctors
 * Investigate possibility of using a lockless queue for `Room::Client` message sending
-* use `asio::post` and strand to dispatch Join event, avoids multithreading issues
- * maybe merge RegisterToOwner and Start into a single function that is dispatched once
 * Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
+* Rename `Core::DynamicLinkWrapper` to `Core::DLWrapper` and `Core::IHighLevelWrapper` to `Core::IWrapper`
+ * Document in source code these cryptic albeit shorter names
 
 # Porting to YGOpen project
 
