@@ -96,6 +96,7 @@ private:
 	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg);
 	void SendToSpectators(const YGOPro::STOCMsg& msg);
 	void SendToAll(const YGOPro::STOCMsg& msg);
+	void SendToAllExcept(Client& client, const YGOPro::STOCMsg& msg);
 
 	// Creates and sends to all a chat message from a client
 	void MakeAndSendChat(Client& client, std::string_view msg);

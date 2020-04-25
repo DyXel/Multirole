@@ -72,6 +72,17 @@ void Context::SendToAll(const YGOPro::STOCMsg& msg)
 	SendToSpectators(msg);
 }
 
+void Context::SendToAllExcept(Client& client, const YGOPro::STOCMsg& msg)
+{
+	for(const auto& kv : duelists)
+	{
+		if(kv.second == &client)
+			continue;
+		kv.second->Send(msg);
+	}
+	SendToSpectators(msg);
+}
+
 void Context::MakeAndSendChat(Client& client, std::string_view msg)
 {
 	if(client.Position() != Client::POSITION_SPECTATOR)
