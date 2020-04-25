@@ -15,6 +15,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	return State::Dueling{
 		(e.client.Position().first == 0U && e.goingFirst) ||
 		(e.client.Position().first == 1U && !e.goingFirst),
+		nullptr,
 		nullptr};
 }
 

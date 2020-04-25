@@ -115,6 +115,8 @@ private:
 	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
 	// State/RockPaperScissor.cpp
 	void SendRPS();
+	// State/Dueling.cpp
+	void Process(State::Dueling& s);
 };
 
 } // namespace Ignis::Multirole::Room

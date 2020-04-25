@@ -1,19 +1,24 @@
 #include "../Context.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "../../Core/IScriptSupplier.hpp"
+#include "../../YGOPro/CoreUtils.hpp"
+
+#define CORE_EXCEPTION_HANDLER() catch(...) { throw; } // TODO
 
 namespace Ignis::Multirole::Room
 {
 
 void Context::operator()(State::Dueling& s)
 {
+	// TODO: Set up Replay
 	using namespace YGOPro;
-	// RNG is conditionally created here because most rooms would have not
+	// The RNG is lazily initialized here because most rooms would have not
 	// reached this point and allocating it when the room is created
 	// would have been a waste.
 	if(!rng)
 		rng = std::make_unique<std::mt19937>(id);
-	// TODO: Set up Replay
 	// Create core duel with room's options
 	auto& core = *cpkg.core;
 	const OCG_Player popt =
@@ -41,14 +46,15 @@ void Context::operator()(State::Dueling& s)
 		LoadScript("constant.lua");
 		LoadScript("utility.lua");
 	}
-	catch(...) { throw; } // TODO
-	// Extra rules are controlled simply by adding custom cards
+	CORE_EXCEPTION_HANDLER()
+	// Enable extra rules for the duel.
+	// These are controlled simply by adding custom cards
 	// with the rulesets to the game as playable cards, they will
 	// trigger immediately after the duel starts.
 	std::vector<uint32_t> extraCards;
 #define X(f, c) if(hostInfo.extraRules & (f)) extraCards.push_back(c)
 	// NOTE: no lint used because we dont want clang-tidy to complain
-	// about magic numbers we know are not going to change soon.
+	// about magic numbers we already know.
 	X(EXTRA_RULE_SEALED_DUEL,        511005092); // NOLINT
 	X(EXTRA_RULE_BOOSTER_DUEL,       511005093); // NOLINT
 	X(EXTRA_RULE_DESTINY_DRAW,       511004000); // NOLINT
@@ -72,8 +78,8 @@ void Context::operator()(State::Dueling& s)
 			core.AddCard(s.duelPtr, nci);
 		}
 	}
-	catch(...) { throw; } // TODO
-	// Add main and extra deck cards for all players
+	CORE_EXCEPTION_HANDLER()
+	// Add main and extra deck cards for all players.
 	auto ReversedOrShuffled = [&](CodeVector deck) // NOTE: Copy is intentional.
 	{
 		if(hostInfo.dontShuffleDeck != 0u)
@@ -102,9 +108,11 @@ void Context::operator()(State::Dueling& s)
 				core.AddCard(s.duelPtr, nci);
 			}
 		}
+		core.Start(s.duelPtr);
 	}
-	catch(...) { throw; } // TODO
-	// Send MSG_START message to clients
+	CORE_EXCEPTION_HANDLER()
+	// Send MSG_START message to clients.
+	// TODO: move this abomination to CoreUtils
 	using u8 = uint8_t;
 	using u16 = uint16_t;
 	using u32 = uint32_t;
@@ -130,16 +138,89 @@ void Context::operator()(State::Dueling& s)
 		W(SC<u16>(QC(1, 0x40))); // LOCATION_EXTRA
 #undef QC
 	}
-	catch(...) { throw; } // TODO
+	CORE_EXCEPTION_HANDLER()
 #undef SC
-	SendToTeam(0, STOCMsg{STOCMsg::MsgType::GAME_MSG, msg});
+	SendToTeam(0, CoreUtils::GameMsgFromMsg(msg));
 	msg[1] = 1; // For team 1 now.
-	SendToTeam(1, STOCMsg{STOCMsg::MsgType::GAME_MSG, msg});
+	SendToTeam(1, CoreUtils::GameMsgFromMsg(msg));
+	Process(s);
 }
 
 StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 {
 	return std::nullopt;
+}
+
+// private
+
+void Context::Process(State::Dueling& s)
+{
+	auto& core = *cpkg.core;
+	auto AnalyzeAndSend = [&](const YGOPro::CoreUtils::Msg& msg)
+	{
+		spdlog::info("Analyzing {}", YGOPro::CoreUtils::GetMessageType(msg));
+// 		Replay.PushBack(msg);
+		// TODO: pre queries here
+		switch(YGOPro::CoreUtils::GetMessageDistributionType(msg))
+		{
+			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE:
+			{
+				const std::array<YGOPro::CoreUtils::StrippedMsg, 2> sMsgs =
+				{
+					YGOPro::CoreUtils::StripMessageForTeam(0, msg),
+					YGOPro::CoreUtils::StripMessageForTeam(1, msg)
+				};
+				SendToTeam(0, YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsgs[0])));
+				SendToTeam(1, YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsgs[1])));
+				const auto sMsg = YGOPro::CoreUtils::StripMessageForTeam(1, YGOPro::CoreUtils::MessageFromStrippedMsg(sMsgs[0]));
+				SendToSpectators(YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsg)));
+				break;
+			}
+			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING:
+			{
+				SendToAll(YGOPro::CoreUtils::GameMsgFromMsg(msg));
+				break;
+			}
+			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM:
+			{
+				uint8_t team = YGOPro::CoreUtils::GetMessageReceivingTeam(msg);
+				const auto sMsg = YGOPro::CoreUtils::StripMessageForTeam(team, msg);
+				const auto gMsg = YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsg));
+				SendToTeam(team, gMsg);
+				break;
+			}
+			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST:
+			{
+				uint8_t team = YGOPro::CoreUtils::GetMessageReceivingTeam(msg);
+				const auto sMsg = YGOPro::CoreUtils::StripMessageForTeam(team, msg);
+				const auto gMsg = YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsg));
+				s.replier->Send(gMsg);
+				break;
+			}
+			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST:
+			{
+				SendToAllExcept(*s.replier, YGOPro::CoreUtils::GameMsgFromMsg(msg));
+				break;
+			}
+		}
+		// TODO: post queries here
+	};
+	try
+	{
+		Core::IHighLevelWrapper::DuelStatus status;
+		do
+		{
+			status = core.Process(s.duelPtr);
+			spdlog::info("status = {}", status);
+			for(const auto& msg : YGOPro::CoreUtils::SplitMessages(core.GetMessages(s.duelPtr)))
+				AnalyzeAndSend(msg);
+		}while(status == Core::IHighLevelWrapper::DUEL_STATUS_CONTINUE);
+	}
+	catch(const std::out_of_range& e)
+	{
+		spdlog::error("Process: {}", e.what());
+	}
+	CORE_EXCEPTION_HANDLER()
 }
 
 } // namespace Ignis::Multirole::Room

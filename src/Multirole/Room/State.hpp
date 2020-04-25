@@ -37,6 +37,7 @@ struct Dueling
 {
 	bool team0GoingFirst;
 	void* duelPtr;
+	Client* replier;
 };
 
 struct Rematching
