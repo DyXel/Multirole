@@ -152,9 +152,9 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 {
 	auto ValidateDuelistsSetup = [&]() -> bool
 	{
-		if(hostInfo.duelFlags & 0x80 == 0) // NOLINT: DUEL_RELAY
+		if((hostInfo.duelFlags & 0x80) == 0) // NOLINT: DUEL_RELAY
 		{
-			if(int32_t(duelists.size()) != hostInfo.t1Count + hostInfo.t2Count)
+			if(int32_t(duelists.size()) == hostInfo.t1Count + hostInfo.t2Count)
 				return true;
 			return false;
 		}
