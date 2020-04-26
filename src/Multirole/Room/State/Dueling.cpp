@@ -155,54 +155,58 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 
 void Context::Process(State::Dueling& s)
 {
+	using namespace YGOPro::CoreUtils;
 	auto& core = *cpkg.core;
-	auto AnalyzeAndSend = [&](const YGOPro::CoreUtils::Msg& msg)
+	auto DistributeMsg = [&](const Msg& msg)
 	{
-		spdlog::info("Analyzing {}", YGOPro::CoreUtils::GetMessageType(msg));
-// 		Replay.PushBack(msg);
-		// TODO: pre queries here
-		switch(YGOPro::CoreUtils::GetMessageDistributionType(msg))
+		switch(GetMessageDistributionType(msg))
 		{
-			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE:
+		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE:
+		{
+			const std::array<StrippedMsg, 2> sMsgs =
 			{
-				const std::array<YGOPro::CoreUtils::StrippedMsg, 2> sMsgs =
-				{
-					YGOPro::CoreUtils::StripMessageForTeam(0, msg),
-					YGOPro::CoreUtils::StripMessageForTeam(1, msg)
-				};
-				SendToTeam(0, YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsgs[0])));
-				SendToTeam(1, YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsgs[1])));
-				const auto sMsg = YGOPro::CoreUtils::StripMessageForTeam(1, YGOPro::CoreUtils::MessageFromStrippedMsg(sMsgs[0]));
-				SendToSpectators(YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsg)));
-				break;
-			}
-			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING:
-			{
-				SendToAll(YGOPro::CoreUtils::GameMsgFromMsg(msg));
-				break;
-			}
-			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM:
-			{
-				uint8_t team = YGOPro::CoreUtils::GetMessageReceivingTeam(msg);
-				const auto sMsg = YGOPro::CoreUtils::StripMessageForTeam(team, msg);
-				const auto gMsg = YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsg));
-				SendToTeam(team, gMsg);
-				break;
-			}
-			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST:
-			{
-				uint8_t team = YGOPro::CoreUtils::GetMessageReceivingTeam(msg);
-				const auto sMsg = YGOPro::CoreUtils::StripMessageForTeam(team, msg);
-				const auto gMsg = YGOPro::CoreUtils::GameMsgFromMsg(YGOPro::CoreUtils::MessageFromStrippedMsg(sMsg));
-				s.replier->Send(gMsg);
-				break;
-			}
-			case YGOPro::CoreUtils::MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST:
-			{
-				SendToAllExcept(*s.replier, YGOPro::CoreUtils::GameMsgFromMsg(msg));
-				break;
-			}
+				StripMessageForTeam(0, msg),
+				StripMessageForTeam(1, msg)
+			};
+			SendToTeam(0, GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[0])));
+			SendToTeam(1, GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[1])));
+			const auto m = StripMessageForTeam(1, MsgFromStrippedMsg(sMsgs[0]));
+			SendToSpectators(GameMsgFromMsg(MsgFromStrippedMsg(m)));
+			break;
 		}
+		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING:
+		{
+			SendToAll(GameMsgFromMsg(msg));
+			break;
+		}
+		case MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM:
+		{
+			uint8_t team = GetMessageReceivingTeam(msg);
+			const auto sMsg = StripMessageForTeam(team, msg);
+			const auto gMsg = GameMsgFromMsg(MsgFromStrippedMsg(sMsg));
+			SendToTeam(team, gMsg);
+			break;
+		}
+		case MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST:
+		{
+			uint8_t team = GetMessageReceivingTeam(msg);
+			const auto sMsg = StripMessageForTeam(team, msg);
+			const auto gMsg = GameMsgFromMsg(MsgFromStrippedMsg(sMsg));
+			s.replier->Send(gMsg);
+			break;
+		}
+		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST:
+		{
+			SendToAllExcept(*s.replier, GameMsgFromMsg(msg));
+			break;
+		}
+		}
+	};
+	auto ProcessSingleMsg = [&](const Msg& msg)
+	{
+		spdlog::info("Processing {}", GetMessageType(msg));
+		// TODO: pre queries here
+		DistributeMsg(msg);
 		// TODO: post queries here
 	};
 	try
@@ -212,8 +216,8 @@ void Context::Process(State::Dueling& s)
 		{
 			status = core.Process(s.duelPtr);
 			spdlog::info("status = {}", status);
-			for(const auto& msg : YGOPro::CoreUtils::SplitMessages(core.GetMessages(s.duelPtr)))
-				AnalyzeAndSend(msg);
+			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
+				ProcessSingleMsg(msg);
 		}while(status == Core::IHighLevelWrapper::DUEL_STATUS_CONTINUE);
 	}
 	catch(const std::out_of_range& e)

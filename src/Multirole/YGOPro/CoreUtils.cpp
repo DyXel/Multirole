@@ -7,7 +7,7 @@
 namespace YGOPro::CoreUtils
 {
 
-std::vector<Msg> SplitMessages(const Buffer& buffer)
+std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 {
 	using length_t = uint32_t;
 	static constexpr std::size_t sizeOfLength = sizeof(length_t);
@@ -54,7 +54,7 @@ StrippedMsg StripMessageForTeam(uint8_t team, const Msg& msg)
 	return msg; // TODO
 }
 
-const Msg& MessageFromStrippedMsg(const StrippedMsg& sMsg)
+const Msg& MsgFromStrippedMsg(const StrippedMsg& sMsg)
 {
 	if(const auto i = sMsg.index(); i == 0)
 		return *std::get<0>(sMsg);
@@ -65,45 +65,6 @@ const Msg& MessageFromStrippedMsg(const StrippedMsg& sMsg)
 STOCMsg GameMsgFromMsg(const Msg& msg)
 {
 	return STOCMsg{STOCMsg::MsgType::GAME_MSG, msg};
-}
-
-
-
-
-
-
-
-
-
-bool DoesMessageRequireAnswer(uint8_t msgType)
-{
-	switch(msgType)
-	{
-	case MSG_SELECT_BATTLECMD:
-	case MSG_SELECT_IDLECMD:
-	case MSG_SELECT_EFFECTYN:
-	case MSG_SELECT_YESNO:
-	case MSG_SELECT_OPTION:
-	case MSG_SELECT_CARD:
-	case MSG_SELECT_CHAIN:
-	case MSG_SELECT_PLACE:
-	case MSG_SELECT_DISFIELD:
-	case MSG_SELECT_POSITION:
-	case MSG_SELECT_TRIBUTE:
-	case MSG_SORT_CHAIN:
-	case MSG_SELECT_COUNTER:
-	case MSG_SELECT_SUM:
-	case MSG_SELECT_UNSELECT_CARD:
-	case MSG_ROCK_PAPER_SCISSORS:
-	case MSG_ANNOUNCE_RACE:
-	case MSG_ANNOUNCE_ATTRIB:
-	case MSG_ANNOUNCE_CARD:
-	case MSG_ANNOUNCE_NUMBER:
-	case MSG_ANNOUNCE_CARD_FILTER:
-		return true;
-	default:
-		return false;
-	}
 }
 
 } // namespace YGOPro::CoreUtils

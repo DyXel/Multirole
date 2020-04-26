@@ -30,7 +30,7 @@ enum class MsgDistType
 // can be retrieved back from Msg's size() method.
 // Throws std::out_of_range if any operation would read outside of the
 // passed buffer.
-std::vector<Msg> SplitMessages(const Buffer& buffer);
+std::vector<Msg> SplitToMsgs(const Buffer& buffer);
 
 // Takes any core message, reads and returns its type (1st byte)
 // Throws std::out_of_range if msg is empty.
@@ -53,23 +53,10 @@ uint8_t GetMessageReceivingTeam(const Msg& msg);
 StrippedMsg StripMessageForTeam(uint8_t team, const Msg& msg);
 
 // Shortcut, self explanatory.
-const Msg& MessageFromStrippedMsg(const StrippedMsg& sMsg);
+const Msg& MsgFromStrippedMsg(const StrippedMsg& sMsg);
 
 // Creates a game message ready to be sent to a client from a core message.
 STOCMsg GameMsgFromMsg(const Msg& msg);
-
-// ************* DEPRECATED *************
-
-// Tells if the message is for a specific team, that is,
-// should it only be sent to a team rather than to everyone.
-// bool IsMessageForSpecificTeam(uint8_t msgType);
-
-// Tells if the message requires an answer (setting a response)
-// from a user/duelist before processing can continue.
-// bool DoesMessageRequireAnswer(uint8_t msgType);
-
-// Tells if the message should be sent to spectators.
-// bool IsMessageForSpectators(uint8_t msgType);
 
 } // namespace YGOPro::CoreUtils
 
