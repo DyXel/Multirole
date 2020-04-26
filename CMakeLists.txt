@@ -90,7 +90,7 @@ set(CLANG_OR_GNU $<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>)
 target_compile_options(multirole PRIVATE
 	# Clang and GNU compilers
 	$<${CLANG_OR_GNU}:-Wall -Wextra -pedantic>
-	$<$<AND:$<CONFIG:Debug>,${CLANG_OR_GNU}>:-ggdb3 -Og -D_DEBUG>
+	$<$<AND:$<CONFIG:Debug>,${CLANG_OR_GNU}>:-ggdb3 -O0 -D_DEBUG>
 	$<$<AND:$<CONFIG:Release>,${CLANG_OR_GNU}>:-O3>
 	$<$<AND:$<CONFIG:RelWithDebInfo>,${CLANG_OR_GNU}>:-ggdb3 -O3 -D_DEBUG>
 	# Microsoft compiler
