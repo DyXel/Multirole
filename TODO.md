@@ -13,7 +13,10 @@
 * Investigate possibility of using a lockless queue for `Room::Client` message sending
 * Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
 * Rename `Core::DynamicLinkWrapper` to `Core::DLWrapper` and `Core::IHighLevelWrapper` to `Core::IWrapper`
- * Document in source code these cryptic albeit shorter names
+  * Document in source code these cryptic albeit shorter names
+* Store the current number of duelists per team on `Room::Context`
+  * Update it directly on `Room::State::Waiting`
+    * Use these values for `ValidateDuelistsSetup` and to get next duelist on duel processing
 
 # Porting to YGOpen project
 
