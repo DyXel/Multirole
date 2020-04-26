@@ -208,6 +208,7 @@ void Context::Process(State::Dueling& s)
 		// TODO: pre queries here
 		DistributeMsg(msg);
 		// TODO: post queries here
+		// TODO: add to replay here
 	};
 	try
 	{

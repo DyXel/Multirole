@@ -150,14 +150,36 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 
 StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 {
+	auto ValidateDuelistsSetup = [&]() -> bool
+	{
+		if(hostInfo.duelFlags & 0x80 == 0) // NOLINT: DUEL_RELAY
+		{
+			if(int32_t(duelists.size()) != hostInfo.t1Count + hostInfo.t2Count)
+				return true;
+			return false;
+		}
+		auto HasAtLeastOneDuelistOnEachTeam = [&]() -> bool
+		{
+			std::array<uint8_t, 2> counts{};
+			for(const auto& kv : duelists)
+				counts[kv.first.first]++;
+			return counts[0] > 0 && counts[1] > 0;
+		};
+		if(!HasAtLeastOneDuelistOnEachTeam())
+			return false;
+		// At this point it has been decided that this relay setup is
+		// valid, however we need to move the duelists to their first
+		// positions that are available rather than having them scrambled.
+		// TODO
+		return true;
+	};
 	if(s.host != &e.client)
-		return std::nullopt;
-	// TODO: relays dont require all players to be present
-	if(int32_t(duelists.size()) != hostInfo.t1Count + hostInfo.t2Count)
 		return std::nullopt;
 	for(const auto& kv : duelists)
 		if(!kv.second->Ready())
 			return std::nullopt;
+	if(!ValidateDuelistsSetup())
+		return std::nullopt;
 	SendToAll(MakeStartDuel());
 	return State::RockPaperScissor{};
 }

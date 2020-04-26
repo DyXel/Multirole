@@ -43,7 +43,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg);
 
 // Tells which team should receive this message.
 // The behavior is undefined if the message is not for a specific team.
-// Throws std::out_of_range if msg's size is less than 2 (type + team).
+// Throws std::out_of_range if msg's size is unexpectedly short.
 uint8_t GetMessageReceivingTeam(const Msg& msg);
 
 // Removes knowledge from a message if it shouldn't be known
