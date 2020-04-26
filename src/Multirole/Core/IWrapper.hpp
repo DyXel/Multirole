@@ -18,7 +18,7 @@ class IDataSupplier;
 class IScriptSupplier;
 class ILogger;
 
-class IHighLevelWrapper
+class IWrapper
 {
 public:
 	using Buffer = std::vector<uint8_t>;
@@ -43,7 +43,7 @@ public:
 
 	using QueryInfo = OCG_QueryInfo;
 
-	virtual ~IHighLevelWrapper() = default;
+	virtual ~IWrapper() = default;
 
 	virtual void SetDataSupplier(IDataSupplier* cds) = 0;
 // 	virtual IDataSupplier* GetDataSupplier() = 0;

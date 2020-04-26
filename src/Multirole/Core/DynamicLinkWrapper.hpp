@@ -1,11 +1,11 @@
 #ifndef DYNAMICLINKWRAPPER_HPP
 #define DYNAMICLINKWRAPPER_HPP
-#include "IHighLevelWrapper.hpp"
+#include "IWrapper.hpp"
 
 namespace Ignis::Multirole::Core
 {
 
-class DynamicLinkWrapper : public IHighLevelWrapper
+class DynamicLinkWrapper : public IWrapper
 {
 public:
 	struct ScriptReaderData

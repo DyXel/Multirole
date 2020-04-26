@@ -5,7 +5,7 @@
 #include <mutex>
 
 #include "IGitRepoObserver.hpp"
-#include "Core/IHighLevelWrapper.hpp"
+#include "Core/IWrapper.hpp"
 #include "Core/ILogger.hpp"
 
 namespace Ignis::Multirole
@@ -23,11 +23,11 @@ public:
 		SHARED,
 		HORNET,
 	};
-	using CorePtr = std::shared_ptr<Core::IHighLevelWrapper>;
+	using CorePtr = std::shared_ptr<Core::IWrapper>;
 	struct CorePkg
 	{
 		// The shared pointer to CardDatabase is needed so the object
-		// can outlive the Core::IHighLevelWrapper that uses it.
+		// can outlive the Core::IWrapper that uses it.
 		std::shared_ptr<CardDatabase> db;
 		CorePtr core;
 	};
@@ -40,9 +40,9 @@ public:
 
 	// Will return a core instance based on the options set by SetLoadProperties
 	// along with the Core::IDataSupplier used for that same core instance
-	// already set as if by calling Core::IHighLevelWrapper::SetDataSupplier and
+	// already set as if by calling Core::IWrapper::SetDataSupplier and
 	// with the Data::ScriptProvider set as if by calling
-	// Core::IHighLevelWrapper::SetScriptSupplier with `&scriptProvider`.
+	// Core::IWrapper::SetScriptSupplier with `&scriptProvider`.
 	CorePkg GetCorePkg();
 
 	// IGitRepoObserver overrides

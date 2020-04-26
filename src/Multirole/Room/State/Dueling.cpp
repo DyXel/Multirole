@@ -27,7 +27,7 @@ void Context::operator()(State::Dueling& s)
 		hostInfo.startingDrawCount,
 		hostInfo.drawCountPerTurn
 	};
-	const Core::IHighLevelWrapper::DuelOptions dopts =
+	const Core::IWrapper::DuelOptions dopts =
 	{
 		static_cast<uint32_t>((*rng)()),
 		static_cast<int>(hostInfo.duelFlags),
@@ -225,14 +225,14 @@ void Context::Process(State::Dueling& s)
 	};
 	try
 	{
-		Core::IHighLevelWrapper::DuelStatus status;
+		Core::IWrapper::DuelStatus status;
 		do
 		{
 			status = core.Process(s.duelPtr);
 			spdlog::info("status = {}", status);
 			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
 				ProcessSingleMsg(msg);
-		}while(status == Core::IHighLevelWrapper::DUEL_STATUS_CONTINUE);
+		}while(status == Core::IWrapper::DUEL_STATUS_CONTINUE);
 	}
 	catch(const std::out_of_range& e)
 	{

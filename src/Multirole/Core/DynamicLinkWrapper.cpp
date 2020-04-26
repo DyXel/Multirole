@@ -94,7 +94,7 @@ void DynamicLinkWrapper::SetLogger(ILogger* l)
 // 	return logger;
 // }
 
-IHighLevelWrapper::Duel DynamicLinkWrapper::CreateDuel(const DuelOptions& opts)
+IWrapper::Duel DynamicLinkWrapper::CreateDuel(const DuelOptions& opts)
 {
 	OCG_DuelOptions options =
 	{
@@ -132,12 +132,12 @@ void DynamicLinkWrapper::Start(Duel duel)
 	OCG_StartDuel(duel);
 }
 
-IHighLevelWrapper::DuelStatus DynamicLinkWrapper::Process(Duel duel)
+IWrapper::DuelStatus DynamicLinkWrapper::Process(Duel duel)
 {
 	return static_cast<DuelStatus>(OCG_DuelProcess(duel));
 }
 
-IHighLevelWrapper::Buffer DynamicLinkWrapper::GetMessages(Duel duel)
+IWrapper::Buffer DynamicLinkWrapper::GetMessages(Duel duel)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelGetMessage(duel, &length);
@@ -161,7 +161,7 @@ std::size_t DynamicLinkWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc
 	return static_cast<std::size_t>(OCG_DuelQueryCount(duel, team, loc));
 }
 
-IHighLevelWrapper::Buffer DynamicLinkWrapper::Query(Duel duel, const QueryInfo& info)
+IWrapper::Buffer DynamicLinkWrapper::Query(Duel duel, const QueryInfo& info)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelQuery(duel, &length, info);
@@ -170,7 +170,7 @@ IHighLevelWrapper::Buffer DynamicLinkWrapper::Query(Duel duel, const QueryInfo& 
 	return buffer;
 }
 
-IHighLevelWrapper::Buffer DynamicLinkWrapper::QueryLocation(Duel duel, const QueryInfo& info)
+IWrapper::Buffer DynamicLinkWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelQueryLocation(duel, &length, info);
@@ -179,7 +179,7 @@ IHighLevelWrapper::Buffer DynamicLinkWrapper::QueryLocation(Duel duel, const Que
 	return buffer;
 }
 
-IHighLevelWrapper::Buffer DynamicLinkWrapper::QueryField(Duel duel)
+IWrapper::Buffer DynamicLinkWrapper::QueryField(Duel duel)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelQueryField(duel, &length);
