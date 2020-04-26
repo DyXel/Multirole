@@ -37,6 +37,7 @@ struct Dueling
 {
 	bool team0GoingFirst;
 	void* duelPtr;
+	std::array<uint8_t, 2> currentPos;
 	Client* replier;
 };
 

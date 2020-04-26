@@ -255,6 +255,13 @@ void Client::HandleMsg()
 		room.Dispatch(Event::ChooseTurn{{*this}, p->value != 0U});
 		break;
 	}
+	case YGOPro::CTOSMsg::MsgType::RESPONSE:
+	{
+		std::vector<uint8_t> data(incoming.GetLength());
+		std::memcpy(data.data(), incoming.Body(), data.size());
+		room.Dispatch(Event::Response{{*this}, data});
+		break;
+	}
 	default:
 		break;
 	}

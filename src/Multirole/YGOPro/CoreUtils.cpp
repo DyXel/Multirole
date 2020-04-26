@@ -41,7 +41,38 @@ uint8_t GetMessageType(const Msg& msg)
 
 MsgDistType GetMessageDistributionType(const Msg& msg)
 {
-	return MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING; // TODO
+	switch(GetMessageType(msg))
+	{
+	case MSG_SELECT_BATTLECMD:
+	case MSG_SELECT_IDLECMD:
+	case MSG_SELECT_EFFECTYN:
+	case MSG_SELECT_YESNO:
+	case MSG_SELECT_OPTION:
+	case MSG_SELECT_CARD:
+	case MSG_SELECT_CHAIN:
+	case MSG_SELECT_PLACE:
+	case MSG_SELECT_DISFIELD:
+	case MSG_SELECT_POSITION:
+	case MSG_SELECT_TRIBUTE:
+	case MSG_SORT_CHAIN:
+	case MSG_SELECT_COUNTER:
+	case MSG_SELECT_SUM:
+	case MSG_SELECT_UNSELECT_CARD:
+	case MSG_ROCK_PAPER_SCISSORS:
+	case MSG_ANNOUNCE_RACE:
+	case MSG_ANNOUNCE_ATTRIB:
+	case MSG_ANNOUNCE_CARD:
+	case MSG_ANNOUNCE_NUMBER:
+	case MSG_ANNOUNCE_CARD_FILTER:
+		return MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST;
+	case MSG_HINT:
+	{
+		// TODO
+		[[fallthrough]];
+	}
+	default:
+		return MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING;
+	}
 }
 
 uint8_t GetMessageReceivingTeam(const Msg& msg)

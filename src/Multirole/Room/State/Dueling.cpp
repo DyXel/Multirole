@@ -148,10 +148,23 @@ void Context::operator()(State::Dueling& s)
 
 StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 {
+	if(s.replier != &e.client)
+		return std::nullopt;
+	try
+	{
+		cpkg.core->SetResponse(s.duelPtr, e.data);
+	}
+	CORE_EXCEPTION_HANDLER()
+	Process(s);
 	return std::nullopt;
 }
 
 // private
+
+Client& Context::GetCurrentTeamClient(State::Dueling& s, uint8_t team)
+{
+	return *duelists[{team, s.currentPos[team]}];
+}
 
 void Context::Process(State::Dueling& s)
 {
@@ -183,28 +196,28 @@ void Context::Process(State::Dueling& s)
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			const auto sMsg = StripMessageForTeam(team, msg);
-			const auto gMsg = GameMsgFromMsg(MsgFromStrippedMsg(sMsg));
-			SendToTeam(team, gMsg);
+			SendToTeam(team, GameMsgFromMsg(MsgFromStrippedMsg(sMsg)));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
+			s.replier = &GetCurrentTeamClient(s, team);
 			const auto sMsg = StripMessageForTeam(team, msg);
-			const auto gMsg = GameMsgFromMsg(MsgFromStrippedMsg(sMsg));
-			s.replier->Send(gMsg);
+			s.replier->Send(GameMsgFromMsg(MsgFromStrippedMsg(sMsg)));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST:
 		{
-			SendToAllExcept(*s.replier, GameMsgFromMsg(msg));
+			uint8_t team = GetMessageReceivingTeam(msg);
+			SendToAllExcept(GetCurrentTeamClient(s, team), GameMsgFromMsg(msg));
 			break;
 		}
 		}
 	};
 	auto ProcessSingleMsg = [&](const Msg& msg)
 	{
-		spdlog::info("Processing {}", GetMessageType(msg));
+		spdlog::info("Processing = {}", GetMessageType(msg));
 		// TODO: pre queries here
 		DistributeMsg(msg);
 		// TODO: post queries here

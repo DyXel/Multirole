@@ -16,6 +16,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 		(e.client.Position().first == 0U && e.goingFirst) ||
 		(e.client.Position().first == 1U && !e.goingFirst),
 		nullptr,
+		{0u, 0u},
 		nullptr};
 }
 

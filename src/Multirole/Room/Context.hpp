@@ -116,6 +116,7 @@ private:
 	// State/RockPaperScissor.cpp
 	void SendRPS();
 	// State/Dueling.cpp
+	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team);
 	void Process(State::Dueling& s);
 };
 
