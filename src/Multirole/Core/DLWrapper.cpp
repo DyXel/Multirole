@@ -1,4 +1,4 @@
-#include "DynamicLinkWrapper.hpp"
+#include "DLWrapper.hpp"
 
 #include <cstring>
 #include <stdexcept> // std::runtime_error
@@ -19,7 +19,7 @@ static void DataReader(void* payload, int code, OCG_CardData* data)
 
 static int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 {
-	auto& srd = *static_cast<DynamicLinkWrapper::ScriptReaderData*>(payload);
+	auto& srd = *static_cast<DLWrapper::ScriptReaderData*>(payload);
 	std::string script = srd.supplier->ScriptFromFilePath(name);
 	if(script.empty())
 		return 0;
@@ -38,7 +38,7 @@ static void DataReaderDone(void* payload, OCG_CardData* data)
 
 // public
 
-DynamicLinkWrapper::DynamicLinkWrapper(std::string_view absFilePath)
+DLWrapper::DLWrapper(std::string_view absFilePath)
 {
 	handle = DLOpen::LoadObject(absFilePath.data());
 	if(handle == nullptr)
@@ -59,42 +59,42 @@ DynamicLinkWrapper::DynamicLinkWrapper(std::string_view absFilePath)
 	scriptReaderData.OCG_LoadScript = OCG_LoadScript;
 }
 
-DynamicLinkWrapper::~DynamicLinkWrapper()
+DLWrapper::~DLWrapper()
 {
 	DLOpen::UnloadObject(handle);
 }
 
-void DynamicLinkWrapper::SetDataSupplier(IDataSupplier* ds)
+void DLWrapper::SetDataSupplier(IDataSupplier* ds)
 {
 	dataSupplier = ds;
 }
 
-// IDataSupplier* DynamicLinkWrapper::GetDataSupplier()
+// IDataSupplier* DLWrapper::GetDataSupplier()
 // {
 // 	return dataSupplier;
 // }
 
-void DynamicLinkWrapper::SetScriptSupplier(IScriptSupplier* ss)
+void DLWrapper::SetScriptSupplier(IScriptSupplier* ss)
 {
 	scriptReaderData.supplier = ss;
 }
 
-IScriptSupplier* DynamicLinkWrapper::GetScriptSupplier()
+IScriptSupplier* DLWrapper::GetScriptSupplier()
 {
 	return scriptReaderData.supplier;
 }
 
-void DynamicLinkWrapper::SetLogger(ILogger* l)
+void DLWrapper::SetLogger(ILogger* l)
 {
 	logger = l;
 }
 
-// ILogger* DynamicLinkWrapper::GetLogger()
+// ILogger* DLWrapper::GetLogger()
 // {
 // 	return logger;
 // }
 
-IWrapper::Duel DynamicLinkWrapper::CreateDuel(const DuelOptions& opts)
+IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 {
 	OCG_DuelOptions options =
 	{
@@ -117,27 +117,27 @@ IWrapper::Duel DynamicLinkWrapper::CreateDuel(const DuelOptions& opts)
 	return duel;
 }
 
-void DynamicLinkWrapper::DestroyDuel(Duel duel)
+void DLWrapper::DestroyDuel(Duel duel)
 {
 	OCG_DestroyDuel(duel);
 }
 
-void DynamicLinkWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
+void DLWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
 {
 	OCG_DuelNewCard(duel, info);
 }
 
-void DynamicLinkWrapper::Start(Duel duel)
+void DLWrapper::Start(Duel duel)
 {
 	OCG_StartDuel(duel);
 }
 
-IWrapper::DuelStatus DynamicLinkWrapper::Process(Duel duel)
+IWrapper::DuelStatus DLWrapper::Process(Duel duel)
 {
 	return static_cast<DuelStatus>(OCG_DuelProcess(duel));
 }
 
-IWrapper::Buffer DynamicLinkWrapper::GetMessages(Duel duel)
+IWrapper::Buffer DLWrapper::GetMessages(Duel duel)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelGetMessage(duel, &length);
@@ -146,22 +146,22 @@ IWrapper::Buffer DynamicLinkWrapper::GetMessages(Duel duel)
 	return buffer;
 }
 
-void DynamicLinkWrapper::SetResponse(Duel duel, const Buffer& buffer)
+void DLWrapper::SetResponse(Duel duel, const Buffer& buffer)
 {
 	OCG_DuelSetResponse(duel, buffer.data(), buffer.size());
 }
 
-int DynamicLinkWrapper::LoadScript(Duel duel, std::string_view name, std::string_view str)
+int DLWrapper::LoadScript(Duel duel, std::string_view name, std::string_view str)
 {
 	return OCG_LoadScript(duel, str.data(), str.size(), name.data());
 }
 
-std::size_t DynamicLinkWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
+std::size_t DLWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
 {
 	return static_cast<std::size_t>(OCG_DuelQueryCount(duel, team, loc));
 }
 
-IWrapper::Buffer DynamicLinkWrapper::Query(Duel duel, const QueryInfo& info)
+IWrapper::Buffer DLWrapper::Query(Duel duel, const QueryInfo& info)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelQuery(duel, &length, info);
@@ -170,7 +170,7 @@ IWrapper::Buffer DynamicLinkWrapper::Query(Duel duel, const QueryInfo& info)
 	return buffer;
 }
 
-IWrapper::Buffer DynamicLinkWrapper::QueryLocation(Duel duel, const QueryInfo& info)
+IWrapper::Buffer DLWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelQueryLocation(duel, &length, info);
@@ -179,7 +179,7 @@ IWrapper::Buffer DynamicLinkWrapper::QueryLocation(Duel duel, const QueryInfo& i
 	return buffer;
 }
 
-IWrapper::Buffer DynamicLinkWrapper::QueryField(Duel duel)
+IWrapper::Buffer DLWrapper::QueryField(Duel duel)
 {
 	uint32_t length;
 	auto pointer = OCG_DuelQueryField(duel, &length);

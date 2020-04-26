@@ -5,7 +5,7 @@
 #include "DataProvider.hpp"
 #include "ScriptProvider.hpp"
 
-#include "Core/DynamicLinkWrapper.hpp"
+#include "Core/DLWrapper.hpp"
 
 namespace Ignis::Multirole
 {
@@ -66,7 +66,7 @@ CoreProvider::CorePtr CoreProvider::LoadCore() const
 	auto ChooseCoreType = [&]() -> CorePtr
 	{
 		if(type == CoreType::SHARED)
-			return std::make_shared<Core::DynamicLinkWrapper>(corePath);
+			return std::make_shared<Core::DLWrapper>(corePath);
 		throw std::runtime_error("No other core type is implemented.");
 	};
 	auto core = ChooseCoreType();

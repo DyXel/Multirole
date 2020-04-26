@@ -5,7 +5,7 @@
 namespace Ignis::Multirole::Core
 {
 
-class DynamicLinkWrapper : public IWrapper
+class DLWrapper : public IWrapper
 {
 public:
 	struct ScriptReaderData
@@ -14,8 +14,8 @@ public:
 		int (*OCG_LoadScript)(OCG_Duel, const char*, uint32_t, const char*);
 	};
 
-	DynamicLinkWrapper(std::string_view absFilePath);
-	virtual ~DynamicLinkWrapper();
+	DLWrapper(std::string_view absFilePath);
+	virtual ~DLWrapper();
 
 	void SetDataSupplier(IDataSupplier* ds) override;
 // 	IDataSupplier* GetDataSupplier() override;
