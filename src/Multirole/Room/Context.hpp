@@ -85,6 +85,7 @@ private:
 	const YGOPro::Banlist* banlist;
 
 	std::map<Client::PosType, Client*> duelists;
+	std::array<uint8_t, 2> teamCount;
 	std::mutex mDuelists;
 	std::set<Client*> spectators;
 

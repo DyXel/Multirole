@@ -41,6 +41,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
 		{
 			std::lock_guard<std::mutex> lock(mDuelists);
 			duelists.erase(p);
+			teamCount[p.first]--;
 		}
 		SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_LEAVE));
 	}
@@ -60,6 +61,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
 	{
 		std::lock_guard<std::mutex> lock(mDuelists);
 		duelists.erase(p);
+		teamCount[p.first]--;
 	}
 	spectators.insert(&e.client);
 	SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_SPECTATE));
@@ -87,6 +89,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e)
 	else
 	{
 		duelists.erase(p);
+		teamCount[p.first]--;
 		auto nextPos = p;
 		nextPos.second++;
 		if(TryEmplaceDuelist(e.client, nextPos) && e.client.Position() != p)
@@ -143,6 +146,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	{
 		std::lock_guard<std::mutex> lock(mDuelists);
 		duelists.erase(p);
+		teamCount[p.first]--;
 	}
 	SendToAll(MakePlayerChange(*kicked, PCHANGE_TYPE_LEAVE));
 	return std::nullopt;
@@ -158,14 +162,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 				return true;
 			return false;
 		}
-		auto HasAtLeastOneDuelistOnEachTeam = [&]() -> bool
-		{
-			std::array<uint8_t, 2> counts{};
-			for(const auto& kv : duelists)
-				counts[kv.first.first]++;
-			return counts[0] > 0 && counts[1] > 0;
-		};
-		if(!HasAtLeastOneDuelistOnEachTeam())
+		if(!(teamCount[0] > 0 && teamCount[1] > 0))
 			return false;
 		// At this point it has been decided that this relay setup is
 		// valid, however we need to move the duelists to their first
@@ -195,6 +192,7 @@ bool Context::TryEmplaceDuelist(Client& client, Client::PosType hint)
 			if(duelists.count(p) == 0 && duelists.emplace(p, &client).second)
 			{
 				client.SetPosition(p);
+				teamCount[p.first]++;
 				return true;
 			}
 		}

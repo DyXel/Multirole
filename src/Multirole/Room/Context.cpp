@@ -22,7 +22,8 @@ Context::Context(
 	hostInfo(std::move(hostInfo)),
 	limits(std::move(limits)),
 	cpkg(std::move(cpkg)),
-	banlist(banlist)
+	banlist(banlist),
+	teamCount({0u, 0u})
 {}
 
 const YGOPro::HostInfo& Context::HostInfo() const
