@@ -7,6 +7,13 @@
 namespace YGOPro::CoreUtils
 {
 
+template<typename T>
+inline void Write(uint8_t*& ptr, T value)
+{
+	std::memcpy(ptr, &value, sizeof(T));
+	ptr += sizeof(T);
+}
+
 std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 {
 	using length_t = uint32_t;
@@ -91,6 +98,21 @@ const Msg& MsgFromStrippedMsg(const StrippedMsg& sMsg)
 		return *std::get<0>(sMsg);
 	else
 		return std::get<1>(sMsg);
+}
+
+Msg MakeStartMsg(const MsgStartCreateInfo& info)
+{
+	Msg msg(18);
+	auto ptr = msg.data();
+	Write<uint8_t>(ptr, MSG_START);
+	Write<uint8_t>(ptr, 0);
+	Write<uint32_t>(ptr, info.lp);
+	Write<uint32_t>(ptr, info.lp);
+	Write(ptr, static_cast<uint16_t>(info.t0DSz));
+	Write(ptr, static_cast<uint16_t>(info.t0EdSz));
+	Write(ptr, static_cast<uint16_t>(info.t1DSz));
+	Write(ptr, static_cast<uint16_t>(info.t1EdSz));
+	return msg;
 }
 
 STOCMsg GameMsgFromMsg(const Msg& msg)

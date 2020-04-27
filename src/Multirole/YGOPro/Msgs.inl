@@ -2,7 +2,7 @@
 #define MSG_RETRY				1
 #define MSG_HINT				2
 // #define MSG_WAITING				3
-// #define MSG_START				4
+#define MSG_START				4
 #define MSG_WIN					5
 // #define MSG_UPDATE_DATA			6
 // #define MSG_UPDATE_CARD			7

@@ -115,40 +115,23 @@ void Context::operator()(State::Dueling& s)
 			}
 		}
 		core.Start(s.duelPtr);
+		// Send MSG_START message to clients.
+		auto msgStart = CoreUtils::MakeStartMsg(
+			{
+				hostInfo.startingLP,
+				core.QueryCount(s.duelPtr, 0, 0x01), // LOCATION_DECK
+				core.QueryCount(s.duelPtr, 0, 0x40), // LOCATION_EXTRA
+				core.QueryCount(s.duelPtr, 1, 0x01), // LOCATION_DECK
+				core.QueryCount(s.duelPtr, 1, 0x40), // LOCATION_EXTRA
+			});
+		SendToTeam(GetSwappedTeam(s, 0), CoreUtils::GameMsgFromMsg(msgStart));
+		msgStart[1] = 1;
+		SendToTeam(GetSwappedTeam(s, 1), CoreUtils::GameMsgFromMsg(msgStart));
+		msgStart[1] = 0xF0; // NOLINT: Magic number for spectators.
+		SendToSpectators(CoreUtils::GameMsgFromMsg(msgStart));
 	}
 	CORE_EXCEPTION_HANDLER()
-	// Send MSG_START message to clients.
-	// TODO: move this abomination to CoreUtils
-	using u8 = uint8_t;
-	using u16 = uint16_t;
-	using u32 = uint32_t;
-	std::vector<u8> msg;
-	msg.reserve(18);
-	auto W = [&msg](const auto& value)
-	{
-		auto sz = msg.size();
-		msg.resize(sz + sizeof(decltype(value)));
-		std::memcpy(&msg[sz], &value, sizeof(decltype(value)));
-	};
-#define SC static_cast
-	W(SC<u8>(0x04)); // MSG_START
-	W(SC<u8>(0x00)); // For team 0
-	W(SC<u32>(hostInfo.startingLP));
-	W(SC<u32>(hostInfo.startingLP));
-	try
-	{
-#define QC(t, l) core.QueryCount(s.duelPtr, t, l)
-		W(SC<u16>(QC(0, 0x01))); // LOCATION_DECK
-		W(SC<u16>(QC(0, 0x40))); // LOCATION_EXTRA
-		W(SC<u16>(QC(1, 0x01))); // LOCATION_DECK
-		W(SC<u16>(QC(1, 0x40))); // LOCATION_EXTRA
-#undef QC
-	}
-	CORE_EXCEPTION_HANDLER()
-#undef SC
-	SendToTeam(GetSwappedTeam(s, 0), CoreUtils::GameMsgFromMsg(msg));
-	msg[1] = 1; // For team 1 now.
-	SendToTeam(GetSwappedTeam(s, 1), CoreUtils::GameMsgFromMsg(msg));
+	// Start processing the duel
 	Process(s);
 }
 

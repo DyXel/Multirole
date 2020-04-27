@@ -10,9 +10,7 @@ namespace YGOPro::CoreUtils
 {
 
 using Buffer = std::vector<uint8_t>;
-
 using Msg = std::vector<uint8_t>;
-
 using StrippedMsg = std::variant<const Msg*, Msg>;
 
 enum class MsgDistType
@@ -22,6 +20,15 @@ enum class MsgDistType
 	MSG_DIST_TYPE_FOR_SPECIFIC_TEAM,
 	MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST,
 	MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST,
+};
+
+struct MsgStartCreateInfo
+{
+	uint32_t lp;
+	std::size_t t0DSz;  // Team 0 Deck size
+	std::size_t t0EdSz; // Team 0 Extra Deck size
+	std::size_t t1DSz;  // Team 1 Deck size
+	std::size_t t1EdSz; // Team 1 Extra Deck size
 };
 
 // Takes the buffer you would get from OCG_DuelGetMessage and splits it
@@ -54,6 +61,9 @@ StrippedMsg StripMessageForTeam(uint8_t team, const Msg& msg);
 
 // Shortcut, self explanatory.
 const Msg& MsgFromStrippedMsg(const StrippedMsg& sMsg);
+
+// Create MSG_START
+Msg MakeStartMsg(const MsgStartCreateInfo& info);
 
 // Creates a game message ready to be sent to a client from a core message.
 STOCMsg GameMsgFromMsg(const Msg& msg);
