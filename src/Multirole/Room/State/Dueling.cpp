@@ -10,6 +10,12 @@
 namespace Ignis::Multirole::Room
 {
 
+constexpr uint8_t GetSwappedTeam(const State::Dueling& s, uint8_t team)
+{
+	assert(team <= 1u);
+	return s.isTeam1GoingFirst ^ team;
+}
+
 void Context::operator()(State::Dueling& s)
 {
 	// TODO: Set up Replay
@@ -140,9 +146,9 @@ void Context::operator()(State::Dueling& s)
 	}
 	CORE_EXCEPTION_HANDLER()
 #undef SC
-	SendToTeam(0, CoreUtils::GameMsgFromMsg(msg));
+	SendToTeam(GetSwappedTeam(s, 0), CoreUtils::GameMsgFromMsg(msg));
 	msg[1] = 1; // For team 1 now.
-	SendToTeam(1, CoreUtils::GameMsgFromMsg(msg));
+	SendToTeam(GetSwappedTeam(s, 1), CoreUtils::GameMsgFromMsg(msg));
 	Process(s);
 }
 
@@ -181,8 +187,12 @@ void Context::Process(State::Dueling& s)
 				StripMessageForTeam(0, msg),
 				StripMessageForTeam(1, msg)
 			};
-			SendToTeam(0, GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[0])));
-			SendToTeam(1, GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[1])));
+			SendToTeam(
+				GetSwappedTeam(s, 0),
+				GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[0])));
+			SendToTeam(
+				GetSwappedTeam(s, 1),
+				GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[1])));
 			const auto m = StripMessageForTeam(1, MsgFromStrippedMsg(sMsgs[0]));
 			SendToSpectators(GameMsgFromMsg(MsgFromStrippedMsg(m)));
 			break;
@@ -196,21 +206,25 @@ void Context::Process(State::Dueling& s)
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			const auto sMsg = StripMessageForTeam(team, msg);
-			SendToTeam(team, GameMsgFromMsg(MsgFromStrippedMsg(sMsg)));
+			SendToTeam(
+				GetSwappedTeam(s, team),
+				GameMsgFromMsg(MsgFromStrippedMsg(sMsg)));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
-			s.replier = &GetCurrentTeamClient(s, team);
 			const auto sMsg = StripMessageForTeam(team, msg);
+			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
 			s.replier->Send(GameMsgFromMsg(MsgFromStrippedMsg(sMsg)));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
-			SendToAllExcept(GetCurrentTeamClient(s, team), GameMsgFromMsg(msg));
+			SendToAllExcept(
+				GetCurrentTeamClient(s, GetSwappedTeam(s, team)),
+				GameMsgFromMsg(msg));
 			break;
 		}
 		}
@@ -220,6 +234,7 @@ void Context::Process(State::Dueling& s)
 		spdlog::info("Processing = {}", GetMessageType(msg));
 		// TODO: pre queries here
 		DistributeMsg(msg);
+		// TODO: analyze here
 		// TODO: post queries here
 		// TODO: add to replay here
 	};

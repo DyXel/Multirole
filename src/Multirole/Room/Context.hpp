@@ -103,7 +103,8 @@ private:
 	void MakeAndSendChat(Client& client, std::string_view msg);
 
 	// Creates a YGOPro::Deck from the given vectors, making sure
-	// that the deck is only composed of non-zero card codes
+	// that the deck is only composed of non-zero card codes, also,
+	// sets its internal error to whatever was the lastest unknown card.
 	std::unique_ptr<YGOPro::Deck> LoadDeck(
 		const std::vector<uint32_t>& main,
 		const std::vector<uint32_t>& side) const;
