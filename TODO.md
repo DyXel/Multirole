@@ -12,11 +12,8 @@
 * Remove setters for `Core::IHighLevelWrapper` and instead set them on ctors
 * Investigate possibility of using a lockless queue for `Room::Client` message sending
 * Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
-* Rename `Core::DynamicLinkWrapper` to `Core::DLWrapper` and `Core::IHighLevelWrapper` to `Core::IWrapper`
-  * Document in source code these cryptic albeit shorter names
-* Store the current number of duelists per team on `Room::Context`
-  * Update it directly on `Room::State::Waiting`
-    * Use these values for `ValidateDuelistsSetup` and to get next duelist on duel processing
+* Instead of using Client::POSITION_SPECTATOR make client position be `std::optional<PosType>`
+  * Lack of value would represent a spectator
 
 # Porting to YGOpen project
 
@@ -28,9 +25,9 @@
 
 ## Medium changes
 1. Move `Ignis::Multirole::Core` to `YGOpen::Core`
-   * `DynamicLinkWrapper.*` -> `dynamic_link_wrapper.*`
+   * `DLWrapper.*` -> `dlwrapper.*`
    * `IDataSupplier.hpp` -> `data_supplier.hpp`
-   * `IHighLevelWrapper.hpp` -> `high_level_wrapper.hpp`
+   * `IWrapper.hpp` -> `wrapper.hpp`
    * `ILogger.hpp` -> `logger.hpp`
    * `IScriptSupplier.hpp` -> `script_supplier.hpp`
 2. Move and rename `src/Multirole/CardDatabase.*` to `src/card_database.*`
