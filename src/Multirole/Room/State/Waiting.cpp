@@ -167,7 +167,48 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 		// At this point it has been decided that this relay setup is
 		// valid, however we need to move the duelists to their first
 		// positions that are available rather than having them scrambled.
-		// TODO
+		auto TightenTeam = [&](uint8_t team)
+		{
+			using Pos = Client::PosType;
+			const auto max = teamCount[team];
+			for(uint8_t i = 0u; i < max; i++)
+			{
+				// Find an empty position
+				auto newPos = [&]() -> std::optional<Pos>
+				{
+					for(Pos p = {team, 0u}; p.second < max; p.second++)
+					{
+						if(duelists.count(p) == 0U)
+							return p;
+					}
+					return std::nullopt;
+				}();
+				if(!newPos) // No more empty positions.
+					return;
+				// Find nearest duelist to found position
+				auto it = [&]() -> decltype(duelists)::const_iterator
+				{
+					for(Pos p = *newPos;;p.second++)
+					{
+						assert(p.second <= 3); // NOLINT: max server limit
+						if(auto it = duelists.find(p); it != duelists.end())
+							return it;
+					}
+				}();
+				assert(it != duelists.end());
+				// Actually update and move duelist
+				auto nh = duelists.extract(it);
+				auto oldPos = nh.key();
+				auto& client = *nh.mapped();
+				client.SetPosition(nh.key() = *newPos);
+				duelists.insert(std::move(nh));
+				SendToAll(MakePlayerChange(oldPos, *newPos));
+				client.Send(MakeTypeChange(client, s.host == &client));
+			}
+		};
+		std::lock_guard<std::mutex> lock(mDuelists);
+		TightenTeam(0);
+		TightenTeam(1);
 		return true;
 	};
 	if(s.host != &e.client)

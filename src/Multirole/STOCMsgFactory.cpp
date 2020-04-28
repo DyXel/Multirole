@@ -17,7 +17,7 @@ STOCMsg STOCMsgFactory::MakeTypeChange(const Room::Client& c, bool isHost) const
 	const auto posKey = c.Position();
 	uint8_t pos;
 	if(posKey == Room::Client::POSITION_SPECTATOR)
-		pos = 7; // Sum of both teams max player + 1
+		pos = 7; // NOLINT: Sum of both teams max player + 1
 	else
 		pos = EncodePosition(posKey);
 	STOCMsg::TypeChange proto{};

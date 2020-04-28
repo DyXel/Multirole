@@ -51,7 +51,7 @@ void Context::SetId(uint32_t newId)
 
 void Context::SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg)
 {
-	assert(team < 2);
+	assert(team <= 1);
 	for(const auto& kv : duelists)
 	{
 		if(kv.first.first != team)
