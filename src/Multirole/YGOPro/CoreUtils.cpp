@@ -8,6 +8,14 @@ namespace YGOPro::CoreUtils
 {
 
 template<typename T>
+inline T Read(uint8_t*& ptr)
+{
+	T value;
+	std::memcpy(&value, ptr, sizeof(T));
+	ptr += sizeof(T);
+}
+
+template<typename T>
 inline void Write(uint8_t*& ptr, T value)
 {
 	std::memcpy(ptr, &value, sizeof(T));
