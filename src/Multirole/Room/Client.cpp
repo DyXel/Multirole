@@ -99,9 +99,9 @@ void Client::Send(const YGOPro::STOCMsg& msg)
 
 void Client::Disconnect()
 {
-	std::error_code ignoredEc;
-	socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignoredEc);
-	socket.close(ignoredEc);
+	std::error_code ignore;
+	socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
+	socket.close(ignore);
 	asio::post(strand,
 	[this, self = shared_from_this()]()
 	{
