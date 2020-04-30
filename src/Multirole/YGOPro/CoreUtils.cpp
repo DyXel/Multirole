@@ -58,35 +58,56 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 {
 	switch(GetMessageType(msg))
 	{
+	case MSG_SELECT_CARD:
+	case MSG_SELECT_TRIBUTE:
+	case MSG_SELECT_UNSELECT_CARD:
+	{
+		return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST_STRIPPED;
+	}
 	case MSG_SELECT_BATTLECMD:
 	case MSG_SELECT_IDLECMD:
 	case MSG_SELECT_EFFECTYN:
 	case MSG_SELECT_YESNO:
 	case MSG_SELECT_OPTION:
-	case MSG_SELECT_CARD:
 	case MSG_SELECT_CHAIN:
 	case MSG_SELECT_PLACE:
 	case MSG_SELECT_DISFIELD:
 	case MSG_SELECT_POSITION:
-	case MSG_SELECT_TRIBUTE:
 	case MSG_SORT_CHAIN:
 	case MSG_SELECT_COUNTER:
 	case MSG_SELECT_SUM:
-	case MSG_SELECT_UNSELECT_CARD:
 	case MSG_ROCK_PAPER_SCISSORS:
 	case MSG_ANNOUNCE_RACE:
 	case MSG_ANNOUNCE_ATTRIB:
 	case MSG_ANNOUNCE_CARD:
 	case MSG_ANNOUNCE_NUMBER:
 	case MSG_ANNOUNCE_CARD_FILTER:
-		return MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST;
-	case MSG_HINT:
+	{
+		return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
+	}
+	case MSG_CONFIRM_CARDS:
 	{
 		// TODO
 		[[fallthrough]];
 	}
+	case MSG_HINT:
+	{
+		// TODO
+		return MsgDistType::MSG_DIST_TYPE_EVERYONE;
+	}
+	case MSG_SET:
+	case MSG_MOVE:
+	case MSG_DRAW:
+	case MSG_TAG_SWAP:
+	case MSG_SHUFFLE_HAND:
+	case MSG_SHUFFLE_EXTRA:
+	{
+		return MsgDistType::MSG_DIST_TYPE_EVERYONE_STRIPPED;
+	}
 	default:
-		return MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING;
+	{
+		return MsgDistType::MSG_DIST_TYPE_EVERYONE;
+	}
 	}
 }
 
@@ -95,17 +116,9 @@ uint8_t GetMessageReceivingTeam(const Msg& msg)
 	return msg.at(1);
 }
 
-StrippedMsg StripMessageForTeam(uint8_t team, const Msg& msg)
+Msg StripMessageForTeam(uint8_t team, Msg msg)
 {
 	return msg; // TODO
-}
-
-const Msg& MsgFromStrippedMsg(const StrippedMsg& sMsg)
-{
-	if(const auto i = sMsg.index(); i == 0)
-		return *std::get<0>(sMsg);
-	else
-		return std::get<1>(sMsg);
 }
 
 Msg MakeStartMsg(const MsgStartCreateInfo& info)

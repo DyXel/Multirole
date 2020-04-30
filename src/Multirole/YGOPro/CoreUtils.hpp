@@ -2,7 +2,6 @@
 #define YGOPRO_COREUTILS_HPP
 #include <cstdint>
 #include <vector>
-#include <variant>
 
 #include "STOCMsg.hpp"
 
@@ -11,15 +10,15 @@ namespace YGOPro::CoreUtils
 
 using Buffer = std::vector<uint8_t>;
 using Msg = std::vector<uint8_t>;
-using StrippedMsg = std::variant<const Msg*, Msg>;
 
 enum class MsgDistType
 {
-	MSG_DIST_TYPE_FOR_EVERYONE,
-	MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING,
-	MSG_DIST_TYPE_FOR_SPECIFIC_TEAM,
-	MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST,
-	MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST,
+	MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST_STRIPPED,
+	MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST,
+	MSG_DIST_TYPE_SPECIFIC_TEAM,
+	MSG_DIST_TYPE_EVERYONE_EXCEPT_TEAM_DUELIST,
+	MSG_DIST_TYPE_EVERYONE_STRIPPED,
+	MSG_DIST_TYPE_EVERYONE,
 };
 
 struct MsgStartCreateInfo
@@ -54,15 +53,12 @@ MsgDistType GetMessageDistributionType(const Msg& msg);
 uint8_t GetMessageReceivingTeam(const Msg& msg);
 
 // Removes knowledge from a message if it shouldn't be known
-// by the argument `team`. If the message doesn't require knowledge
-// stripping then the returned variant will hold a pointer to the passed
-// msg, else it will hold a new copy of the message with knowledge stripped.
-StrippedMsg StripMessageForTeam(uint8_t team, const Msg& msg);
+// by the argument `team`, returns a new copy of the message, modified.
+Msg StripMessageForTeam(uint8_t team, Msg msg);
 
-// Shortcut, self explanatory.
-const Msg& MsgFromStrippedMsg(const StrippedMsg& sMsg);
-
-// Create MSG_START
+// Creates MSG_START, which is the first message recorded onto the replay
+// and the first one sent to clients, it setups the piles with the correct
+// amount of cards and sets the LP to the correct amount.
 Msg MakeStartMsg(const MsgStartCreateInfo& info);
 
 // Creates a game message ready to be sent to a client from a core message.

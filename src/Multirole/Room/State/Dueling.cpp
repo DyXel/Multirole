@@ -163,51 +163,50 @@ void Context::Process(State::Dueling& s)
 	{
 		switch(GetMessageDistributionType(msg))
 		{
-		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE:
-		{
-			const std::array<StrippedMsg, 2> sMsgs =
-			{
-				StripMessageForTeam(0, msg),
-				StripMessageForTeam(1, msg)
-			};
-			SendToTeam(
-				GetSwappedTeam(s, 0),
-				GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[0])));
-			SendToTeam(
-				GetSwappedTeam(s, 1),
-				GameMsgFromMsg(MsgFromStrippedMsg(sMsgs[1])));
-			const auto m = StripMessageForTeam(1, MsgFromStrippedMsg(sMsgs[0]));
-			SendToSpectators(GameMsgFromMsg(MsgFromStrippedMsg(m)));
-			break;
-		}
-		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_WITHOUT_STRIPPING:
-		{
-			SendToAll(GameMsgFromMsg(msg));
-			break;
-		}
-		case MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM:
-		{
-			uint8_t team = GetMessageReceivingTeam(msg);
-			const auto sMsg = StripMessageForTeam(team, msg);
-			SendToTeam(
-				GetSwappedTeam(s, team),
-				GameMsgFromMsg(MsgFromStrippedMsg(sMsg)));
-			break;
-		}
-		case MsgDistType::MSG_DIST_TYPE_FOR_SPECIFIC_TEAM_DUELIST:
+		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST_STRIPPED:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			const auto sMsg = StripMessageForTeam(team, msg);
 			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
-			s.replier->Send(GameMsgFromMsg(MsgFromStrippedMsg(sMsg)));
+			s.replier->Send(GameMsgFromMsg(sMsg));
 			break;
 		}
-		case MsgDistType::MSG_DIST_TYPE_FOR_EVERYONE_EXCEPT_TEAM_DUELIST:
+		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST:
+		{
+			uint8_t team = GetMessageReceivingTeam(msg);
+			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
+			s.replier->Send(GameMsgFromMsg(msg));
+			break;
+		}
+		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM:
+		{
+			uint8_t team = GetMessageReceivingTeam(msg);
+			SendToTeam(GetSwappedTeam(s, team), GameMsgFromMsg(msg));
+			break;
+		}
+		case MsgDistType::MSG_DIST_TYPE_EVERYONE_EXCEPT_TEAM_DUELIST:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			SendToAllExcept(
 				GetCurrentTeamClient(s, GetSwappedTeam(s, team)),
 				GameMsgFromMsg(msg));
+			break;
+		}
+		case MsgDistType::MSG_DIST_TYPE_EVERYONE_STRIPPED:
+		{
+			const std::array<Msg, 2> sMsgs =
+			{
+				StripMessageForTeam(0, msg),
+				StripMessageForTeam(1, msg)
+			};
+			SendToTeam(GetSwappedTeam(s, 0), GameMsgFromMsg(sMsgs[0]));
+			SendToTeam(GetSwappedTeam(s, 1), GameMsgFromMsg(sMsgs[1]));
+			SendToSpectators(GameMsgFromMsg(StripMessageForTeam(1, sMsgs[0])));
+			break;
+		}
+		case MsgDistType::MSG_DIST_TYPE_EVERYONE:
+		{
+			SendToAll(GameMsgFromMsg(msg));
 			break;
 		}
 		}
@@ -219,7 +218,7 @@ void Context::Process(State::Dueling& s)
 		DistributeMsg(msg);
 		// TODO: analyze here
 		// TODO: post queries here
-		// TODO: add to replay here
+		// TODO: add to replay
 	};
 	try
 	{
