@@ -7,6 +7,15 @@
 namespace YGOPro::CoreUtils
 {
 
+struct LocInfo
+{
+	static constexpr std::size_t Size = 1 + 1 + 4 + 4;
+	uint8_t con;  // Controller
+	uint8_t loc;  // Location
+	uint32_t seq; // Sequence
+	uint32_t pos; // Position
+};
+
 template<typename T>
 inline T Read(const uint8_t*& ptr)
 {
@@ -14,6 +23,27 @@ inline T Read(const uint8_t*& ptr)
 	std::memcpy(&value, ptr, sizeof(T));
 	ptr += sizeof(T);
 	return value;
+}
+
+template<typename T>
+inline T Read(uint8_t*& ptr)
+{
+	T value;
+	std::memcpy(&value, ptr, sizeof(T));
+	ptr += sizeof(T);
+	return value;
+}
+
+template<>
+inline LocInfo Read(uint8_t*& ptr)
+{
+	return LocInfo
+	{
+		Read<uint8_t>(ptr),
+		Read<uint8_t>(ptr),
+		Read<uint32_t>(ptr),
+		Read<uint32_t>(ptr)
+	};
 }
 
 template<typename T>
@@ -147,14 +177,14 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	case MSG_CONFIRM_CARDS:
 	{
 		if(msg.size() < 2 + 4)
-			throw std::out_of_range("MSG_CONFIRM_CARDS is too short 1");
+			throw std::out_of_range("MSG_CONFIRM_CARDS#1");
 		auto ptr = msg.data() + 2;
 		// if count(uint32_t) is not 0 and location(uint8_t) is LOCATION_DECK
 		// then send to specific team duelist.
 		if(Read<uint32_t>(ptr) != 0)
 		{
 			if(msg.size() < 2 + 4 + 4 + 1 + 1)
-				throw std::out_of_range("MSG_CONFIRM_CARDS is too short 2");
+				throw std::out_of_range("MSG_CONFIRM_CARDS#2");
 			ptr += 4 + 1;
 			if(Read<uint8_t>(ptr) == 0x01) // NOLINT: LOCATION_DECK
 				return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
@@ -194,7 +224,94 @@ uint8_t GetMessageReceivingTeam(const Msg& msg)
 
 Msg StripMessageForTeam(uint8_t team, Msg msg)
 {
-	return msg; // TODO
+	auto IsLocInfoPublic = [](const LocInfo& info)
+	{
+		// NOLINTNEXTLINE: different LOCATION_ constants
+		if(info.loc & (0x10 | 0x80) && !(info.loc & (0x01 | 0x02)))
+			return true;
+		else if(!(info.pos & 0x0A)) // NOLINT: POS_FACEDOWN
+			return true;
+		return false;
+	};
+	auto ClearPositionArray = [](uint32_t count, uint8_t*& ptr)
+	{
+		for(uint32_t i = 0; i < count; i++)
+		{
+			ptr += 4; // Card code
+			auto pos = Read<uint32_t>(ptr);
+			if(!(pos & 0x05)) // NOLINT: POS_FACEUP
+			{
+				ptr -= 8;
+				Write<uint32_t>(ptr, 0);
+				ptr += 4;
+			}
+		}
+	};
+	auto CheckLength = [l = msg.size()](std::size_t expected, const char* what)
+	{
+		if(l < expected)
+			throw std::out_of_range(what);
+	};
+	auto ptr = msg.data();
+	ptr++; // type ignored
+	switch(GetMessageType(msg))
+	{
+	case MSG_SET:
+	{
+		CheckLength(1 + 4, "MSG_SET is too short");
+		Write<uint32_t>(ptr, 0);
+		break;
+	}
+	case MSG_SHUFFLE_HAND:
+	case MSG_SHUFFLE_EXTRA:
+	{
+		CheckLength(1 + 1 + 4, "MSG_SHUFFLE_*#1");
+		if(Read<uint8_t>(ptr) == team)
+			break;
+		auto count = Read<uint32_t>(ptr);
+		CheckLength(1 + 1 + 4 + (count * 4), "MSG_SHUFFLE_*#2");
+		for(uint32_t i = 0; i < count; i++)
+			Write<uint32_t>(ptr, 0);
+		break;
+	}
+	case MSG_MOVE:
+	{
+		CheckLength(1 + 4 + (LocInfo::Size * 2), "MSG_MOVE#1");
+		ptr += 4; // Card code
+		ptr += LocInfo::Size; // Previous location
+		const auto current = Read<LocInfo>(ptr);
+		if(current.con == team || IsLocInfoPublic(current))
+			break;
+		ptr -= 4 + (LocInfo::Size * 2);
+		Write<uint32_t>(ptr, 0);
+		break;
+	}
+	case MSG_DRAW:
+	{
+		CheckLength(1 + 1 + 4, "MSG_DRAW#1");
+		if(Read<uint8_t>(ptr) == team)
+			break;
+		auto count = Read<uint32_t>(ptr);
+		CheckLength(1 + 1 + 4 + (count * (4 + 4)), "MSG_DRAW#2");
+		ClearPositionArray(count, ptr);
+		break;
+	}
+	case MSG_TAG_SWAP:
+	{
+		CheckLength(1 + 1 + (4 * 5), "MSG_TAG_SWAP#1");
+		if(Read<uint8_t>(ptr) == team)
+			break;
+		ptr        += 4;                   // Main deck count
+		auto count  = Read<uint32_t>(ptr); // Extra deck count
+		ptr        += 4;                   // Face-up pendulum count
+		count      += Read<uint32_t>(ptr); // Hand count
+		ptr        += 4;                   // Top-deck card code
+		CheckLength(1 + 1 + (4 * 5) + (count * (4 + 4)), "MSG_TAG_SWAP#2");
+		ClearPositionArray(count, ptr);
+		break;
+	}
+	}
+	return msg;
 }
 
 Msg MakeStartMsg(const MsgStartCreateInfo& info)
