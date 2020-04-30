@@ -8,11 +8,12 @@ namespace YGOPro::CoreUtils
 {
 
 template<typename T>
-inline T Read(uint8_t*& ptr)
+inline T Read(const uint8_t*& ptr)
 {
 	T value;
 	std::memcpy(&value, ptr, sizeof(T));
 	ptr += sizeof(T);
+	return value;
 }
 
 template<typename T>
@@ -54,6 +55,41 @@ uint8_t GetMessageType(const Msg& msg)
 	return msg.at(0);
 }
 
+bool DoesMessageRequireAnswer(uint8_t msgType)
+{
+	switch(msgType)
+	{
+	case MSG_SELECT_CARD:
+	case MSG_SELECT_TRIBUTE:
+	case MSG_SELECT_UNSELECT_CARD:
+	case MSG_SELECT_BATTLECMD:
+	case MSG_SELECT_IDLECMD:
+	case MSG_SELECT_EFFECTYN:
+	case MSG_SELECT_YESNO:
+	case MSG_SELECT_OPTION:
+	case MSG_SELECT_CHAIN:
+	case MSG_SELECT_PLACE:
+	case MSG_SELECT_DISFIELD:
+	case MSG_SELECT_POSITION:
+	case MSG_SORT_CHAIN:
+	case MSG_SELECT_COUNTER:
+	case MSG_SELECT_SUM:
+	case MSG_ROCK_PAPER_SCISSORS:
+	case MSG_ANNOUNCE_RACE:
+	case MSG_ANNOUNCE_ATTRIB:
+	case MSG_ANNOUNCE_CARD:
+	case MSG_ANNOUNCE_NUMBER:
+	case MSG_ANNOUNCE_CARD_FILTER:
+	{
+		return true;
+	}
+	default:
+	{
+		return false;
+	}
+	}
+}
+
 MsgDistType GetMessageDistributionType(const Msg& msg)
 {
 	switch(GetMessageType(msg))
@@ -82,25 +118,55 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	case MSG_ANNOUNCE_CARD:
 	case MSG_ANNOUNCE_NUMBER:
 	case MSG_ANNOUNCE_CARD_FILTER:
+	case MSG_MISSED_EFFECT:
 	{
 		return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
 	}
-	case MSG_CONFIRM_CARDS:
-	{
-		// TODO
-		[[fallthrough]];
-	}
 	case MSG_HINT:
 	{
-		// TODO
+		switch(msg.at(1))
+		{
+		case 1: case 2: case 3: case 5:
+		{
+			return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
+		}
+		case 200:
+		{
+			return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM;
+		}
+		case 4: case 6: case 7: case 8: case 9: case 11:
+		{
+			return MsgDistType::MSG_DIST_TYPE_EVERYONE_EXCEPT_TEAM_DUELIST;
+		}
+		default: /*case 10: case 201: case 202: case 203:*/
+		{
+			return MsgDistType::MSG_DIST_TYPE_EVERYONE;
+		}
+		}
+	}
+	case MSG_CONFIRM_CARDS:
+	{
+		if(msg.size() < 2 + 4)
+			throw std::out_of_range("MSG_CONFIRM_CARDS is too short 1");
+		auto ptr = msg.data() + 2;
+		// if count(uint32_t) is not 0 and location(uint8_t) is LOCATION_DECK
+		// then send to specific team duelist.
+		if(Read<uint32_t>(ptr) != 0)
+		{
+			if(msg.size() < 2 + 4 + 4 + 1 + 1)
+				throw std::out_of_range("MSG_CONFIRM_CARDS is too short 2");
+			ptr += 4 + 1;
+			if(Read<uint8_t>(ptr) == 0x01) // NOLINT: LOCATION_DECK
+				return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
+		}
 		return MsgDistType::MSG_DIST_TYPE_EVERYONE;
 	}
+	case MSG_SHUFFLE_HAND:
+	case MSG_SHUFFLE_EXTRA:
 	case MSG_SET:
 	case MSG_MOVE:
 	case MSG_DRAW:
 	case MSG_TAG_SWAP:
-	case MSG_SHUFFLE_HAND:
-	case MSG_SHUFFLE_EXTRA:
 	{
 		return MsgDistType::MSG_DIST_TYPE_EVERYONE_STRIPPED;
 	}
@@ -113,7 +179,17 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 
 uint8_t GetMessageReceivingTeam(const Msg& msg)
 {
-	return msg.at(1);
+	switch(GetMessageType(msg))
+	{
+	case MSG_HINT:
+	{
+		return msg.at(2);
+	}
+	default:
+	{
+		return msg.at(1);
+	}
+	}
 }
 
 Msg StripMessageForTeam(uint8_t team, Msg msg)

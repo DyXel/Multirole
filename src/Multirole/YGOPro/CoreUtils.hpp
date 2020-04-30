@@ -42,6 +42,10 @@ std::vector<Msg> SplitToMsgs(const Buffer& buffer);
 // Throws std::out_of_range if msg is empty.
 uint8_t GetMessageType(const Msg& msg);
 
+// Tells if the message requires an answer (setting a response)
+// from a user/duelist before processing can continue.
+bool DoesMessageRequireAnswer(uint8_t msgType);
+
 // Takes any core message and determines how the message should be
 // distributed to clients and if it shouldn't be stripped from knowledge.
 // Throws std::out_of_range if msg's size is unexpectedly short.

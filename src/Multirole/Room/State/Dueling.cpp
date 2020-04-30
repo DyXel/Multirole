@@ -159,6 +159,15 @@ void Context::Process(State::Dueling& s)
 {
 	using namespace YGOPro::CoreUtils;
 	auto& core = *cpkg.core;
+	auto AnalyzeMsg = [&](const Msg& msg)
+	{
+		uint8_t msgType = GetMessageType(msg);
+		if(DoesMessageRequireAnswer(msgType))
+		{
+			uint8_t team = GetMessageReceivingTeam(msg);
+			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
+		}
+	};
 	auto DistributeMsg = [&](const Msg& msg)
 	{
 		switch(GetMessageDistributionType(msg))
@@ -167,14 +176,11 @@ void Context::Process(State::Dueling& s)
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			const auto sMsg = StripMessageForTeam(team, msg);
-			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
 			s.replier->Send(GameMsgFromMsg(sMsg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST:
 		{
-			uint8_t team = GetMessageReceivingTeam(msg);
-			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
 			s.replier->Send(GameMsgFromMsg(msg));
 			break;
 		}
@@ -214,9 +220,9 @@ void Context::Process(State::Dueling& s)
 	auto ProcessSingleMsg = [&](const Msg& msg)
 	{
 		spdlog::info("Processing = {}", GetMessageType(msg));
+		AnalyzeMsg(msg);
 		// TODO: pre queries here
 		DistributeMsg(msg);
-		// TODO: analyze here
 		// TODO: post queries here
 		// TODO: add to replay
 	};
