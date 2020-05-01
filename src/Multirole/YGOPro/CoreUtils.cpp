@@ -9,7 +9,7 @@ namespace YGOPro::CoreUtils
 
 struct LocInfo
 {
-	static constexpr std::size_t Size = 1 + 1 + 4 + 4;
+	static constexpr std::size_t SIZE = 1 + 1 + 4 + 4;
 	uint8_t con;  // Controller
 	uint8_t loc;  // Location
 	uint32_t seq; // Sequence
@@ -241,9 +241,23 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 			auto pos = Read<uint32_t>(ptr);
 			if(!(pos & 0x05)) // NOLINT: POS_FACEUP
 			{
-				ptr -= 8;
+				ptr -= 4 + 4;
 				Write<uint32_t>(ptr, 0);
 				ptr += 4;
+			}
+		}
+	};
+	auto ClearLocInfoArray = [](uint32_t count, uint8_t team, uint8_t*& ptr)
+	{
+		for(uint32_t i = 0; i < count; i++)
+		{
+			ptr += 4; // Card code
+			const auto info = Read<LocInfo>(ptr);
+			if(team != info.con)
+			{
+				ptr -= LocInfo::SIZE + 4;
+				Write<uint32_t>(ptr, 0);
+				ptr += LocInfo::SIZE;
 			}
 		}
 	};
@@ -276,13 +290,13 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	}
 	case MSG_MOVE:
 	{
-		CheckLength(1 + 4 + (LocInfo::Size * 2), "MSG_MOVE#1");
+		CheckLength(1 + 4 + (LocInfo::SIZE * 2), "MSG_MOVE#1");
 		ptr += 4; // Card code
-		ptr += LocInfo::Size; // Previous location
+		ptr += LocInfo::SIZE; // Previous location
 		const auto current = Read<LocInfo>(ptr);
 		if(current.con == team || IsLocInfoPublic(current))
 			break;
-		ptr -= 4 + (LocInfo::Size * 2);
+		ptr -= 4 + (LocInfo::SIZE * 2);
 		Write<uint32_t>(ptr, 0);
 		break;
 	}
@@ -308,6 +322,55 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 		ptr        += 4;                   // Top-deck card code
 		CheckLength(1 + 1 + (4 * 5) + (count * (4 + 4)), "MSG_TAG_SWAP#2");
 		ClearPositionArray(count, ptr);
+		break;
+	}
+	case MSG_SELECT_CARD:
+	{
+		CheckLength(1 + 1 + 4 + 4 + 4, "MSG_SELECT_CARD#1");
+		ptr += 1 + 1 + 4 + 4;
+		auto count = Read<uint32_t>(ptr);
+		CheckLength(
+			1 + 1 + 4 + 4 + 4 + (count * (4 + LocInfo::SIZE)),
+			"MSG_SELECT_CARD#2");
+		ClearLocInfoArray(count, team, ptr);
+		break;
+	}
+	case MSG_SELECT_TRIBUTE:
+	{
+		CheckLength(1 + 1 + 4 + 4 + 4, "MSG_SELECT_TRIBUTE#1");
+		ptr += 1 + 1 + 4 + 4;
+		auto count = Read<uint32_t>(ptr);
+		CheckLength(
+			1 + 1 + 4 + 4 + 4 + (count * (4 + LocInfo::SIZE + 1)),
+			"MSG_SELECT_TRIBUTE#2");
+		for(uint32_t i = 0; i < count; i++)
+		{
+			ptr += 4; // Card code
+			const auto info = Read<LocInfo>(ptr);
+			if(team != info.con)
+			{
+				ptr -= LocInfo::SIZE + 4;
+				Write<uint32_t>(ptr, 0);
+				ptr += LocInfo::SIZE;
+			}
+			ptr += 1; // Release param
+		}
+		break;
+	}
+	case MSG_SELECT_UNSELECT_CARD:
+	{
+		std::size_t msgSize = 1 + 1 + 1 + 1 + 4 + 4;
+		CheckLength(msgSize + 4, "MSG_SELECT_UNSELECT_CARD#1");
+		ptr += msgSize;
+		auto count1 = Read<uint32_t>(ptr);
+		msgSize += count1 * (4 + LocInfo::SIZE);
+		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#2");
+		ClearLocInfoArray(count1, team, ptr);
+		CheckLength(msgSize + 4, "MSG_SELECT_UNSELECT_CARD#3");
+		auto count2 = Read<uint32_t>(ptr);
+		msgSize += count2 * (4 + LocInfo::SIZE);
+		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#4");
+		ClearLocInfoArray(count2, team, ptr);
 		break;
 	}
 	}
