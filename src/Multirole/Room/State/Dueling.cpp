@@ -162,11 +162,12 @@ void Context::Process(State::Dueling& s)
 	auto AnalyzeMsg = [&](const Msg& msg)
 	{
 		uint8_t msgType = GetMessageType(msg);
-		if(DoesMessageRequireAnswer(msgType))
-		{
-			uint8_t team = GetMessageReceivingTeam(msg);
-			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
-		}
+		if(!DoesMessageRequireAnswer(msgType))
+			return;
+		uint8_t team = GetMessageReceivingTeam(msg);
+		s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
+		// TODO: send MSG_WAIT here
+		// TODO: update timers here
 	};
 	auto DistributeMsg = [&](const Msg& msg)
 	{
