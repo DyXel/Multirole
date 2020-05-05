@@ -169,6 +169,22 @@ void Context::Process(State::Dueling& s)
 		// TODO: send MSG_WAIT here
 		// TODO: update timers here
 	};
+	auto ProcessQueryRequests = [&](const std::vector<QueryRequest>& qreqs)
+	{
+		for(const auto& reqVar : qreqs)
+		{
+			if(std::holds_alternative<QuerySingleRequest>(reqVar))
+			{
+				const auto& req = std::get<QuerySingleRequest>(reqVar);
+				// TODO
+			}
+			else /*if(std::holds_alternative<QueryLocationRequest>(reqVar))*/
+			{
+				const auto& req = std::get<QueryLocationRequest>(reqVar);
+				// TODO
+			}
+		}
+	};
 	auto DistributeMsg = [&](const Msg& msg)
 	{
 		switch(GetMessageDistributionType(msg))
@@ -222,9 +238,9 @@ void Context::Process(State::Dueling& s)
 	{
 		spdlog::info("Processing = {}", GetMessageType(msg));
 		AnalyzeMsg(msg);
-		// TODO: pre queries here
+		ProcessQueryRequests(GetPreDistQueryRequests(msg));
 		DistributeMsg(msg);
-		// TODO: post queries here
+		ProcessQueryRequests(GetPostDistQueryRequests(msg));
 		// TODO: add to replay
 	};
 	try

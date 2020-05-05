@@ -1,15 +1,13 @@
 #ifndef YGOPRO_COREUTILS_HPP
 #define YGOPRO_COREUTILS_HPP
 #include <cstdint>
+#include <variant>
 #include <vector>
 
 #include "STOCMsg.hpp"
 
 namespace YGOPro::CoreUtils
 {
-
-using Buffer = std::vector<uint8_t>;
-using Msg = std::vector<uint8_t>;
 
 enum class MsgDistType
 {
@@ -30,6 +28,26 @@ struct MsgStartCreateInfo
 	std::size_t t1EdSz; // Team 1 Extra Deck size
 };
 
+struct QuerySingleRequest
+{
+	uint8_t con;
+	uint32_t loc;
+	uint32_t seq;
+	uint32_t flag;
+};
+
+struct QueryLocationRequest
+{
+	uint8_t con;
+	uint32_t loc;
+	uint32_t flag;
+};
+
+using Buffer = std::vector<uint8_t>;
+using Msg = std::vector<uint8_t>;
+using Query = std::vector<uint8_t>;
+using QueryRequest = std::variant<QuerySingleRequest, QueryLocationRequest>;
+
 // Takes the buffer you would get from OCG_DuelGetMessage and splits it
 // into individual core messages (which are still just buffers).
 // This operation also removes the length bytes (first 2 bytes) as that
@@ -47,7 +65,7 @@ uint8_t GetMessageType(const Msg& msg);
 bool DoesMessageRequireAnswer(uint8_t msgType);
 
 // Takes any core message and determines how the message should be
-// distributed to clients and if it shouldn't be stripped from knowledge.
+// distributed to clients and if it should have knowledge stripped.
 // Throws std::out_of_range if msg's size is unexpectedly short.
 MsgDistType GetMessageDistributionType(const Msg& msg);
 
@@ -67,6 +85,12 @@ Msg MakeStartMsg(const MsgStartCreateInfo& info);
 
 // Creates a game message ready to be sent to a client from a core message.
 STOCMsg GameMsgFromMsg(const Msg& msg);
+
+// The following functions process the message and acquires the query requests
+// that are necessary either before distribution or after, respectively.
+// Throws std::out_of_range if msg's size is unexpectedly short.
+std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg);
+std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg);
 
 } // namespace YGOPro::CoreUtils
 
