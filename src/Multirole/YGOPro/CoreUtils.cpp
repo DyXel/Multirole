@@ -53,6 +53,28 @@ inline void Write(uint8_t*& ptr, T value)
 	ptr += sizeof(T);
 }
 
+/*** Query utility functions ***/
+
+inline void AddRefreshAllHands(std::vector<QueryRequest>& qreqs)
+{
+	qreqs.emplace_back(QueryLocationRequest{0, 0x02, 0x3781fff});
+	qreqs.emplace_back(QueryLocationRequest{1, 0x02, 0x3781fff});
+}
+
+inline void AddRefreshAllMZones(std::vector<QueryRequest>& qreqs)
+{
+	qreqs.emplace_back(QueryLocationRequest{0, 0x04, 0x3881fff});
+	qreqs.emplace_back(QueryLocationRequest{1, 0x04, 0x3881fff});
+}
+
+inline void AddRefreshAllSZones(std::vector<QueryRequest>& qreqs)
+{
+	qreqs.emplace_back(QueryLocationRequest{0, 0x08, 0x3e81fff});
+	qreqs.emplace_back(QueryLocationRequest{1, 0x08, 0x3e81fff});
+}
+
+/*** Header implementations ***/
+
 std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 {
 	using length_t = uint32_t;
@@ -395,6 +417,64 @@ Msg MakeStartMsg(const MsgStartCreateInfo& info)
 STOCMsg GameMsgFromMsg(const Msg& msg)
 {
 	return STOCMsg{STOCMsg::MsgType::GAME_MSG, msg};
+}
+
+std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
+{
+	std::vector<QueryRequest> qreqs;
+	switch(GetMessageType(msg))
+	{
+	case MSG_SELECT_BATTLECMD:
+	case MSG_SELECT_IDLECMD:
+	{
+		AddRefreshAllHands(qreqs);
+		AddRefreshAllMZones(qreqs);
+		AddRefreshAllSZones(qreqs);
+		break;
+	}
+	case MSG_SELECT_CHAIN:
+	case MSG_NEW_TURN:
+	{
+		AddRefreshAllMZones(qreqs);
+		AddRefreshAllSZones(qreqs);
+		break;
+	}
+	case MSG_FLIPSUMMONING:
+	{
+		if(msg.size() < 1 + 4 + LocInfo::SIZE)
+			throw std::out_of_range("MSG_FLIPSUMMONING#1");
+		auto ptr = msg.data();
+		ptr++; // type ignored
+		ptr += 4; // Card code
+		const auto i = Read<LocInfo>(ptr);
+		qreqs.emplace_back(QuerySingleRequest{i.con, i.loc, i.seq, 0x3f81fff});
+		break;
+	}
+	}
+	return qreqs;
+}
+
+std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
+{
+	auto CheckLength = [l = msg.size()](std::size_t expected, const char* what)
+	{
+		if(l < expected)
+			throw std::out_of_range(what);
+	};
+	auto ptr = msg.data();
+	ptr++; // type ignored
+	std::vector<QueryRequest> qreqs;
+	switch(GetMessageType(msg))
+	{
+	case MSG_SHUFFLE_HAND:
+	case MSG_DRAW:
+	{
+		auto player = Read<uint8_t>(ptr);
+		qreqs.emplace_back(QueryLocationRequest{player, 0x02, 0x3781fff});
+		break;
+	}
+	}
+	return qreqs;
 }
 
 } // namespace YGOPro::CoreUtils
