@@ -176,11 +176,29 @@ void Context::Process(State::Dueling& s)
 			if(std::holds_alternative<QuerySingleRequest>(reqVar))
 			{
 				const auto& req = std::get<QuerySingleRequest>(reqVar);
+				const Core::IWrapper::QueryInfo qInfo =
+				{
+					req.flags,
+					req.con,
+					req.loc,
+					req.seq,
+					0u
+				};
+				auto buffer = core.Query(s.duelPtr, qInfo);
 				// TODO
 			}
 			else /*if(std::holds_alternative<QueryLocationRequest>(reqVar))*/
 			{
 				const auto& req = std::get<QueryLocationRequest>(reqVar);
+				const Core::IWrapper::QueryInfo qInfo =
+				{
+					req.flags,
+					req.con,
+					req.loc,
+					0u,
+					0u
+				};
+				auto buffer = core.QueryLocation(s.duelPtr, qInfo);
 				// TODO
 			}
 		}

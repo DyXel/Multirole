@@ -33,14 +33,14 @@ struct QuerySingleRequest
 	uint8_t con;
 	uint32_t loc;
 	uint32_t seq;
-	uint32_t flag;
+	uint32_t flags;
 };
 
 struct QueryLocationRequest
 {
 	uint8_t con;
 	uint32_t loc;
-	uint32_t flag;
+	uint32_t flags;
 };
 
 using Buffer = std::vector<uint8_t>;
