@@ -194,7 +194,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
 	{
 		auto p = msg.GetCreateGame();
-		if(!p || p->hostInfo.serverHandshake != HANDSHAKE || p->hostInfo.version != SERVER_VERSION)
+		if(!p || p->hostInfo.handshake != HANDSHAKE || p->hostInfo.version != SERVER_VERSION)
 			return SendVersionError(tc->soc);
 		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
 		Room::Instance::CreateInfo info;
