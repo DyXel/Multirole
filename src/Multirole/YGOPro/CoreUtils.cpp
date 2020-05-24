@@ -477,4 +477,27 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	return qreqs;
 }
 
+Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const Query& q)
+{
+	Msg msg(1 + 1 + 1 + 1 + q.size());
+	auto ptr = msg.data();
+	Write<uint8_t>(ptr, MSG_UPDATE_CARD);
+	Write<uint8_t>(ptr, con);
+	Write(ptr, static_cast<uint8_t>(loc));
+	Write(ptr, static_cast<uint8_t>(seq));
+	std::memcpy(ptr, q.data(), q.size());
+	return msg;
+}
+
+Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const Query& q)
+{
+	Msg msg(1 + 1 + 1 + q.size());
+	auto ptr = msg.data();
+	Write<uint8_t>(ptr, MSG_UPDATE_DATA);
+	Write<uint8_t>(ptr, con);
+	Write(ptr, static_cast<uint8_t>(loc));
+	std::memcpy(ptr, q.data(), q.size());
+	return msg;
+}
+
 } // namespace YGOPro::CoreUtils

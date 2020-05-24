@@ -92,6 +92,14 @@ STOCMsg GameMsgFromMsg(const Msg& msg);
 std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg);
 std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg);
 
+// Creates MSG_UPDATE_CARD, which is a message that wraps around a single card
+// query from a duel.
+Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const Query& q);
+
+// Creates MSG_UPDATE_DATA, which is a message that wraps around queries
+// from a duel.
+Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const Query& q);
+
 } // namespace YGOPro::CoreUtils
 
 #endif // YGOPRO_COREUTILS_HPP
