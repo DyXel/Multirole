@@ -32,6 +32,15 @@ enum ExtraRule
 	EXTRA_RULE_DECK_LIMIT_20       = 0x2000,
 };
 
+struct ClientVersion
+{
+	struct
+	{
+		uint8_t major;
+		uint8_t minor;
+	} client, core;
+};
+
 struct HostInfo
 {
 	uint32_t banlistHash;
@@ -44,6 +53,9 @@ struct HostInfo
 	uint8_t startingDrawCount;
 	uint8_t drawCountPerTurn;
 	uint16_t timeLimitInSeconds;
+	uint32_t : 32; //padding to account for the previous 64 bit value
+	uint32_t handshake;
+	ClientVersion version;
 	uint64_t serverHandshake;
 	int32_t t1Count;
 	int32_t t2Count;

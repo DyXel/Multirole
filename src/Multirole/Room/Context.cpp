@@ -154,10 +154,15 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 {
 	using namespace Error;
 	using namespace YGOPro;
-	// Handy shortcut.
+	// Handy shortcuts.
 	auto MakeErrorPtr = [](DeckOrCard type, uint32_t value)
 	{
-		return std::make_unique<STOCMsg>(MakeError(type, value));
+		return std::make_unique<STOCMsg>(MakeDeckError(type, value));
+	};
+	auto MakeErrorLimitsPtr = [](DeckOrCard type, std::size_t got, const auto& lim)
+	{
+		return std::make_unique<STOCMsg>(
+			MakeDeckError(type, got, lim.min, lim.max));
 	};
 	// Check if the deck had any error while loading.
 	if(deck.Error() != 0U)
@@ -193,11 +198,11 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		return (p.second = p.first < lim.min || p.first > lim.max), p;
 	};
 	if(const auto p = OutOfBound(limits.main, deck.Main()); p.second)
-		return MakeErrorPtr(DECK_BAD_MAIN_COUNT, p.first);
+		return MakeErrorLimitsPtr(DECK_BAD_MAIN_COUNT, p.first, limits.main);
 	if(const auto p = OutOfBound(limits.extra, deck.Extra()); p.second)
-		return MakeErrorPtr(DECK_BAD_EXTRA_COUNT, p.first);
+		return MakeErrorLimitsPtr(DECK_BAD_EXTRA_COUNT, p.first, limits.extra);
 	if(const auto p = OutOfBound(limits.side, deck.Side()); p.second)
-		return MakeErrorPtr(DECK_BAD_SIDE_COUNT, p.first);
+		return MakeErrorLimitsPtr(DECK_BAD_SIDE_COUNT, p.first, limits.side);
 	// Custom predicates...
 	//	true if card scope is unnofficial using currently allowed mode.
 	auto CheckUnofficial = [](uint32_t scope, uint8_t allowed) constexpr -> bool

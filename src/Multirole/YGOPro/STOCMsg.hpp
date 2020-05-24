@@ -48,6 +48,30 @@ public:
 		uint32_t code;
 	};
 
+	struct DeckErrorMsg
+	{
+		static const auto val = MsgType::ERROR_MSG;
+		uint8_t msg;
+		uint32_t type;
+		struct
+		{
+			uint32_t got;
+			uint32_t min;
+			uint32_t max;
+		} count;
+		uint32_t code;
+	};
+
+	struct VerErrorMsg
+	{
+		static const auto val = MsgType::ERROR_MSG;
+		uint8_t msg;
+		char : 8; //padding to keep the client version
+		char : 8; //in the same place as the other
+		char : 8; //error codes
+		ClientVersion version;
+	};
+
 	struct RPSResult
 	{
 		static const auto val = MsgType::RPS_RESULT;

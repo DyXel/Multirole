@@ -118,19 +118,59 @@ STOCMsg STOCMsgFactory::MakeRPSResult(uint8_t t0, uint8_t t1)
 	return {STOCMsg::RPSResult{t0, t1}};
 }
 
-STOCMsg STOCMsgFactory::MakeError(Error::Join type)
+STOCMsg STOCMsgFactory::MakeJoinError(Error::Join type)
 {
 	return {STOCMsg::ErrorMsg{1U, static_cast<uint32_t>(type)}};
 }
 
-STOCMsg STOCMsgFactory::MakeError(Error::DeckOrCard type, uint32_t value)
+STOCMsg STOCMsgFactory::MakeDeckError(Error::DeckOrCard type, uint32_t code)
 {
-	return {STOCMsg::ErrorMsg{2U, static_cast<uint32_t>(type << 28U) + value}};
+	return
+	{
+		STOCMsg::DeckErrorMsg
+		{
+			2U,
+			static_cast<uint32_t>(type),
+			{
+				0,
+				0,
+				0
+			},
+			code
+		}
+	};
 }
 
-STOCMsg STOCMsgFactory::MakeError(Error::Generic type, uint32_t value)
+STOCMsg STOCMsgFactory::MakeDeckError(
+	Error::DeckOrCard type,
+	std::size_t got,
+	std::size_t min,
+	std::size_t max)
 {
-	return {STOCMsg::ErrorMsg{static_cast<uint8_t>(type), value}};
+	return
+	{
+		STOCMsg::DeckErrorMsg
+		{
+			2U,
+			static_cast<uint32_t>(type),
+			{
+				static_cast<uint32_t>(got),
+				static_cast<uint32_t>(min),
+				static_cast<uint32_t>(max),
+			},
+			0
+		}
+	};
+}
+
+STOCMsg STOCMsgFactory::MakeVersionError(const ClientVersion& version)
+{
+	return {STOCMsg::VerErrorMsg{5u, version}};
+}
+
+STOCMsg STOCMsgFactory::MakeSideError(uint32_t value)
+{
+	return {STOCMsg::ErrorMsg{3u, value}};
 }
 
 // protected

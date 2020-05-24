@@ -9,7 +9,7 @@ namespace Ignis::Multirole
 namespace Error
 {
 
-enum Join : uint8_t
+enum Join : uint32_t
 {
 	JOIN_NOT_FOUND  = 0x0,
 	JOIN_WRONG_PASS = 0x1,
@@ -21,6 +21,7 @@ enum DeckOrCard : uint8_t
 	DECK_BAD_MAIN_COUNT  = 0x6,
 	DECK_BAD_EXTRA_COUNT = 0x7,
 	DECK_BAD_SIDE_COUNT  = 0x8,
+	DECK_INVALID_SIZE    = 0xB,
 	CARD_BANLISTED       = 0x1,
 	CARD_OCG_ONLY        = 0x2,
 	CARD_TCG_ONLY        = 0x3,
@@ -28,12 +29,6 @@ enum DeckOrCard : uint8_t
 	CARD_MORE_THAN_3     = 0x5,
 	CARD_UNOFFICIAL      = 0xA,
 	CARD_FORBIDDEN_TYPE  = 0x9,
-};
-
-enum Generic : uint8_t
-{
-	GENERIC_INVALID_SIDE = 0x3,
-	GENERIC_EXPECTED_VER = 0x5,
 };
 
 } // namespace Error
@@ -84,9 +79,15 @@ public:
 	static YGOPro::STOCMsg MakeRPSResult(uint8_t t0, uint8_t t1);
 
 	// Error messages
-	static YGOPro::STOCMsg MakeError(Error::Join type);
-	static YGOPro::STOCMsg MakeError(Error::DeckOrCard type, uint32_t value);
-	static YGOPro::STOCMsg MakeError(Error::Generic type, uint32_t value);
+	static YGOPro::STOCMsg MakeJoinError(Error::Join type);
+	static YGOPro::STOCMsg MakeDeckError(Error::DeckOrCard type, uint32_t code);
+	static YGOPro::STOCMsg MakeDeckError(
+		Error::DeckOrCard type,
+		std::size_t got,
+		std::size_t min,
+		std::size_t max);
+	static YGOPro::STOCMsg MakeVersionError(const YGOPro::ClientVersion& ver);
+	static YGOPro::STOCMsg MakeSideError(uint32_t value);
 protected:
 	uint8_t EncodePosition(Room::Client::PosType pos) const;
 

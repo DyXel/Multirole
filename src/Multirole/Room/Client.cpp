@@ -212,7 +212,9 @@ void Client::HandleMsg()
 				side.push_back(incoming.Read<uint32_t>(ptr));
 		}
 		catch(uintptr_t value)
-		{}
+		{
+			//Send DECK_INVALID_SIZE to the client
+		}
 		room.Dispatch(Event::UpdateDeck{{*this}, main, side});
 		break;
 	}

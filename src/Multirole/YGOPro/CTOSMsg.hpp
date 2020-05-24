@@ -61,10 +61,10 @@ public:
 
 	struct JoinGame
 	{
-		uint16_t version;
+		uint16_t version2;
 		uint32_t id;
 		uint16_t pass[20];
-		uint32_t version2;
+		ClientVersion version;
 	};
 
 	struct TryKick

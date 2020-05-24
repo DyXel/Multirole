@@ -15,15 +15,35 @@
 namespace Ignis::Multirole::Endpoint
 {
 
-constexpr uint32_t CLIENT_VERSION_MAJOR = 38;
-constexpr uint32_t CLIENT_VERSION_MINOR = 0;
-constexpr uint32_t CORE_VERSION_MAJOR = 8;
-constexpr uint32_t CORE_VERSION_MINOR = 0;
-constexpr uint32_t EXPECTED_VERSION = ((CLIENT_VERSION_MAJOR & 0xFF) << 0)  |
-/************************************/((CLIENT_VERSION_MINOR & 0xFF) << 8)  |
-/*     What Are You Looking At?     */((CORE_VERSION_MAJOR   & 0xFF) << 16) |
-/************************************/((CORE_VERSION_MINOR   & 0xFF) << 24);
-constexpr uint64_t HANDSHAKE = 4680591157758091777U;
+constexpr YGOPro::ClientVersion SERVER_VERSION =
+{
+	{
+		38, // NOLINT: Client version major
+		0,  // NOLINT: Client version minor
+	},
+	{
+		8,  // NOLINT: Core version major
+		0   // NOLINT: Core version minor
+	}
+};
+constexpr uint32_t HANDSHAKE = 4043399681U;
+
+constexpr bool operator!=(
+	const YGOPro::ClientVersion& v1,
+	const YGOPro::ClientVersion& v2)
+{
+	return std::tie(
+		v1.client.major,
+		v1.client.major,
+		v1.core.major,
+		v1.core.major)
+		!=
+		std::tie(
+		v2.client.major,
+		v2.client.major,
+		v2.core.major,
+		v2.core.major);
+}
 
 constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
 {
@@ -156,7 +176,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	YGOPro::UTF16ToUTF8(YGOPro::BufferToUTF16(a, sizeof(decltype(a))))
 	auto SendVersionError = [](asio::ip::tcp::socket& s)
 	{
-		static auto m = STOCMsgFactory::MakeError(Error::GENERIC_EXPECTED_VER, EXPECTED_VERSION);
+		static const auto m = STOCMsgFactory::MakeVersionError(SERVER_VERSION);
 		asio::write(s, asio::buffer(m.Data(), m.Length()));
 		return false;
 	};
@@ -174,7 +194,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
 	{
 		auto p = msg.GetCreateGame();
-		if(!p || p->hostInfo.serverHandshake != HANDSHAKE)
+		if(!p || p->hostInfo.serverHandshake != HANDSHAKE || p->hostInfo.version != SERVER_VERSION)
 			return SendVersionError(tc->soc);
 		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
 		Room::Instance::CreateInfo info;
@@ -204,7 +224,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
 	{
 		auto p = msg.GetJoinGame();
-		if(!p || p->version2 != EXPECTED_VERSION)
+		if(!p || p->version != SERVER_VERSION)
 			return SendVersionError(tc->soc);
 		auto room = lobby.GetRoomById(p->id);
 		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p->pass)))
