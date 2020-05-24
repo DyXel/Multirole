@@ -4,8 +4,8 @@
 // #define MSG_WAITING				3
 #define MSG_START				4
 #define MSG_WIN					5
-// #define MSG_UPDATE_DATA			6
-// #define MSG_UPDATE_CARD			7
+#define MSG_UPDATE_DATA			6
+#define MSG_UPDATE_CARD			7
 // #define MSG_REQUEST_DECK		8
 #define MSG_SELECT_BATTLECMD	10
 #define MSG_SELECT_IDLECMD		11
