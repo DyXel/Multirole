@@ -19,7 +19,7 @@ constexpr YGOPro::ClientVersion SERVER_VERSION =
 {
 	{
 		38, // NOLINT: Client version major
-		0,  // NOLINT: Client version minor
+		1,  // NOLINT: Client version minor
 	},
 	{
 		8,  // NOLINT: Core version major
@@ -34,15 +34,15 @@ constexpr bool operator!=(
 {
 	return std::tie(
 		v1.client.major,
-		v1.client.major,
+		v1.client.minor,
 		v1.core.major,
-		v1.core.major)
+		v1.core.minor)
 		!=
 		std::tie(
 		v2.client.major,
-		v2.client.major,
+		v2.client.minor,
 		v2.core.major,
-		v2.core.major);
+		v2.core.minor);
 }
 
 constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
