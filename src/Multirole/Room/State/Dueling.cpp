@@ -159,16 +159,6 @@ void Context::Process(State::Dueling& s)
 {
 	using namespace YGOPro::CoreUtils;
 	auto& core = *cpkg.core;
-	auto AnalyzeMsg = [&](const Msg& msg)
-	{
-		uint8_t msgType = GetMessageType(msg);
-		if(!DoesMessageRequireAnswer(msgType))
-			return;
-		uint8_t team = GetMessageReceivingTeam(msg);
-		s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
-		// TODO: send MSG_WAIT here
-		// TODO: update timers here
-	};
 	auto ProcessQueryRequests = [&](const std::vector<QueryRequest>& qreqs)
 	{
 		for(const auto& reqVar : qreqs)
@@ -254,14 +244,24 @@ void Context::Process(State::Dueling& s)
 		}
 		}
 	};
+	auto AnalyzeMsg = [&](const Msg& msg)
+	{
+		uint8_t msgType = GetMessageType(msg);
+		if(!DoesMessageRequireAnswer(msgType))
+			return;
+		uint8_t team = GetMessageReceivingTeam(msg);
+		s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
+		// TODO: send MSG_WAIT here
+		// TODO: update timers here
+	};
 	auto ProcessSingleMsg = [&](const Msg& msg)
 	{
 		spdlog::info("Processing = {}", GetMessageType(msg));
-		AnalyzeMsg(msg);
+		// TODO: add to replay
 		ProcessQueryRequests(GetPreDistQueryRequests(msg));
 		DistributeMsg(msg);
 		ProcessQueryRequests(GetPostDistQueryRequests(msg));
-		// TODO: add to replay
+		AnalyzeMsg(msg);
 	};
 	try
 	{
