@@ -55,6 +55,12 @@ inline void Write(uint8_t*& ptr, T value)
 
 /*** Query utility functions ***/
 
+inline void AddRefreshAllDecks(std::vector<QueryRequest>& qreqs)
+{
+	qreqs.emplace_back(QueryLocationRequest{0, 0x01, 0x1181fff});
+	qreqs.emplace_back(QueryLocationRequest{1, 0x01, 0x1181fff});
+}
+
 inline void AddRefreshAllHands(std::vector<QueryRequest>& qreqs)
 {
 	qreqs.emplace_back(QueryLocationRequest{0, 0x02, 0x3781fff});
@@ -471,6 +477,63 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 		CheckLength(1 + 1, "MSG_SHUFFLE_HAND and MSG_DRAW #1");
 		auto player = Read<uint8_t>(ptr);
 		qreqs.emplace_back(QueryLocationRequest{player, 0x02, 0x3781fff});
+		break;
+	}
+	case MSG_SHUFFLE_EXTRA:
+	{
+		CheckLength(1 + 1, "MSG_SHUFFLE_EXTRA#2");
+		auto player = Read<uint8_t>(ptr);
+		qreqs.emplace_back(QueryLocationRequest{player, 0x40, 0x381fff});
+		break;
+	}
+	case MSG_SWAP_GRAVE_DECK:
+	{
+		CheckLength(1 + 1, "MSG_SWAP_GRAVE_DECK#1");
+		auto player = Read<uint8_t>(ptr);
+		qreqs.emplace_back(QueryLocationRequest{player, 0x10, 0x381fff});
+		break;
+	}
+	case MSG_REVERSE_DECK:
+	{
+		AddRefreshAllDecks(qreqs);
+		break;
+	}
+	case MSG_SHUFFLE_SET_CARD:
+	{
+		CheckLength(1 + 1, "MSG_SHUFFLE_SET_CARD#1");
+		auto loc = Read<uint8_t>(ptr);
+		qreqs.emplace_back(QueryLocationRequest{0, loc, 0x3181fff});
+		qreqs.emplace_back(QueryLocationRequest{1, loc, 0x3181fff});
+		break;
+	}
+	case MSG_DAMAGE_STEP_START:
+	case MSG_DAMAGE_STEP_END:
+	{
+		AddRefreshAllMZones(qreqs);
+		break;
+	}
+	case MSG_SUMMONED:
+	case MSG_SPSUMMONED:
+	case MSG_FLIPSUMMONED:
+	{
+		AddRefreshAllMZones(qreqs);
+		AddRefreshAllSZones(qreqs);
+		break;
+	}
+	case MSG_NEW_PHASE:
+	case MSG_CHAINED:
+	{
+		AddRefreshAllMZones(qreqs);
+		AddRefreshAllSZones(qreqs);
+		AddRefreshAllHands(qreqs);
+		break;
+	}
+	case MSG_CHAIN_END:
+	{
+		AddRefreshAllDecks(qreqs);
+		AddRefreshAllMZones(qreqs);
+		AddRefreshAllSZones(qreqs);
+		AddRefreshAllHands(qreqs);
 		break;
 	}
 	}
