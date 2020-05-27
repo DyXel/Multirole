@@ -294,7 +294,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	{
 	case MSG_SET:
 	{
-		CheckLength(1 + 4, "MSG_SET is too short");
+		CheckLength(1 + 4, "MSG_SET#1");
 		Write<uint32_t>(ptr, 0);
 		break;
 	}
@@ -381,17 +381,16 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	}
 	case MSG_SELECT_UNSELECT_CARD:
 	{
-		std::size_t msgSize = 1 + 1 + 1 + 1 + 4 + 4;
-		CheckLength(msgSize + 4, "MSG_SELECT_UNSELECT_CARD#1");
-		ptr += msgSize;
+		std::size_t msgSize = 1 + 1 + 1 + 1 + 4 + 4 + 4;
+		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#1");
+		ptr += 1 + 1 + 1 + 4 + 4;
 		auto count1 = Read<uint32_t>(ptr);
-		msgSize += count1 * (4 + LocInfo::SIZE);
+		msgSize += (count1 * (4 + LocInfo::SIZE)) + 4;
 		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#2");
 		ClearLocInfoArray(count1, team, ptr);
-		CheckLength(msgSize + 4, "MSG_SELECT_UNSELECT_CARD#3");
 		auto count2 = Read<uint32_t>(ptr);
 		msgSize += count2 * (4 + LocInfo::SIZE);
-		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#4");
+		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#3");
 		ClearLocInfoArray(count2, team, ptr);
 		break;
 	}
@@ -469,6 +468,7 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	case MSG_SHUFFLE_HAND:
 	case MSG_DRAW:
 	{
+		CheckLength(1 + 1, "MSG_SHUFFLE_HAND and MSG_DRAW #1");
 		auto player = Read<uint8_t>(ptr);
 		qreqs.emplace_back(QueryLocationRequest{player, 0x02, 0x3781fff});
 		break;
