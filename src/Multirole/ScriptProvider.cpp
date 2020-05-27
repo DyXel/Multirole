@@ -38,6 +38,7 @@ std::string ScriptProvider::ScriptFromFilePath(std::string_view fp)
 void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileList)
 {
 	int total = 0;
+	spdlog::info("ScriptProvider: Loading {:d} files...", fileList.size());
 	std::string fullPath(path);
 	std::lock_guard<std::mutex> lock(mScripts);
 	for(const auto& fn : fileList)
@@ -68,7 +69,7 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 		scripts.emplace(FilenameFromPath(fn), buffer.str());
 		total++;
 	}
-	spdlog::info("ScriptProvider: loaded {:d} files", total);
+	spdlog::info("ScriptProvider: Loaded {:d} files", total);
 }
 
 } // namespace Ignis::Multirole
