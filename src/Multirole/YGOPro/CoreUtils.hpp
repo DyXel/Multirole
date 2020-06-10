@@ -52,12 +52,9 @@ using QueryRequest = std::variant<QuerySingleRequest, QueryLocationRequest>;
 // into individual core messages (which are still just buffers).
 // This operation also removes the length bytes (first 2 bytes) as that
 // can be retrieved back from Msg's size() method.
-// Throws std::out_of_range if any operation would read outside of the
-// passed buffer.
 std::vector<Msg> SplitToMsgs(const Buffer& buffer);
 
 // Takes any core message, reads and returns its type (1st byte)
-// Throws std::out_of_range if msg is empty.
 uint8_t GetMessageType(const Msg& msg);
 
 // Tells if the message requires an answer (setting a response)
@@ -66,12 +63,10 @@ bool DoesMessageRequireAnswer(uint8_t msgType);
 
 // Takes any core message and determines how the message should be
 // distributed to clients and if it should have knowledge stripped.
-// Throws std::out_of_range if msg's size is unexpectedly short.
 MsgDistType GetMessageDistributionType(const Msg& msg);
 
 // Tells which team should receive this message.
 // The behavior is undefined if the message is not for a specific team.
-// Throws std::out_of_range if msg's size is unexpectedly short.
 uint8_t GetMessageReceivingTeam(const Msg& msg);
 
 // Removes knowledge from a message if it shouldn't be known
@@ -88,7 +83,6 @@ STOCMsg GameMsgFromMsg(const Msg& msg);
 
 // The following functions process the message and acquires the query requests
 // that are necessary either before distribution or after, respectively.
-// Throws std::out_of_range if msg's size is unexpectedly short.
 std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg);
 std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg);
 

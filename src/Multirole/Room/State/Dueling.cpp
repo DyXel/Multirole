@@ -274,10 +274,6 @@ void Context::Process(State::Dueling& s)
 				ProcessSingleMsg(msg);
 		}while(status == Core::IWrapper::DUEL_STATUS_CONTINUE);
 	}
-	catch(const std::out_of_range& e)
-	{
-		spdlog::error("Process: {}", e.what());
-	}
 	CORE_EXCEPTION_HANDLER()
 }
 

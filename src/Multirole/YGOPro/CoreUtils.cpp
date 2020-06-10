@@ -93,14 +93,10 @@ std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 	for(std::size_t pos = 0; pos != bufSize; )
 	{
 		// Retrieve length of this message
-		if(pos + sizeOfLength > bufSize)
-			throw std::out_of_range("SplitMessages: Reading length");
 		length_t length;
 		std::memcpy(&length, bufData + pos, sizeOfLength);
 		pos += sizeOfLength;
 		// Copy message data to a new message
-		if(pos + length > bufSize)
-			throw std::out_of_range("SplitMessages: Reading message data");
 		auto& msg = msgs.emplace_back(length);
 		std::memcpy(msg.data(), bufData + pos, length);
 		pos += length;
@@ -110,7 +106,7 @@ std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 
 uint8_t GetMessageType(const Msg& msg)
 {
-	return msg.at(0);
+	return msg[0];
 }
 
 bool DoesMessageRequireAnswer(uint8_t msgType)
@@ -182,7 +178,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	}
 	case MSG_HINT:
 	{
-		switch(msg.at(1))
+		switch(msg[1])
 		{
 		case 1: case 2: case 3: case 5:
 		{
@@ -204,15 +200,11 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	}
 	case MSG_CONFIRM_CARDS:
 	{
-		if(msg.size() < 2 + 4)
-			throw std::out_of_range("MSG_CONFIRM_CARDS#1");
 		auto ptr = msg.data() + 2;
 		// if count(uint32_t) is not 0 and location(uint8_t) is LOCATION_DECK
 		// then send to specific team duelist.
 		if(Read<uint32_t>(ptr) != 0)
 		{
-			if(msg.size() < 2 + 4 + 4 + 1 + 1)
-				throw std::out_of_range("MSG_CONFIRM_CARDS#2");
 			ptr += 4 + 1;
 			if(Read<uint8_t>(ptr) == 0x01) // NOLINT: LOCATION_DECK
 				return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
@@ -241,11 +233,11 @@ uint8_t GetMessageReceivingTeam(const Msg& msg)
 	{
 	case MSG_HINT:
 	{
-		return msg.at(2);
+		return msg[2];
 	}
 	default:
 	{
-		return msg.at(1);
+		return msg[1];
 	}
 	}
 }
@@ -289,36 +281,27 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 			}
 		}
 	};
-	auto CheckLength = [l = msg.size()](std::size_t expected, const char* what)
-	{
-		if(l < expected)
-			throw std::out_of_range(what);
-	};
 	auto ptr = msg.data();
 	ptr++; // type ignored
 	switch(GetMessageType(msg))
 	{
 	case MSG_SET:
 	{
-		CheckLength(1 + 4, "MSG_SET#1");
 		Write<uint32_t>(ptr, 0);
 		break;
 	}
 	case MSG_SHUFFLE_HAND:
 	case MSG_SHUFFLE_EXTRA:
 	{
-		CheckLength(1 + 1 + 4, "MSG_SHUFFLE_*#1");
 		if(Read<uint8_t>(ptr) == team)
 			break;
 		auto count = Read<uint32_t>(ptr);
-		CheckLength(1 + 1 + 4 + (count * 4), "MSG_SHUFFLE_*#2");
 		for(uint32_t i = 0; i < count; i++)
 			Write<uint32_t>(ptr, 0);
 		break;
 	}
 	case MSG_MOVE:
 	{
-		CheckLength(1 + 4 + (LocInfo::SIZE * 2), "MSG_MOVE#1");
 		ptr += 4; // Card code
 		ptr += LocInfo::SIZE; // Previous location
 		const auto current = Read<LocInfo>(ptr);
@@ -330,17 +313,14 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	}
 	case MSG_DRAW:
 	{
-		CheckLength(1 + 1 + 4, "MSG_DRAW#1");
 		if(Read<uint8_t>(ptr) == team)
 			break;
 		auto count = Read<uint32_t>(ptr);
-		CheckLength(1 + 1 + 4 + (count * (4 + 4)), "MSG_DRAW#2");
 		ClearPositionArray(count, ptr);
 		break;
 	}
 	case MSG_TAG_SWAP:
 	{
-		CheckLength(1 + 1 + (4 * 5), "MSG_TAG_SWAP#1");
 		if(Read<uint8_t>(ptr) == team)
 			break;
 		ptr        += 4;                   // Main deck count
@@ -348,29 +328,20 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 		ptr        += 4;                   // Face-up pendulum count
 		count      += Read<uint32_t>(ptr); // Hand count
 		ptr        += 4;                   // Top-deck card code
-		CheckLength(1 + 1 + (4 * 5) + (count * (4 + 4)), "MSG_TAG_SWAP#2");
 		ClearPositionArray(count, ptr);
 		break;
 	}
 	case MSG_SELECT_CARD:
 	{
-		CheckLength(1 + 1 + 4 + 4 + 4, "MSG_SELECT_CARD#1");
 		ptr += 1 + 1 + 4 + 4;
 		auto count = Read<uint32_t>(ptr);
-		CheckLength(
-			1 + 1 + 4 + 4 + 4 + (count * (4 + LocInfo::SIZE)),
-			"MSG_SELECT_CARD#2");
 		ClearLocInfoArray(count, team, ptr);
 		break;
 	}
 	case MSG_SELECT_TRIBUTE:
 	{
-		CheckLength(1 + 1 + 4 + 4 + 4, "MSG_SELECT_TRIBUTE#1");
 		ptr += 1 + 1 + 4 + 4;
 		auto count = Read<uint32_t>(ptr);
-		CheckLength(
-			1 + 1 + 4 + 4 + 4 + (count * (4 + LocInfo::SIZE + 1)),
-			"MSG_SELECT_TRIBUTE#2");
 		for(uint32_t i = 0; i < count; i++)
 		{
 			ptr += 4; // Card code
@@ -387,16 +358,10 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	}
 	case MSG_SELECT_UNSELECT_CARD:
 	{
-		std::size_t msgSize = 1 + 1 + 1 + 1 + 4 + 4 + 4;
-		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#1");
 		ptr += 1 + 1 + 1 + 4 + 4;
 		auto count1 = Read<uint32_t>(ptr);
-		msgSize += (count1 * (4 + LocInfo::SIZE)) + 4;
-		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#2");
 		ClearLocInfoArray(count1, team, ptr);
 		auto count2 = Read<uint32_t>(ptr);
-		msgSize += count2 * (4 + LocInfo::SIZE);
-		CheckLength(msgSize, "MSG_SELECT_UNSELECT_CARD#3");
 		ClearLocInfoArray(count2, team, ptr);
 		break;
 	}
@@ -446,8 +411,6 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 	}
 	case MSG_FLIPSUMMONING:
 	{
-		if(msg.size() < 1 + 4 + LocInfo::SIZE)
-			throw std::out_of_range("MSG_FLIPSUMMONING#1");
 		auto ptr = msg.data();
 		ptr++; // type ignored
 		ptr += 4; // Card code
@@ -461,11 +424,6 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 
 std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 {
-	auto CheckLength = [l = msg.size()](std::size_t expected, const char* what)
-	{
-		if(l < expected)
-			throw std::out_of_range(what);
-	};
 	auto ptr = msg.data();
 	ptr++; // type ignored
 	std::vector<QueryRequest> qreqs;
@@ -474,21 +432,18 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	case MSG_SHUFFLE_HAND:
 	case MSG_DRAW:
 	{
-		CheckLength(1 + 1, "MSG_SHUFFLE_HAND and MSG_DRAW #1");
 		auto player = Read<uint8_t>(ptr);
 		qreqs.emplace_back(QueryLocationRequest{player, 0x02, 0x3781fff});
 		break;
 	}
 	case MSG_SHUFFLE_EXTRA:
 	{
-		CheckLength(1 + 1, "MSG_SHUFFLE_EXTRA#2");
 		auto player = Read<uint8_t>(ptr);
 		qreqs.emplace_back(QueryLocationRequest{player, 0x40, 0x381fff});
 		break;
 	}
 	case MSG_SWAP_GRAVE_DECK:
 	{
-		CheckLength(1 + 1, "MSG_SWAP_GRAVE_DECK#1");
 		auto player = Read<uint8_t>(ptr);
 		qreqs.emplace_back(QueryLocationRequest{player, 0x10, 0x381fff});
 		break;
@@ -500,7 +455,6 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	}
 	case MSG_SHUFFLE_SET_CARD:
 	{
-		CheckLength(1 + 1, "MSG_SHUFFLE_SET_CARD#1");
 		auto loc = Read<uint8_t>(ptr);
 		qreqs.emplace_back(QueryLocationRequest{0, loc, 0x3181fff});
 		qreqs.emplace_back(QueryLocationRequest{1, loc, 0x3181fff});
