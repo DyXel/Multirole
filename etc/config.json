@@ -25,9 +25,9 @@
 			"webhookToken": "<change_this>"
 		},
 		{
-			"name": "DeltaBeta",
-			"remote": "https://github.com/ProjectIgnis/DeltaBeta",
-			"path": "./sync/DeltaBeta",
+			"name": "bin",
+			"remote": "https://github.com/ProjectIgnis/bin",
+			"path": "./sync/bin",
 			"webhookPort": 43632,
 			"webhookToken": "<change_this>"
 		}
@@ -41,7 +41,7 @@
 		"fileRegex": ".*\\.lua"
 	},
 	"coreProvider": {
-		"observedRepos" : ["DeltaBeta"],
+		"observedRepos" : ["bin"],
 		"fileRegex": ".*libocgcore\\.so",
 		"coreType": "shared",
 		"loadPerRoom": false
