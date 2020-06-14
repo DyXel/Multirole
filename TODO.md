@@ -1,7 +1,22 @@
 # TODO
 
+* Parse queries from core and knowledge strip them
+* Send Extra deck card code information to clients
+* Analyze and implement behavior of messages that influence the server room
+  * `MSG_TAG_SWAP`
+  * `MSG_MATCH_KILL`
+* Implement surrendering and add handling for client disconnecting on all states
+* Add MSG_WAITING message send
+* Implement timers
+* Implement replays
+* Implement "Hornet" core-type (crash resilient implementation of `Core::IHighLevelWrapper`)
+* Handle crashes of core
+* Add IPC interface for discord bot
+
+# Wishlist
+
 * Make `GitRepo` webhook update system optional upon construction via config file
-   * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
+  * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 * Check used enums and try to use `enum class` where possible
   * Also try to forward declare as many of them as possible
 * Make inheritance of `std::enable_shared_from_this` private/protected

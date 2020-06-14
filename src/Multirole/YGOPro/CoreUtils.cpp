@@ -490,6 +490,58 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 		AddRefreshAllHands(qreqs);
 		break;
 	}
+	case MSG_MOVE:
+	{
+		ptr += 4; // Card code
+		const auto previous = Read<LocInfo>(ptr);
+		const auto current = Read<LocInfo>(ptr);
+		if((previous.con != current.con || previous.loc != current.loc) &&
+		   current.loc != 0 && (current.loc & 0x80) == 0)
+		{
+			qreqs.emplace_back(QuerySingleRequest{
+				current.con,
+				current.loc,
+				current.seq,
+				0x3f81fff});
+		}
+		break;
+	}
+	case MSG_POS_CHANGE:
+	{
+		ptr += 4; // Card code
+		auto cc = Read<uint8_t>(ptr); // Current controller
+		auto cl = Read<uint8_t>(ptr); // Current location
+		auto cs = Read<uint8_t>(ptr); // Current sequence
+		auto pp = Read<uint8_t>(ptr); // Previous position
+		auto cp = Read<uint8_t>(ptr); // Current position
+		// NOLINTNEXTLINE: POS_FACEDOWN and POS_FACEUP respectively
+		if((pp & 0x0A) && (cp & 0x05))
+			qreqs.emplace_back(QuerySingleRequest{cc, cl, cs, 0x3f81fff});
+		break;
+	}
+	case MSG_SWAP:
+	{
+		ptr += 4; // Previous card code
+		const auto p = Read<LocInfo>(ptr);
+		ptr += 4; // Current card code
+		const auto c = Read<LocInfo>(ptr);
+		qreqs.emplace_back(QuerySingleRequest{p.con, p.loc, p.seq, 0x3f81fff});
+		qreqs.emplace_back(QuerySingleRequest{c.con, c.loc, c.seq, 0x3f81fff});
+		break;
+	}
+	case MSG_TAG_SWAP:
+	{
+		auto player = Read<uint8_t>(ptr);
+		qreqs.reserve(8);
+		qreqs.emplace_back(QueryLocationRequest{player, 0x01, 0x1181fff});
+		qreqs.emplace_back(QueryLocationRequest{player, 0x40, 0x381fff});
+		AddRefreshAllHands(qreqs);
+		qreqs.emplace_back(QueryLocationRequest{0, 0x04, 0x3081fff});
+		qreqs.emplace_back(QueryLocationRequest{1, 0x04, 0x3081fff});
+		qreqs.emplace_back(QueryLocationRequest{0, 0x08, 0x30681fff});
+		qreqs.emplace_back(QueryLocationRequest{1, 0x08, 0x30681fff});
+		break;
+	}
 	}
 	return qreqs;
 }
