@@ -186,7 +186,7 @@ void Context::Process(State::Dueling& s)
 				};
 				auto buffer = core.Query(s.duelPtr, qInfo);
 				// TODO: filter query
-				SendToAll(GameMsgFromMsg(MakeUpdateCardMsg(req.con, req.loc, req.seq, buffer)));
+				SendToAll(GameMsgFromMsg(MakeUpdateCardMsg(req, buffer)));
 			}
 			else /*if(std::holds_alternative<QueryLocationRequest>(reqVar))*/
 			{
@@ -201,7 +201,7 @@ void Context::Process(State::Dueling& s)
 				};
 				auto buffer = core.QueryLocation(s.duelPtr, qInfo);
 				// TODO: filter queries
-				SendToAll(GameMsgFromMsg(MakeUpdateDataMsg(req.con, req.loc, buffer)));
+				SendToAll(GameMsgFromMsg(MakeUpdateDataMsg(req, buffer)));
 			}
 		}
 	};

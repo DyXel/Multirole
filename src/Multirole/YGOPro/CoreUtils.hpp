@@ -45,7 +45,7 @@ struct QueryLocationRequest
 
 using Buffer = std::vector<uint8_t>;
 using Msg = std::vector<uint8_t>;
-using Query = std::vector<uint8_t>;
+using QueryBuffer = std::vector<uint8_t>;
 using QueryRequest = std::variant<QuerySingleRequest, QueryLocationRequest>;
 
 // Takes the buffer you would get from OCG_DuelGetMessage and splits it
@@ -88,11 +88,11 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg);
 
 // Creates MSG_UPDATE_CARD, which is a message that wraps around a single card
 // query from a duel.
-Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const Query& q);
+Msg MakeUpdateCardMsg(const QuerySingleRequest& req, const QueryBuffer& qb);
 
 // Creates MSG_UPDATE_DATA, which is a message that wraps around queries
 // from a duel.
-Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const Query& q);
+Msg MakeUpdateDataMsg(const QueryLocationRequest& req, const QueryBuffer& qb);
 
 } // namespace YGOPro::CoreUtils
 

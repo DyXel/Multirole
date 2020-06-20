@@ -546,26 +546,26 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	return qreqs;
 }
 
-Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const Query& q)
+Msg MakeUpdateCardMsg(const QuerySingleRequest& req, const QueryBuffer& qb)
 {
-	Msg msg(1 + 1 + 1 + 1 + q.size());
+	Msg msg(1 + 1 + 1 + 1 + qb.size());
 	auto *ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_CARD);
-	Write<uint8_t>(ptr, con);
-	Write(ptr, static_cast<uint8_t>(loc));
-	Write(ptr, static_cast<uint8_t>(seq));
-	std::memcpy(ptr, q.data(), q.size());
+	Write<uint8_t>(ptr, req.con);
+	Write(ptr, static_cast<uint8_t>(req.loc));
+	Write(ptr, static_cast<uint8_t>(req.seq));
+	std::memcpy(ptr, qb.data(), qb.size());
 	return msg;
 }
 
-Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const Query& q)
+Msg MakeUpdateDataMsg(const QueryLocationRequest& req, const QueryBuffer& qb)
 {
-	Msg msg(1 + 1 + 1 + q.size());
+	Msg msg(1 + 1 + 1 + qb.size());
 	auto *ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_DATA);
-	Write<uint8_t>(ptr, con);
-	Write(ptr, static_cast<uint8_t>(loc));
-	std::memcpy(ptr, q.data(), q.size());
+	Write<uint8_t>(ptr, req.con);
+	Write(ptr, static_cast<uint8_t>(req.loc));
+	std::memcpy(ptr, qb.data(), qb.size());
 	return msg;
 }
 
