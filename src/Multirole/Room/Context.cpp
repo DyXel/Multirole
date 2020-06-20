@@ -118,7 +118,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	uint32_t err = 0;
 	for(const auto code : main)
 	{
-		auto& data = db.DataFromCode(code);
+		const auto& data = db.DataFromCode(code);
 		if(data.code == 0)
 		{
 			err = code;
@@ -133,7 +133,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	}
 	for(const auto code : side)
 	{
-		auto& data = db.DataFromCode(code);
+		const auto& data = db.DataFromCode(code);
 		if(data.code == 0)
 		{
 			err = code;

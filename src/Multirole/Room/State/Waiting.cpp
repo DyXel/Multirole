@@ -157,11 +157,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 	auto ValidateDuelistsSetup = [&]() -> bool
 	{
 		if((hostInfo.duelFlags & 0x80) == 0) // NOLINT: DUEL_RELAY
-		{
-			if(int32_t(duelists.size()) == hostInfo.t1Count + hostInfo.t2Count)
-				return true;
-			return false;
-		}
+			return int32_t(duelists.size()) == hostInfo.t1Count + hostInfo.t2Count;
 		if(!(teamCount[0] > 0 && teamCount[1] > 0))
 			return false;
 		// At this point it has been decided that this relay setup is

@@ -15,7 +15,7 @@ STOCMsgFactory::STOCMsgFactory(uint8_t t1max) : t1max(t1max)
 STOCMsg STOCMsgFactory::MakeTypeChange(const Room::Client& c, bool isHost) const
 {
 	const auto posKey = c.Position();
-	uint8_t pos;
+	uint8_t pos = 0;
 	if(posKey == Room::Client::POSITION_SPECTATOR)
 		pos = 7; // NOLINT: Sum of both teams max player + 1
 	else

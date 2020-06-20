@@ -106,7 +106,7 @@ void RoomHosting::Stop()
 	acceptor.close();
 	std::lock_guard<std::mutex> lock(mTmpClients);
 	std::error_code ignore;
-	for(auto& c : tmpClients)
+	for(const auto& c : tmpClients)
 	{
 		c->soc.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
 		c->soc.close(ignore);

@@ -181,7 +181,7 @@ PathVector GitRepo::GetTrackedFiles() const
 	PathVector pv;
 	auto index = Git::MakeUnique(git_repository_index, repo);
 	const std::size_t entryCount = git_index_entrycount(index.get());
-	const git_index_entry* entry;
+	const git_index_entry* entry = nullptr;
 	for(std::size_t i = 0; i < entryCount; i++)
 	{
 		entry = git_index_get_byindex(index.get(), i);

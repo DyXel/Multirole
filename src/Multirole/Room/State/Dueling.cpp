@@ -98,7 +98,7 @@ void Context::operator()(State::Dueling& s)
 	{
 		for(const auto& kv : duelists)
 		{
-			auto& deck = *kv.second->CurrentDeck();
+			const auto& deck = *kv.second->CurrentDeck();
 			nci.team = nci.con = kv.first.first;
 			nci.duelist = kv.first.second;
 			nci.loc = 0x01; // LOCATION_DECK
@@ -261,18 +261,18 @@ void Context::Process(State::Dueling& s)
 		ProcessQueryRequests(GetPreDistQueryRequests(msg));
 		DistributeMsg(msg);
 		ProcessQueryRequests(GetPostDistQueryRequests(msg));
-		// TODO: add to replay
 	};
 	try
 	{
-		Core::IWrapper::DuelStatus status;
-		do
+		for(;;)
 		{
-			status = core.Process(s.duelPtr);
+			Core::IWrapper::DuelStatus status = core.Process(s.duelPtr);
 			spdlog::info("status = {}", status);
 			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
 				ProcessSingleMsg(msg);
-		}while(status == Core::IWrapper::DUEL_STATUS_CONTINUE);
+			if(status != Core::IWrapper::DUEL_STATUS_CONTINUE)
+				break;
+		}
 	}
 	CORE_EXCEPTION_HANDLER()
 }

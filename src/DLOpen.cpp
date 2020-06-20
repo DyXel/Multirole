@@ -64,8 +64,7 @@ void* LoadFunction(void* handle, const char* name)
 
 void* LoadObject(const char* file)
 {
-	void* handle;
-	handle = dlopen(file, RTLD_NOW | RTLD_LOCAL);
+	void* handle = dlopen(file, RTLD_NOW | RTLD_LOCAL);
 	if (handle == nullptr)
 		fmt::print(FMT_STRING(ESTR_OBJECT), file, dlerror());
 	return handle;

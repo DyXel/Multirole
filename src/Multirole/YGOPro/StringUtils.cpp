@@ -9,8 +9,8 @@ namespace YGOPro
 
 std::u16string BufferToUTF16(const void* data, std::size_t maxByteCount)
 {
-	auto p = reinterpret_cast<const char16_t*>(data);
-	auto p2 = p;
+	const auto *p = reinterpret_cast<const char16_t*>(data);
+	const auto *p2 = p;
 	std::size_t bytesForwarded = 0U;
 	while(bytesForwarded <= maxByteCount && (*p != 0U))
 	{

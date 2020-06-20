@@ -19,7 +19,7 @@ struct LocInfo
 template<typename T>
 inline T Read(const uint8_t*& ptr)
 {
-	T value;
+	T value{};
 	std::memcpy(&value, ptr, sizeof(T));
 	ptr += sizeof(T);
 	return value;
@@ -93,13 +93,13 @@ std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 	for(std::size_t pos = 0; pos != bufSize; )
 	{
 		// Retrieve length of this message
-		length_t length;
-		std::memcpy(&length, bufData + pos, sizeOfLength);
+		length_t l = 0;
+		std::memcpy(&l, bufData + pos, sizeOfLength);
 		pos += sizeOfLength;
 		// Copy message data to a new message
-		auto& msg = msgs.emplace_back(length);
-		std::memcpy(msg.data(), bufData + pos, length);
-		pos += length;
+		auto& msg = msgs.emplace_back(l);
+		std::memcpy(msg.data(), bufData + pos, l);
+		pos += l;
 	}
 	return msgs;
 }
@@ -200,7 +200,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	}
 	case MSG_CONFIRM_CARDS:
 	{
-		auto ptr = msg.data() + 2;
+		const auto *ptr = msg.data() + 2;
 		// if count(uint32_t) is not 0 and location(uint8_t) is LOCATION_DECK
 		// then send to specific team duelist.
 		if(Read<uint32_t>(ptr) != 0)
@@ -281,7 +281,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 			}
 		}
 	};
-	auto ptr = msg.data();
+	auto *ptr = msg.data();
 	ptr++; // type ignored
 	switch(GetMessageType(msg))
 	{
@@ -372,7 +372,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 Msg MakeStartMsg(const MsgStartCreateInfo& info)
 {
 	Msg msg(18);
-	auto ptr = msg.data();
+	auto *ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_START);
 	Write<uint8_t>(ptr, 0);
 	Write<uint32_t>(ptr, info.lp);
@@ -411,7 +411,7 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 	}
 	case MSG_FLIPSUMMONING:
 	{
-		auto ptr = msg.data();
+		const auto *ptr = msg.data();
 		ptr++; // type ignored
 		ptr += 4; // Card code
 		const auto i = Read<LocInfo>(ptr);
@@ -424,7 +424,7 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 
 std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 {
-	auto ptr = msg.data();
+	const auto *ptr = msg.data();
 	ptr++; // type ignored
 	std::vector<QueryRequest> qreqs;
 	switch(GetMessageType(msg))
@@ -549,7 +549,7 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const Query& q)
 {
 	Msg msg(1 + 1 + 1 + 1 + q.size());
-	auto ptr = msg.data();
+	auto *ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_CARD);
 	Write<uint8_t>(ptr, con);
 	Write(ptr, static_cast<uint8_t>(loc));
@@ -561,7 +561,7 @@ Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const Query& q)
 Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const Query& q)
 {
 	Msg msg(1 + 1 + 1 + q.size());
-	auto ptr = msg.data();
+	auto *ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_DATA);
 	Write<uint8_t>(ptr, con);
 	Write(ptr, static_cast<uint8_t>(loc));

@@ -55,7 +55,7 @@ void Instance::TryClose()
 {
 	if(Started())
 		return;
-	for(auto& c : clients)
+	for(const auto& c : clients)
 		c->Disconnect();
 }
 

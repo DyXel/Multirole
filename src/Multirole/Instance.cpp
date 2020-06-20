@@ -71,12 +71,10 @@ Instance::Instance(const nlohmann::json& cfg) :
 		const auto& cpProps = cfg.at("coreProvider");
 		const auto& coreTypeStr = cpProps.at("coreType").get<std::string>();
 		const auto loadPerRoom = cpProps.at("loadPerRoom").get<bool>();
-		CoreProvider::CoreType type;
-		if(coreTypeStr == "shared")
-			type = CoreProvider::CoreType::SHARED;
-		else if(coreTypeStr == "hornet")
+		CoreProvider::CoreType type = CoreProvider::CoreType::SHARED;
+		if(coreTypeStr == "hornet")
 			type = CoreProvider::CoreType::HORNET;
-		else
+		else if(coreTypeStr != "shared")
 			throw std::runtime_error("Incorrect type of core.");
 		coreProvider.SetLoadProperties(type, loadPerRoom);
 		RegRepos(coreProvider, cfg.at("coreProvider").at("observedRepos"));
@@ -87,7 +85,7 @@ Instance::Instance(const nlohmann::json& cfg) :
 	signalSet.add(SIGTERM);
 	signalSet.async_wait([this](const std::error_code& /*unused*/, int sigNum)
 	{
-		const char* sigName;
+		const char* sigName = nullptr;
 		switch(sigNum)
 		{
 			case SIGINT: sigName = "SIGINT"; break;
