@@ -9,7 +9,7 @@
 * Add MSG_WAITING message send
 * Implement timers
 * Implement replays
-* Implement "Hornet" core-type (crash resilient implementation of `Core::IHighLevelWrapper`)
+* Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
 * Handle crashes of core
 * Add IPC interface for discord bot
 
@@ -24,13 +24,13 @@
   * https://stackoverflow.com/a/47698904
 * Conditionally be able to send messages stored on a smart pointer instead of doing possibly expensive copies of the message
   * Needed mainly for Replays
-* Remove setters for `Core::IHighLevelWrapper` and instead set them on ctors
+* Remove setters for `Core::IWrapper` and instead set them on ctors
 * Investigate possibility of using a lockless queue for `Room::Client` message sending
 * Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
 * Instead of using Client::POSITION_SPECTATOR make client position be `std::optional<PosType>`
   * Lack of value would represent a spectator
 
-# Porting to YGOpen project
+# Porting to YGOpen Project
 
 ## Needed changes to make a compatible server
 1. Use `protobuf` described objects instead of hand-made `STOC msgs`
