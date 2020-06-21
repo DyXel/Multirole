@@ -1,7 +1,5 @@
 #include "Deck.hpp"
 
-#include "Banlist.hpp"
-
 namespace YGOPro
 {
 

@@ -6,7 +6,7 @@
 
 #include <sqlite3.h>
 
-#include "YGOPro/Type.hpp"
+#include "YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole
 {

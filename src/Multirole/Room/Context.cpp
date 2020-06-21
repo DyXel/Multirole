@@ -5,9 +5,8 @@
 #include "../CardDatabase.hpp"
 #include "../STOCMsgFactory.hpp"
 #include "../YGOPro/Banlist.hpp"
+#include "../YGOPro/Constants.hpp"
 #include "../YGOPro/Deck.hpp"
-#include "../YGOPro/Scope.hpp"
-#include "../YGOPro/Type.hpp"
 
 namespace Ignis::Multirole::Room
 {

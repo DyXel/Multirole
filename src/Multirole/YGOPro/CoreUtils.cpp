@@ -2,7 +2,7 @@
 
 #include <stdexcept> // std::out_of_range
 
-#include "Msgs.inl"
+#include "Constants.hpp"
 
 namespace YGOPro::CoreUtils
 {
