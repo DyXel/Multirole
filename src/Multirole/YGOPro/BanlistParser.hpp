@@ -79,7 +79,7 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 				c -= p;
 			auto code = static_cast<uint32_t>(std::stoul(l.substr(0u, p)));
 			if(code == 0u)
-				MakeException("Card code cannot be 0");
+				throw MakeException("Card code cannot be 0");
 			auto count = static_cast<uint32_t>(std::stoul(l.substr(p, c)));
 			hash = Detail::Salt(hash, code, count);
 			switch(count)
