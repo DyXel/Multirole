@@ -140,7 +140,7 @@ IWrapper::DuelStatus DLWrapper::Process(Duel duel)
 IWrapper::Buffer DLWrapper::GetMessages(Duel duel)
 {
 	uint32_t length = 0;
-	auto *pointer = OCG_DuelGetMessage(duel, &length);
+	auto* pointer = OCG_DuelGetMessage(duel, &length);
 	Buffer buffer(static_cast<Buffer::size_type>(length));
 	std::memcpy(buffer.data(), pointer, static_cast<std::size_t>(length));
 	return buffer;
@@ -164,7 +164,7 @@ std::size_t DLWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
 IWrapper::Buffer DLWrapper::Query(Duel duel, const QueryInfo& info)
 {
 	uint32_t length = 0;
-	auto *pointer = OCG_DuelQuery(duel, &length, info);
+	auto* pointer = OCG_DuelQuery(duel, &length, info);
 	Buffer buffer(static_cast<Buffer::size_type>(length));
 	std::memcpy(buffer.data(), pointer, static_cast<std::size_t>(length));
 	return buffer;
@@ -173,7 +173,7 @@ IWrapper::Buffer DLWrapper::Query(Duel duel, const QueryInfo& info)
 IWrapper::Buffer DLWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 {
 	uint32_t length = 0;
-	auto *pointer = OCG_DuelQueryLocation(duel, &length, info);
+	auto* pointer = OCG_DuelQueryLocation(duel, &length, info);
 	Buffer buffer(static_cast<Buffer::size_type>(length));
 	std::memcpy(buffer.data(), pointer, static_cast<std::size_t>(length));
 	return buffer;
@@ -182,7 +182,7 @@ IWrapper::Buffer DLWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 IWrapper::Buffer DLWrapper::QueryField(Duel duel)
 {
 	uint32_t length = 0;
-	auto *pointer = OCG_DuelQueryField(duel, &length);
+	auto* pointer = OCG_DuelQueryField(duel, &length);
 	Buffer buffer(static_cast<Buffer::size_type>(length));
 	std::memcpy(buffer.data(), pointer, static_cast<std::size_t>(length));
 	return buffer;

@@ -256,7 +256,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	}
 	case MSG_CONFIRM_CARDS:
 	{
-		const auto *ptr = msg.data() + 2;
+		const auto* ptr = msg.data() + 2;
 		// if count(uint32_t) is not 0 and location(uint8_t) is LOCATION_DECK
 		// then send to specific team duelist.
 		if(Read<uint32_t>(ptr) != 0)
@@ -337,7 +337,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 			}
 		}
 	};
-	auto *ptr = msg.data();
+	auto* ptr = msg.data();
 	ptr++; // type ignored
 	switch(GetMessageType(msg))
 	{
@@ -428,7 +428,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 Msg MakeStartMsg(const MsgStartCreateInfo& info)
 {
 	Msg msg(18);
-	auto *ptr = msg.data();
+	auto* ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_START);
 	Write<uint8_t>(ptr, 0);
 	Write<uint32_t>(ptr, info.lp);
@@ -467,7 +467,7 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 	}
 	case MSG_FLIPSUMMONING:
 	{
-		const auto *ptr = msg.data();
+		const auto* ptr = msg.data();
 		ptr++; // type ignored
 		ptr += 4; // Card code
 		const auto i = Read<LocInfo>(ptr);
@@ -480,7 +480,7 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 
 std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 {
-	const auto *ptr = msg.data();
+	const auto* ptr = msg.data();
 	ptr++; // type ignored
 	std::vector<QueryRequest> qreqs;
 	switch(GetMessageType(msg))
@@ -605,7 +605,7 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 Msg MakeUpdateCardMsg(const QuerySingleRequest& req, const QueryBuffer& qb)
 {
 	Msg msg(1 + 1 + 1 + 1 + qb.size());
-	auto *ptr = msg.data();
+	auto* ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_CARD);
 	Write<uint8_t>(ptr, req.con);
 	Write(ptr, static_cast<uint8_t>(req.loc));
@@ -617,7 +617,7 @@ Msg MakeUpdateCardMsg(const QuerySingleRequest& req, const QueryBuffer& qb)
 Msg MakeUpdateDataMsg(const QueryLocationRequest& req, const QueryBuffer& qb)
 {
 	Msg msg(1 + 1 + 1 + qb.size());
-	auto *ptr = msg.data();
+	auto* ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_DATA);
 	Write<uint8_t>(ptr, req.con);
 	Write(ptr, static_cast<uint8_t>(req.loc));
