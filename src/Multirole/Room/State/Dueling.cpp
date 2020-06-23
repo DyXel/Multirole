@@ -214,12 +214,22 @@ void Context::Process(State::Dueling& s)
 					0u,
 					0u
 				};
+				uint8_t team = GetSwappedTeam(s, req.con);
 				const auto fullBuffer = core.QueryLocation(s.duelPtr, qInfo);
+				if(req.loc == LOCATION_DECK)
+				{
+					// TODO: Save into replay
+					continue;
+				}
+				else if(req.loc == LOCATION_EXTRA)
+				{
+					SendToTeam(team, MakeMsg(fullBuffer));
+					continue;
+				}
 				const auto query = DeserializeLocationQueryBuffer(fullBuffer);
 				const auto ownerBuffer = SerializeLocationQuery(query, false);
 				const auto strippedBuffer = SerializeLocationQuery(query, true);
 				const auto strippedMsg = MakeMsg(strippedBuffer);
-				uint8_t team = GetSwappedTeam(s, req.con);
 				SendToTeam(team, MakeMsg(ownerBuffer));
 				SendToTeam(1 - team, strippedMsg);
 				SendToSpectators(strippedMsg);
