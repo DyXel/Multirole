@@ -17,7 +17,7 @@ struct LocInfo
 };
 
 template<typename T>
-inline T Read(const uint8_t*& ptr)
+constexpr T Read(const uint8_t*& ptr)
 {
 	T value{};
 	std::memcpy(&value, ptr, sizeof(T));
@@ -25,17 +25,8 @@ inline T Read(const uint8_t*& ptr)
 	return value;
 }
 
-template<typename T>
-inline T Read(uint8_t*& ptr)
-{
-	T value;
-	std::memcpy(&value, ptr, sizeof(T));
-	ptr += sizeof(T);
-	return value;
-}
-
 template<>
-inline LocInfo Read(uint8_t*& ptr)
+constexpr LocInfo Read(const uint8_t*& ptr)
 {
 	return LocInfo
 	{
@@ -47,7 +38,13 @@ inline LocInfo Read(uint8_t*& ptr)
 }
 
 template<typename T>
-inline void Write(uint8_t*& ptr, T value)
+constexpr T Read(uint8_t*& ptr)
+{
+	return Read<T>(const_cast<const uint8_t*&>(ptr));
+}
+
+template<typename T>
+constexpr void Write(uint8_t*& ptr, T value)
 {
 	std::memcpy(ptr, &value, sizeof(T));
 	ptr += sizeof(T);
