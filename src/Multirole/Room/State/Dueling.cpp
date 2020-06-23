@@ -176,6 +176,10 @@ void Context::Process(State::Dueling& s)
 			if(std::holds_alternative<QuerySingleRequest>(reqVar))
 			{
 				const auto& req = std::get<QuerySingleRequest>(reqVar);
+				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
+				{
+					return GameMsgFromMsg(MakeUpdateCardMsg(req, qb));
+				};
 				const Core::IWrapper::QueryInfo qInfo =
 				{
 					req.flags,
@@ -184,13 +188,23 @@ void Context::Process(State::Dueling& s)
 					req.seq,
 					0u
 				};
-				auto buffer = core.Query(s.duelPtr, qInfo);
-				// TODO: filter query
-				SendToAll(GameMsgFromMsg(MakeUpdateCardMsg(req, buffer)));
+				const auto fullBuffer = core.Query(s.duelPtr, qInfo);
+				const auto query = DeserializeSingleQueryBuffer(fullBuffer);
+				const auto ownerBuffer = SerializeSingleQuery(query, false);
+				const auto strippedBuffer = SerializeSingleQuery(query, true);
+				const auto strippedMsg = MakeMsg(strippedBuffer);
+				uint8_t team = GetSwappedTeam(s, req.con);
+				SendToTeam(team, MakeMsg(ownerBuffer));
+				SendToTeam(1 - team, strippedMsg);
+				SendToSpectators(strippedMsg);
 			}
 			else /*if(std::holds_alternative<QueryLocationRequest>(reqVar))*/
 			{
 				const auto& req = std::get<QueryLocationRequest>(reqVar);
+				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
+				{
+					return GameMsgFromMsg(MakeUpdateDataMsg(req, qb));
+				};
 				const Core::IWrapper::QueryInfo qInfo =
 				{
 					req.flags,
@@ -199,9 +213,15 @@ void Context::Process(State::Dueling& s)
 					0u,
 					0u
 				};
-				auto buffer = core.QueryLocation(s.duelPtr, qInfo);
-				// TODO: filter queries
-				SendToAll(GameMsgFromMsg(MakeUpdateDataMsg(req, buffer)));
+				const auto fullBuffer = core.QueryLocation(s.duelPtr, qInfo);
+				const auto query = DeserializeLocationQueryBuffer(fullBuffer);
+				const auto ownerBuffer = SerializeLocationQuery(query, false);
+				const auto strippedBuffer = SerializeLocationQuery(query, true);
+				const auto strippedMsg = MakeMsg(strippedBuffer);
+				uint8_t team = GetSwappedTeam(s, req.con);
+				SendToTeam(team, MakeMsg(ownerBuffer));
+				SendToTeam(1 - team, strippedMsg);
+				SendToSpectators(strippedMsg);
 			}
 		}
 	};

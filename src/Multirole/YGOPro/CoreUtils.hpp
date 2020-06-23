@@ -1,6 +1,7 @@
 #ifndef YGOPRO_COREUTILS_HPP
 #define YGOPRO_COREUTILS_HPP
 #include <cstdint>
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -8,6 +9,15 @@
 
 namespace YGOPro::CoreUtils
 {
+
+struct LocInfo
+{
+	static constexpr std::size_t SIZE = 1 + 1 + 4 + 4;
+	uint8_t con;  // Controller
+	uint8_t loc;  // Location
+	uint32_t seq; // Sequence
+	uint32_t pos; // Position
+};
 
 enum class MsgDistType
 {
@@ -43,10 +53,44 @@ struct QueryLocationRequest
 	uint32_t flags;
 };
 
+struct Query
+{
+	uint32_t flags;
+	uint32_t code;
+	uint32_t pos;
+	uint32_t alias;
+	uint32_t type;
+	uint32_t level;
+	uint32_t rank;
+	uint32_t link;
+	uint32_t attribute;
+	uint32_t race;
+	int32_t attack;
+	int32_t defense;
+	int32_t bAttack;
+	int32_t bDefense;
+	uint32_t reason;
+	uint8_t owner;
+	uint32_t status;
+	uint8_t isPublic;
+	uint32_t lscale;
+	uint32_t rscale;
+	uint32_t linkMarker;
+	LocInfo reasonCard;
+	LocInfo equipCard;
+	uint8_t isHidden;
+	uint32_t cover;
+	std::vector<LocInfo> targets;
+	std::vector<uint32_t> overlays;
+	std::vector<uint32_t> counters;
+};
+
 using Buffer = std::vector<uint8_t>;
 using Msg = std::vector<uint8_t>;
 using QueryBuffer = std::vector<uint8_t>;
 using QueryRequest = std::variant<QuerySingleRequest, QueryLocationRequest>;
+using QueryOpt = std::optional<Query>;
+using QueryOptVector = std::vector<QueryOpt>;
 
 // Takes the buffer you would get from OCG_DuelGetMessage and splits it
 // into individual core messages (which are still just buffers).
@@ -93,6 +137,21 @@ Msg MakeUpdateCardMsg(const QuerySingleRequest& req, const QueryBuffer& qb);
 // Creates MSG_UPDATE_DATA, which is a message that wraps around queries
 // from a duel.
 Msg MakeUpdateDataMsg(const QueryLocationRequest& req, const QueryBuffer& qb);
+
+// Creates a query object which is populated with the information from the
+// passed QueryBuffer.
+QueryOpt DeserializeSingleQueryBuffer(const QueryBuffer& qb);
+
+// Creates a vector with multiple query objects which are populated with
+// the information from the passed QueryBuffer.
+QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb);
+
+// Creates a QueryBuffer which might have information stripped if it had the
+// hidden flag set, aditionally, that flag can be overriden with isPublic.
+QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic);
+
+// Same as the above function, but for all the queries in the vector.
+QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic);
 
 } // namespace YGOPro::CoreUtils
 

@@ -1,12 +1,13 @@
 # TODO
 
-* Parse queries from core and knowledge strip them
 * Send Extra deck card code information to clients
+* Add MSG_WAITING message send
 * Analyze and implement behavior of messages that influence the server room
+  * `MSG_RETRY`
   * `MSG_TAG_SWAP`
   * `MSG_MATCH_KILL`
 * Implement surrendering and add handling for client disconnecting on all states
-* Add MSG_WAITING message send
+* Implement spectators connecting mid-duel
 * Implement timers
 * Implement replays
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)

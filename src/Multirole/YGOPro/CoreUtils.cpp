@@ -7,15 +7,6 @@
 namespace YGOPro::CoreUtils
 {
 
-struct LocInfo
-{
-	static constexpr std::size_t SIZE = 1 + 1 + 4 + 4;
-	uint8_t con;  // Controller
-	uint8_t loc;  // Location
-	uint32_t seq; // Sequence
-	uint32_t pos; // Position
-};
-
 template<typename T>
 constexpr T Read(const uint8_t*& ptr)
 {
@@ -74,6 +65,74 @@ inline void AddRefreshAllSZones(std::vector<QueryRequest>& qreqs)
 {
 	qreqs.emplace_back(QueryLocationRequest{0, 0x08, 0x3e81fff});
 	qreqs.emplace_back(QueryLocationRequest{1, 0x08, 0x3e81fff});
+}
+
+inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr)
+{
+
+	if(Read<uint16_t>(ptr) == 0)
+		return std::nullopt;
+	ptr -= sizeof(uint16_t);
+	for(QueryOpt q = Query{};;)
+	{
+		auto size = Read<uint16_t>(ptr);
+		auto flag = Read<uint32_t>(ptr);
+		q->flags |= flag;
+		switch(flag)
+		{
+#define X(qtype, var) case qtype: { var = Read<decltype(var)>(ptr); break; }
+			X(QUERY_CODE, q->code)
+			X(QUERY_POSITION, q->pos)
+			X(QUERY_ALIAS, q->alias)
+			X(QUERY_TYPE, q->type)
+			X(QUERY_LEVEL, q->level)
+			X(QUERY_RANK, q->rank)
+			X(QUERY_ATTRIBUTE, q->attribute)
+			X(QUERY_RACE, q->race)
+			X(QUERY_ATTACK, q->attack)
+			X(QUERY_DEFENSE, q->defense)
+			X(QUERY_BASE_ATTACK, q->bAttack)
+			X(QUERY_BASE_DEFENSE, q->bDefense)
+			X(QUERY_REASON, q->reason)
+			X(QUERY_OWNER, q->owner)
+			X(QUERY_STATUS, q->status)
+			X(QUERY_IS_PUBLIC, q->isPublic)
+			X(QUERY_LSCALE, q->lscale)
+			X(QUERY_RSCALE, q->rscale)
+			X(QUERY_REASON_CARD, q->reasonCard)
+			X(QUERY_EQUIP_CARD, q->equipCard)
+			X(QUERY_IS_HIDDEN, q->isHidden)
+			X(QUERY_COVER, q->cover)
+#undef X
+#define X(qtype, var) \
+	case qtype: \
+	{ \
+		auto c = Read<uint32_t>(ptr); \
+		for(uint32_t i = 0; i < c; i++) \
+			var.push_back(Read<decltype(var)::value_type>(ptr)); \
+		break; \
+	}
+			X(QUERY_TARGET_CARD, q->targets)
+			X(QUERY_OVERLAY_CARD, q->overlays)
+			X(QUERY_COUNTERS, q->counters)
+#undef X
+			case QUERY_LINK:
+			{
+				q->link = Read<uint32_t>(ptr);
+				q->linkMarker = Read<uint32_t>(ptr);
+				break;
+			}
+			case QUERY_END:
+			{
+				return q;
+			}
+			default:
+			{
+				ptr += size - sizeof(uint32_t);
+				break;
+			}
+		}
+	}
 }
 
 /*** Header implementations ***/
@@ -564,6 +623,216 @@ Msg MakeUpdateDataMsg(const QueryLocationRequest& req, const QueryBuffer& qb)
 	Write(ptr, static_cast<uint8_t>(req.loc));
 	std::memcpy(ptr, qb.data(), qb.size());
 	return msg;
+}
+
+QueryOpt DeserializeSingleQueryBuffer(const QueryBuffer& qb)
+{
+	const auto* ptr = qb.data();
+	return DeserializeOneQuery(ptr);
+}
+
+QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb)
+{
+	const auto* ptr = qb.data();
+	const auto* const ptrMax = ptr + Read<uint32_t>(ptr);
+	QueryOptVector ret;
+	while(ptr < ptrMax)
+		ret.emplace_back(DeserializeOneQuery(ptr));
+	return ret;
+}
+
+QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
+{
+	QueryBuffer qb;
+	auto Insert = [&qb](auto&& v)
+	{
+		const std::size_t sz = qb.size();
+		if constexpr(!std::is_same_v<decltype(v), LocInfo>)
+		{
+			qb.resize(sz + sizeof(decltype(v)));
+			std::memcpy(&qb[sz], &v, sizeof(decltype(v)));
+		}
+		else // Specialization for LocInfo
+		{
+			qb.resize(sz + LocInfo::SIZE);
+			auto* ptr = &qb[sz];
+			Write<uint8_t>(ptr, v.con);
+			Write<uint8_t>(ptr, v.loc);
+			Write<uint32_t>(ptr, v.seq);
+			Write<uint32_t>(ptr, v.pos);
+		}
+	};
+	if(!q) // Nothing to serialize
+	{
+		Insert(uint16_t(0));
+		return qb;
+	}
+	// Check if a certain query is public or if the whole query object
+	// itself is public.
+	auto IsPublic = [&q](uint64_t flag) constexpr -> bool
+	{
+		if((q->flags & QUERY_IS_PUBLIC) && q->isPublic)
+			return true;
+		else if((q->flags & QUERY_POSITION) && (q->pos & POS_FACEUP))
+			return true;
+		switch(flag)
+		{
+			case QUERY_CODE:
+			case QUERY_ALIAS:
+			case QUERY_TYPE:
+			case QUERY_LEVEL:
+			case QUERY_RANK:
+			case QUERY_ATTRIBUTE:
+			case QUERY_RACE:
+			case QUERY_ATTACK:
+			case QUERY_DEFENSE:
+			case QUERY_BASE_ATTACK:
+			case QUERY_BASE_DEFENSE:
+			case QUERY_STATUS:
+			case QUERY_LSCALE:
+			case QUERY_RSCALE:
+			case QUERY_LINK:
+			{
+				return false;
+			}
+			default:
+			{
+				return true;
+			}
+		}
+	};
+	auto ComputeQuerySize = [&q](uint64_t flag) constexpr -> std::size_t
+	{
+		switch(flag)
+		{
+			case QUERY_OWNER:
+			case QUERY_IS_PUBLIC:
+			case QUERY_IS_HIDDEN:
+			{
+				return sizeof(uint8_t);
+			}
+			case QUERY_CODE:
+			case QUERY_POSITION:
+			case QUERY_ALIAS:
+			case QUERY_TYPE:
+			case QUERY_LEVEL:
+			case QUERY_RANK:
+			case QUERY_ATTRIBUTE:
+			case QUERY_RACE:
+			case QUERY_ATTACK:
+			case QUERY_DEFENSE:
+			case QUERY_BASE_ATTACK:
+			case QUERY_BASE_DEFENSE:
+			case QUERY_REASON:
+			case QUERY_STATUS:
+			case QUERY_LSCALE:
+			case QUERY_RSCALE:
+			case QUERY_COVER:
+			{
+				return sizeof(uint32_t);
+			}
+			case QUERY_REASON_CARD:
+			case QUERY_EQUIP_CARD:
+			{
+				return LocInfo::SIZE;
+			}
+#define X(qtype, var) \
+	case qtype: \
+	{ \
+		return sizeof(uint32_t) + \
+		       (var.size() * sizeof(decltype(var)::value_type)); \
+		break; \
+	}
+			X(QUERY_TARGET_CARD, q->targets)
+			X(QUERY_OVERLAY_CARD, q->overlays)
+			X(QUERY_COUNTERS, q->counters)
+#undef X
+			case QUERY_LINK:
+			{
+				return sizeof(uint32_t) + sizeof(uint32_t);
+			}
+			case QUERY_END:
+			default:
+			{
+				return 0;
+			}
+		}
+	};
+	for(uint64_t flag = 1; flag <= QUERY_END; flag <<= 1)
+	{
+		if((q->flags & flag) != flag)
+			continue;
+		else if(flag == QUERY_REASON_CARD && q->reasonCard.loc == 0)
+			continue;
+		else if(flag == QUERY_EQUIP_CARD && q->equipCard.loc == 0)
+			continue;
+		else if((q->flags & QUERY_IS_HIDDEN) && q->isHidden && !IsPublic(flag))
+			continue;
+		else if(isPublic && !IsPublic(flag))
+			continue;
+		Insert(uint16_t(ComputeQuerySize(flag) + sizeof(uint32_t)));
+		Insert(uint32_t(flag));
+		switch(flag)
+		{
+#define X(qtype, var) case qtype: { Insert(var); break; }
+			X(QUERY_CODE, q->code)
+			X(QUERY_POSITION, q->pos)
+			X(QUERY_ALIAS, q->alias)
+			X(QUERY_TYPE, q->type)
+			X(QUERY_LEVEL, q->level)
+			X(QUERY_RANK, q->rank)
+			X(QUERY_ATTRIBUTE, q->attribute)
+			X(QUERY_RACE, q->race)
+			X(QUERY_ATTACK, q->attack)
+			X(QUERY_DEFENSE, q->defense)
+			X(QUERY_BASE_ATTACK, q->bAttack)
+			X(QUERY_BASE_DEFENSE, q->bDefense)
+			X(QUERY_REASON, q->reason)
+			X(QUERY_OWNER, q->owner)
+			X(QUERY_STATUS, q->status)
+			X(QUERY_IS_PUBLIC, q->isPublic)
+			X(QUERY_LSCALE, q->lscale)
+			X(QUERY_RSCALE, q->rscale)
+			X(QUERY_REASON_CARD, q->reasonCard)
+			X(QUERY_EQUIP_CARD, q->equipCard)
+			X(QUERY_IS_HIDDEN, q->isHidden)
+			X(QUERY_COVER, q->cover)
+#undef X
+#define X(qtype, var) \
+	case qtype: \
+	{ \
+		Insert(uint32_t(var.size())); \
+		for(const auto& elem : var) \
+			Insert(elem); \
+		break; \
+	}
+			X(QUERY_TARGET_CARD, q->targets)
+			X(QUERY_OVERLAY_CARD, q->overlays)
+			X(QUERY_COUNTERS, q->counters)
+#undef X
+			case QUERY_LINK:
+			{
+				Insert(q->link);
+				Insert(q->linkMarker);
+				break;
+			}
+		}
+	}
+	return qb;
+}
+
+QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic)
+{
+	uint32_t totalSize = 0;
+	QueryBuffer qb(sizeof(decltype(totalSize)));
+	for(const auto& q : qs)
+	{
+		const auto singleQb = SerializeSingleQuery(q, isPublic);
+		totalSize += static_cast<uint32_t>(singleQb.size());
+		qb.insert(qb.end(), singleQb.begin(), singleQb.end());
+	}
+	std::memcpy(qb.data(), &totalSize, sizeof(decltype(totalSize)));
+	return qb;
 }
 
 } // namespace YGOPro::CoreUtils
