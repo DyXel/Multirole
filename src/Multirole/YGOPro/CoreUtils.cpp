@@ -45,26 +45,26 @@ constexpr void Write(uint8_t*& ptr, T value)
 
 inline void AddRefreshAllDecks(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, 0x01, 0x1181fff});
-	qreqs.emplace_back(QueryLocationRequest{1, 0x01, 0x1181fff});
+	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_DECK, 0x1181fff});
+	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_DECK, 0x1181fff});
 }
 
 inline void AddRefreshAllHands(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, 0x02, 0x3781fff});
-	qreqs.emplace_back(QueryLocationRequest{1, 0x02, 0x3781fff});
+	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_HAND, 0x3781fff});
+	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_HAND, 0x3781fff});
 }
 
 inline void AddRefreshAllMZones(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, 0x04, 0x3881fff});
-	qreqs.emplace_back(QueryLocationRequest{1, 0x04, 0x3881fff});
+	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_MZONE, 0x3881fff});
+	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_MZONE, 0x3881fff});
 }
 
 inline void AddRefreshAllSZones(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, 0x08, 0x3e81fff});
-	qreqs.emplace_back(QueryLocationRequest{1, 0x08, 0x3e81fff});
+	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_SZONE, 0x3e81fff});
+	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_SZONE, 0x3e81fff});
 }
 
 inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr)
@@ -262,7 +262,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 		if(Read<uint32_t>(ptr) != 0)
 		{
 			ptr += 4 + 1;
-			if(Read<uint8_t>(ptr) == 0x01) // NOLINT: LOCATION_DECK
+			if(Read<uint8_t>(ptr) == LOCATION_DECK)
 				return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
 		}
 		return MsgDistType::MSG_DIST_TYPE_EVERYONE;
@@ -303,9 +303,10 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	auto IsLocInfoPublic = [](const LocInfo& info)
 	{
 		// NOLINTNEXTLINE: different LOCATION_ constants
-		if(info.loc & (0x10 | 0x80) && !(info.loc & (0x01 | 0x02)))
+		if(info.loc & (LOCATION_GRAVE | LOCATION_OVERLAY) &
+		   !(info.loc & (LOCATION_DECK | LOCATION_HAND)))
 			return true;
-		else if(!(info.pos & 0x0A)) // NOLINT: POS_FACEDOWN
+		else if(!(info.pos & POS_FACEDOWN))
 			return true;
 		return false;
 	};
@@ -315,7 +316,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 		{
 			ptr += 4; // Card code
 			auto pos = Read<uint32_t>(ptr);
-			if(!(pos & 0x05)) // NOLINT: POS_FACEUP
+			if(!(pos & POS_FACEUP))
 			{
 				ptr -= 4 + 4;
 				Write<uint32_t>(ptr, 0);
@@ -489,19 +490,19 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	case MSG_DRAW:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.emplace_back(QueryLocationRequest{player, 0x02, 0x3781fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_HAND, 0x3781fff});
 		break;
 	}
 	case MSG_SHUFFLE_EXTRA:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.emplace_back(QueryLocationRequest{player, 0x40, 0x381fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381fff});
 		break;
 	}
 	case MSG_SWAP_GRAVE_DECK:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.emplace_back(QueryLocationRequest{player, 0x10, 0x381fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_GRAVE, 0x381fff});
 		break;
 	}
 	case MSG_REVERSE_DECK:
@@ -552,7 +553,7 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 		const auto previous = Read<LocInfo>(ptr);
 		const auto current = Read<LocInfo>(ptr);
 		if((previous.con != current.con || previous.loc != current.loc) &&
-		   current.loc != 0 && (current.loc & 0x80) == 0)
+		   current.loc != 0 && (current.loc & LOCATION_OVERLAY) == 0)
 		{
 			qreqs.emplace_back(QuerySingleRequest{
 				current.con,
@@ -570,8 +571,7 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 		auto cs = Read<uint8_t>(ptr); // Current sequence
 		auto pp = Read<uint8_t>(ptr); // Previous position
 		auto cp = Read<uint8_t>(ptr); // Current position
-		// NOLINTNEXTLINE: POS_FACEDOWN and POS_FACEUP respectively
-		if((pp & 0x0A) && (cp & 0x05))
+		if((pp & POS_FACEDOWN) && (cp & POS_FACEUP))
 			qreqs.emplace_back(QuerySingleRequest{cc, cl, cs, 0x3f81fff});
 		break;
 	}
@@ -589,13 +589,13 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	{
 		auto player = Read<uint8_t>(ptr);
 		qreqs.reserve(8);
-		qreqs.emplace_back(QueryLocationRequest{player, 0x01, 0x1181fff});
-		qreqs.emplace_back(QueryLocationRequest{player, 0x40, 0x381fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_DECK, 0x1181fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381fff});
 		AddRefreshAllHands(qreqs);
-		qreqs.emplace_back(QueryLocationRequest{0, 0x04, 0x3081fff});
-		qreqs.emplace_back(QueryLocationRequest{1, 0x04, 0x3081fff});
-		qreqs.emplace_back(QueryLocationRequest{0, 0x08, 0x30681fff});
-		qreqs.emplace_back(QueryLocationRequest{1, 0x08, 0x30681fff});
+		qreqs.emplace_back(QueryLocationRequest{0, LOCATION_MZONE, 0x3081fff});
+		qreqs.emplace_back(QueryLocationRequest{1, LOCATION_MZONE, 0x3081fff});
+		qreqs.emplace_back(QueryLocationRequest{0, LOCATION_SZONE, 0x30681fff});
+		qreqs.emplace_back(QueryLocationRequest{1, LOCATION_SZONE, 0x30681fff});
 		break;
 	}
 	}

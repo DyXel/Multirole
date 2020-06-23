@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "../../Core/IScriptSupplier.hpp"
+#include "../../YGOPro/Constants.hpp"
 #include "../../YGOPro/CoreUtils.hpp"
 
 #define CORE_EXCEPTION_HANDLER() catch(...) { throw; } // TODO
@@ -77,7 +78,7 @@ void Context::operator()(State::Dueling& s)
 	OCG_NewCardInfo nci{};
 	try
 	{
-		nci.pos = 0x8; // POS_FACEDOWN_DEFENSE
+		nci.pos = POS_FACEDOWN_DEFENSE;
 		for(auto code : extraCards)
 		{
 			nci.code = code;
@@ -101,13 +102,13 @@ void Context::operator()(State::Dueling& s)
 			const auto& deck = *kv.second->CurrentDeck();
 			nci.team = nci.con = kv.first.first;
 			nci.duelist = kv.first.second;
-			nci.loc = 0x01; // LOCATION_DECK
+			nci.loc = LOCATION_DECK;
 			for(auto code : ReversedOrShuffled(deck.Main()))
 			{
 				nci.code = code;
 				core.AddCard(s.duelPtr, nci);
 			}
-			nci.loc = 0x40; // LOCATION_EXTRA
+			nci.loc = LOCATION_EXTRA;
 			for(auto code : deck.Extra())
 			{
 				nci.code = code;
@@ -119,10 +120,10 @@ void Context::operator()(State::Dueling& s)
 		auto msgStart = CoreUtils::MakeStartMsg(
 			{
 				hostInfo.startingLP,
-				core.QueryCount(s.duelPtr, 0, 0x01), // LOCATION_DECK
-				core.QueryCount(s.duelPtr, 0, 0x40), // LOCATION_EXTRA
-				core.QueryCount(s.duelPtr, 1, 0x01), // LOCATION_DECK
-				core.QueryCount(s.duelPtr, 1, 0x40), // LOCATION_EXTRA
+				core.QueryCount(s.duelPtr, 0, LOCATION_DECK),
+				core.QueryCount(s.duelPtr, 0, LOCATION_EXTRA),
+				core.QueryCount(s.duelPtr, 1, LOCATION_DECK),
+				core.QueryCount(s.duelPtr, 1, LOCATION_EXTRA),
 			});
 		SendToTeam(GetSwappedTeam(s, 0), CoreUtils::GameMsgFromMsg(msgStart));
 		msgStart[1] = 1;
