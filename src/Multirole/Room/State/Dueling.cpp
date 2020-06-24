@@ -130,6 +130,40 @@ void Context::operator()(State::Dueling& s)
 		SendToTeam(GetSwappedTeam(s, 1), CoreUtils::GameMsgFromMsg(msgStart));
 		msgStart[1] = 0xF0; // NOLINT: Magic number for spectators.
 		SendToSpectators(CoreUtils::GameMsgFromMsg(msgStart));
+		// Update replay with deck data.
+		auto RecordDecks = [&](uint8_t team)
+		{
+			const Core::IWrapper::QueryInfo qInfo =
+			{
+				0x1181fff,
+				team,
+				LOCATION_DECK,
+				0u,
+				0u
+			};
+			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
+			// TODO: Save into replay.
+		};
+		RecordDecks(0);
+		RecordDecks(1);
+		// Send extra deck queries.
+		auto SendExtraDecks = [&](uint8_t team)
+		{
+			const Core::IWrapper::QueryInfo qInfo =
+			{
+				0x381fff,
+				team,
+				LOCATION_EXTRA,
+				0u,
+				0u
+			};
+			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
+			using namespace YGOPro::CoreUtils;
+			SendToTeam(GetSwappedTeam(s, qInfo.con),
+				GameMsgFromMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer)));
+		};
+		SendExtraDecks(0);
+		SendExtraDecks(1);
 	}
 	CORE_EXCEPTION_HANDLER()
 	// Start processing the duel
@@ -179,7 +213,8 @@ void Context::Process(State::Dueling& s)
 				const auto& req = std::get<QuerySingleRequest>(reqVar);
 				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
 				{
-					return GameMsgFromMsg(MakeUpdateCardMsg(req, qb));
+					return GameMsgFromMsg(
+						MakeUpdateCardMsg(req.con, req.loc, req.seq, qb));
 				};
 				const Core::IWrapper::QueryInfo qInfo =
 				{
@@ -204,7 +239,8 @@ void Context::Process(State::Dueling& s)
 				const auto& req = std::get<QueryLocationRequest>(reqVar);
 				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
 				{
-					return GameMsgFromMsg(MakeUpdateDataMsg(req, qb));
+					return GameMsgFromMsg(
+						MakeUpdateDataMsg(req.con, req.loc, qb));
 				};
 				const Core::IWrapper::QueryInfo qInfo =
 				{

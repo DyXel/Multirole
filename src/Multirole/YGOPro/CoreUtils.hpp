@@ -132,11 +132,11 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg);
 
 // Creates MSG_UPDATE_CARD, which is a message that wraps around a single card
 // query from a duel.
-Msg MakeUpdateCardMsg(const QuerySingleRequest& req, const QueryBuffer& qb);
+Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer& qb);
 
 // Creates MSG_UPDATE_DATA, which is a message that wraps around queries
 // from a duel.
-Msg MakeUpdateDataMsg(const QueryLocationRequest& req, const QueryBuffer& qb);
+Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const QueryBuffer& qb);
 
 // Creates a query object which is populated with the information from the
 // passed QueryBuffer.

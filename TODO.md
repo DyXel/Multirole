@@ -1,6 +1,5 @@
 # TODO
 
-* Send Extra deck card code information to clients
 * Add MSG_WAITING message send
 * Analyze and implement behavior of messages that influence the server room
   * `MSG_RETRY`
