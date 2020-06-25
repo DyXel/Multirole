@@ -118,6 +118,11 @@ STOCMsg STOCMsgFactory::MakeRPSResult(uint8_t t0, uint8_t t1)
 	return {STOCMsg::RPSResult{t0, t1}};
 }
 
+STOCMsg STOCMsgFactory::MakeGameMsg(const std::vector<uint8_t>& msg)
+{
+	return STOCMsg{STOCMsg::MsgType::GAME_MSG, msg};
+}
+
 STOCMsg STOCMsgFactory::MakeJoinError(Error::Join type)
 {
 	return {STOCMsg::ErrorMsg{1U, static_cast<uint32_t>(type)}};

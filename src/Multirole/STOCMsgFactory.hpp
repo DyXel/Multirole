@@ -77,6 +77,8 @@ public:
 	static YGOPro::STOCMsg MakeAskIfGoingFirst();
 	// Creates a message that has both teams RPS face-off result
 	static YGOPro::STOCMsg MakeRPSResult(uint8_t t0, uint8_t t1);
+	// Creates a message that wraps around a core message
+	static YGOPro::STOCMsg MakeGameMsg(const std::vector<uint8_t>& msg);
 
 	// Error messages
 	static YGOPro::STOCMsg MakeJoinError(Error::Join type);

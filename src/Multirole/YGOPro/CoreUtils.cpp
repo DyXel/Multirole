@@ -1,5 +1,6 @@
 #include "CoreUtils.hpp"
 
+#include <cstring> // std::memcpy
 #include <stdexcept> // std::out_of_range
 
 #include "Constants.hpp"
@@ -439,11 +440,6 @@ Msg MakeStartMsg(const MsgStartCreateInfo& info)
 	Write(ptr, static_cast<uint16_t>(info.t1DSz));
 	Write(ptr, static_cast<uint16_t>(info.t1EdSz));
 	return msg;
-}
-
-STOCMsg GameMsgFromMsg(const Msg& msg)
-{
-	return STOCMsg{STOCMsg::MsgType::GAME_MSG, msg};
 }
 
 std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)

@@ -125,11 +125,11 @@ void Context::operator()(State::Dueling& s)
 				core.QueryCount(s.duelPtr, 1, LOCATION_DECK),
 				core.QueryCount(s.duelPtr, 1, LOCATION_EXTRA),
 			});
-		SendToTeam(GetSwappedTeam(s, 0), CoreUtils::GameMsgFromMsg(msgStart));
+		SendToTeam(GetSwappedTeam(s, 0), MakeGameMsg(msgStart));
 		msgStart[1] = 1;
-		SendToTeam(GetSwappedTeam(s, 1), CoreUtils::GameMsgFromMsg(msgStart));
+		SendToTeam(GetSwappedTeam(s, 1), MakeGameMsg(msgStart));
 		msgStart[1] = 0xF0; // NOLINT: Magic number for spectators.
-		SendToSpectators(CoreUtils::GameMsgFromMsg(msgStart));
+		SendToSpectators(MakeGameMsg(msgStart));
 		// Update replay with deck data.
 		auto RecordDecks = [&](uint8_t team)
 		{
@@ -160,7 +160,7 @@ void Context::operator()(State::Dueling& s)
 			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
 			using namespace YGOPro::CoreUtils;
 			SendToTeam(GetSwappedTeam(s, qInfo.con),
-				GameMsgFromMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer)));
+				MakeGameMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer)));
 		};
 		SendExtraDecks(0);
 		SendExtraDecks(1);
@@ -213,7 +213,7 @@ void Context::Process(State::Dueling& s)
 				const auto& req = std::get<QuerySingleRequest>(reqVar);
 				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
 				{
-					return GameMsgFromMsg(
+					return MakeGameMsg(
 						MakeUpdateCardMsg(req.con, req.loc, req.seq, qb));
 				};
 				const Core::IWrapper::QueryInfo qInfo =
@@ -239,7 +239,7 @@ void Context::Process(State::Dueling& s)
 				const auto& req = std::get<QueryLocationRequest>(reqVar);
 				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
 				{
-					return GameMsgFromMsg(
+					return MakeGameMsg(
 						MakeUpdateDataMsg(req.con, req.loc, qb));
 				};
 				const Core::IWrapper::QueryInfo qInfo =
@@ -280,18 +280,18 @@ void Context::Process(State::Dueling& s)
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			const auto sMsg = StripMessageForTeam(team, msg);
-			s.replier->Send(GameMsgFromMsg(sMsg));
+			s.replier->Send(MakeGameMsg(sMsg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST:
 		{
-			s.replier->Send(GameMsgFromMsg(msg));
+			s.replier->Send(MakeGameMsg(msg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
-			SendToTeam(GetSwappedTeam(s, team), GameMsgFromMsg(msg));
+			SendToTeam(GetSwappedTeam(s, team), MakeGameMsg(msg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE_EXCEPT_TEAM_DUELIST:
@@ -299,7 +299,7 @@ void Context::Process(State::Dueling& s)
 			uint8_t team = GetMessageReceivingTeam(msg);
 			SendToAllExcept(
 				GetCurrentTeamClient(s, GetSwappedTeam(s, team)),
-				GameMsgFromMsg(msg));
+				MakeGameMsg(msg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE_STRIPPED:
@@ -309,14 +309,14 @@ void Context::Process(State::Dueling& s)
 				StripMessageForTeam(0, msg),
 				StripMessageForTeam(1, msg)
 			};
-			SendToTeam(GetSwappedTeam(s, 0), GameMsgFromMsg(sMsgs[0]));
-			SendToTeam(GetSwappedTeam(s, 1), GameMsgFromMsg(sMsgs[1]));
-			SendToSpectators(GameMsgFromMsg(StripMessageForTeam(1, sMsgs[0])));
+			SendToTeam(GetSwappedTeam(s, 0), MakeGameMsg(sMsgs[0]));
+			SendToTeam(GetSwappedTeam(s, 1), MakeGameMsg(sMsgs[1]));
+			SendToSpectators(MakeGameMsg(StripMessageForTeam(1, sMsgs[0])));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE:
 		{
-			SendToAll(GameMsgFromMsg(msg));
+			SendToAll(MakeGameMsg(msg));
 			break;
 		}
 		}

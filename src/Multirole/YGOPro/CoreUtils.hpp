@@ -5,8 +5,6 @@
 #include <variant>
 #include <vector>
 
-#include "STOCMsg.hpp"
-
 namespace YGOPro::CoreUtils
 {
 
@@ -121,9 +119,6 @@ Msg StripMessageForTeam(uint8_t team, Msg msg);
 // and the first one sent to clients, it setups the piles with the correct
 // amount of cards and sets the LP to the correct amount.
 Msg MakeStartMsg(const MsgStartCreateInfo& info);
-
-// Creates a game message ready to be sent to a client from a core message.
-STOCMsg GameMsgFromMsg(const Msg& msg);
 
 // The following functions process the message and acquires the query requests
 // that are necessary either before distribution or after, respectively.
