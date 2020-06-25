@@ -1,6 +1,5 @@
 # TODO
 
-* Add MSG_WAITING message send
 * Analyze and implement behavior of messages that influence the server room
   * `MSG_RETRY`
   * `MSG_TAG_SWAP`

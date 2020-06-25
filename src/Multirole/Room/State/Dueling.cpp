@@ -201,6 +201,7 @@ void Context::Process(State::Dueling& s)
 			return;
 		uint8_t team = GetMessageReceivingTeam(msg);
 		s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
+		SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
 		// TODO: send MSG_WAIT here
 		// TODO: update timers here
 	};
