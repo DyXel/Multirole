@@ -189,16 +189,24 @@ Client& Context::GetCurrentTeamClient(State::Dueling& s, uint8_t team)
 	return *duelists[{team, s.currentPos[team]}];
 }
 
-void Context::Process(State::Dueling& s)
+std::optional<Context::DuelFinished> Context::Process(State::Dueling& s)
 {
 	using namespace YGOPro::CoreUtils;
 	auto& core = *cpkg.core;
+	std::optional<DuelFinished> finish;
 	auto AnalyzeMsg = [&](const Msg& msg)
 	{
+		using Reason = DuelFinished::Reason;
 		uint8_t msgType = GetMessageType(msg);
 		if(msgType == MSG_RETRY)
 		{
-			// TODO: end duel
+			uint8_t team = s.replier->Position().first;
+			finish = DuelFinished{Reason::REASON_WRONG_RESPONSE, team, 0};
+		}
+		else if(msgType == MSG_WIN)
+		{
+			uint8_t team = GetSwappedTeam(s, msg[1]);
+			finish = DuelFinished{Reason::REASON_DUEL_WON, team, msg[2]};
 		}
 		else if(msgType == MSG_TAG_SWAP)
 		{
@@ -208,7 +216,10 @@ void Context::Process(State::Dueling& s)
 		}
 		else if(msgType == MSG_MATCH_KILL)
 		{
-
+			// Too lazy to create a function in YGOPro::CoreUtils
+			uint32_t reason{};
+			std::memcpy(&reason, &msg[1], sizeof(decltype(reason)));
+			s.matchKillReason = reason;
 		}
 		else if(DoesMessageRequireAnswer(msgType))
 		{
@@ -348,12 +359,17 @@ void Context::Process(State::Dueling& s)
 		{
 			Core::IWrapper::DuelStatus status = core.Process(s.duelPtr);
 			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
+			{
 				ProcessSingleMsg(msg);
+				if(finish) // Possibly set by AnalyzeMsg
+					return finish;
+			}
 			if(status != Core::IWrapper::DUEL_STATUS_CONTINUE)
 				break;
 		}
 	}
 	CORE_EXCEPTION_HANDLER()
+	return finish;
 }
 
 } // namespace Ignis::Multirole::Room

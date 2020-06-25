@@ -79,6 +79,21 @@ public:
 		return std::nullopt;
 	}
 private:
+	struct DuelFinished
+	{
+		enum class Reason : uint8_t
+		{
+			REASON_DUEL_WON,
+			REASON_SURRENDERED,
+			REASON_TIMED_OUT,
+			REASON_WRONG_RESPONSE,
+			REASON_CONNECTION_LOST,
+			REASON_CORE_CRASHED,
+		} reason;
+		uint8_t team;
+		uint8_t coreReason;
+	};
+
 	const YGOPro::HostInfo hostInfo;
 	const YGOPro::DeckLimits limits;
 	CoreProvider::CorePkg cpkg;
@@ -119,7 +134,7 @@ private:
 	void SendRPS();
 	// State/Dueling.cpp
 	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team);
-	void Process(State::Dueling& s);
+	std::optional<DuelFinished> Process(State::Dueling& s);
 };
 
 } // namespace Ignis::Multirole::Room

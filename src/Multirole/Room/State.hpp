@@ -39,6 +39,7 @@ struct Dueling
 	void* duelPtr;
 	std::array<uint8_t, 2> currentPos;
 	Client* replier;
+	std::optional<uint32_t> matchKillReason;
 };
 
 struct Rematching

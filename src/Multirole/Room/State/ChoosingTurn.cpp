@@ -19,7 +19,8 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 		),
 		nullptr,
 		{0u, 0u},
-		nullptr};
+		nullptr,
+		std::nullopt};
 }
 
 } // namespace Ignis::Multirole::Room
