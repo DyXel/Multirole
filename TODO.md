@@ -2,12 +2,11 @@
 
 * Analyze and implement behavior of messages that influence the server room
   * `MSG_RETRY`
-  * `MSG_TAG_SWAP`
   * `MSG_MATCH_KILL`
 * Implement surrendering and add handling for client disconnecting on all states
-* Implement spectators connecting mid-duel
 * Implement timers
 * Implement replays
+* Implement spectators connecting mid-duel
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
 * Handle crashes of core
 * Add IPC interface for discord bot

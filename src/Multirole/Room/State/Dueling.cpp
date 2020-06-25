@@ -19,7 +19,6 @@ constexpr uint8_t GetSwappedTeam(const State::Dueling& s, uint8_t team)
 
 void Context::operator()(State::Dueling& s)
 {
-	// TODO: Set up Replay
 	using namespace YGOPro;
 	// The RNG is lazily initialized here because most rooms would have not
 	// reached this point and allocating it when the room is created
@@ -197,13 +196,27 @@ void Context::Process(State::Dueling& s)
 	auto AnalyzeMsg = [&](const Msg& msg)
 	{
 		uint8_t msgType = GetMessageType(msg);
-		if(!DoesMessageRequireAnswer(msgType))
-			return;
-		uint8_t team = GetMessageReceivingTeam(msg);
-		s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
-		SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
-		// TODO: send MSG_WAIT here
-		// TODO: update timers here
+		if(msgType == MSG_RETRY)
+		{
+			// TODO: end duel
+		}
+		else if(msgType == MSG_TAG_SWAP)
+		{
+			uint8_t team = GetSwappedTeam(s, msg[1]);
+			s.currentPos[team] = (s.currentPos[team] + 1) %
+				((team == 0) ? hostInfo.t1Count : hostInfo.t2Count);
+		}
+		else if(msgType == MSG_MATCH_KILL)
+		{
+
+		}
+		else if(DoesMessageRequireAnswer(msgType))
+		{
+			uint8_t team = GetMessageReceivingTeam(msg);
+			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
+			SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
+			// TODO: update timers
+		}
 	};
 	auto ProcessQueryRequests = [&](const std::vector<QueryRequest>& qreqs)
 	{
@@ -324,7 +337,6 @@ void Context::Process(State::Dueling& s)
 	};
 	auto ProcessSingleMsg = [&](const Msg& msg)
 	{
-		spdlog::info("Processing = {}", GetMessageType(msg));
 		AnalyzeMsg(msg);
 		ProcessQueryRequests(GetPreDistQueryRequests(msg));
 		DistributeMsg(msg);
@@ -335,7 +347,6 @@ void Context::Process(State::Dueling& s)
 		for(;;)
 		{
 			Core::IWrapper::DuelStatus status = core.Process(s.duelPtr);
-			spdlog::info("status = {}", status);
 			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
 				ProcessSingleMsg(msg);
 			if(status != Core::IWrapper::DUEL_STATUS_CONTINUE)
