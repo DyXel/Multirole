@@ -3,9 +3,10 @@
 namespace Ignis::Multirole::Room
 {
 
-void Context::operator()(State::ChoosingTurn& s)
+StateOpt Context::operator()(State::ChoosingTurn& s)
 {
 	s.turnChooser->Send(MakeAskIfGoingFirst());
+	return std::nullopt;
 }
 
 StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)

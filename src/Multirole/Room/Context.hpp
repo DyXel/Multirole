@@ -46,16 +46,16 @@ public:
 	StateOpt operator()(State::Waiting&, const Event::TryKick& e);
 	StateOpt operator()(State::Waiting& s, const Event::TryStart& e);
 	// State/RockPaperScissor.cpp
-	void operator()(State::RockPaperScissor&);
+	StateOpt operator()(State::RockPaperScissor&);
 	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
 	// State/ChoosingTurn.cpp
-	void operator()(State::ChoosingTurn& s);
+	StateOpt operator()(State::ChoosingTurn& s);
 	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
 	// State/Dueling.cpp
-	void operator()(State::Dueling& s);
+	StateOpt operator()(State::Dueling& s);
 	StateOpt operator()(State::Dueling& s, const Event::Response& e);
 	// State/Closing.cpp
-	void operator()(State::Closing&);
+	StateOpt operator()(State::Closing&);
 	StateOpt operator()(State::Closing&, const Event::Join& e);
 	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
 
@@ -69,8 +69,10 @@ public:
 
 	// Ignore rest of state entries
 	template<typename S>
-	constexpr void operator()(S&)
-	{}
+	constexpr StateOpt operator()(S&)
+	{
+		return std::nullopt;
+	}
 
 	// Ignore rest of state and event combinations
 	template<typename S, typename E>

@@ -3,9 +3,10 @@
 namespace Ignis::Multirole::Room
 {
 
-void Context::operator()(State::RockPaperScissor& /*unused*/)
+StateOpt Context::operator()(State::RockPaperScissor& /*unused*/)
 {
 	SendRPS();
+	return std::nullopt;
 }
 
 StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e)

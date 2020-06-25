@@ -17,7 +17,7 @@ constexpr uint8_t GetSwappedTeam(const State::Dueling& s, uint8_t team)
 	return s.isTeam1GoingFirst ^ team;
 }
 
-void Context::operator()(State::Dueling& s)
+StateOpt Context::operator()(State::Dueling& s)
 {
 	using namespace YGOPro;
 	// The RNG is lazily initialized here because most rooms would have not
@@ -167,6 +167,7 @@ void Context::operator()(State::Dueling& s)
 	CORE_EXCEPTION_HANDLER()
 	// Start processing the duel
 	Process(s);
+	return std::nullopt;
 }
 
 StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)

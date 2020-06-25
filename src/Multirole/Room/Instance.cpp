@@ -87,11 +87,10 @@ asio::io_context::strand& Instance::Strand()
 
 void Instance::Dispatch(const EventVariant& e)
 {
-	StateOpt newState = std::visit(ctx, state, e);
-	if(newState)
+	for(StateOpt newState = std::visit(ctx, state, e); newState;)
 	{
 		state = *newState;
-		std::visit(ctx, state);
+		newState = std::visit(ctx, state);
 	}
 }
 

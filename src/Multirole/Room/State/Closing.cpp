@@ -3,7 +3,7 @@
 namespace Ignis::Multirole::Room
 {
 
-void Context::operator()(State::Closing& /*unused*/)
+StateOpt Context::operator()(State::Closing& /*unused*/)
 {
 	for(const auto& kv : duelists)
 		kv.second->Disconnect();
@@ -11,6 +11,7 @@ void Context::operator()(State::Closing& /*unused*/)
 		c->Disconnect();
 	spectators.clear();
 	duelists.clear();
+	return std::nullopt;
 }
 
 StateOpt Context::operator()(State::Closing& /*unused*/, const Event::Join& e)
