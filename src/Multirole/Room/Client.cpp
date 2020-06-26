@@ -102,12 +102,6 @@ void Client::Disconnect()
 	std::error_code ignore;
 	socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
 	socket.close(ignore);
-	asio::post(strand,
-	[this, self = shared_from_this()]()
-	{
-		room.Remove(self);
-		// NOTE: Destructor of this Client is called here
-	});
 }
 
 void Client::DeferredDisconnect()
@@ -130,9 +124,13 @@ void Client::DoReadHeader()
 	[this](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
+		{
 			DoReadBody();
-		else if(ec != asio::error::operation_aborted)
+			return;
+		}
+		if(ec != asio::error::operation_aborted)
 			room.Dispatch(Event::ConnectionLost{{*this}});
+		room.Remove(shared_from_this());
 	}));
 }
 
@@ -148,25 +146,26 @@ void Client::DoReadBody()
 			// if the message is not properly handled. Just ignore it.
 			HandleMsg();
 			DoReadHeader();
+			return;
 		}
-		else if(ec != asio::error::operation_aborted)
-		{
+		if(ec != asio::error::operation_aborted)
 			room.Dispatch(Event::ConnectionLost{{*this}});
-		}
+		room.Remove(shared_from_this());
 	}));
 }
 
 void Client::DoWrite()
 {
+	auto self(shared_from_this());
 	const auto& front = outgoing.front();
 	asio::async_write(socket, asio::buffer(front.Data(), front.Length()),
-	[this](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
 		std::lock_guard<std::mutex> lock(mOutgoing);
 		outgoing.pop();
-		if (!outgoing.empty())
+		if (!outgoing.empty() && socket.is_open())
 			DoWrite();
 		else if(disconnecting)
 			Disconnect();
