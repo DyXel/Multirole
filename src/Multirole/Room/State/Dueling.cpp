@@ -99,7 +99,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		for(const auto& kv : duelists)
 		{
 			const auto& deck = *kv.second->CurrentDeck();
-			nci.team = nci.con = kv.first.first;
+			nci.team = nci.con = GetSwappedTeam(s, kv.first.first);
 			nci.duelist = kv.first.second;
 			nci.loc = LOCATION_DECK;
 			for(auto code : ReversedOrShuffled(deck.Main()))
@@ -127,7 +127,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		SendToTeam(GetSwappedTeam(s, 0), MakeGameMsg(msgStart));
 		msgStart[1] = 1;
 		SendToTeam(GetSwappedTeam(s, 1), MakeGameMsg(msgStart));
-		msgStart[1] = 0xF0; // NOLINT: Magic number for spectators.
+		msgStart[1] = 0xF0 | s.isTeam1GoingFirst;
 		SendToSpectators(MakeGameMsg(msgStart));
 		// Update replay with deck data.
 		auto RecordDecks = [&](uint8_t team)
