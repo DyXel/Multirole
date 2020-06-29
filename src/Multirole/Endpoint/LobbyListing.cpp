@@ -58,8 +58,8 @@ void LobbyListing::DoSerialize()
 			room["roomnotes"] = rp.notes;
 			room["roommode"] = 0; // NOTE: UNUSED but expected atm
 			room["needpass"] = rp.passworded;
-			room["team1"] = rp.hostInfo.t1Count;
-			room["team2"] = rp.hostInfo.t2Count;
+			room["team1"] = rp.hostInfo.t0Count;
+			room["team2"] = rp.hostInfo.t1Count;
 			room["best_of"] = rp.hostInfo.bestOf;
 			room["duel_flag"] = rp.hostInfo.duelFlags;
 			room["forbidden_types"] = rp.hostInfo.forb;

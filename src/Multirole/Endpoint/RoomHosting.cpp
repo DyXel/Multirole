@@ -205,6 +205,9 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 			banlistProvider.GetBanlistByHash(info.hostInfo.banlistHash);
 		if(info.banlist == nullptr)
 			info.hostInfo.banlistHash = 0;
+		info.hostInfo.t0Count = std::clamp(info.hostInfo.t0Count, 1, 3);
+		info.hostInfo.t1Count = std::clamp(info.hostInfo.t1Count, 1, 3);
+		info.hostInfo.bestOf = std::max(info.hostInfo.bestOf, 1);
 		info.name = UTF16_BUFFER_TO_STR(p->name);
 		info.notes = std::string(p->notes);
 		info.pass = UTF16_BUFFER_TO_STR(p->pass);

@@ -137,8 +137,8 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	if(s.host != &e.client)
 		return std::nullopt;
 	Client::PosType p;
-	p.first = static_cast<unsigned char>(e.pos >= hostInfo.t1Count);
-	p.second = p.first != 0U ? e.pos - hostInfo.t1Count : e.pos;
+	p.first = static_cast<unsigned char>(e.pos >= hostInfo.t0Count);
+	p.second = p.first != 0U ? e.pos - hostInfo.t0Count : e.pos;
 	if(duelists.count(p) == 0 || duelists[p] == s.host)
 		return std::nullopt;
 	Client* kicked = duelists[p];
@@ -157,7 +157,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 	auto ValidateDuelistsSetup = [&]() -> bool
 	{
 		if((hostInfo.duelFlags & 0x80) == 0) // NOLINT: DUEL_RELAY
-			return int32_t(duelists.size()) == hostInfo.t1Count + hostInfo.t2Count;
+			return int32_t(duelists.size()) == hostInfo.t0Count + hostInfo.t1Count;
 		if(!(teamCount[0] > 0 && teamCount[1] > 0))
 			return false;
 		// At this point it has been decided that this relay setup is
@@ -236,13 +236,13 @@ bool Context::TryEmplaceDuelist(Client& client, Client::PosType hint)
 		return false;
 	};
 	if(hint.first == 0U)
-		if(EmplaceLoop(hint, hostInfo.t1Count))
+		if(EmplaceLoop(hint, hostInfo.t0Count))
 			return true;
 	auto p = hint;
 	if(hint.first != 1U)
 		p.second = 0U;
 	p.first = 1U;
-	if(EmplaceLoop(p, hostInfo.t2Count))
+	if(EmplaceLoop(p, hostInfo.t1Count))
 		return true;
 	if(hint != Client::PosType{})
 		return TryEmplaceDuelist(client);

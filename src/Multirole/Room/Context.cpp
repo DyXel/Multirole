@@ -17,7 +17,7 @@ Context::Context(
 	CoreProvider::CorePkg&& cpkg,
 	const YGOPro::Banlist* banlist)
 	:
-	STOCMsgFactory(hostInfo.t1Count),
+	STOCMsgFactory(hostInfo.t0Count),
 	hostInfo(std::move(hostInfo)),
 	limits(std::move(limits)),
 	cpkg(std::move(cpkg)),

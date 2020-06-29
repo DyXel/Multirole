@@ -213,7 +213,7 @@ std::optional<Context::DuelFinished> Context::Process(State::Dueling& s)
 		{
 			uint8_t team = GetSwappedTeam(s, msg[1]);
 			s.currentPos[team] = (s.currentPos[team] + 1) %
-				((team == 0) ? hostInfo.t1Count : hostInfo.t2Count);
+				((team == 0) ? hostInfo.t0Count : hostInfo.t1Count);
 		}
 		else if(msgType == MSG_MATCH_KILL)
 		{
