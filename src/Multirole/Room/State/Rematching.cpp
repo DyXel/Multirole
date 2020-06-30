@@ -16,6 +16,7 @@ StateOpt Context::operator()(State::Rematching&, const Event::ConnectionLost& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;
+	SendToAll(MakeDuelEnd());
 	return State::Closing{};
 }
 
@@ -25,6 +26,7 @@ StateOpt Context::operator()(State::Rematching& s, const Event::Rematch& e)
 		return std::nullopt;
 	if(!e.answer && s.answered.count(&e.client) == 0)
 	{
+		SendToAll(MakeDuelEnd());
 		return State::Closing{};
 	}
 	else if(e.answer && s.answered.count(&e.client) == 0)
