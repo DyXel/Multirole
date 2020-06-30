@@ -178,6 +178,8 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 	try
 	{
 		cpkg.core->SetResponse(s.duelPtr, e.data);
+	}
+	CORE_EXCEPTION_HANDLER()
 	if(const auto dfrOpt = Process(s); dfrOpt)
 		return Finish(s, *dfrOpt);
 	return std::nullopt;
@@ -191,8 +193,6 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Surrender& e)
 		uint8_t winner = 1 - p.first;
 		return Finish(s, DuelFinishReason{Reason::REASON_SURRENDERED, winner});
 	}
-	CORE_EXCEPTION_HANDLER()
-	Process(s);
 	return std::nullopt;
 }
 
@@ -381,6 +381,8 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			if(status != Core::IWrapper::DUEL_STATUS_CONTINUE)
 				break;
 		}
+	}
+	CORE_EXCEPTION_HANDLER()
 	return dfrOpt;
 }
 
@@ -448,8 +450,6 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		SendToAll(MakeDuelEnd());
 		return State::Closing{};
 	}
-	CORE_EXCEPTION_HANDLER()
-	return finish;
 }
 
 } // namespace Ignis::Multirole::Room
