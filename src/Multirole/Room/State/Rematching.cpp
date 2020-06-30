@@ -33,7 +33,10 @@ StateOpt Context::operator()(State::Rematching& s, const Event::Rematch& e)
 	{
 		s.answered.insert(&e.client);
 		if(++s.answerCount == duelists.size())
+		{
+			SendToAll(MakeStartDuel());
 			return State::ChoosingTurn{s.turnChooser};
+		}
 	}
 	return std::nullopt;
 }
