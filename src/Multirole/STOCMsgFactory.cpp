@@ -100,17 +100,17 @@ STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count)
 
 STOCMsg STOCMsgFactory::MakeStartDuel()
 {
-	return {STOCMsg::MsgType::DUEL_START, true};
+	return {STOCMsg::MsgType::DUEL_START};
 }
 
 STOCMsg STOCMsgFactory::MakeAskRPS()
 {
-	return {STOCMsg::MsgType::CHOOSE_RPS, true};
+	return {STOCMsg::MsgType::CHOOSE_RPS};
 }
 
 STOCMsg STOCMsgFactory::MakeAskIfGoingFirst()
 {
-	return {STOCMsg::MsgType::CHOOSE_ORDER, true};
+	return {STOCMsg::MsgType::CHOOSE_ORDER};
 }
 
 STOCMsg STOCMsgFactory::MakeRPSResult(uint8_t t0, uint8_t t1)
@@ -125,17 +125,17 @@ STOCMsg STOCMsgFactory::MakeGameMsg(const std::vector<uint8_t>& msg)
 
 STOCMsg STOCMsgFactory::MakeAskIfRematch()
 {
-	return {STOCMsg::MsgType::REMATCH, true};
+	return {STOCMsg::MsgType::REMATCH};
 }
 
 STOCMsg STOCMsgFactory::MakeRematchWait()
 {
-	return {STOCMsg::MsgType::REMATCH_WAIT, true};
+	return {STOCMsg::MsgType::REMATCH_WAIT};
 }
 
 STOCMsg STOCMsgFactory::MakeDuelEnd()
 {
-	return {STOCMsg::MsgType::DUEL_END, true};
+	return {STOCMsg::MsgType::DUEL_END};
 }
 
 STOCMsg STOCMsgFactory::MakeJoinError(Error::Join type)

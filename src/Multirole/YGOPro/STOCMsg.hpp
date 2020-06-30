@@ -139,6 +139,16 @@ public:
 		std::memcpy(p, &msg, sizeof(T));
 	}
 
+	STOCMsg(MsgType type)
+	{
+		const auto msgSize = static_cast<LengthType>(1 + sizeof(MsgType));
+		bytes.resize(HEADER_LENGTH + msgSize);
+		uint8_t* p = bytes.data();
+		std::memcpy(p, &msgSize, sizeof(msgSize));
+		p += sizeof(msgSize);
+		std::memcpy(p, &type, sizeof(MsgType));
+	}
+
 	STOCMsg(MsgType type, const std::vector<uint8_t>& msg)
 	{
 		const auto msgSize = static_cast<LengthType>(msg.size() + sizeof(MsgType));
@@ -149,16 +159,6 @@ public:
 		std::memcpy(p, &type, sizeof(MsgType));
 		p += sizeof(MsgType);
 		std::memcpy(p, msg.data(), msg.size());
-	}
-
-	STOCMsg(MsgType type, [[maybe_unused]] bool tag)
-	{
-		const auto msgSize = static_cast<LengthType>(1 + sizeof(MsgType));
-		bytes.resize(HEADER_LENGTH + msgSize);
-		uint8_t* p = bytes.data();
-		std::memcpy(p, &msgSize, sizeof(msgSize));
-		p += sizeof(msgSize);
-		std::memcpy(p, &type, sizeof(MsgType));
 	}
 
 	const uint8_t* Data() const
