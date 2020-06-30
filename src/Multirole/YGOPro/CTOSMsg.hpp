@@ -99,9 +99,30 @@ public:
 	{
 		if(GetLength() > MSG_MAX_LENGTH)
 			return false;
-		if(GetType() > MsgType::TRY_START)
+		switch(GetType())
+		{
+		case MsgType::RESPONSE:
+		case MsgType::UPDATE_DECK:
+		case MsgType::RPS_CHOICE:
+		case MsgType::TURN_CHOICE:
+		case MsgType::PLAYER_INFO:
+		case MsgType::CREATE_GAME:
+		case MsgType::JOIN_GAME:
+		case MsgType::LEAVE_GAME:
+		case MsgType::SURRENDER:
+		case MsgType::TIME_CONFIRM:
+		case MsgType::CHAT:
+		case MsgType::TO_DUELIST:
+		case MsgType::TO_OBSERVER:
+		case MsgType::READY:
+		case MsgType::NOT_READY:
+		case MsgType::TRY_KICK:
+		case MsgType::TRY_START:
+		case MsgType::REMATCH:
+			return true;
+		default:
 			return false;
-		return true;
+		}
 	}
 
 #define X(s) \
