@@ -263,6 +263,19 @@ void Client::HandleMsg()
 		room.Dispatch(Event::Response{{*this}, data});
 		break;
 	}
+	case YGOPro::CTOSMsg::MsgType::SURRENDER:
+	{
+		room.Dispatch(Event::Surrender{{*this}});
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::REMATCH:
+	{
+		auto p = incoming.GetRematch();
+		if(!p)
+			return;
+		room.Dispatch(Event::Rematch{{*this}, static_cast<bool>(p->answer)});
+		break;
+	}
 	default:
 		break;
 	}

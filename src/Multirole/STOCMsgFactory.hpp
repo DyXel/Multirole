@@ -79,6 +79,12 @@ public:
 	static YGOPro::STOCMsg MakeRPSResult(uint8_t t0, uint8_t t1);
 	// Creates a message that wraps around a core message
 	static YGOPro::STOCMsg MakeGameMsg(const std::vector<uint8_t>& msg);
+	// Creates a message to ask a client if he desires to rematch
+	static YGOPro::STOCMsg MakeAskIfRematch();
+	// Creates a message signaling client to wait for rematch answers
+	static YGOPro::STOCMsg MakeRematchWait();
+	// Creates a message signaling client that the room lifetime ended
+	static YGOPro::STOCMsg MakeDuelEnd();
 
 	// Error messages
 	static YGOPro::STOCMsg MakeJoinError(Error::Join type);

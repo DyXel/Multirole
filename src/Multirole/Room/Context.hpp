@@ -54,10 +54,15 @@ public:
 	// State/Dueling.cpp
 	StateOpt operator()(State::Dueling& s);
 	StateOpt operator()(State::Dueling& s, const Event::Response& e);
+	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
 	// State/Closing.cpp
 	StateOpt operator()(State::Closing&);
 	StateOpt operator()(State::Closing&, const Event::Join& e);
 	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
+	// State/Rematching.cpp
+	StateOpt operator()(State::Rematching& s);
+	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::Rematching& s, const Event::Rematch& e);
 
 	// Chat handling is the same for all states
 	template<typename State>
@@ -81,7 +86,7 @@ public:
 		return std::nullopt;
 	}
 private:
-	struct DuelFinished
+	struct DuelFinishReason
 	{
 		enum class Reason : uint8_t
 		{
@@ -93,22 +98,25 @@ private:
 			REASON_CORE_CRASHED,
 		} reason;
 		uint8_t team;
-		uint8_t coreReason;
 	};
 
+	// Creation options and resources
 	const YGOPro::HostInfo hostInfo;
 	const YGOPro::DeckLimits limits;
 	CoreProvider::CorePkg cpkg;
 	const YGOPro::Banlist* banlist;
+	const int32_t neededWins;
 
+	// Client management variables
 	std::map<Client::PosType, Client*> duelists;
 	std::array<uint8_t, 2> teamCount;
 	std::mutex mDuelists;
 	std::set<Client*> spectators;
 
-	// Used by State/Dueling.cpp to generate duel seed and shuffle deck
+	// Additional data used by room states
 	uint32_t id{};
 	std::unique_ptr<std::mt19937> rng;
+	std::array<int32_t, 2> wins{};
 
 	// Utilities to send a message to multiple clients
 	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg);
@@ -136,7 +144,8 @@ private:
 	void SendRPS();
 	// State/Dueling.cpp
 	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team);
-	std::optional<DuelFinished> Process(State::Dueling& s);
+	std::optional<DuelFinishReason> Process(State::Dueling& s);
+	StateVariant Finish(State::Dueling& s, const DuelFinishReason& dfr);
 };
 
 } // namespace Ignis::Multirole::Room

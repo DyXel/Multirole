@@ -74,6 +74,14 @@ struct Response : public Detail::ClientEvent
 	std::vector<uint8_t> data;
 };
 
+struct Surrender : public Detail::ClientEvent
+{};
+
+struct Rematch : public Detail::ClientEvent
+{
+	bool answer;
+};
+
 } // namespace Event
 
 using EventVariant = std::variant<
@@ -88,7 +96,9 @@ using EventVariant = std::variant<
 	Event::TryStart,
 	Event::ChooseRPS,
 	Event::ChooseTurn,
-	Event::Response>;
+	Event::Response,
+	Event::Surrender,
+	Event::Rematch>;
 
 } // namespace Ignis::Multirole::Room
 

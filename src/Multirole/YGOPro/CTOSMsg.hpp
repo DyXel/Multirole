@@ -15,7 +15,7 @@ public:
 		MSG_MAX_LENGTH = 1021
 	};
 	using LengthType = int16_t;
-	enum class MsgType : int8_t
+	enum class MsgType : uint8_t
 	{
 		RESPONSE      = 0x01,
 		UPDATE_DECK   = 0x02,
@@ -33,7 +33,8 @@ public:
 		READY         = 0x22,
 		NOT_READY     = 0x23,
 		TRY_KICK      = 0x24,
-		TRY_START     = 0x25
+		TRY_START     = 0x25,
+		REMATCH       = 0xF0,
 	};
 
 	struct RPSChoice
@@ -70,6 +71,11 @@ public:
 	struct TryKick
 	{
 		uint8_t pos;
+	};
+
+	struct Rematch
+	{
+		uint8_t answer;
 	};
 
 	CTOSMsg() : r(data + HEADER_LENGTH)
@@ -114,6 +120,7 @@ public:
 	X(CreateGame)
 	X(JoinGame)
 	X(TryKick)
+	X(Rematch)
 #undef X
 
 	const uint8_t* Body() const

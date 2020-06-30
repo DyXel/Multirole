@@ -1,6 +1,6 @@
 # TODO
 
-* Implement surrendering and losing connection mid-duel
+* Implement losing connection mid-duel
 * Add handling for client disconnecting on all states
 * Implement spectators connecting mid-duel
 * Implement timers
@@ -16,8 +16,6 @@
 * Check used enums and try to use `enum class` where possible
   * Also try to forward declare as many of them as possible
 * Make inheritance of `std::enable_shared_from_this` private/protected
-* Use mutable lambda and move semantics instead of smart pointers where possible
-  * https://stackoverflow.com/a/47698904
 * Conditionally be able to send messages stored on a smart pointer instead of doing possibly expensive copies of the message
   * Needed mainly for Replays
 * Remove setters for `Core::IWrapper` and instead set them on ctors

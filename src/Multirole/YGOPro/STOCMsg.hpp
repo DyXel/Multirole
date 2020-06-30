@@ -17,7 +17,7 @@ public:
 		HEADER_LENGTH = 2,
 	};
 	using LengthType = int16_t;
-	enum class MsgType : int8_t
+	enum class MsgType : uint8_t
 	{
 		GAME_MSG      = 0x1,
 		ERROR_MSG     = 0x2,
@@ -39,6 +39,8 @@ public:
 		PLAYER_ENTER  = 0x20,
 		PLAYER_CHANGE = 0x21,
 		WATCH_CHANGE  = 0x22,
+		REMATCH       = 0xF1,
+		REMATCH_WAIT  = 0xF2,
 	};
 
 	struct ErrorMsg

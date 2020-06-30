@@ -166,7 +166,8 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	CORE_EXCEPTION_HANDLER()
 	// Start processing the duel
-	Process(s);
+	if(const auto dfrOpt = Process(s); dfrOpt)
+		return Finish(s, *dfrOpt);
 	return std::nullopt;
 }
 
@@ -177,6 +178,18 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 	try
 	{
 		cpkg.core->SetResponse(s.duelPtr, e.data);
+	if(const auto dfrOpt = Process(s); dfrOpt)
+		return Finish(s, *dfrOpt);
+	return std::nullopt;
+}
+
+StateOpt Context::operator()(State::Dueling& s, const Event::Surrender& e)
+{
+	using Reason = DuelFinishReason::Reason;
+	if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
+	{
+		uint8_t winner = 1 - p.first;
+		return Finish(s, DuelFinishReason{Reason::REASON_SURRENDERED, winner});
 	}
 	CORE_EXCEPTION_HANDLER()
 	Process(s);
@@ -190,24 +203,24 @@ Client& Context::GetCurrentTeamClient(State::Dueling& s, uint8_t team)
 	return *duelists[{team, s.currentPos[team]}];
 }
 
-std::optional<Context::DuelFinished> Context::Process(State::Dueling& s)
+std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 {
 	using namespace YGOPro::CoreUtils;
 	auto& core = *cpkg.core;
-	std::optional<DuelFinished> finish;
+	std::optional<DuelFinishReason> dfrOpt;
 	auto AnalyzeMsg = [&](const Msg& msg)
 	{
-		using Reason = DuelFinished::Reason;
+		using Reason = DuelFinishReason::Reason;
 		uint8_t msgType = GetMessageType(msg);
 		if(msgType == MSG_RETRY)
 		{
 			uint8_t team = s.replier->Position().first;
-			finish = DuelFinished{Reason::REASON_WRONG_RESPONSE, team, 0};
+			dfrOpt = DuelFinishReason{Reason::REASON_WRONG_RESPONSE, team};
 		}
 		else if(msgType == MSG_WIN)
 		{
 			uint8_t team = GetSwappedTeam(s, msg[1]);
-			finish = DuelFinished{Reason::REASON_DUEL_WON, team, msg[2]};
+			dfrOpt = DuelFinishReason{Reason::REASON_DUEL_WON, team};
 		}
 		else if(msgType == MSG_TAG_SWAP)
 		{
@@ -362,12 +375,78 @@ std::optional<Context::DuelFinished> Context::Process(State::Dueling& s)
 			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
 			{
 				ProcessSingleMsg(msg);
-				if(finish) // Possibly set by AnalyzeMsg
-					return finish;
+				if(dfrOpt) // Possibly set by AnalyzeMsg
+					return dfrOpt;
 			}
 			if(status != Core::IWrapper::DUEL_STATUS_CONTINUE)
 				break;
 		}
+	return dfrOpt;
+}
+
+StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
+{
+	using Reason = DuelFinishReason::Reason;
+	if(dfr.reason != Reason::REASON_CORE_CRASHED)
+	{
+		// NOTE: if the core crashes here, it'll be handled on next duel
+		// creation. Or if the room lifetime ended, it wouldn't matter anyway
+		// as the crash frees all the memory for us.
+		try
+		{
+			cpkg.core->DestroyDuel(s.duelPtr);
+		}
+		catch(...){}
+	}
+	auto SendWinMsg = [&](uint8_t reason)
+	{
+		SendToAll(MakeGameMsg({MSG_WIN, GetSwappedTeam(s, dfr.team), reason}));
+	};
+	auto turnDecider = [&]() -> Client*
+	{
+		if(dfr.team <= 1)
+			return duelists[{1 - dfr.team, 0}];
+		return duelists[{0u, 0u}];
+	}();
+	switch(dfr.reason)
+	{
+	case Reason::REASON_DUEL_WON:
+	case Reason::REASON_SURRENDERED:
+	case Reason::REASON_TIMED_OUT:
+	case Reason::REASON_WRONG_RESPONSE:
+	{
+		// Send corresponding game finishing messages
+		if(dfr.reason == Reason::REASON_SURRENDERED)
+			SendWinMsg(0);
+		else if(dfr.reason == Reason::REASON_TIMED_OUT)
+			SendWinMsg(3);
+		else if(dfr.reason == Reason::REASON_WRONG_RESPONSE)
+			SendWinMsg(5);
+		if(hostInfo.bestOf <= 1 || dfr.team == 2)
+			return State::Rematching{turnDecider, 0, {}};
+		wins[dfr.team] += (s.matchKillReason) ? hostInfo.bestOf : 1;
+		if(wins[dfr.team] >= neededWins)
+		{
+			SendToAll(MakeDuelEnd());
+			return State::Closing{};
+		}
+		return State::Sidedecking{turnDecider};
+	}
+	case Reason::REASON_CONNECTION_LOST:
+	{
+		SendWinMsg(4);
+		SendToAll(MakeDuelEnd());
+		return State::Closing{};
+	}
+	case Reason::REASON_CORE_CRASHED:
+	{
+// 		SendWinMsg(6);
+		SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, "Core crashed!"));
+		[[fallthrough]];
+	}
+	default:
+		SendToAll(MakeDuelEnd());
+		return State::Closing{};
 	}
 	CORE_EXCEPTION_HANDLER()
 	return finish;

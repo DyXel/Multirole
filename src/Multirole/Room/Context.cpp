@@ -22,6 +22,7 @@ Context::Context(
 	limits(std::move(limits)),
 	cpkg(std::move(cpkg)),
 	banlist(banlist),
+	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0f))),
 	teamCount({0u, 0u})
 {}
 

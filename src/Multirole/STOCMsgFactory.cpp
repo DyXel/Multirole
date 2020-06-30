@@ -123,6 +123,21 @@ STOCMsg STOCMsgFactory::MakeGameMsg(const std::vector<uint8_t>& msg)
 	return STOCMsg{STOCMsg::MsgType::GAME_MSG, msg};
 }
 
+STOCMsg STOCMsgFactory::MakeAskIfRematch()
+{
+	return {STOCMsg::MsgType::REMATCH, true};
+}
+
+STOCMsg STOCMsgFactory::MakeRematchWait()
+{
+	return {STOCMsg::MsgType::REMATCH_WAIT, true};
+}
+
+STOCMsg STOCMsgFactory::MakeDuelEnd()
+{
+	return {STOCMsg::MsgType::DUEL_END, true};
+}
+
 STOCMsg STOCMsgFactory::MakeJoinError(Error::Join type)
 {
 	return {STOCMsg::ErrorMsg{1U, static_cast<uint32_t>(type)}};

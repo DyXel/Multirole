@@ -2,6 +2,7 @@
 #define ROOM_STATE_HPP
 #include <array>
 #include <optional>
+#include <set>
 #include <variant>
 
 namespace Ignis::Multirole::Room
@@ -31,7 +32,9 @@ struct Closing
 {};
 
 struct Sidedecking
-{};
+{
+	Client* turnChooser;
+};
 
 struct Dueling
 {
@@ -43,7 +46,11 @@ struct Dueling
 };
 
 struct Rematching
-{};
+{
+	Client* turnChooser;
+	std::size_t answerCount;
+	std::set<Client*> answered;
+};
 
 } // namespace State
 

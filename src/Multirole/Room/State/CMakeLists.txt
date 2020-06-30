@@ -3,6 +3,7 @@ target_sources(multirole PRIVATE
 	${CSR}/ChoosingTurn.cpp
 	${CSR}/Closing.cpp
 	${CSR}/Dueling.cpp
+	${CSR}/Rematching.cpp
 	${CSR}/RockPaperScissor.cpp
 	${CSR}/Waiting.cpp
 )
