@@ -71,7 +71,7 @@ struct ChooseTurn : public Detail::ClientEvent
 
 struct Response : public Detail::ClientEvent
 {
-	std::vector<uint8_t> data;
+	const std::vector<uint8_t>& data;
 };
 
 struct Surrender : public Detail::ClientEvent
