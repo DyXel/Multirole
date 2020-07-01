@@ -1,6 +1,7 @@
 # TODO
 
 * Add handling for client disconnecting on all states
+* Implement sidedecking
 * Implement spectators connecting mid-duel
 * Implement timers
 * Implement replays

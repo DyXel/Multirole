@@ -9,6 +9,14 @@ StateOpt Context::operator()(State::RockPaperScissor& /*unused*/)
 	return std::nullopt;
 }
 
+StateOpt Context::operator()(State::RockPaperScissor&, const Event::ConnectionLost& e)
+{
+	if(e.client.Position() == Client::POSITION_SPECTATOR)
+		return std::nullopt;
+	SendToAll(MakeDuelEnd());
+	return State::Closing{};
+}
+
 StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e)
 {
 	const auto& pos = e.client.Position();

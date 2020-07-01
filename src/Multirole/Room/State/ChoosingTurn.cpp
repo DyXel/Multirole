@@ -9,6 +9,14 @@ StateOpt Context::operator()(State::ChoosingTurn& s)
 	return std::nullopt;
 }
 
+StateOpt Context::operator()(State::ChoosingTurn&, const Event::ConnectionLost& e)
+{
+	if(e.client.Position() == Client::POSITION_SPECTATOR)
+		return std::nullopt;
+	SendToAll(MakeDuelEnd());
+	return State::Closing{};
+}
+
 StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 {
 	if(s.turnChooser != &e.client)

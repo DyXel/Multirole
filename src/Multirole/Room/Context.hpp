@@ -47,9 +47,11 @@ public:
 	StateOpt operator()(State::Waiting& s, const Event::TryStart& e);
 	// State/RockPaperScissor.cpp
 	StateOpt operator()(State::RockPaperScissor&);
+	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
 	// State/ChoosingTurn.cpp
 	StateOpt operator()(State::ChoosingTurn& s);
+	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
 	// State/Dueling.cpp
 	StateOpt operator()(State::Dueling& s);
