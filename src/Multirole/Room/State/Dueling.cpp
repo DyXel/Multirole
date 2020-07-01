@@ -165,6 +165,19 @@ StateOpt Context::operator()(State::Dueling& s)
 	return std::nullopt;
 }
 
+StateOpt Context::operator()(State::Dueling& s, const Event::ConnectionLost& e)
+{
+	using Reason = DuelFinishReason::Reason;
+	const auto p = e.client.Position();
+	if(p == Client::POSITION_SPECTATOR)
+	{
+		e.client.Disconnect();
+		return std::nullopt;
+	}
+	uint8_t team = 1u - p.first;
+	return Finish(s, DuelFinishReason{Reason::REASON_CONNECTION_LOST, team});
+}
+
 StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 {
 	if(s.replier != &e.client)

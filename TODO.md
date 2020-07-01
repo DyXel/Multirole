@@ -1,6 +1,5 @@
 # TODO
 
-* Implement losing connection mid-duel
 * Add handling for client disconnecting on all states
 * Implement spectators connecting mid-duel
 * Implement timers

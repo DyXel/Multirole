@@ -53,6 +53,7 @@ public:
 	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
 	// State/Dueling.cpp
 	StateOpt operator()(State::Dueling& s);
+	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Dueling& s, const Event::Response& e);
 	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
 	// State/Closing.cpp
