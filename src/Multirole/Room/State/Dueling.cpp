@@ -11,12 +11,6 @@
 namespace Ignis::Multirole::Room
 {
 
-constexpr uint8_t GetSwappedTeam(const State::Dueling& s, uint8_t team)
-{
-	assert(team <= 1u);
-	return s.isTeam1GoingFirst ^ team;
-}
-
 StateOpt Context::operator()(State::Dueling& s)
 {
 	using namespace YGOPro;
@@ -99,7 +93,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		for(const auto& kv : duelists)
 		{
 			const auto& deck = *kv.second->CurrentDeck();
-			nci.team = nci.con = GetSwappedTeam(s, kv.first.first);
+			nci.team = nci.con = GetSwappedTeam(kv.first.first);
 			nci.duelist = kv.first.second;
 			nci.loc = LOCATION_DECK;
 			for(auto code : ReversedOrShuffled(deck.Main()))
@@ -124,10 +118,10 @@ StateOpt Context::operator()(State::Dueling& s)
 				core.QueryCount(s.duelPtr, 1, LOCATION_DECK),
 				core.QueryCount(s.duelPtr, 1, LOCATION_EXTRA),
 			});
-		SendToTeam(GetSwappedTeam(s, 0), MakeGameMsg(msgStart));
+		SendToTeam(GetSwappedTeam(0), MakeGameMsg(msgStart));
 		msgStart[1] = 1;
-		SendToTeam(GetSwappedTeam(s, 1), MakeGameMsg(msgStart));
-		msgStart[1] = 0xF0 | s.isTeam1GoingFirst;
+		SendToTeam(GetSwappedTeam(1), MakeGameMsg(msgStart));
+		msgStart[1] = 0xF0 | isTeam1GoingFirst;
 		SendToSpectators(MakeGameMsg(msgStart));
 		// Update replay with deck data.
 		auto RecordDecks = [&](uint8_t team)
@@ -158,7 +152,7 @@ StateOpt Context::operator()(State::Dueling& s)
 			};
 			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
 			using namespace YGOPro::CoreUtils;
-			SendToTeam(GetSwappedTeam(s, qInfo.con),
+			SendToTeam(GetSwappedTeam(qInfo.con),
 				MakeGameMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer)));
 		};
 		SendExtraDecks(0);
@@ -219,12 +213,12 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		}
 		else if(msgType == MSG_WIN)
 		{
-			uint8_t team = GetSwappedTeam(s, msg[1]);
+			uint8_t team = GetSwappedTeam(msg[1]);
 			dfrOpt = DuelFinishReason{Reason::REASON_DUEL_WON, team};
 		}
 		else if(msgType == MSG_TAG_SWAP)
 		{
-			uint8_t team = GetSwappedTeam(s, msg[1]);
+			uint8_t team = GetSwappedTeam(msg[1]);
 			s.currentPos[team] = (s.currentPos[team] + 1) %
 				((team == 0) ? hostInfo.t0Count : hostInfo.t1Count);
 		}
@@ -238,7 +232,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		else if(DoesMessageRequireAnswer(msgType))
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
-			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(s, team));
+			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(team));
 			SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
 			// TODO: update timers
 		}
@@ -268,7 +262,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto ownerBuffer = SerializeSingleQuery(query, false);
 				const auto strippedBuffer = SerializeSingleQuery(query, true);
 				const auto strippedMsg = MakeMsg(strippedBuffer);
-				uint8_t team = GetSwappedTeam(s, req.con);
+				uint8_t team = GetSwappedTeam(req.con);
 				SendToTeam(team, MakeMsg(ownerBuffer));
 				SendToTeam(1 - team, strippedMsg);
 				SendToSpectators(strippedMsg);
@@ -289,7 +283,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 					0u,
 					0u
 				};
-				uint8_t team = GetSwappedTeam(s, req.con);
+				uint8_t team = GetSwappedTeam(req.con);
 				const auto fullBuffer = core.QueryLocation(s.duelPtr, qInfo);
 				if(req.loc == LOCATION_DECK)
 				{
@@ -330,14 +324,14 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
-			SendToTeam(GetSwappedTeam(s, team), MakeGameMsg(msg));
+			SendToTeam(GetSwappedTeam(team), MakeGameMsg(msg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE_EXCEPT_TEAM_DUELIST:
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			SendToAllExcept(
-				GetCurrentTeamClient(s, GetSwappedTeam(s, team)),
+				GetCurrentTeamClient(s, GetSwappedTeam(team)),
 				MakeGameMsg(msg));
 			break;
 		}
@@ -348,8 +342,8 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				StripMessageForTeam(0, msg),
 				StripMessageForTeam(1, msg)
 			};
-			SendToTeam(GetSwappedTeam(s, 0), MakeGameMsg(sMsgs[0]));
-			SendToTeam(GetSwappedTeam(s, 1), MakeGameMsg(sMsgs[1]));
+			SendToTeam(GetSwappedTeam(0), MakeGameMsg(sMsgs[0]));
+			SendToTeam(GetSwappedTeam(1), MakeGameMsg(sMsgs[1]));
 			SendToSpectators(MakeGameMsg(StripMessageForTeam(1, sMsgs[0])));
 			break;
 		}
@@ -402,7 +396,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	}
 	auto SendWinMsg = [&](uint8_t reason)
 	{
-		SendToAll(MakeGameMsg({MSG_WIN, GetSwappedTeam(s, dfr.team), reason}));
+		SendToAll(MakeGameMsg({MSG_WIN, GetSwappedTeam(dfr.team), reason}));
 	};
 	auto turnDecider = [&]() -> Client*
 	{

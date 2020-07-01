@@ -56,7 +56,7 @@ public:
 	YGOPro::STOCMsg MakeTypeChange(const Room::Client& c, bool isHost) const;
 
 	// Creates chat message from client position (client message)
-	YGOPro::STOCMsg MakeChat(const Room::Client& c, std::string_view str) const;
+	YGOPro::STOCMsg MakeChat(const Room::Client::PosType& p, std::string_view str) const;
 	// Creates chat message from specific type (system message)
 	static YGOPro::STOCMsg MakeChat(ChatMsgType type, std::string_view str);
 	// Creates a message used to inform players entering the room

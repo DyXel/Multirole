@@ -25,10 +25,10 @@ STOCMsg STOCMsgFactory::MakeTypeChange(const Room::Client& c, bool isHost) const
 	return STOCMsg(proto);
 }
 
-STOCMsg STOCMsgFactory::MakeChat(const Room::Client& c, std::string_view str) const
+STOCMsg STOCMsgFactory::MakeChat(const Room::Client::PosType& p, std::string_view str) const
 {
 	STOCMsg::Chat proto{};
-	proto.posOrType = EncodePosition(c.Position());
+	proto.posOrType = EncodePosition(p);
 	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
 	return STOCMsg(proto).Shrink(size + sizeof(uint16_t));
 }

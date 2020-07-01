@@ -38,7 +38,6 @@ struct Sidedecking
 
 struct Dueling
 {
-	uint8_t isTeam1GoingFirst;
 	void* duelPtr;
 	std::array<uint8_t, 2> currentPos;
 	Client* replier;

@@ -49,6 +49,12 @@ void Context::SetId(uint32_t newId)
 
 // private
 
+uint8_t Context::GetSwappedTeam(uint8_t team)
+{
+	assert(team <= 1u);
+	return isTeam1GoingFirst ^ team;
+}
+
 void Context::SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg)
 {
 	assert(team <= 1);
@@ -86,9 +92,10 @@ void Context::SendToAllExcept(Client& client, const YGOPro::STOCMsg& msg)
 
 void Context::MakeAndSendChat(Client& client, std::string_view msg)
 {
-	if(client.Position() != Client::POSITION_SPECTATOR)
+	if(auto p = client.Position(); p != Client::POSITION_SPECTATOR)
 	{
-		SendToAll(MakeChat(client, msg));
+		p.first = GetSwappedTeam(p.first);
+		SendToAll(MakeChat(p, msg));
 	}
 	else
 	{

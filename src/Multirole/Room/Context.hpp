@@ -114,9 +114,13 @@ private:
 	std::set<Client*> spectators;
 
 	// Additional data used by room states
+	uint8_t isTeam1GoingFirst{};
 	uint32_t id{};
 	std::unique_ptr<std::mt19937> rng;
 	std::array<int32_t, 2> wins{};
+
+	// Get correctly swapped teams based on team1 going first or not
+	uint8_t GetSwappedTeam(uint8_t team);
 
 	// Utilities to send a message to multiple clients
 	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg);
