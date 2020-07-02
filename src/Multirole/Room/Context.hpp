@@ -69,7 +69,7 @@ public:
 
 	// Chat handling is the same for all states
 	template<typename State>
-	constexpr StateOpt operator()(State&, const Event::Chat& e)
+	inline StateOpt operator()(State&, const Event::Chat& e)
 	{
 		MakeAndSendChat(e.client, e.msg);
 		return std::nullopt;
@@ -77,14 +77,14 @@ public:
 
 	// Ignore rest of state entries
 	template<typename S>
-	constexpr StateOpt operator()(S&)
+	inline StateOpt operator()(S&)
 	{
 		return std::nullopt;
 	}
 
 	// Ignore rest of state and event combinations
 	template<typename S, typename E>
-	constexpr StateOpt operator()(S&, E&)
+	inline StateOpt operator()(S&, E&)
 	{
 		return std::nullopt;
 	}
