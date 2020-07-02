@@ -1,6 +1,5 @@
 #include "Instance.hpp"
 
-
 #include "../IRoomManager.hpp"
 
 namespace Ignis::Multirole::Room

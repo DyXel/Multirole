@@ -20,6 +20,10 @@ set_property (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT 
 find_package(Threads REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	set_property(TARGET multirole PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+
 if(NOT IGNIS_MULTIROLE_SYSTEM_DEPS)
 	find_package(asio CONFIG REQUIRED)
 	find_package(libgit2 REQUIRED)
