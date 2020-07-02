@@ -153,12 +153,12 @@ const OCG_CardData& CardDatabase::DataFromCode(uint32_t code)
 		return search->second;
 	auto AllocSetcodes = [&](uint64_t dbVal) -> uint16_t*
 	{
-		static constexpr std::size_t SETCODES = 4;
-		auto p = decltype(scCache)::value_type(code, std::make_unique<uint16_t[]>(SETCODES + 1));
+		static constexpr std::size_t SETCODES = 4U;
+		auto p = decltype(scCache)::value_type(code, std::make_unique<uint16_t[]>(SETCODES + 1U));
 		auto& setcodes = scCache.emplace(std::move(p)).first->second;
-		for(std::size_t i = 0; i < SETCODES; i++)
-			setcodes[i] = (dbVal >> (i * 16)) & 0xFFFF;
-		setcodes[SETCODES] = 0;
+		for(std::size_t i = 0U; i < SETCODES; i++)
+			setcodes[i] = (dbVal >> (i * 16U)) & 0xFFFF;
+		setcodes[SETCODES] = 0U;
 		return setcodes.get();
 	};
 	OCG_CardData& cd = dataCache[code]; // implicit insertion
@@ -176,8 +176,8 @@ const OCG_CardData& CardDatabase::DataFromCode(uint32_t code)
 		cd.defense = (cd.type & TYPE_LINK) != 0U ? 0 : cd.defense;
 		const auto dbLevel = sqlite3_column_int(sStmt, 6);
 		cd.level = dbLevel & 0x800000FF;
-		cd.lscale = (dbLevel >> 24) & 0xFF;
-		cd.rscale = (dbLevel >> 16) & 0xFF;
+		cd.lscale = (dbLevel >> 24U) & 0xFF;
+		cd.rscale = (dbLevel >> 16U) & 0xFF;
 		cd.race = sqlite3_column_int(sStmt, 7);
 		cd.attribute = sqlite3_column_int(sStmt, 8);
 	}

@@ -11,8 +11,8 @@ class CTOSMsg
 public:
 	enum
 	{
-		HEADER_LENGTH = 3,
-		MSG_MAX_LENGTH = 1021
+		HEADER_LENGTH = 3U,
+		MSG_MAX_LENGTH = 1021U
 	};
 	using LengthType = int16_t;
 	enum class MsgType : uint8_t
@@ -49,22 +49,22 @@ public:
 
 	struct PlayerInfo
 	{
-		uint16_t name[20];
+		uint16_t name[20U];
 	};
 
 	struct CreateGame
 	{
 		HostInfo hostInfo;
-		uint16_t name[20];
-		uint16_t pass[20];
-		char notes[200];
+		uint16_t name[20U];
+		uint16_t pass[20U];
+		char notes[200U];
 	};
 
 	struct JoinGame
 	{
 		uint16_t version2;
 		uint32_t id;
-		uint16_t pass[20];
+		uint16_t pass[20U];
 		ClientVersion version;
 	};
 
@@ -85,7 +85,7 @@ public:
 	{
 		LengthType v;
 		std::memcpy(&v, data, sizeof(LengthType));
-		return v - 1u;
+		return v - 1U;
 	}
 
 	MsgType GetType() const

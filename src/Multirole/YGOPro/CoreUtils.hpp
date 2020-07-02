@@ -10,7 +10,7 @@ namespace YGOPro::CoreUtils
 
 struct LocInfo
 {
-	static constexpr std::size_t SIZE = 1 + 1 + 4 + 4;
+	static constexpr std::size_t SIZE = 1U + 1U + 4U + 4U;
 	uint8_t con;  // Controller
 	uint8_t loc;  // Location
 	uint32_t seq; // Sequence

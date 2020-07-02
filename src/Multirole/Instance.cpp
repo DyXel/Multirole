@@ -106,7 +106,7 @@ int Instance::Run()
 	constexpr auto run = static_cast<RunType>(&asio::io_context::run);
 	std::thread webhooks(std::bind(run, &whIoCtx));
 	asio::thread_pool threads(hostingConcurrency);
-	for(unsigned int i = 0; i < hostingConcurrency; i++)
+	for(unsigned int i = 0U; i < hostingConcurrency; i++)
 		asio::dispatch(threads, std::bind(run, &lIoCtx));
 	webhooks.join();
 	threads.join();

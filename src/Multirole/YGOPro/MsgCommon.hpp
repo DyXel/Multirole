@@ -53,7 +53,7 @@ struct HostInfo
 	uint8_t startingDrawCount;
 	uint8_t drawCountPerTurn;
 	uint16_t timeLimitInSeconds;
-	uint32_t : 32; //padding to account for the previous 64 bit value
+	uint32_t : 32U; //padding to account for the previous 64 bit value
 	uint32_t handshake;
 	ClientVersion version;
 	int32_t t0Count;

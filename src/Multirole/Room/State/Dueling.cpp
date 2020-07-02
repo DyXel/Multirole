@@ -55,18 +55,18 @@ StateOpt Context::operator()(State::Dueling& s)
 #define X(f, c) if(hostInfo.extraRules & (f)) extraCards.push_back(c)
 	// NOTE: no lint used because we dont want clang-tidy to complain
 	// about magic numbers we already know.
-	X(EXTRA_RULE_SEALED_DUEL,        511005092); // NOLINT
-	X(EXTRA_RULE_BOOSTER_DUEL,       511005093); // NOLINT
-	X(EXTRA_RULE_DESTINY_DRAW,       511004000); // NOLINT
-	X(EXTRA_RULE_CONCENTRATION_DUEL, 511004322); // NOLINT
-	X(EXTRA_RULE_BOSS_DUEL,          95000000);  // NOLINT
-	X(EXTRA_RULE_BATTLE_CITY,        511004014); // NOLINT
-	X(EXTRA_RULE_DUELIST_KINGDOM,    511002621); // NOLINT
-	X(EXTRA_RULE_DIMENSION_DUEL,     511600002); // NOLINT
-	X(EXTRA_RULE_TURBO_DUEL,         110000000); // NOLINT
-	X(EXTRA_RULE_COMMAND_DUEL,       95200000);  // NOLINT
-	X(EXTRA_RULE_DECK_MASTER,        300);       // NOLINT
-	X(EXTRA_RULE_ACTION_DUEL,        151999999); // NOLINT
+	X(EXTRA_RULE_SEALED_DUEL,        511005092U); // NOLINT
+	X(EXTRA_RULE_BOOSTER_DUEL,       511005093U); // NOLINT
+	X(EXTRA_RULE_DESTINY_DRAW,       511004000U); // NOLINT
+	X(EXTRA_RULE_CONCENTRATION_DUEL, 511004322U); // NOLINT
+	X(EXTRA_RULE_BOSS_DUEL,          95000000U);  // NOLINT
+	X(EXTRA_RULE_BATTLE_CITY,        511004014U); // NOLINT
+	X(EXTRA_RULE_DUELIST_KINGDOM,    511002621U); // NOLINT
+	X(EXTRA_RULE_DIMENSION_DUEL,     511600002U); // NOLINT
+	X(EXTRA_RULE_TURBO_DUEL,         110000000U); // NOLINT
+	X(EXTRA_RULE_COMMAND_DUEL,       95200000U);  // NOLINT
+	X(EXTRA_RULE_DECK_MASTER,        300U);       // NOLINT
+	X(EXTRA_RULE_ACTION_DUEL,        151999999U); // NOLINT
 #undef X
 	OCG_NewCardInfo nci{};
 	try
@@ -82,7 +82,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	// Add main and extra deck cards for all players.
 	auto ReversedOrShuffled = [&](CodeVector deck) // NOTE: Copy is intentional.
 	{
-		if(hostInfo.dontShuffleDeck != 0u)
+		if(hostInfo.dontShuffleDeck != 0U)
 			std::reverse(deck.begin(), deck.end());
 		else
 			std::shuffle(deck.begin(), deck.end(), *rng);
@@ -113,14 +113,14 @@ StateOpt Context::operator()(State::Dueling& s)
 		auto msgStart = CoreUtils::MakeStartMsg(
 			{
 				hostInfo.startingLP,
-				core.QueryCount(s.duelPtr, 0, LOCATION_DECK),
-				core.QueryCount(s.duelPtr, 0, LOCATION_EXTRA),
-				core.QueryCount(s.duelPtr, 1, LOCATION_DECK),
-				core.QueryCount(s.duelPtr, 1, LOCATION_EXTRA),
+				core.QueryCount(s.duelPtr, 0U, LOCATION_DECK),
+				core.QueryCount(s.duelPtr, 0U, LOCATION_EXTRA),
+				core.QueryCount(s.duelPtr, 1U, LOCATION_DECK),
+				core.QueryCount(s.duelPtr, 1U, LOCATION_EXTRA),
 			});
-		SendToTeam(GetSwappedTeam(0), MakeGameMsg(msgStart));
-		msgStart[1] = 1;
-		SendToTeam(GetSwappedTeam(1), MakeGameMsg(msgStart));
+		SendToTeam(GetSwappedTeam(0U), MakeGameMsg(msgStart));
+		msgStart[1] = 1U;
+		SendToTeam(GetSwappedTeam(1U), MakeGameMsg(msgStart));
 		msgStart[1] = 0xF0 | isTeam1GoingFirst;
 		SendToSpectators(MakeGameMsg(msgStart));
 		// Update replay with deck data.
@@ -128,35 +128,35 @@ StateOpt Context::operator()(State::Dueling& s)
 		{
 			const Core::IWrapper::QueryInfo qInfo =
 			{
-				0x1181fff,
+				0x1181FFF,
 				team,
 				LOCATION_DECK,
-				0u,
-				0u
+				0U,
+				0U
 			};
 			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
 			// TODO: Save into replay.
 		};
-		RecordDecks(0);
-		RecordDecks(1);
+		RecordDecks(0U);
+		RecordDecks(1U);
 		// Send extra deck queries.
 		auto SendExtraDecks = [&](uint8_t team)
 		{
 			const Core::IWrapper::QueryInfo qInfo =
 			{
-				0x381fff,
+				0x381FFF,
 				team,
 				LOCATION_EXTRA,
-				0u,
-				0u
+				0U,
+				0U
 			};
 			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
 			using namespace YGOPro::CoreUtils;
 			SendToTeam(GetSwappedTeam(qInfo.con),
 				MakeGameMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer)));
 		};
-		SendExtraDecks(0);
-		SendExtraDecks(1);
+		SendExtraDecks(0U);
+		SendExtraDecks(1U);
 	}
 	CORE_EXCEPTION_HANDLER()
 	// Start processing the duel
@@ -174,7 +174,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::ConnectionLost& e)
 		e.client.Disconnect();
 		return std::nullopt;
 	}
-	uint8_t winner = 1u - p.first;
+	uint8_t winner = 1U - p.first;
 	return Finish(s, DuelFinishReason{Reason::REASON_CONNECTION_LOST, winner});
 }
 
@@ -201,7 +201,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Surrender& e)
 		e.client.Disconnect();
 		return std::nullopt;
 	}
-	uint8_t winner = 1 - p.first;
+	uint8_t winner = 1U - p.first;
 	return Finish(s, DuelFinishReason{Reason::REASON_SURRENDERED, winner});
 }
 
@@ -223,25 +223,25 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		uint8_t msgType = GetMessageType(msg);
 		if(msgType == MSG_RETRY)
 		{
-			uint8_t winner = 1u - s.replier->Position().first;
+			uint8_t winner = 1U - s.replier->Position().first;
 			dfrOpt = DuelFinishReason{Reason::REASON_WRONG_RESPONSE, winner};
 		}
 		else if(msgType == MSG_WIN)
 		{
-			uint8_t winner = GetSwappedTeam(msg[1]);
+			uint8_t winner = GetSwappedTeam(msg[1U]);
 			dfrOpt = DuelFinishReason{Reason::REASON_DUEL_WON, winner};
 		}
 		else if(msgType == MSG_TAG_SWAP)
 		{
-			uint8_t team = GetSwappedTeam(msg[1]);
-			s.currentPos[team] = (s.currentPos[team] + 1) %
-				((team == 0) ? hostInfo.t0Count : hostInfo.t1Count);
+			uint8_t team = GetSwappedTeam(msg[1U]);
+			s.currentPos[team] = (s.currentPos[team] + 1U) %
+				((team == 0U) ? hostInfo.t0Count : hostInfo.t1Count);
 		}
 		else if(msgType == MSG_MATCH_KILL)
 		{
 			// Too lazy to create a function in YGOPro::CoreUtils
 			uint32_t reason{};
-			std::memcpy(&reason, &msg[1], sizeof(decltype(reason)));
+			std::memcpy(&reason, &msg[1U], sizeof(decltype(reason)));
 			s.matchKillReason = reason;
 		}
 		else if(DoesMessageRequireAnswer(msgType))
@@ -270,7 +270,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 					req.con,
 					req.loc,
 					req.seq,
-					0u
+					0U
 				};
 				const auto fullBuffer = core.Query(s.duelPtr, qInfo);
 				const auto query = DeserializeSingleQueryBuffer(fullBuffer);
@@ -279,7 +279,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto strippedMsg = MakeMsg(strippedBuffer);
 				uint8_t team = GetSwappedTeam(req.con);
 				SendToTeam(team, MakeMsg(ownerBuffer));
-				SendToTeam(1 - team, strippedMsg);
+				SendToTeam(1U - team, strippedMsg);
 				SendToSpectators(strippedMsg);
 			}
 			else /*if(std::holds_alternative<QueryLocationRequest>(reqVar))*/
@@ -295,8 +295,8 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 					req.flags,
 					req.con,
 					req.loc,
-					0u,
-					0u
+					0U,
+					0U
 				};
 				uint8_t team = GetSwappedTeam(req.con);
 				const auto fullBuffer = core.QueryLocation(s.duelPtr, qInfo);
@@ -315,7 +315,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto strippedBuffer = SerializeLocationQuery(query, true);
 				const auto strippedMsg = MakeMsg(strippedBuffer);
 				SendToTeam(team, MakeMsg(ownerBuffer));
-				SendToTeam(1 - team, strippedMsg);
+				SendToTeam(1U - team, strippedMsg);
 				SendToSpectators(strippedMsg);
 			}
 		}
@@ -352,14 +352,14 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE_STRIPPED:
 		{
-			const std::array<Msg, 2> sMsgs =
+			const std::array<Msg, 2U> sMsgs =
 			{
-				StripMessageForTeam(0, msg),
-				StripMessageForTeam(1, msg)
+				StripMessageForTeam(0U, msg),
+				StripMessageForTeam(1U, msg)
 			};
-			SendToTeam(GetSwappedTeam(0), MakeGameMsg(sMsgs[0]));
-			SendToTeam(GetSwappedTeam(1), MakeGameMsg(sMsgs[1]));
-			SendToSpectators(MakeGameMsg(StripMessageForTeam(1, sMsgs[0])));
+			SendToTeam(GetSwappedTeam(0U), MakeGameMsg(sMsgs[0U]));
+			SendToTeam(GetSwappedTeam(1U), MakeGameMsg(sMsgs[1U]));
+			SendToSpectators(MakeGameMsg(StripMessageForTeam(1U, sMsgs[0U])));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE:
@@ -415,9 +415,9 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	};
 	auto turnDecider = [&]() -> Client*
 	{
-		if(dfr.winner <= 1u)
-			return duelists[{1u - dfr.winner, 0}];
-		return duelists[{0u, 0u}];
+		if(dfr.winner <= 1U)
+			return duelists[{1U - dfr.winner, 0U}];
+		return duelists[{0U, 0U}];
 	}();
 	switch(dfr.reason)
 	{
@@ -433,9 +433,9 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 			SendWinMsg(WIN_REASON_TIMED_OUT);
 		else if(dfr.reason == Reason::REASON_WRONG_RESPONSE)
 			SendWinMsg(WIN_REASON_WRONG_RESPONSE);
-		if(hostInfo.bestOf <= 1 || dfr.winner == 2)
-			return State::Rematching{turnDecider, 0, {}};
-		wins[dfr.winner] += (s.matchKillReason) ? hostInfo.bestOf : 1;
+		if(hostInfo.bestOf <= 1 || dfr.winner == 2U)
+			return State::Rematching{turnDecider, 0U, {}};
+		wins[dfr.winner] += (s.matchKillReason) ? hostInfo.bestOf : 1U;
 		if(wins[dfr.winner] >= neededWins)
 		{
 			SendToAll(MakeDuelEnd());

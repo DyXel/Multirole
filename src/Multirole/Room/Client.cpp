@@ -205,9 +205,9 @@ void Client::HandleMsg()
 			auto sideCount = incoming.Read<uint32_t>(ptr);
 			main.reserve(mainCount);
 			side.reserve(sideCount);
-			for(decltype(mainCount) i = 0; i < mainCount; i++)
+			for(uint32_t i = 0U; i < mainCount; i++)
 				main.push_back(incoming.Read<uint32_t>(ptr));
-			for(decltype(sideCount) i = 0; i < sideCount; i++)
+			for(uint32_t i = 0U; i < sideCount; i++)
 				side.push_back(incoming.Read<uint32_t>(ptr));
 		}
 		catch(uintptr_t value)

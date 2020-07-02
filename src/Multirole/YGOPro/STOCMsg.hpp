@@ -14,7 +14,7 @@ class STOCMsg
 public:
 	enum
 	{
-		HEADER_LENGTH = 2,
+		HEADER_LENGTH = 2U,
 	};
 	using LengthType = int16_t;
 	enum class MsgType : uint8_t
@@ -68,9 +68,9 @@ public:
 	{
 		static const auto val = MsgType::ERROR_MSG;
 		uint8_t msg;
-		char : 8; //padding to keep the client version
-		char : 8; //in the same place as the other
-		char : 8; //error codes
+		char : 8U; // Padding to keep the client version
+		char : 8U; // in the same place as the other
+		char : 8U; // error codes.
 		ClientVersion version;
 	};
 
@@ -103,13 +103,13 @@ public:
 	{
 		static const auto val = MsgType::CHAT;
 		uint16_t posOrType;
-		uint16_t msg[256];
+		uint16_t msg[256U];
 	};
 
 	struct PlayerEnter
 	{
 		static const auto val = MsgType::PLAYER_ENTER;
-		uint16_t name[20];
+		uint16_t name[20U];
 		uint8_t pos;
 	};
 
@@ -141,7 +141,7 @@ public:
 
 	STOCMsg(MsgType type)
 	{
-		const auto msgSize = static_cast<LengthType>(1 + sizeof(MsgType));
+		const auto msgSize = static_cast<LengthType>(1U + sizeof(MsgType));
 		bytes.resize(HEADER_LENGTH + msgSize);
 		uint8_t* p = bytes.data();
 		std::memcpy(p, &msgSize, sizeof(msgSize));

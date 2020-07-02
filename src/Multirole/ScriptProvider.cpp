@@ -60,7 +60,7 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 			static const auto npos = std::string::npos;
 			std::size_t pos = str.rfind('/');
 			if(pos != npos || (pos = str.rfind('\\')) != npos)
-				return std::string(str.substr(pos + 1u));
+				return std::string(str.substr(pos + 1U));
 			return std::string(str);
 		};
 		// Read actual file into memory and place into script map

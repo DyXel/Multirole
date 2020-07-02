@@ -19,10 +19,10 @@ constexpr const BanlistHash BANLIST_HASH_MAGIC = 0x7DFCEE6A;
 
 constexpr BanlistHash Salt(BanlistHash hash, uint32_t code, uint32_t count)
 {
-	constexpr uint32_t HASH_MAGIC_1 = 18u;
-	constexpr uint32_t HASH_MAGIC_2 = 14u;
-	constexpr uint32_t HASH_MAGIC_3 = 27u;
-	constexpr uint32_t HASH_MAGIC_4 = 5u;
+	constexpr uint32_t HASH_MAGIC_1 = 18U;
+	constexpr uint32_t HASH_MAGIC_2 = 14U;
+	constexpr uint32_t HASH_MAGIC_3 = 27U;
+	constexpr uint32_t HASH_MAGIC_4 = 5U;
 	return hash ^ ((code << HASH_MAGIC_1) | (code >> HASH_MAGIC_2)) ^
 	       ((code << (HASH_MAGIC_3 + count)) | (code >> (HASH_MAGIC_4 - count)));
 }
@@ -48,14 +48,14 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 		);
 	};
 	std::string l;
-	std::size_t lc = 0;
+	std::size_t lc = 0U;
 	auto MakeException = [&lc](std::string_view str)
 	{
 		return std::runtime_error(fmt::format("{:d}:{:s}", lc, str));
 	};
 	while(++lc, std::getline(stream, l))
 	{
-		switch(l[0])
+		switch(l[0U])
 		{
 		case '!':
 		{
@@ -74,21 +74,21 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 			std::size_t p = l.find(' ');
 			if(p == std::string::npos)
 				throw MakeException("Card code separator not found");
-			std::size_t c = l.find_first_not_of("0123456789", p + 1u);
+			std::size_t c = l.find_first_not_of("0123456789", p + 1U);
 			if(c != std::string::npos)
 				c -= p;
-			auto code = static_cast<uint32_t>(std::stoul(l.substr(0u, p)));
-			if(code == 0u)
+			auto code = static_cast<uint32_t>(std::stoul(l.substr(0U, p)));
+			if(code == 0U)
 				throw MakeException("Card code cannot be 0");
 			auto count = static_cast<uint32_t>(std::stoul(l.substr(p, c)));
 			hash = Detail::Salt(hash, code, count);
 			switch(count)
 			{
 #define X(val, uset) case val: {uset.insert(code); break;}
-			X(3u, whit)
-			X(2u, semi)
-			X(1u, limi)
-			X(0u, forb)
+			X(3U, whit)
+			X(2U, semi)
+			X(1U, limi)
+			X(0U, forb)
 #undef X
 			default:
 				throw MakeException("Card count is not 0, 1, 2 or 3");

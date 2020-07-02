@@ -111,7 +111,7 @@ StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::Ready& e)
 	bool value = e.value;
 	if(e.client.OriginalDeck() == nullptr)
 		value = false;
-	if(value && hostInfo.dontCheckDeck == 0)
+	if(value && hostInfo.dontCheckDeck == 0U)
 	{
 		if(auto error = CheckDeck(*e.client.OriginalDeck()); error)
 		{
@@ -139,7 +139,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	Client::PosType p;
 	p.first = static_cast<unsigned char>(e.pos >= hostInfo.t0Count);
 	p.second = p.first != 0U ? e.pos - hostInfo.t0Count : e.pos;
-	if(duelists.count(p) == 0 || duelists[p] == s.host)
+	if(duelists.count(p) == 0U || duelists[p] == s.host)
 		return std::nullopt;
 	Client* kicked = duelists[p];
 	kicked->Disconnect();
@@ -156,9 +156,9 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 {
 	auto ValidateDuelistsSetup = [&]() -> bool
 	{
-		if((hostInfo.duelFlags & 0x80) == 0) // NOLINT: DUEL_RELAY
+		if((hostInfo.duelFlags & 0x80) == 0U) // NOLINT: DUEL_RELAY
 			return int32_t(duelists.size()) == hostInfo.t0Count + hostInfo.t1Count;
-		if(!(teamCount[0] > 0 && teamCount[1] > 0))
+		if(!(teamCount[0U] > 0U && teamCount[1U] > 0U))
 			return false;
 		// At this point it has been decided that this relay setup is
 		// valid, however we need to move the duelists to their first
@@ -167,12 +167,12 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 		{
 			using Pos = Client::PosType;
 			const auto max = teamCount[team];
-			for(uint8_t i = 0u; i < max; i++)
+			for(uint8_t i = 0U; i < max; i++)
 			{
 				// Find an empty position
 				auto newPos = [&]() -> std::optional<Pos>
 				{
-					for(Pos p = {team, 0u}; p.second < max; p.second++)
+					for(Pos p = {team, 0U}; p.second < max; p.second++)
 					{
 						if(duelists.count(p) == 0U)
 							return p;
@@ -186,7 +186,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 				{
 					for(Pos p = *newPos;;p.second++)
 					{
-						assert(p.second <= 3); // NOLINT: max server limit
+						assert(p.second <= 3U); // NOLINT: max server limit
 						if(auto it = duelists.find(p); it != duelists.end())
 							return it;
 					}
@@ -203,8 +203,8 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 			}
 		};
 		std::lock_guard<std::mutex> lock(mDuelists);
-		TightenTeam(0);
-		TightenTeam(1);
+		TightenTeam(0U);
+		TightenTeam(1U);
 		return true;
 	};
 	if(s.host != &e.client)
@@ -226,7 +226,7 @@ bool Context::TryEmplaceDuelist(Client& client, Client::PosType hint)
 	{
 		for(; p.second < max; p.second++)
 		{
-			if(duelists.count(p) == 0 && duelists.emplace(p, &client).second)
+			if(duelists.count(p) == 0U && duelists.emplace(p, &client).second)
 			{
 				client.SetPosition(p);
 				teamCount[p.first]++;

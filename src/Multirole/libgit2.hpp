@@ -139,7 +139,7 @@ inline void Check(int error)
 
 // Helper function to create RAII-managed objects for libgit C objects
 template<typename Ctor,
-	typename T = Detail::RemoveAllPointers_t<Detail::GetArg_t<0, Ctor>>,
+	typename T = Detail::RemoveAllPointers_t<Detail::GetArg_t<0U, Ctor>>,
 	typename... Args>
 decltype(auto) MakeUnique(Ctor ctor, Args&& ...args)
 {

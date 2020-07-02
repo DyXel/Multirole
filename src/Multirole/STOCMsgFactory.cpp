@@ -15,13 +15,13 @@ STOCMsgFactory::STOCMsgFactory(uint8_t t1max) : t1max(t1max)
 STOCMsg STOCMsgFactory::MakeTypeChange(const Room::Client& c, bool isHost) const
 {
 	const auto posKey = c.Position();
-	uint8_t pos = 0;
+	uint8_t pos = 0U;
 	if(posKey == Room::Client::POSITION_SPECTATOR)
-		pos = 7; // NOLINT: Sum of both teams max player + 1
+		pos = 7U; // NOLINT: Sum of both teams max player + 1
 	else
 		pos = EncodePosition(posKey);
 	STOCMsg::TypeChange proto{};
-	proto.type = (static_cast<uint8_t>(isHost) << 4) | pos;
+	proto.type = (static_cast<uint8_t>(isHost) << 4U) | pos;
 	return STOCMsg(proto);
 }
 
@@ -72,7 +72,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c) const
 	STOCMsg::PlayerChange proto{};
 	const uint8_t pos = EncodePosition(c.Position());
 	PChangeType pct = (c.Ready()) ? PCHANGE_TYPE_READY : PCHANGE_TYPE_NOT_READY;
-	proto.status = (pos << 4) | static_cast<uint8_t>(pct);
+	proto.status = (pos << 4U) | static_cast<uint8_t>(pct);
 	return STOCMsg(proto);
 }
 
@@ -80,7 +80,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c, PChangeType pct)
 {
 	STOCMsg::PlayerChange proto{};
 	const uint8_t pos = EncodePosition(c.Position());
-	proto.status = (pos << 4) | static_cast<uint8_t>(pct);
+	proto.status = (pos << 4U) | static_cast<uint8_t>(pct);
 	return STOCMsg(proto);
 }
 
@@ -89,7 +89,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(Room::Client::PosType p1, Room::Client:
 	STOCMsg::PlayerChange proto{};
 	const uint8_t pos1 = EncodePosition(p1);
 	const uint8_t pos2 = EncodePosition(p2);
-	proto.status = (pos1 << 4) | pos2;
+	proto.status = (pos1 << 4U) | pos2;
 	return STOCMsg(proto);
 }
 
@@ -152,9 +152,9 @@ STOCMsg STOCMsgFactory::MakeDeckError(Error::DeckOrCard type, uint32_t code)
 			2U,
 			static_cast<uint32_t>(type),
 			{
-				0,
-				0,
-				0
+				0U,
+				0U,
+				0U
 			},
 			code
 		}
@@ -178,19 +178,19 @@ STOCMsg STOCMsgFactory::MakeDeckError(
 				static_cast<uint32_t>(min),
 				static_cast<uint32_t>(max),
 			},
-			0
+			0U
 		}
 	};
 }
 
 STOCMsg STOCMsgFactory::MakeVersionError(const ClientVersion& version)
 {
-	return {STOCMsg::VerErrorMsg{5u, version}};
+	return {STOCMsg::VerErrorMsg{5U, version}};
 }
 
 STOCMsg STOCMsgFactory::MakeSideError(uint32_t value)
 {
-	return {STOCMsg::ErrorMsg{3u, value}};
+	return {STOCMsg::ErrorMsg{3U, value}};
 }
 
 // protected

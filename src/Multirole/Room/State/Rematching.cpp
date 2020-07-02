@@ -7,8 +7,8 @@ StateOpt Context::operator()(State::Rematching& /*unused*/)
 {
 	SendToAll(MakeRematchWait());
 	const auto msg = MakeAskIfRematch();
-	SendToTeam(0, msg);
-	SendToTeam(1, msg);
+	SendToTeam(0U, msg);
+	SendToTeam(1U, msg);
 	return std::nullopt;
 }
 
@@ -24,12 +24,12 @@ StateOpt Context::operator()(State::Rematching& s, const Event::Rematch& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;
-	if(!e.answer && s.answered.count(&e.client) == 0)
+	if(!e.answer && s.answered.count(&e.client) == 0U)
 	{
 		SendToAll(MakeDuelEnd());
 		return State::Closing{};
 	}
-	else if(e.answer && s.answered.count(&e.client) == 0)
+	else if(e.answer && s.answered.count(&e.client) == 0U)
 	{
 		s.answered.insert(&e.client);
 		if(++s.answerCount == duelists.size())

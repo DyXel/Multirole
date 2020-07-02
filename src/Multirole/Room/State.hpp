@@ -20,7 +20,7 @@ struct Waiting
 
 struct RockPaperScissor
 {
-	std::array<uint8_t, 2> choices;
+	std::array<uint8_t, 2U> choices;
 };
 
 struct ChoosingTurn
@@ -39,7 +39,7 @@ struct Sidedecking
 struct Dueling
 {
 	void* duelPtr;
-	std::array<uint8_t, 2> currentPos;
+	std::array<uint8_t, 2U> currentPos;
 	Client* replier;
 	std::optional<uint32_t> matchKillReason;
 };

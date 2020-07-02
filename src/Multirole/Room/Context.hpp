@@ -112,7 +112,7 @@ private:
 
 	// Client management variables
 	std::map<Client::PosType, Client*> duelists;
-	std::array<uint8_t, 2> teamCount;
+	std::array<uint8_t, 2U> teamCount;
 	std::mutex mDuelists;
 	std::set<Client*> spectators;
 
@@ -120,7 +120,7 @@ private:
 	uint8_t isTeam1GoingFirst{};
 	uint32_t id{};
 	std::unique_ptr<std::mt19937> rng;
-	std::array<int32_t, 2> wins{};
+	std::array<int32_t, 2U> wins{};
 
 	// Get correctly swapped teams based on team1 going first or not
 	uint8_t GetSwappedTeam(uint8_t team);

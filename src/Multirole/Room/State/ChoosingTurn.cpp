@@ -15,7 +15,7 @@ StateOpt Context::operator()(State::ChoosingTurn&, const Event::ConnectionLost& 
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;
-	uint8_t winner = 1u - GetSwappedTeam(e.client.Position().first);
+	uint8_t winner = 1U - GetSwappedTeam(e.client.Position().first);
 	SendToAll(MakeGameMsg({MSG_WIN, winner, WIN_REASON_CONNECTION_LOST}));
 	SendToAll(MakeDuelEnd());
 	return State::Closing{};
@@ -28,7 +28,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	isTeam1GoingFirst = static_cast<uint8_t>(
 			(e.client.Position().first == 0U && !e.goingFirst) ||
 			(e.client.Position().first == 1U && e.goingFirst));
-	return State::Dueling{nullptr, {0u, 0u}, nullptr, std::nullopt};
+	return State::Dueling{nullptr, {0U, 0U}, nullptr, std::nullopt};
 }
 
 } // namespace Ignis::Multirole::Room

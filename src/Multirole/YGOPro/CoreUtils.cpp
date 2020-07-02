@@ -46,32 +46,32 @@ constexpr void Write(uint8_t*& ptr, T value)
 
 inline void AddRefreshAllDecks(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_DECK, 0x1181fff});
-	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_DECK, 0x1181fff});
+	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_DECK, 0x1181FFF});
+	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_DECK, 0x1181FFF});
 }
 
 inline void AddRefreshAllHands(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_HAND, 0x3781fff});
-	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_HAND, 0x3781fff});
+	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_HAND, 0x3781FFF});
+	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_HAND, 0x3781FFF});
 }
 
 inline void AddRefreshAllMZones(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_MZONE, 0x3881fff});
-	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_MZONE, 0x3881fff});
+	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3881FFF});
+	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3881FFF});
 }
 
 inline void AddRefreshAllSZones(std::vector<QueryRequest>& qreqs)
 {
-	qreqs.emplace_back(QueryLocationRequest{0, LOCATION_SZONE, 0x3e81fff});
-	qreqs.emplace_back(QueryLocationRequest{1, LOCATION_SZONE, 0x3e81fff});
+	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x3E81FFF});
+	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x3E81FFF});
 }
 
 inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr)
 {
 
-	if(Read<uint16_t>(ptr) == 0)
+	if(Read<uint16_t>(ptr) == 0U)
 		return std::nullopt;
 	ptr -= sizeof(uint16_t);
 	for(QueryOpt q = Query{};;)
@@ -109,7 +109,7 @@ inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr)
 	case qtype: \
 	{ \
 		auto c = Read<uint32_t>(ptr); \
-		for(uint32_t i = 0; i < c; i++) \
+		for(uint32_t i = 0U; i < c; i++) \
 			var.push_back(Read<decltype(var)::value_type>(ptr)); \
 		break; \
 	}
@@ -147,10 +147,10 @@ std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 		return msgs;
 	const std::size_t bufSize = buffer.size();
 	const uint8_t* const bufData = buffer.data();
-	for(std::size_t pos = 0; pos != bufSize; )
+	for(std::size_t pos = 0U; pos != bufSize; )
 	{
 		// Retrieve length of this message
-		length_t l = 0;
+		length_t l = 0U;
 		std::memcpy(&l, bufData + pos, sizeOfLength);
 		pos += sizeOfLength;
 		// Copy message data to a new message
@@ -163,7 +163,7 @@ std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 
 uint8_t GetMessageType(const Msg& msg)
 {
-	return msg[0];
+	return msg[0U];
 }
 
 bool DoesMessageRequireAnswer(uint8_t msgType)
@@ -235,21 +235,21 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	}
 	case MSG_HINT:
 	{
-		switch(msg[1])
+		switch(msg[1U])
 		{
-		case 1: case 2: case 3: case 5:
+		case 1U: case 2U: case 3U: case 5U:
 		{
 			return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
 		}
-		case 200:
+		case 200U:
 		{
 			return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM;
 		}
-		case 4: case 6: case 7: case 8: case 9: case 11:
+		case 4U: case 6U: case 7U: case 8U: case 9U: case 11U:
 		{
 			return MsgDistType::MSG_DIST_TYPE_EVERYONE_EXCEPT_TEAM_DUELIST;
 		}
-		default: /*case 10: case 201: case 202: case 203:*/
+		default: /*case 10U: case 201U: case 202U: case 203U:*/
 		{
 			return MsgDistType::MSG_DIST_TYPE_EVERYONE;
 		}
@@ -257,12 +257,12 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	}
 	case MSG_CONFIRM_CARDS:
 	{
-		const auto* ptr = msg.data() + 2;
+		const auto* ptr = msg.data() + 2U;
 		// if count(uint32_t) is not 0 and location(uint8_t) is LOCATION_DECK
 		// then send to specific team duelist.
-		if(Read<uint32_t>(ptr) != 0)
+		if(Read<uint32_t>(ptr) != 0U)
 		{
-			ptr += 4 + 1;
+			ptr += 4U + 1U;
 			if(Read<uint8_t>(ptr) == LOCATION_DECK)
 				return MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST;
 		}
@@ -290,11 +290,11 @@ uint8_t GetMessageReceivingTeam(const Msg& msg)
 	{
 	case MSG_HINT:
 	{
-		return msg[2];
+		return msg[2U];
 	}
 	default:
 	{
-		return msg[1];
+		return msg[1U];
 	}
 	}
 }
@@ -313,28 +313,28 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	};
 	auto ClearPositionArray = [](uint32_t count, uint8_t*& ptr)
 	{
-		for(uint32_t i = 0; i < count; i++)
+		for(uint32_t i = 0U; i < count; i++)
 		{
-			ptr += 4; // Card code
+			ptr += 4U; // Card code
 			auto pos = Read<uint32_t>(ptr);
 			if(!(pos & POS_FACEUP))
 			{
-				ptr -= 4 + 4;
-				Write<uint32_t>(ptr, 0);
-				ptr += 4;
+				ptr -= 4U + 4U;
+				Write<uint32_t>(ptr, 0U);
+				ptr += 4U;
 			}
 		}
 	};
 	auto ClearLocInfoArray = [](uint32_t count, uint8_t team, uint8_t*& ptr)
 	{
-		for(uint32_t i = 0; i < count; i++)
+		for(uint32_t i = 0U; i < count; i++)
 		{
-			ptr += 4; // Card code
+			ptr += 4U; // Card code
 			const auto info = Read<LocInfo>(ptr);
 			if(team != info.con)
 			{
-				ptr -= LocInfo::SIZE + 4;
-				Write<uint32_t>(ptr, 0);
+				ptr -= LocInfo::SIZE + 4U;
+				Write<uint32_t>(ptr, 0U);
 				ptr += LocInfo::SIZE;
 			}
 		}
@@ -345,7 +345,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	{
 	case MSG_SET:
 	{
-		Write<uint32_t>(ptr, 0);
+		Write<uint32_t>(ptr, 0U);
 		break;
 	}
 	case MSG_SHUFFLE_HAND:
@@ -354,19 +354,19 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 		if(Read<uint8_t>(ptr) == team)
 			break;
 		auto count = Read<uint32_t>(ptr);
-		for(uint32_t i = 0; i < count; i++)
-			Write<uint32_t>(ptr, 0);
+		for(uint32_t i = 0U; i < count; i++)
+			Write<uint32_t>(ptr, 0U);
 		break;
 	}
 	case MSG_MOVE:
 	{
-		ptr += 4; // Card code
+		ptr += 4U; // Card code
 		ptr += LocInfo::SIZE; // Previous location
 		const auto current = Read<LocInfo>(ptr);
 		if(current.con == team || IsLocInfoPublic(current))
 			break;
-		ptr -= 4 + (LocInfo::SIZE * 2);
-		Write<uint32_t>(ptr, 0);
+		ptr -= 4U + (LocInfo::SIZE * 2U);
+		Write<uint32_t>(ptr, 0U);
 		break;
 	}
 	case MSG_DRAW:
@@ -381,42 +381,42 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	{
 		if(Read<uint8_t>(ptr) == team)
 			break;
-		ptr        += 4;                   // Main deck count
-		auto count  = Read<uint32_t>(ptr); // Extra deck count
-		ptr        += 4;                   // Face-up pendulum count
-		count      += Read<uint32_t>(ptr); // Hand count
-		ptr        += 4;                   // Top-deck card code
+		ptr        += 4U;                   // Main deck count
+		auto count  = Read<uint32_t>(ptr);  // Extra deck count
+		ptr        += 4U;                   // Face-up pendulum count
+		count      += Read<uint32_t>(ptr);  // Hand count
+		ptr        += 4U;                   // Top-deck card code
 		ClearPositionArray(count, ptr);
 		break;
 	}
 	case MSG_SELECT_CARD:
 	{
-		ptr += 1 + 1 + 4 + 4;
+		ptr += 1U + 1U + 4U + 4U;
 		auto count = Read<uint32_t>(ptr);
 		ClearLocInfoArray(count, team, ptr);
 		break;
 	}
 	case MSG_SELECT_TRIBUTE:
 	{
-		ptr += 1 + 1 + 4 + 4;
+		ptr += 1U + 1U + 4U + 4U;
 		auto count = Read<uint32_t>(ptr);
 		for(uint32_t i = 0; i < count; i++)
 		{
-			ptr += 4; // Card code
+			ptr += 4U; // Card code
 			const auto info = Read<LocInfo>(ptr);
 			if(team != info.con)
 			{
-				ptr -= LocInfo::SIZE + 4;
-				Write<uint32_t>(ptr, 0);
+				ptr -= LocInfo::SIZE + 4U;
+				Write<uint32_t>(ptr, 0U);
 				ptr += LocInfo::SIZE;
 			}
-			ptr += 1; // Release param
+			ptr += 1U; // Release param
 		}
 		break;
 	}
 	case MSG_SELECT_UNSELECT_CARD:
 	{
-		ptr += 1 + 1 + 1 + 4 + 4;
+		ptr += 1U + 1U + 1U + 4U + 4U;
 		auto count1 = Read<uint32_t>(ptr);
 		ClearLocInfoArray(count1, team, ptr);
 		auto count2 = Read<uint32_t>(ptr);
@@ -429,10 +429,10 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 
 Msg MakeStartMsg(const MsgStartCreateInfo& info)
 {
-	Msg msg(18);
+	Msg msg(18U);
 	auto* ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_START);
-	Write<uint8_t>(ptr, 0);
+	Write<uint8_t>(ptr, 0U);
 	Write<uint32_t>(ptr, info.lp);
 	Write<uint32_t>(ptr, info.lp);
 	Write(ptr, static_cast<uint16_t>(info.t0DSz));
@@ -466,9 +466,9 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 	{
 		const auto* ptr = msg.data();
 		ptr++; // type ignored
-		ptr += 4; // Card code
+		ptr += 4U; // Card code
 		const auto i = Read<LocInfo>(ptr);
-		qreqs.emplace_back(QuerySingleRequest{i.con, i.loc, i.seq, 0x3f81fff});
+		qreqs.emplace_back(QuerySingleRequest{i.con, i.loc, i.seq, 0x3F81FFF});
 		break;
 	}
 	}
@@ -486,19 +486,19 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	case MSG_DRAW:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_HAND, 0x3781fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_HAND, 0x3781FFF});
 		break;
 	}
 	case MSG_SHUFFLE_EXTRA:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381FFF});
 		break;
 	}
 	case MSG_SWAP_GRAVE_DECK:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_GRAVE, 0x381fff});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_GRAVE, 0x381FFF});
 		break;
 	}
 	case MSG_REVERSE_DECK:
@@ -509,8 +509,8 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	case MSG_SHUFFLE_SET_CARD:
 	{
 		auto loc = Read<uint8_t>(ptr);
-		qreqs.emplace_back(QueryLocationRequest{0, loc, 0x3181fff});
-		qreqs.emplace_back(QueryLocationRequest{1, loc, 0x3181fff});
+		qreqs.emplace_back(QueryLocationRequest{0U, loc, 0x3181FFF});
+		qreqs.emplace_back(QueryLocationRequest{1U, loc, 0x3181FFF});
 		break;
 	}
 	case MSG_DAMAGE_STEP_START:
@@ -545,53 +545,53 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	}
 	case MSG_MOVE:
 	{
-		ptr += 4; // Card code
+		ptr += 4U; // Card code
 		const auto previous = Read<LocInfo>(ptr);
 		const auto current = Read<LocInfo>(ptr);
 		if((previous.con != current.con || previous.loc != current.loc) &&
-		   current.loc != 0 && (current.loc & LOCATION_OVERLAY) == 0)
+		   current.loc != 0U && (current.loc & LOCATION_OVERLAY) == 0U)
 		{
 			qreqs.emplace_back(QuerySingleRequest{
 				current.con,
 				current.loc,
 				current.seq,
-				0x3f81fff});
+				0x3F81FFF});
 		}
 		break;
 	}
 	case MSG_POS_CHANGE:
 	{
-		ptr += 4; // Card code
+		ptr += 4U; // Card code
 		auto cc = Read<uint8_t>(ptr); // Current controller
 		auto cl = Read<uint8_t>(ptr); // Current location
 		auto cs = Read<uint8_t>(ptr); // Current sequence
 		auto pp = Read<uint8_t>(ptr); // Previous position
 		auto cp = Read<uint8_t>(ptr); // Current position
 		if((pp & POS_FACEDOWN) && (cp & POS_FACEUP))
-			qreqs.emplace_back(QuerySingleRequest{cc, cl, cs, 0x3f81fff});
+			qreqs.emplace_back(QuerySingleRequest{cc, cl, cs, 0x3F81FFF});
 		break;
 	}
 	case MSG_SWAP:
 	{
-		ptr += 4; // Previous card code
+		ptr += 4U; // Previous card code
 		const auto p = Read<LocInfo>(ptr);
-		ptr += 4; // Current card code
+		ptr += 4U; // Current card code
 		const auto c = Read<LocInfo>(ptr);
-		qreqs.emplace_back(QuerySingleRequest{p.con, p.loc, p.seq, 0x3f81fff});
-		qreqs.emplace_back(QuerySingleRequest{c.con, c.loc, c.seq, 0x3f81fff});
+		qreqs.emplace_back(QuerySingleRequest{p.con, p.loc, p.seq, 0x3F81FFF});
+		qreqs.emplace_back(QuerySingleRequest{c.con, c.loc, c.seq, 0x3F81FFF});
 		break;
 	}
 	case MSG_TAG_SWAP:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.reserve(8);
-		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_DECK, 0x1181fff});
-		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381fff});
+		qreqs.reserve(8U);
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_DECK, 0x1181FFF});
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381FFF});
 		AddRefreshAllHands(qreqs);
-		qreqs.emplace_back(QueryLocationRequest{0, LOCATION_MZONE, 0x3081fff});
-		qreqs.emplace_back(QueryLocationRequest{1, LOCATION_MZONE, 0x3081fff});
-		qreqs.emplace_back(QueryLocationRequest{0, LOCATION_SZONE, 0x30681fff});
-		qreqs.emplace_back(QueryLocationRequest{1, LOCATION_SZONE, 0x30681fff});
+		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3081FFF});
+		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3081FFF});
+		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x30681FFF});
+		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x30681FFF});
 		break;
 	}
 	}
@@ -600,7 +600,7 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 
 Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer& qb)
 {
-	Msg msg(1 + 1 + 1 + 1 + qb.size());
+	Msg msg(1U + 1U + 1U + 1U + qb.size());
 	auto* ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_CARD);
 	Write<uint8_t>(ptr, con);
@@ -612,7 +612,7 @@ Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer
 
 Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const QueryBuffer& qb)
 {
-	Msg msg(1 + 1 + 1 + qb.size());
+	Msg msg(1U + 1U + 1U + qb.size());
 	auto* ptr = msg.data();
 	Write<uint8_t>(ptr, MSG_UPDATE_DATA);
 	Write<uint8_t>(ptr, con);
@@ -660,7 +660,7 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
 	};
 	if(!q) // Nothing to serialize
 	{
-		Insert(uint16_t(0));
+		Insert(uint16_t(0U));
 		return qb;
 	}
 	// Check if a certain query is public or if the whole query object
@@ -750,17 +750,17 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
 			case QUERY_END:
 			default:
 			{
-				return 0;
+				return 0U;
 			}
 		}
 	};
-	for(uint64_t flag = 1; flag <= QUERY_END; flag <<= 1)
+	for(uint64_t flag = 1U; flag <= QUERY_END; flag <<= 1U)
 	{
 		if((q->flags & flag) != flag)
 			continue;
-		else if(flag == QUERY_REASON_CARD && q->reasonCard.loc == 0)
+		else if(flag == QUERY_REASON_CARD && q->reasonCard.loc == 0U)
 			continue;
-		else if(flag == QUERY_EQUIP_CARD && q->equipCard.loc == 0)
+		else if(flag == QUERY_EQUIP_CARD && q->equipCard.loc == 0U)
 			continue;
 		else if((q->flags & QUERY_IS_HIDDEN) && q->isHidden && !IsPublic(flag))
 			continue;
@@ -819,7 +819,7 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
 
 QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic)
 {
-	uint32_t totalSize = 0;
+	uint32_t totalSize = 0U;
 	QueryBuffer qb(sizeof(decltype(totalSize)));
 	for(const auto& q : qs)
 	{

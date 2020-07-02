@@ -13,7 +13,7 @@ struct DeckLimits
 	struct Boundary
 	{
 		std::size_t min, max;
-	}main{40, 60}, extra{0, 15}, side{0, 15};
+	}main{40U, 60U}, extra{0U, 15U}, side{0U, 15U}; // NOLINT
 };
 
 class Deck
