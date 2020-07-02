@@ -1,8 +1,8 @@
 # TODO
 
-* Add handling for client disconnecting on all states
 * Implement sidedecking
 * Implement spectators connecting mid-duel
+  * Make sure they are properly added and removed from `spectators` set
 * Implement timers
 * Implement replays
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)

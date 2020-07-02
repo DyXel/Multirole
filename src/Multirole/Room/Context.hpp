@@ -100,7 +100,7 @@ private:
 			REASON_CONNECTION_LOST,
 			REASON_CORE_CRASHED,
 		} reason;
-		uint8_t team;
+		uint8_t winner; // 2 == DRAW
 	};
 
 	// Creation options and resources

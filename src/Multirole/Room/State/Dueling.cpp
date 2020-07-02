@@ -174,8 +174,8 @@ StateOpt Context::operator()(State::Dueling& s, const Event::ConnectionLost& e)
 		e.client.Disconnect();
 		return std::nullopt;
 	}
-	uint8_t team = 1u - p.first;
-	return Finish(s, DuelFinishReason{Reason::REASON_CONNECTION_LOST, team});
+	uint8_t winner = 1u - p.first;
+	return Finish(s, DuelFinishReason{Reason::REASON_CONNECTION_LOST, winner});
 }
 
 StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
@@ -195,12 +195,14 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 StateOpt Context::operator()(State::Dueling& s, const Event::Surrender& e)
 {
 	using Reason = DuelFinishReason::Reason;
-	if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
+	const auto p = e.client.Position();
+	if(p == Client::POSITION_SPECTATOR)
 	{
-		uint8_t winner = 1 - p.first;
-		return Finish(s, DuelFinishReason{Reason::REASON_SURRENDERED, winner});
+		e.client.Disconnect();
+		return std::nullopt;
 	}
-	return std::nullopt;
+	uint8_t winner = 1 - p.first;
+	return Finish(s, DuelFinishReason{Reason::REASON_SURRENDERED, winner});
 }
 
 // private
@@ -221,13 +223,13 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		uint8_t msgType = GetMessageType(msg);
 		if(msgType == MSG_RETRY)
 		{
-			uint8_t team = s.replier->Position().first;
-			dfrOpt = DuelFinishReason{Reason::REASON_WRONG_RESPONSE, team};
+			uint8_t winner = 1u - s.replier->Position().first;
+			dfrOpt = DuelFinishReason{Reason::REASON_WRONG_RESPONSE, winner};
 		}
 		else if(msgType == MSG_WIN)
 		{
-			uint8_t team = GetSwappedTeam(msg[1]);
-			dfrOpt = DuelFinishReason{Reason::REASON_DUEL_WON, team};
+			uint8_t winner = GetSwappedTeam(msg[1]);
+			dfrOpt = DuelFinishReason{Reason::REASON_DUEL_WON, winner};
 		}
 		else if(msgType == MSG_TAG_SWAP)
 		{
@@ -409,12 +411,12 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	}
 	auto SendWinMsg = [&](uint8_t reason)
 	{
-		SendToAll(MakeGameMsg({MSG_WIN, GetSwappedTeam(dfr.team), reason}));
+		SendToAll(MakeGameMsg({MSG_WIN, GetSwappedTeam(dfr.winner), reason}));
 	};
 	auto turnDecider = [&]() -> Client*
 	{
-		if(dfr.team <= 1)
-			return duelists[{1 - dfr.team, 0}];
+		if(dfr.winner <= 1u)
+			return duelists[{1u - dfr.winner, 0}];
 		return duelists[{0u, 0u}];
 	}();
 	switch(dfr.reason)
@@ -426,15 +428,15 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	{
 		// Send corresponding game finishing messages
 		if(dfr.reason == Reason::REASON_SURRENDERED)
-			SendWinMsg(0);
+			SendWinMsg(WIN_REASON_SURRENDERED);
 		else if(dfr.reason == Reason::REASON_TIMED_OUT)
-			SendWinMsg(3);
+			SendWinMsg(WIN_REASON_TIMED_OUT);
 		else if(dfr.reason == Reason::REASON_WRONG_RESPONSE)
-			SendWinMsg(5);
-		if(hostInfo.bestOf <= 1 || dfr.team == 2)
+			SendWinMsg(WIN_REASON_WRONG_RESPONSE);
+		if(hostInfo.bestOf <= 1 || dfr.winner == 2)
 			return State::Rematching{turnDecider, 0, {}};
-		wins[dfr.team] += (s.matchKillReason) ? hostInfo.bestOf : 1;
-		if(wins[dfr.team] >= neededWins)
+		wins[dfr.winner] += (s.matchKillReason) ? hostInfo.bestOf : 1;
+		if(wins[dfr.winner] >= neededWins)
 		{
 			SendToAll(MakeDuelEnd());
 			return State::Closing{};
@@ -443,13 +445,12 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	}
 	case Reason::REASON_CONNECTION_LOST:
 	{
-		SendWinMsg(4);
+		SendWinMsg(WIN_REASON_CONNECTION_LOST);
 		SendToAll(MakeDuelEnd());
 		return State::Closing{};
 	}
 	case Reason::REASON_CORE_CRASHED:
 	{
-// 		SendWinMsg(6);
 		SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, "Core crashed!"));
 		[[fallthrough]];
 	}
