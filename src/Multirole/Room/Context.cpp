@@ -174,16 +174,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	// Check if the deck had any error while loading.
 	if(deck.Error() != 0U)
 		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
-	// Amalgamate all card codes into a single map for easier iteration.
-	std::map<uint32_t, std::size_t> all;
-	auto AddToMap = [&all](const CodeVector& from)
-	{
-		for(const auto& code : from)
-			all[code]++;
-	};
-	AddToMap(deck.Main());
-	AddToMap(deck.Extra());
-	AddToMap(deck.Side());
+	auto all = deck.GetCodeMap();
 	// Merge aliased cards to their original code and delete them
 	auto& db = *cpkg.db;
 	for(auto it = all.begin(), last = all.end(); it != last;)

@@ -30,4 +30,18 @@ uint32_t Deck::Error() const
 	return error;
 }
 
+CodeMap Deck::GetCodeMap() const
+{
+	CodeMap map;
+	auto AddToMap = [&map](const CodeVector& from)
+	{
+		for(auto code : from)
+			map[code]++;
+	};
+	AddToMap(main);
+	AddToMap(extra);
+	AddToMap(side);
+	return map;
+}
+
 } // namespace YGOPro

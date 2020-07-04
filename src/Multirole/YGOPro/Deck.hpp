@@ -1,11 +1,13 @@
 #ifndef YGOPRO_DECK_HPP
 #define YGOPRO_DECK_HPP
 #include <cstdint>
+#include <map>
 #include <vector>
 
 namespace YGOPro
 {
 
+using CodeMap = std::map<uint32_t, std::size_t>;
 using CodeVector = std::vector<uint32_t>;
 
 struct DeckLimits
@@ -25,6 +27,9 @@ public:
 	const CodeVector& Extra() const;
 	const CodeVector& Side() const;
 	uint32_t Error() const;
+
+	// Amalgamate all card codes into a single map.
+	CodeMap GetCodeMap() const;
 private:
 	CodeVector main;
 	CodeVector extra;
