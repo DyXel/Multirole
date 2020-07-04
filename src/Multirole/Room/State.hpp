@@ -13,16 +13,6 @@ class Client;
 namespace State
 {
 
-struct Waiting
-{
-	Client* host;
-};
-
-struct RockPaperScissor
-{
-	std::array<uint8_t, 2U> choices;
-};
-
 struct ChoosingTurn
 {
 	Client* turnChooser;
@@ -30,11 +20,6 @@ struct ChoosingTurn
 
 struct Closing
 {};
-
-struct Sidedecking
-{
-	Client* turnChooser;
-};
 
 struct Dueling
 {
@@ -50,16 +35,31 @@ struct Rematching
 	std::set<Client*> answered;
 };
 
+struct RockPaperScissor
+{
+	std::array<uint8_t, 2U> choices;
+};
+
+struct Sidedecking
+{
+	Client* turnChooser;
+};
+
+struct Waiting
+{
+	Client* host;
+};
+
 } // namespace State
 
 using StateVariant = std::variant<
-	State::Waiting,
-	State::RockPaperScissor,
 	State::ChoosingTurn,
 	State::Closing,
-	State::Sidedecking,
 	State::Dueling,
-	State::Rematching>;
+	State::Rematching,
+	State::RockPaperScissor,
+	State::Sidedecking,
+	State::Waiting>;
 
 using StateOpt = std::optional<StateVariant>;
 

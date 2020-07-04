@@ -36,6 +36,27 @@ public:
 	void SetId(uint32_t newId);
 
 	/*** STATE AND EVENT HANDLERS ***/
+	// State/ChoosingTurn.cpp
+	StateOpt operator()(State::ChoosingTurn& s);
+	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
+	// State/Closing.cpp
+	StateOpt operator()(State::Closing&);
+	StateOpt operator()(State::Closing&, const Event::Join& e);
+	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
+	// State/Dueling.cpp
+	StateOpt operator()(State::Dueling& s);
+	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
+	StateOpt operator()(State::Dueling& s, const Event::Response& e);
+	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
+	// State/Rematching.cpp
+	StateOpt operator()(State::Rematching& s);
+	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::Rematching& s, const Event::Rematch& e);
+	// State/RockPaperScissor.cpp
+	StateOpt operator()(State::RockPaperScissor&);
+	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
 	// State/Waiting.cpp
 	StateOpt operator()(State::Waiting& s, const Event::Join& e);
 	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e);
@@ -45,27 +66,6 @@ public:
 	StateOpt operator()(State::Waiting&, const Event::UpdateDeck& e);
 	StateOpt operator()(State::Waiting&, const Event::TryKick& e);
 	StateOpt operator()(State::Waiting& s, const Event::TryStart& e);
-	// State/RockPaperScissor.cpp
-	StateOpt operator()(State::RockPaperScissor&);
-	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
-	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
-	// State/ChoosingTurn.cpp
-	StateOpt operator()(State::ChoosingTurn& s);
-	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e);
-	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
-	// State/Dueling.cpp
-	StateOpt operator()(State::Dueling& s);
-	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
-	StateOpt operator()(State::Dueling& s, const Event::Response& e);
-	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
-	// State/Closing.cpp
-	StateOpt operator()(State::Closing&);
-	StateOpt operator()(State::Closing&, const Event::Join& e);
-	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
-	// State/Rematching.cpp
-	StateOpt operator()(State::Rematching& s);
-	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
-	StateOpt operator()(State::Rematching& s, const Event::Rematch& e);
 
 	// Chat handling is the same for all states
 	template<typename State>
