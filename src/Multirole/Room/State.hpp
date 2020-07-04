@@ -47,7 +47,6 @@ struct Dueling
 struct Rematching
 {
 	Client* turnChooser;
-	std::size_t answerCount;
 	std::set<Client*> answered;
 };
 

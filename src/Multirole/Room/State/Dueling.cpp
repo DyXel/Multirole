@@ -434,7 +434,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		else if(dfr.reason == Reason::REASON_WRONG_RESPONSE)
 			SendWinMsg(WIN_REASON_WRONG_RESPONSE);
 		if(hostInfo.bestOf <= 1 || dfr.winner == 2U)
-			return State::Rematching{turnDecider, 0U, {}};
+			return State::Rematching{turnDecider, {}};
 		wins[dfr.winner] += (s.matchKillReason) ? hostInfo.bestOf : 1U;
 		if(wins[dfr.winner] >= neededWins)
 		{
