@@ -15,7 +15,7 @@ StateOpt Context::operator()(State::RockPaperScissor&, const Event::ConnectionLo
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;
-	uint8_t winner = 1u - GetSwappedTeam(e.client.Position().first);
+	uint8_t winner = 1U - GetSwappedTeam(e.client.Position().first);
 	SendToAll(MakeGameMsg({MSG_WIN, winner, WIN_REASON_CONNECTION_LOST}));
 	SendToAll(MakeDuelEnd());
 	return State::Closing{};

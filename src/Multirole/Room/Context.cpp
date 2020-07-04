@@ -22,8 +22,8 @@ Context::Context(
 	limits(std::move(limits)),
 	cpkg(std::move(cpkg)),
 	banlist(banlist),
-	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0f))),
-	teamCount({0u, 0u})
+	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
+	teamCount({0U, 0U})
 {}
 
 const YGOPro::HostInfo& Context::HostInfo() const
@@ -51,13 +51,13 @@ void Context::SetId(uint32_t newId)
 
 uint8_t Context::GetSwappedTeam(uint8_t team)
 {
-	assert(team <= 1u);
+	assert(team <= 1U);
 	return isTeam1GoingFirst ^ team;
 }
 
 void Context::SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg)
 {
-	assert(team <= 1);
+	assert(team <= 1U);
 	for(const auto& kv : duelists)
 	{
 		if(kv.first.first != team)
@@ -111,10 +111,10 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 {
 	auto IsExtraDeckCardType = [](uint32_t type) constexpr -> bool
 	{
-		if((type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) != 0u)
+		if((type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) != 0U)
 			return true;
 		// NOTE: Link Spells exist.
-		if(((type & TYPE_LINK) != 0u) && ((type & TYPE_MONSTER) != 0u))
+		if(((type & TYPE_LINK) != 0U) && ((type & TYPE_MONSTER) != 0U))
 			return true;
 		return false;
 	};
@@ -122,11 +122,11 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	YGOPro::CodeVector m;
 	YGOPro::CodeVector e;
 	YGOPro::CodeVector s;
-	uint32_t err = 0;
+	uint32_t err = 0U;
 	for(const auto code : main)
 	{
 		const auto& data = db.DataFromCode(code);
-		if(data.code == 0)
+		if(data.code == 0U)
 		{
 			err = code;
 			continue;
@@ -141,7 +141,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	for(const auto code : side)
 	{
 		const auto& data = db.DataFromCode(code);
-		if(data.code == 0)
+		if(data.code == 0U)
 		{
 			err = code;
 			continue;
@@ -188,7 +188,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	auto& db = *cpkg.db;
 	for(auto it = all.begin(), last = all.end(); it != last;)
 	{
-		if(uint32_t alias = db.DataFromCode(it->first).alias; alias != 0)
+		if(uint32_t alias = db.DataFromCode(it->first).alias; alias != 0U)
 		{
 			all[alias] = all[alias] + it->second;
 			it = all.erase(it);
@@ -228,34 +228,34 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	auto CheckPrelease = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
 		return allowed == ALLOWED_CARDS_WITH_PRERELEASE &&
-		       ((scope & SCOPE_OFFICIAL) == 0u);
+		       ((scope & SCOPE_OFFICIAL) == 0U);
 	};
 	//	true if only ocg are allowed and scope is not ocg (its tcg).
 	auto CheckOCG = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
-		return allowed == ALLOWED_CARDS_OCG_ONLY && ((scope & SCOPE_OCG) == 0u);
+		return allowed == ALLOWED_CARDS_OCG_ONLY && ((scope & SCOPE_OCG) == 0U);
 	};
 	//	true if only tcg are allowed and scope is not tcg (its ocg).
 	auto CheckTCG = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
-		return allowed == ALLOWED_CARDS_TCG_ONLY && ((scope & SCOPE_TCG) == 0u);
+		return allowed == ALLOWED_CARDS_TCG_ONLY && ((scope & SCOPE_TCG) == 0U);
 	};
 	//	true if card code exists on the banlist and exceeds the listed amount.
 	auto CheckBanlist = [](const auto& kv, const Banlist& bl) -> bool
 	{
-		if(bl.IsWhitelist() && bl.Whitelist().count(kv.first) == 0)
+		if(bl.IsWhitelist() && bl.Whitelist().count(kv.first) == 0U)
 			return true;
 		if(bl.Forbidden().count(kv.first) != 0U)
 			return true;
-		if(kv.second > 1 && (bl.Limited().count(kv.first) != 0U))
+		if(kv.second > 1U && (bl.Limited().count(kv.first) != 0U))
 			return true;
-		if(kv.second > 2 && (bl.Semilimited().count(kv.first) != 0U))
+		if(kv.second > 2U && (bl.Semilimited().count(kv.first) != 0U))
 			return true;
 		return false;
 	};
 	for(const auto& kv : all)
 	{
-		if(kv.second > 3)
+		if(kv.second > 3U)
 			return MakeErrorPtr(CARD_MORE_THAN_3, kv.first);
 		if((db.DataFromCode(kv.first).type & hostInfo.forb) != 0U)
 			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, kv.first);
