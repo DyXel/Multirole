@@ -57,6 +57,10 @@ public:
 	StateOpt operator()(State::RockPaperScissor&);
 	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
+	// State/Sidedecking.cpp
+	StateOpt operator()(State::Sidedecking&);
+	StateOpt operator()(State::Sidedecking&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::Sidedecking& s, const Event::UpdateDeck& e);
 	// State/Waiting.cpp
 	StateOpt operator()(State::Waiting& s, const Event::Join& e);
 	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e);

@@ -98,9 +98,14 @@ STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count)
 	return {STOCMsg::WatchChange{static_cast<uint16_t>(count)}};
 }
 
-STOCMsg STOCMsgFactory::MakeStartDuel()
+STOCMsg STOCMsgFactory::MakeDuelStart()
 {
 	return {STOCMsg::MsgType::DUEL_START};
+}
+
+STOCMsg STOCMsgFactory::MakeDuelEnd()
+{
+	return {STOCMsg::MsgType::DUEL_END};
 }
 
 STOCMsg STOCMsgFactory::MakeAskRPS()
@@ -133,9 +138,14 @@ STOCMsg STOCMsgFactory::MakeRematchWait()
 	return {STOCMsg::MsgType::REMATCH_WAIT};
 }
 
-STOCMsg STOCMsgFactory::MakeDuelEnd()
+STOCMsg STOCMsgFactory::MakeAskSidedeck()
 {
-	return {STOCMsg::MsgType::DUEL_END};
+	return {STOCMsg::MsgType::CHANGE_SIDE};
+}
+
+STOCMsg STOCMsgFactory::MakeSidedeckWait()
+{
+	return {STOCMsg::MsgType::WAITING_SIDE};
 }
 
 STOCMsg STOCMsgFactory::MakeJoinError(Error::Join type)

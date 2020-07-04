@@ -1,6 +1,5 @@
 # TODO
 
-* Implement sidedecking
 * Implement spectators connecting mid-duel
   * Make sure they are properly added and removed from `spectators` set
 * Implement timers
@@ -21,8 +20,6 @@
 * Remove setters for `Core::IWrapper` and instead set them on ctors
 * Investigate possibility of using a lockless queue for `Room::Client` message sending
 * Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
-* Instead of using Client::POSITION_SPECTATOR make client position be `std::optional<PosType>`
-  * Lack of value would represent a spectator
 
 # Porting to YGOpen Project
 

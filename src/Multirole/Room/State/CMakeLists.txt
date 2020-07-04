@@ -5,6 +5,7 @@ target_sources(multirole PRIVATE
 	${CSR}/Dueling.cpp
 	${CSR}/Rematching.cpp
 	${CSR}/RockPaperScissor.cpp
+	${CSR}/Sidedecking.cpp
 	${CSR}/Waiting.cpp
 )
 unset(CSR)

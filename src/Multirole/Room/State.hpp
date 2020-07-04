@@ -43,6 +43,7 @@ struct RockPaperScissor
 struct Sidedecking
 {
 	Client* turnChooser;
+	std::set<Client*> sidedecked;
 };
 
 struct Waiting

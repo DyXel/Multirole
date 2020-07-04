@@ -441,7 +441,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 			SendToAll(MakeDuelEnd());
 			return State::Closing{};
 		}
-		return State::Sidedecking{turnDecider};
+		return State::Sidedecking{turnDecider, {}};
 	}
 	case Reason::REASON_CONNECTION_LOST:
 	{

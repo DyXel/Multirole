@@ -34,7 +34,7 @@ StateOpt Context::operator()(State::Rematching& s, const Event::Rematch& e)
 		s.answered.insert(&e.client);
 		if(s.answered.size() == duelists.size())
 		{
-			SendToAll(MakeStartDuel());
+			SendToAll(MakeDuelStart());
 			return State::ChoosingTurn{s.turnChooser};
 		}
 	}

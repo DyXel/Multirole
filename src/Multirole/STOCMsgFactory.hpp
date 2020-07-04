@@ -70,7 +70,9 @@ public:
 	// Creates a message that updates spectator count for clients
 	static YGOPro::STOCMsg MakeWatchChange(std::size_t count);
 	// Creates a message that signals the client the duel is starting
-	static YGOPro::STOCMsg MakeStartDuel();
+	static YGOPro::STOCMsg MakeDuelStart();
+	// Creates a message signaling client that the room lifetime ended
+	static YGOPro::STOCMsg MakeDuelEnd();
 	// Signals clients to do a Rock Paper Scissor choice
 	static YGOPro::STOCMsg MakeAskRPS();
 	// Creates a message to ask a client if he desires to go first or not
@@ -83,8 +85,10 @@ public:
 	static YGOPro::STOCMsg MakeAskIfRematch();
 	// Creates a message signaling client to wait for rematch answers
 	static YGOPro::STOCMsg MakeRematchWait();
-	// Creates a message signaling client that the room lifetime ended
-	static YGOPro::STOCMsg MakeDuelEnd();
+	// Creates a message signaling the client to perform sidedecking
+	static YGOPro::STOCMsg MakeAskSidedeck();
+	// Creates a message that tells clients to wait for sidedecking
+	static YGOPro::STOCMsg MakeSidedeckWait();
 
 	// Error messages
 	static YGOPro::STOCMsg MakeJoinError(Error::Join type);
