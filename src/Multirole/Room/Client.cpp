@@ -176,22 +176,11 @@ void Client::HandleMsg()
 {
 	switch(incoming.GetType())
 	{
-	case YGOPro::CTOSMsg::MsgType::CHAT:
+	case YGOPro::CTOSMsg::MsgType::RESPONSE:
 	{
-		using namespace YGOPro;
-		auto str16 = BufferToUTF16(incoming.Body(), incoming.GetLength());
-		auto str = UTF16ToUTF8(str16);
-		room.Dispatch(Event::Chat{{*this}, str});
-		break;
-	}
-	case YGOPro::CTOSMsg::MsgType::TO_DUELIST:
-	{
-		room.Dispatch(Event::ToDuelist{{*this}});
-		break;
-	}
-	case YGOPro::CTOSMsg::MsgType::TO_OBSERVER:
-	{
-		room.Dispatch(Event::ToObserver{{*this}});
+		std::vector<uint8_t> data(incoming.GetLength());
+		std::memcpy(data.data(), incoming.Body(), data.size());
+		room.Dispatch(Event::Response{{*this}, data});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::UPDATE_DECK:
@@ -217,6 +206,45 @@ void Client::HandleMsg()
 		room.Dispatch(Event::UpdateDeck{{*this}, main, side});
 		break;
 	}
+	case YGOPro::CTOSMsg::MsgType::RPS_CHOICE:
+	{
+		auto p = incoming.GetRPSChoice();
+		if(!p)
+			return;
+		room.Dispatch(Event::ChooseRPS{{*this}, p->value});
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::TURN_CHOICE:
+	{
+		auto p = incoming.GetTurnChoice();
+		if(!p)
+			return;
+		room.Dispatch(Event::ChooseTurn{{*this}, p->value != 0U});
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::SURRENDER:
+	{
+		room.Dispatch(Event::Surrender{{*this}});
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::CHAT:
+	{
+		using namespace YGOPro;
+		auto str16 = BufferToUTF16(incoming.Body(), incoming.GetLength());
+		auto str = UTF16ToUTF8(str16);
+		room.Dispatch(Event::Chat{{*this}, str});
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::TO_DUELIST:
+	{
+		room.Dispatch(Event::ToDuelist{{*this}});
+		break;
+	}
+	case YGOPro::CTOSMsg::MsgType::TO_OBSERVER:
+	{
+		room.Dispatch(Event::ToObserver{{*this}});
+		break;
+	}
 	case YGOPro::CTOSMsg::MsgType::READY:
 	{
 		room.Dispatch(Event::Ready{{*this}, true});
@@ -238,34 +266,6 @@ void Client::HandleMsg()
 	case YGOPro::CTOSMsg::MsgType::TRY_START:
 	{
 		room.Dispatch(Event::TryStart{{*this}});
-		break;
-	}
-	case YGOPro::CTOSMsg::MsgType::RPS_CHOICE:
-	{
-		auto p = incoming.GetRPSChoice();
-		if(!p)
-			return;
-		room.Dispatch(Event::ChooseRPS{{*this}, p->value});
-		break;
-	}
-	case YGOPro::CTOSMsg::MsgType::TURN_CHOICE:
-	{
-		auto p = incoming.GetTurnChoice();
-		if(!p)
-			return;
-		room.Dispatch(Event::ChooseTurn{{*this}, p->value != 0U});
-		break;
-	}
-	case YGOPro::CTOSMsg::MsgType::RESPONSE:
-	{
-		std::vector<uint8_t> data(incoming.GetLength());
-		std::memcpy(data.data(), incoming.Body(), data.size());
-		room.Dispatch(Event::Response{{*this}, data});
-		break;
-	}
-	case YGOPro::CTOSMsg::MsgType::SURRENDER:
-	{
-		room.Dispatch(Event::Surrender{{*this}});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::REMATCH:
