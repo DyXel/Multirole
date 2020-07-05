@@ -99,7 +99,7 @@ public:
 		std::size_t min,
 		std::size_t max);
 	static YGOPro::STOCMsg MakeVersionError(const YGOPro::ClientVersion& ver);
-	static YGOPro::STOCMsg MakeSideError(uint32_t value);
+	static YGOPro::STOCMsg MakeSideError();
 protected:
 	uint8_t EncodePosition(Room::Client::PosType pos) const;
 

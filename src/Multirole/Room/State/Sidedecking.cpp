@@ -53,7 +53,7 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e)
 		}
 		else
 		{
-			// TODO: Send error?
+			e.client.Send(MakeSideError());
 		}
 		if(s.sidedecked.size() == duelists.size())
 		{

@@ -198,9 +198,9 @@ STOCMsg STOCMsgFactory::MakeVersionError(const ClientVersion& version)
 	return {STOCMsg::VerErrorMsg{5U, version}};
 }
 
-STOCMsg STOCMsgFactory::MakeSideError(uint32_t value)
+STOCMsg STOCMsgFactory::MakeSideError()
 {
-	return {STOCMsg::ErrorMsg{3U, value}};
+	return {STOCMsg::ErrorMsg{3U, 0U}};
 }
 
 // protected

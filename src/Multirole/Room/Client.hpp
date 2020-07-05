@@ -31,7 +31,7 @@ public:
 	PosType Position() const;
 	bool Ready() const;
 	const YGOPro::Deck* OriginalDeck() const;
-	// Returns current deck or original (NOTE: this might still null)
+	// Returns current deck or original (NOTE: this might still be nullptr)
 	const YGOPro::Deck* CurrentDeck() const;
 
 	// Setters
