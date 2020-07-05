@@ -3,6 +3,28 @@
 namespace Ignis::Multirole::Room
 {
 
+StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
+{
+	if(s.host == &e.client)
+		return State::Closing{};
+	e.client.Disconnect();
+	if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
+	{
+		{
+			std::lock_guard<std::mutex> lock(mDuelists);
+			duelists.erase(p);
+			teamCount[p.first]--;
+		}
+		SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_LEAVE));
+	}
+	else
+	{
+		spectators.erase(&e.client);
+		SendToAll(MakeWatchChange(spectators.size()));
+	}
+	return std::nullopt;
+}
+
 StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 {
 	if(s.host == nullptr)
@@ -28,45 +50,6 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 		e.client.Send(MakePlayerEnter(*kv.second));
 		e.client.Send(MakePlayerChange(*kv.second));
 	}
-	return std::nullopt;
-}
-
-StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
-{
-	if(s.host == &e.client)
-		return State::Closing{};
-	e.client.Disconnect();
-	if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
-	{
-		{
-			std::lock_guard<std::mutex> lock(mDuelists);
-			duelists.erase(p);
-			teamCount[p.first]--;
-		}
-		SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_LEAVE));
-	}
-	else
-	{
-		spectators.erase(&e.client);
-		SendToAll(MakeWatchChange(spectators.size()));
-	}
-	return std::nullopt;
-}
-
-StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
-{
-	const auto p = e.client.Position();
-	if(p == Client::POSITION_SPECTATOR)
-		return std::nullopt;
-	{
-		std::lock_guard<std::mutex> lock(mDuelists);
-		duelists.erase(p);
-		teamCount[p.first]--;
-	}
-	spectators.insert(&e.client);
-	SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_SPECTATE));
-	e.client.SetPosition(Client::POSITION_SPECTATOR);
-	e.client.Send(MakeTypeChange(e.client, s.host == &e.client));
 	return std::nullopt;
 }
 
@@ -103,6 +86,23 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e)
 	return std::nullopt;
 }
 
+StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
+{
+	const auto p = e.client.Position();
+	if(p == Client::POSITION_SPECTATOR)
+		return std::nullopt;
+	{
+		std::lock_guard<std::mutex> lock(mDuelists);
+		duelists.erase(p);
+		teamCount[p.first]--;
+	}
+	spectators.insert(&e.client);
+	SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_SPECTATE));
+	e.client.SetPosition(Client::POSITION_SPECTATOR);
+	e.client.Send(MakeTypeChange(e.client, s.host == &e.client));
+	return std::nullopt;
+}
+
 StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::Ready& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR ||
@@ -121,14 +121,6 @@ StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::Ready& e)
 	}
 	e.client.SetReady(value);
 	SendToAll(MakePlayerChange(e.client));
-	return std::nullopt;
-}
-
-StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::UpdateDeck& e)
-{
-	if(e.client.Position() == Client::POSITION_SPECTATOR)
-		return std::nullopt;
-	e.client.SetOriginalDeck(LoadDeck(e.main, e.side));
 	return std::nullopt;
 }
 
@@ -216,6 +208,14 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 		return std::nullopt;
 	SendToAll(MakeDuelStart());
 	return State::RockPaperScissor{};
+}
+
+StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::UpdateDeck& e)
+{
+	if(e.client.Position() == Client::POSITION_SPECTATOR)
+		return std::nullopt;
+	e.client.SetOriginalDeck(LoadDeck(e.main, e.side));
+	return std::nullopt;
 }
 
 // private

@@ -12,7 +12,7 @@ StateOpt Context::operator()(State::Rematching& /*unused*/)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Rematching&, const Event::ConnectionLost& e)
+StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::ConnectionLost& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;

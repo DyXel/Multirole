@@ -11,16 +11,6 @@ StateOpt Context::operator()(State::RockPaperScissor& /*unused*/)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::RockPaperScissor&, const Event::ConnectionLost& e)
-{
-	if(e.client.Position() == Client::POSITION_SPECTATOR)
-		return std::nullopt;
-	uint8_t winner = 1U - GetSwappedTeam(e.client.Position().first);
-	SendToAll(MakeGameMsg({MSG_WIN, winner, WIN_REASON_CONNECTION_LOST}));
-	SendToAll(MakeDuelEnd());
-	return State::Closing{};
-}
-
 StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e)
 {
 	const auto& pos = e.client.Position();
@@ -48,6 +38,16 @@ StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS&
 			(s.choices[1U] == PAPER   && s.choices[0U] == ROCK)    ||
 			(s.choices[1U] == SCISSOR && s.choices[0U] == PAPER)
 		),0U}]};
+}
+
+StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::ConnectionLost& e)
+{
+	if(e.client.Position() == Client::POSITION_SPECTATOR)
+		return std::nullopt;
+	uint8_t winner = 1U - GetSwappedTeam(e.client.Position().first);
+	SendToAll(MakeGameMsg({MSG_WIN, winner, WIN_REASON_CONNECTION_LOST}));
+	SendToAll(MakeDuelEnd());
+	return State::Closing{};
 }
 
 // Sends Rock, Paper, Scissor hand selection to the first player of each team

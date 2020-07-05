@@ -38,38 +38,38 @@ public:
 	/*** STATE AND EVENT HANDLERS ***/
 	// State/ChoosingTurn.cpp
 	StateOpt operator()(State::ChoosingTurn& s);
-	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
+	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e);
 	// State/Closing.cpp
 	StateOpt operator()(State::Closing&);
-	StateOpt operator()(State::Closing&, const Event::Join& e);
 	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::Closing&, const Event::Join& e);
 	// State/Dueling.cpp
 	StateOpt operator()(State::Dueling& s);
 	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Dueling& s, const Event::Response& e);
 	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
 	// State/Rematching.cpp
-	StateOpt operator()(State::Rematching& s);
+	StateOpt operator()(State::Rematching&);
 	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Rematching& s, const Event::Rematch& e);
 	// State/RockPaperScissor.cpp
 	StateOpt operator()(State::RockPaperScissor&);
-	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
+	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
 	// State/Sidedecking.cpp
 	StateOpt operator()(State::Sidedecking&);
 	StateOpt operator()(State::Sidedecking&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Sidedecking& s, const Event::UpdateDeck& e);
 	// State/Waiting.cpp
-	StateOpt operator()(State::Waiting& s, const Event::Join& e);
 	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e);
-	StateOpt operator()(State::Waiting& s, const Event::ToObserver& e);
+	StateOpt operator()(State::Waiting& s, const Event::Join& e);
 	StateOpt operator()(State::Waiting& s, const Event::ToDuelist& e);
+	StateOpt operator()(State::Waiting& s, const Event::ToObserver& e);
 	StateOpt operator()(State::Waiting&, const Event::Ready& e);
-	StateOpt operator()(State::Waiting&, const Event::UpdateDeck& e);
-	StateOpt operator()(State::Waiting&, const Event::TryKick& e);
+	StateOpt operator()(State::Waiting& s, const Event::TryKick& e);
 	StateOpt operator()(State::Waiting& s, const Event::TryStart& e);
+	StateOpt operator()(State::Waiting&, const Event::UpdateDeck& e);
 
 	// Chat handling is the same for all states
 	template<typename State>
@@ -149,14 +149,14 @@ private:
 	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const;
 
 	/*** STATE SPECIFIC FUNCTIONS ***/
-	// State/Waiting.cpp
-	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
-	// State/RockPaperScissor.cpp
-	void SendRPS();
 	// State/Dueling.cpp
 	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team);
 	std::optional<DuelFinishReason> Process(State::Dueling& s);
 	StateVariant Finish(State::Dueling& s, const DuelFinishReason& dfr);
+	// State/RockPaperScissor.cpp
+	void SendRPS();
+	// State/Waiting.cpp
+	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
 };
 
 } // namespace Ignis::Multirole::Room
