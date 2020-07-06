@@ -172,6 +172,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::ConnectionLost& e)
 	if(p == Client::POSITION_SPECTATOR)
 	{
 		e.client.Disconnect();
+		spectators.erase(&e.client);
 		return std::nullopt;
 	}
 	uint8_t winner = 1U - p.first;

@@ -23,9 +23,14 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 
 StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::ConnectionLost& e)
 {
-	if(e.client.Position() == Client::POSITION_SPECTATOR)
+	const auto p = e.client.Position();
+	if(p == Client::POSITION_SPECTATOR)
+	{
+		e.client.Disconnect();
+		spectators.erase(&e.client);
 		return std::nullopt;
-	uint8_t winner = 1U - GetSwappedTeam(e.client.Position().first);
+	}
+	uint8_t winner = 1U - GetSwappedTeam(p.first);
 	SendToAll(MakeGameMsg({MSG_WIN, winner, WIN_REASON_CONNECTION_LOST}));
 	SendToAll(MakeDuelEnd());
 	return State::Closing{};

@@ -15,7 +15,11 @@ StateOpt Context::operator()(State::Rematching& /*unused*/)
 StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::ConnectionLost& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
+	{
+		e.client.Disconnect();
+		spectators.erase(&e.client);
 		return std::nullopt;
+	}
 	SendToAll(MakeDuelEnd());
 	return State::Closing{};
 }
