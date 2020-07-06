@@ -32,6 +32,14 @@ StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::Connec
 	return State::Closing{};
 }
 
+StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::Join& e)
+{
+	SetupAsSpectator(e.client);
+	e.client.Send(MakeDuelStart());
+	e.client.Send(MakeSidedeckWait());
+	return std::nullopt;
+}
+
 StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e)
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)

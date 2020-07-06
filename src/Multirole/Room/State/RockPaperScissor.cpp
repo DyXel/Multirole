@@ -55,6 +55,13 @@ StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::C
 	return State::Closing{};
 }
 
+StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::Join& e)
+{
+	SetupAsSpectator(e.client);
+	e.client.Send(MakeDuelStart());
+	return std::nullopt;
+}
+
 // Sends Rock, Paper, Scissor hand selection to the first player of each team
 void Context::SendRPS()
 {

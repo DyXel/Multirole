@@ -179,6 +179,14 @@ StateOpt Context::operator()(State::Dueling& s, const Event::ConnectionLost& e)
 	return Finish(s, DuelFinishReason{Reason::REASON_CONNECTION_LOST, winner});
 }
 
+StateOpt Context::operator()(State::Dueling& /*unused*/, const Event::Join& e)
+{
+	SetupAsSpectator(e.client);
+	e.client.Send(MakeDuelStart());
+	// TODO: Catch up
+	return std::nullopt;
+}
+
 StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 {
 	if(s.replier != &e.client)

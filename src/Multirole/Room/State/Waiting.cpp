@@ -29,7 +29,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 {
 	if(s.host == nullptr)
 		s.host = &e.client;
-	e.client.Send(YGOPro::STOCMsg::JoinGame{hostInfo}); // TODO: create on ctor?
+	e.client.Send(joinMsg);
 	std::lock_guard<std::mutex> lock(mDuelists);
 	if(TryEmplaceDuelist(e.client))
 	{
@@ -37,18 +37,12 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 		SendToAll(MakePlayerChange(e.client));
 		e.client.Send(MakeTypeChange(e.client, s.host == &e.client));
 		e.client.Send(MakeWatchChange(spectators.size()));
+		SendDuelistsInfo(e.client);
 	}
 	else
 	{
-		spectators.insert(&e.client);
+		SetupAsSpectator(e.client);
 		SendToAll(MakeWatchChange(spectators.size()));
-	}
-	for(const auto& kv : duelists)
-	{
-		if(kv.second == &e.client)
-			continue; // Skip the new duelist itself
-		e.client.Send(MakePlayerEnter(*kv.second));
-		e.client.Send(MakePlayerChange(*kv.second));
 	}
 	return std::nullopt;
 }
@@ -129,7 +123,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	if(s.host != &e.client)
 		return std::nullopt;
 	Client::PosType p;
-	p.first = static_cast<unsigned char>(e.pos >= hostInfo.t0Count);
+	p.first = static_cast<uint8_t>(e.pos >= hostInfo.t0Count);
 	p.second = p.first != 0U ? e.pos - hostInfo.t0Count : e.pos;
 	if(duelists.count(p) == 0U || duelists[p] == s.host)
 		return std::nullopt;

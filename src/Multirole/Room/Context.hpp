@@ -30,7 +30,7 @@ public:
 
 	const YGOPro::HostInfo& HostInfo() const;
 
-	// Thread-safe getter for encoded information regarding duelists in the room
+	// Thread-safe getter for encoded information regarding duelists in the room.
 	std::map<uint8_t, std::string> GetDuelistsNames();
 
 	void SetId(uint32_t newId);
@@ -40,6 +40,7 @@ public:
 	StateOpt operator()(State::ChoosingTurn& s);
 	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
 	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::ChoosingTurn&, const Event::Join& e);
 	// State/Closing.cpp
 	StateOpt operator()(State::Closing&);
 	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
@@ -49,18 +50,22 @@ public:
 	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Dueling& s, const Event::Response& e);
 	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
+	StateOpt operator()(State::Dueling&, const Event::Join& e);
 	// State/Rematching.cpp
 	StateOpt operator()(State::Rematching&);
 	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Rematching& s, const Event::Rematch& e);
+	StateOpt operator()(State::Rematching&, const Event::Join& e);
 	// State/RockPaperScissor.cpp
 	StateOpt operator()(State::RockPaperScissor&);
 	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
 	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
+	StateOpt operator()(State::RockPaperScissor&, const Event::Join& e);
 	// State/Sidedecking.cpp
 	StateOpt operator()(State::Sidedecking&);
 	StateOpt operator()(State::Sidedecking&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Sidedecking& s, const Event::UpdateDeck& e);
+	StateOpt operator()(State::Sidedecking&, const Event::Join& e);
 	// State/Waiting.cpp
 	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Waiting& s, const Event::Join& e);
@@ -71,7 +76,7 @@ public:
 	StateOpt operator()(State::Waiting& s, const Event::TryStart& e);
 	StateOpt operator()(State::Waiting&, const Event::UpdateDeck& e);
 
-	// Chat handling is the same for all states
+	// Chat handling is the same for all states.
 	template<typename State>
 	inline StateOpt operator()(State&, const Event::Chat& e)
 	{
@@ -79,14 +84,14 @@ public:
 		return std::nullopt;
 	}
 
-	// Ignore rest of state entries
+	// Ignore rest of state entries.
 	template<typename S>
 	inline StateOpt operator()(S&)
 	{
 		return std::nullopt;
 	}
 
-	// Ignore rest of state and event combinations
+	// Ignore rest of state and event combinations.
 	template<typename S, typename E>
 	inline StateOpt operator()(S&, E&)
 	{
@@ -107,35 +112,44 @@ private:
 		uint8_t winner; // 2 == DRAW
 	};
 
-	// Creation options and resources
+	// Creation options and resources.
 	const YGOPro::HostInfo hostInfo;
 	const YGOPro::DeckLimits limits;
 	CoreProvider::CorePkg cpkg;
 	const YGOPro::Banlist* banlist;
 	const int32_t neededWins;
+	const YGOPro::STOCMsg joinMsg;
 
-	// Client management variables
+	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;
-	std::array<uint8_t, 2U> teamCount;
+	std::array<uint8_t, 2U> teamCount{};
 	std::mutex mDuelists;
 	std::set<Client*> spectators;
 
-	// Additional data used by room states
+	// Additional data used by room states.
 	uint8_t isTeam1GoingFirst{};
 	uint32_t id{};
 	std::unique_ptr<std::mt19937> rng;
 	std::array<int32_t, 2U> wins{};
 
-	// Get correctly swapped teams based on team1 going first or not
+	// Get correctly swapped teams based on team1 going first or not.
 	uint8_t GetSwappedTeam(uint8_t team);
 
-	// Utilities to send a message to multiple clients
+	// Utilities to send a message to multiple clients.
 	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg);
 	void SendToSpectators(const YGOPro::STOCMsg& msg);
 	void SendToAll(const YGOPro::STOCMsg& msg);
 	void SendToAllExcept(Client& client, const YGOPro::STOCMsg& msg);
 
-	// Creates and sends to all a chat message from a client
+	// Creates the PlayerEnter and TypeChange messages for each duelist
+	// and sends that information to the given client.
+	void SendDuelistsInfo(Client& client);
+
+	// Adds given client to the spectators set, sends the join message as
+	// well as duelists information.
+	void SetupAsSpectator(Client& client);
+
+	// Creates and sends to all a chat message from a client.
 	void MakeAndSendChat(Client& client, std::string_view msg);
 
 	// Creates a YGOPro::Deck from the given vectors, making sure
@@ -145,7 +159,7 @@ private:
 		const std::vector<uint32_t>& main,
 		const std::vector<uint32_t>& side) const;
 
-	// Check if a given deck is valid on the current room options
+	// Check if a given deck is valid on the current room options.
 	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const;
 
 	/*** STATE SPECIFIC FUNCTIONS ***/

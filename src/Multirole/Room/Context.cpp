@@ -23,7 +23,7 @@ Context::Context(
 	cpkg(std::move(cpkg)),
 	banlist(banlist),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
-	teamCount({0U, 0U})
+	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo})
 {}
 
 const YGOPro::HostInfo& Context::HostInfo() const
@@ -88,6 +88,26 @@ void Context::SendToAllExcept(Client& client, const YGOPro::STOCMsg& msg)
 		kv.second->Send(msg);
 	}
 	SendToSpectators(msg);
+}
+
+void Context::SendDuelistsInfo(Client& client)
+{
+	for(const auto& kv : duelists)
+	{
+		if(kv.second == &client)
+			continue; // Skip itself
+		client.Send(MakePlayerEnter(*kv.second));
+		client.Send(MakePlayerChange(*kv.second));
+	}
+}
+
+void Context::SetupAsSpectator(Client& client)
+{
+	spectators.insert(&client);
+	client.SetPosition(Client::POSITION_SPECTATOR);
+	client.Send(joinMsg);
+	client.Send(MakeTypeChange(client, false));
+	SendDuelistsInfo(client);
 }
 
 void Context::MakeAndSendChat(Client& client, std::string_view msg)

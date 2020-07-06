@@ -1,7 +1,6 @@
 # TODO
 
-* Implement spectators connecting mid-duel
-  * Make sure they are properly added and removed from `spectators` set
+* Implement spectator "Catch Up" on Dueling state
 * Implement timers
 * Implement replays
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
