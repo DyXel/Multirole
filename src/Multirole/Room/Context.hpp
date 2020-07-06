@@ -50,7 +50,7 @@ public:
 	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Dueling& s, const Event::Response& e);
 	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
-	StateOpt operator()(State::Dueling&, const Event::Join& e);
+	StateOpt operator()(State::Dueling& s, const Event::Join& e);
 	// State/Rematching.cpp
 	StateOpt operator()(State::Rematching&);
 	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
@@ -167,6 +167,9 @@ private:
 	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team);
 	std::optional<DuelFinishReason> Process(State::Dueling& s);
 	StateVariant Finish(State::Dueling& s, const DuelFinishReason& dfr);
+	const YGOPro::STOCMsg& SaveToSpectatorCache(
+		State::Dueling& s,
+		YGOPro::STOCMsg&& msg);
 	// State/RockPaperScissor.cpp
 	void SendRPS();
 	// State/Waiting.cpp

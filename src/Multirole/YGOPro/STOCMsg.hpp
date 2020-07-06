@@ -39,6 +39,7 @@ public:
 		PLAYER_ENTER  = 0x20,
 		PLAYER_CHANGE = 0x21,
 		WATCH_CHANGE  = 0x22,
+		CATCHUP       = 0xF0,
 		REMATCH       = 0xF1,
 		REMATCH_WAIT  = 0xF2,
 	};
@@ -123,6 +124,12 @@ public:
 	{
 		static const auto val = MsgType::WATCH_CHANGE;
 		uint16_t count;
+	};
+
+	struct CatchUp
+	{
+		static const auto val = MsgType::CATCHUP;
+		uint8_t catchingUp;
 	};
 
 	template<typename T>

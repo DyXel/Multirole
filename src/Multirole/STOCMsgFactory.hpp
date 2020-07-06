@@ -89,6 +89,9 @@ public:
 	static YGOPro::STOCMsg MakeAskSidedeck();
 	// Creates a message that tells clients to wait for sidedecking
 	static YGOPro::STOCMsg MakeSidedeckWait();
+	// Creates a message that tells clients to catch up the following
+	// next messages
+	static YGOPro::STOCMsg MakeCatchUp(bool catchingUp);
 
 	// Error messages
 	static YGOPro::STOCMsg MakeJoinError(Error::Join type);

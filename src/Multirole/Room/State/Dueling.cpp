@@ -122,7 +122,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		msgStart[1] = 1U;
 		SendToTeam(GetSwappedTeam(1U), MakeGameMsg(msgStart));
 		msgStart[1] = 0xF0 | isTeam1GoingFirst;
-		SendToSpectators(MakeGameMsg(msgStart));
+		SendToSpectators(SaveToSpectatorCache(s, MakeGameMsg(msgStart)));
 		// Update replay with deck data.
 		auto RecordDecks = [&](uint8_t team)
 		{
@@ -179,11 +179,14 @@ StateOpt Context::operator()(State::Dueling& s, const Event::ConnectionLost& e)
 	return Finish(s, DuelFinishReason{Reason::REASON_CONNECTION_LOST, winner});
 }
 
-StateOpt Context::operator()(State::Dueling& /*unused*/, const Event::Join& e)
+StateOpt Context::operator()(State::Dueling& s, const Event::Join& e)
 {
 	SetupAsSpectator(e.client);
 	e.client.Send(MakeDuelStart());
-	// TODO: Catch up
+	e.client.Send(MakeCatchUp(true));
+	for(const auto& msg : s.spectatorCache)
+		e.client.Send(msg);
+	e.client.Send(MakeCatchUp(false));
 	return std::nullopt;
 }
 
@@ -285,11 +288,11 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto query = DeserializeSingleQueryBuffer(fullBuffer);
 				const auto ownerBuffer = SerializeSingleQuery(query, false);
 				const auto strippedBuffer = SerializeSingleQuery(query, true);
-				const auto strippedMsg = MakeMsg(strippedBuffer);
+				auto strippedMsg = MakeMsg(strippedBuffer);
 				uint8_t team = GetSwappedTeam(req.con);
 				SendToTeam(team, MakeMsg(ownerBuffer));
 				SendToTeam(1U - team, strippedMsg);
-				SendToSpectators(strippedMsg);
+				SendToSpectators(SaveToSpectatorCache(s, std::move(strippedMsg)));
 			}
 			else /*if(std::holds_alternative<QueryLocationRequest>(reqVar))*/
 			{
@@ -322,10 +325,10 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto query = DeserializeLocationQueryBuffer(fullBuffer);
 				const auto ownerBuffer = SerializeLocationQuery(query, false);
 				const auto strippedBuffer = SerializeLocationQuery(query, true);
-				const auto strippedMsg = MakeMsg(strippedBuffer);
+				auto strippedMsg = MakeMsg(strippedBuffer);
 				SendToTeam(team, MakeMsg(ownerBuffer));
 				SendToTeam(1U - team, strippedMsg);
-				SendToSpectators(strippedMsg);
+				SendToSpectators(SaveToSpectatorCache(s, std::move(strippedMsg)));
 			}
 		}
 	};
@@ -356,7 +359,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			uint8_t team = GetMessageReceivingTeam(msg);
 			SendToAllExcept(
 				GetCurrentTeamClient(s, GetSwappedTeam(team)),
-				MakeGameMsg(msg));
+				SaveToSpectatorCache(s, MakeGameMsg(msg)));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE_STRIPPED:
@@ -368,12 +371,14 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			};
 			SendToTeam(GetSwappedTeam(0U), MakeGameMsg(sMsgs[0U]));
 			SendToTeam(GetSwappedTeam(1U), MakeGameMsg(sMsgs[1U]));
-			SendToSpectators(MakeGameMsg(StripMessageForTeam(1U, sMsgs[0U])));
+			SendToSpectators(
+				SaveToSpectatorCache(s,
+					MakeGameMsg(StripMessageForTeam(1U, sMsgs[0U]))));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_EVERYONE:
 		{
-			SendToAll(MakeGameMsg(msg));
+			SendToAll(SaveToSpectatorCache(s, MakeGameMsg(msg)));
 			break;
 		}
 		}
@@ -467,6 +472,14 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		SendToAll(MakeDuelEnd());
 		return State::Closing{};
 	}
+}
+
+const YGOPro::STOCMsg& Context::SaveToSpectatorCache(
+	State::Dueling& s,
+	YGOPro::STOCMsg&& msg)
+{
+	s.spectatorCache.emplace_back(msg);
+	return s.spectatorCache.back();
 }
 
 } // namespace Ignis::Multirole::Room

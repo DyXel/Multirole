@@ -1,9 +1,12 @@
 #ifndef ROOM_STATE_HPP
 #define ROOM_STATE_HPP
 #include <array>
+#include <deque>
 #include <optional>
 #include <set>
 #include <variant>
+
+#include "../YGOPro/STOCMsg.hpp"
 
 namespace Ignis::Multirole::Room
 {
@@ -27,6 +30,7 @@ struct Dueling
 	std::array<uint8_t, 2U> currentPos;
 	Client* replier;
 	std::optional<uint32_t> matchKillReason;
+	std::deque<YGOPro::STOCMsg> spectatorCache;
 };
 
 struct Rematching

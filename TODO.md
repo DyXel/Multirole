@@ -1,6 +1,5 @@
 # TODO
 
-* Implement spectator "Catch Up" on Dueling state
 * Implement timers
 * Implement replays
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)

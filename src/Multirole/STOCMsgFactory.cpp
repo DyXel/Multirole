@@ -148,6 +148,11 @@ STOCMsg STOCMsgFactory::MakeSidedeckWait()
 	return {STOCMsg::MsgType::WAITING_SIDE};
 }
 
+STOCMsg STOCMsgFactory::MakeCatchUp(bool catchingUp)
+{
+	return {STOCMsg::CatchUp{static_cast<uint8_t>(catchingUp)}};
+}
+
 STOCMsg STOCMsgFactory::MakeJoinError(Error::Join type)
 {
 	return {STOCMsg::ErrorMsg{1U, static_cast<uint32_t>(type)}};
