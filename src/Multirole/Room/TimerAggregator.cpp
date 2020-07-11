@@ -5,14 +5,9 @@
 namespace Ignis::Multirole::Room
 {
 
-inline std::array<AsioTimer, 2U> MakeTimers(asio::io_context::strand& strand)
-{
-	return {AsioTimer{strand}, AsioTimer{strand}};
-}
-
 TimerAggregator::TimerAggregator(Instance& room) :
 	room(room),
-	timers(MakeTimers(room.Strand()))
+	timers({AsioTimer(room.Strand()), AsioTimer(room.Strand())})
 {}
 
 void TimerAggregator::Cancel(uint8_t team)
