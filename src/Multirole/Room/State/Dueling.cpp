@@ -244,53 +244,19 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 {
 	using namespace YGOPro::CoreUtils;
 	auto& core = *cpkg.core;
-	std::optional<DuelFinishReason> dfrOpt;
-	auto AnalyzeMsg = [&](const Msg& msg)
+	auto PreAnalyzeMsg = [&](const Msg& msg)
 	{
-		using Reason = DuelFinishReason::Reason;
 		uint8_t msgType = GetMessageType(msg);
-		if(msgType == MSG_RETRY)
-		{
-			uint8_t winner = 1U - s.replier->Position().first;
-			dfrOpt = DuelFinishReason{Reason::REASON_WRONG_RESPONSE, winner};
-		}
-		else if(msgType == MSG_WIN)
-		{
-			uint8_t winner = GetSwappedTeam(msg[1U]);
-			dfrOpt = DuelFinishReason{Reason::REASON_DUEL_WON, winner};
-		}
-		else if(msgType == MSG_TAG_SWAP)
+		if(msgType == MSG_TAG_SWAP)
 		{
 			uint8_t team = GetSwappedTeam(msg[1U]);
 			s.currentPos[team] = (s.currentPos[team] + 1U) %
 				((team == 0U) ? hostInfo.t0Count : hostInfo.t1Count);
 		}
-		else if(msgType == MSG_MATCH_KILL)
-		{
-			// Too lazy to create a function in YGOPro::CoreUtils
-			uint32_t reason{};
-			std::memcpy(&reason, &msg[1U], sizeof(decltype(reason)));
-			s.matchKillReason = reason;
-		}
-		else if(msgType == MSG_NEW_TURN)
-		{
-			const auto time = std::chrono::seconds(hostInfo.timeLimitInSeconds)
-			                  + GRACE_PERIOD;
-			s.timeRemaining = {time, time};
-		}
 		else if(DoesMessageRequireAnswer(msgType))
 		{
 			uint8_t team = GetSwappedTeam(GetMessageReceivingTeam(msg));
 			s.replier = &GetCurrentTeamClient(s, team);
-			SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
-			if(hostInfo.timeLimitInSeconds != 0U)
-			{
-				const auto& tr = s.timeRemaining[team]; // Time remaining
-				const auto atr = tr - GRACE_PERIOD; // Apparent time remaining
-				const auto seconds = uint16_t(std::max(atr.count(), {}));
-				tagg.ExpiresAfter(team, tr);
-				SendToAll(MakeTimeLimit(GetSwappedTeam(team), seconds));
-			}
 		}
 	};
 	auto ProcessQueryRequests = [&](const std::vector<QueryRequest>& qreqs)
@@ -412,12 +378,55 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		}
 		}
 	};
-	auto ProcessSingleMsg = [&](const Msg& msg)
+	auto PostAnalyzeMsg = [&](const Msg& msg) -> std::optional<DuelFinishReason>
 	{
-		AnalyzeMsg(msg);
+		using Reason = DuelFinishReason::Reason;
+		uint8_t msgType = GetMessageType(msg);
+		if(msgType == MSG_RETRY)
+		{
+			uint8_t winner = 1U - s.replier->Position().first;
+			return DuelFinishReason{Reason::REASON_WRONG_RESPONSE, winner};
+		}
+		else if(msgType == MSG_WIN)
+		{
+			uint8_t winner = GetSwappedTeam(msg[1U]);
+			return DuelFinishReason{Reason::REASON_DUEL_WON, winner};
+		}
+		else if(msgType == MSG_MATCH_KILL)
+		{
+			// Too lazy to create a function in YGOPro::CoreUtils
+			uint32_t reason{};
+			std::memcpy(&reason, &msg[1U], sizeof(decltype(reason)));
+			s.matchKillReason = reason;
+		}
+		else if(msgType == MSG_NEW_TURN)
+		{
+			const auto time = std::chrono::seconds(hostInfo.timeLimitInSeconds)
+			                  + GRACE_PERIOD;
+			s.timeRemaining = {time, time};
+		}
+		else if(DoesMessageRequireAnswer(msgType))
+		{
+			SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
+			if(hostInfo.timeLimitInSeconds != 0U)
+			{
+				uint8_t team = GetSwappedTeam(GetMessageReceivingTeam(msg));
+				const auto& tr = s.timeRemaining[team]; // Time remaining
+				const auto atr = tr - GRACE_PERIOD; // Apparent time remaining
+				const auto seconds = uint16_t(std::max(atr.count(), {}));
+				tagg.ExpiresAfter(team, tr);
+				SendToAll(MakeTimeLimit(GetSwappedTeam(team), seconds));
+			}
+		}
+		return std::nullopt;
+	};
+	auto ProcessSingleMsg = [&](const Msg& msg) -> std::optional<DuelFinishReason>
+	{
+		PreAnalyzeMsg(msg);
 		ProcessQueryRequests(GetPreDistQueryRequests(msg));
 		DistributeMsg(msg);
 		ProcessQueryRequests(GetPostDistQueryRequests(msg));
+		return PostAnalyzeMsg(msg);
 	};
 	try
 	{
@@ -425,17 +434,14 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		{
 			Core::IWrapper::DuelStatus status = core.Process(s.duelPtr);
 			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
-			{
-				ProcessSingleMsg(msg);
-				if(dfrOpt) // Possibly set by AnalyzeMsg
+				if(auto dfrOpt = ProcessSingleMsg(msg); dfrOpt)
 					return dfrOpt;
-			}
 			if(status != Core::IWrapper::DUEL_STATUS_CONTINUE)
 				break;
 		}
 	}
 	CORE_EXCEPTION_HANDLER()
-	return dfrOpt;
+	return std::nullopt;
 }
 
 StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
