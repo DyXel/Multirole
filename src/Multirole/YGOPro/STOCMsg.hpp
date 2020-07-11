@@ -100,6 +100,13 @@ public:
 		HostInfo info;
 	};
 
+	struct TimeLimit
+	{
+		static const auto val = MsgType::TIME_LIMIT;
+		uint8_t team;
+		uint16_t timeLeft;
+	};
+
 	struct Chat
 	{
 		static const auto val = MsgType::CHAT;

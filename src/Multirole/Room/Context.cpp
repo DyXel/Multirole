@@ -15,15 +15,17 @@ Context::Context(
 	YGOPro::HostInfo&& hostInfo,
 	YGOPro::DeckLimits&& limits,
 	CoreProvider::CorePkg&& cpkg,
+	TimerAggregator& tagg,
 	const YGOPro::Banlist* banlist)
 	:
 	STOCMsgFactory(hostInfo.t0Count),
 	hostInfo(std::move(hostInfo)),
+	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
+	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
 	limits(std::move(limits)),
 	cpkg(std::move(cpkg)),
-	banlist(banlist),
-	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
-	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo})
+	tagg(tagg),
+	banlist(banlist)
 {}
 
 const YGOPro::HostInfo& Context::HostInfo() const

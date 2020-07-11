@@ -153,6 +153,11 @@ STOCMsg STOCMsgFactory::MakeCatchUp(bool catchingUp)
 	return {STOCMsg::CatchUp{static_cast<uint8_t>(catchingUp)}};
 }
 
+STOCMsg STOCMsgFactory::MakeTimeLimit(uint8_t team, uint16_t timeLeft)
+{
+	return {STOCMsg::TimeLimit{team, timeLeft}};
+}
+
 STOCMsg STOCMsgFactory::MakeJoinError(Error::Join type)
 {
 	return {STOCMsg::ErrorMsg{1U, static_cast<uint32_t>(type)}};

@@ -19,6 +19,8 @@ class Banlist;
 namespace Ignis::Multirole::Room
 {
 
+class TimerAggregator;
+
 class Context : public STOCMsgFactory
 {
 public:
@@ -26,6 +28,7 @@ public:
 		YGOPro::HostInfo&& hostInfo,
 		YGOPro::DeckLimits&& limits,
 		CoreProvider::CorePkg&& cpkg,
+		TimerAggregator& tagg,
 		const YGOPro::Banlist* banlist);
 
 	const YGOPro::HostInfo& HostInfo() const;
@@ -48,9 +51,10 @@ public:
 	// State/Dueling.cpp
 	StateOpt operator()(State::Dueling& s);
 	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
+	StateOpt operator()(State::Dueling& s, const Event::Join& e);
 	StateOpt operator()(State::Dueling& s, const Event::Response& e);
 	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
-	StateOpt operator()(State::Dueling& s, const Event::Join& e);
+	StateOpt operator()(State::Dueling& s, const Event::TimerExpired& e);
 	// State/Rematching.cpp
 	StateOpt operator()(State::Rematching&);
 	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
@@ -114,11 +118,12 @@ private:
 
 	// Creation options and resources.
 	const YGOPro::HostInfo hostInfo;
-	const YGOPro::DeckLimits limits;
-	CoreProvider::CorePkg cpkg;
-	const YGOPro::Banlist* banlist;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
+	const YGOPro::DeckLimits limits;
+	CoreProvider::CorePkg cpkg;
+	TimerAggregator& tagg;
+	const YGOPro::Banlist* banlist;
 
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;

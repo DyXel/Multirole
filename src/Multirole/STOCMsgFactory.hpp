@@ -92,6 +92,9 @@ public:
 	// Creates a message that tells clients to catch up the following
 	// next messages
 	static YGOPro::STOCMsg MakeCatchUp(bool catchingUp);
+	// Creates a message that tells clients how much time a particular
+	// team has left.
+	static YGOPro::STOCMsg MakeTimeLimit(uint8_t team, uint16_t timeLeft);
 
 	// Error messages
 	static YGOPro::STOCMsg MakeJoinError(Error::Join type);

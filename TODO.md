@@ -1,6 +1,5 @@
 # TODO
 
-* Implement timers
 * Implement replays
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
 * Handle crashes of core

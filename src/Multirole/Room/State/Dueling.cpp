@@ -1,7 +1,6 @@
 #include "../Context.hpp"
 
-#include <spdlog/spdlog.h>
-
+#include "../TimerAggregator.hpp"
 #include "../../Core/IScriptSupplier.hpp"
 #include "../../YGOPro/Constants.hpp"
 #include "../../YGOPro/CoreUtils.hpp"
@@ -10,6 +9,8 @@
 
 namespace Ignis::Multirole::Room
 {
+
+constexpr auto GRACE_PERIOD = std::chrono::seconds(5);
 
 StateOpt Context::operator()(State::Dueling& s)
 {
@@ -194,6 +195,14 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 {
 	if(s.replier != &e.client)
 		return std::nullopt;
+	if(hostInfo.timeLimitInSeconds != 0U)
+	{
+		using namespace std::chrono;
+		uint8_t team = e.client.Position().first;
+		auto delta = tagg.Expiry(team) - system_clock::now();
+		s.timeRemaining[team] = duration_cast<seconds>(delta);
+		tagg.Cancel(team);
+	}
 	try
 	{
 		cpkg.core->SetResponse(s.duelPtr, e.data);
@@ -215,6 +224,13 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Surrender& e)
 	}
 	uint8_t winner = 1U - p.first;
 	return Finish(s, DuelFinishReason{Reason::REASON_SURRENDERED, winner});
+}
+
+StateOpt Context::operator()(State::Dueling& s, const Event::TimerExpired& e)
+{
+	using Reason = DuelFinishReason::Reason;
+	uint8_t winner = 1U - e.team;
+	return Finish(s, DuelFinishReason{Reason::REASON_TIMED_OUT, winner});
 }
 
 // private
@@ -256,12 +272,25 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			std::memcpy(&reason, &msg[1U], sizeof(decltype(reason)));
 			s.matchKillReason = reason;
 		}
+		else if(msgType == MSG_NEW_TURN)
+		{
+			const auto time = std::chrono::seconds(hostInfo.timeLimitInSeconds)
+			                  + GRACE_PERIOD;
+			s.timeRemaining = {time, time};
+		}
 		else if(DoesMessageRequireAnswer(msgType))
 		{
-			uint8_t team = GetMessageReceivingTeam(msg);
-			s.replier = &GetCurrentTeamClient(s, GetSwappedTeam(team));
+			uint8_t team = GetSwappedTeam(GetMessageReceivingTeam(msg));
+			s.replier = &GetCurrentTeamClient(s, team);
 			SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
-			// TODO: update timers
+			if(hostInfo.timeLimitInSeconds != 0U)
+			{
+				const auto& tr = s.timeRemaining[team]; // Time remaining
+				const auto atr = tr - GRACE_PERIOD; // Apparent time remaining
+				const auto seconds = uint16_t(std::max(atr.count(), {}));
+				tagg.ExpiresAfter(team, tr);
+				SendToAll(MakeTimeLimit(GetSwappedTeam(team), seconds));
+			}
 		}
 	};
 	auto ProcessQueryRequests = [&](const std::vector<QueryRequest>& qreqs)
@@ -423,6 +452,8 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		}
 		catch(...){}
 	}
+	tagg.Cancel(0U);
+	tagg.Cancel(1U);
 	auto SendWinMsg = [&](uint8_t reason)
 	{
 		SendToAll(MakeGameMsg({MSG_WIN, GetSwappedTeam(dfr.winner), reason}));

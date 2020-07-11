@@ -3,6 +3,7 @@ target_sources(multirole PRIVATE
 	${CSR}/Client.cpp
 	${CSR}/Context.cpp
 	${CSR}/Instance.cpp
+	${CSR}/TimerAggregator.cpp
 )
 unset(CSR)
 

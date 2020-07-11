@@ -63,7 +63,9 @@ struct Surrender : public Detail::ClientEvent
 {};
 
 struct TimerExpired
-{};
+{
+	uint8_t team;
+};
 
 struct ToDuelist : public Detail::ClientEvent
 {};

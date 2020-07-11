@@ -8,6 +8,7 @@
 #include <asio/io_context_strand.hpp>
 
 #include "Context.hpp"
+#include "TimerAggregator.hpp"
 
 namespace Ignis::Multirole
 {
@@ -70,6 +71,7 @@ public:
 private:
 	IRoomManager& owner;
 	asio::io_context::strand strand;
+	TimerAggregator tagg;
 	Context ctx;
 	StateVariant state;
 	std::string name;

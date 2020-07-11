@@ -1,6 +1,7 @@
 #ifndef ROOM_STATE_HPP
 #define ROOM_STATE_HPP
 #include <array>
+#include <chrono>
 #include <deque>
 #include <optional>
 #include <set>
@@ -31,6 +32,7 @@ struct Dueling
 	Client* replier;
 	std::optional<uint32_t> matchKillReason;
 	std::deque<YGOPro::STOCMsg> spectatorCache;
+	std::array<std::chrono::seconds, 2U> timeRemaining;
 };
 
 struct Rematching

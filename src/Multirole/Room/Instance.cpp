@@ -12,9 +12,11 @@ Instance::Instance(
 	:
 	owner(owner),
 	strand(ioCtx),
+	tagg(*this),
 	ctx(std::move(info.hostInfo),
 		std::move(info.limits),
 		std::move(info.cpkg),
+		tagg,
 		info.banlist),
 	state(State::Waiting{nullptr}),
 	name(std::move(info.name)),
