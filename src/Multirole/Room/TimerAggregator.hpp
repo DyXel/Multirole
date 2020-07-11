@@ -1,5 +1,6 @@
 #ifndef ROOM_TIMER_AGGREGATOR_HPP
 #define ROOM_TIMER_AGGREGATOR_HPP
+#include <asio/io_context_strand.hpp>
 #include <asio/system_timer.hpp>
 
 namespace Ignis::Multirole::Room
@@ -25,6 +26,7 @@ public:
 	AsioTimer::time_point Expiry(uint8_t team) const;
 private:
 	Instance& room;
+	asio::io_context::strand& strand;
 	std::array<AsioTimer, 2U> timers;
 };
 

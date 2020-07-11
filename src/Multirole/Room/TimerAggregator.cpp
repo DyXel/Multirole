@@ -1,5 +1,7 @@
 #include "TimerAggregator.hpp"
 
+#include <asio/bind_executor.hpp>
+
 #include "Instance.hpp"
 
 namespace Ignis::Multirole::Room
@@ -7,7 +9,8 @@ namespace Ignis::Multirole::Room
 
 TimerAggregator::TimerAggregator(Instance& room) :
 	room(room),
-	timers({AsioTimer(room.Strand()), AsioTimer(room.Strand())})
+	strand(room.Strand()),
+	timers({AsioTimer(strand.context()), AsioTimer(strand.context())})
 {}
 
 void TimerAggregator::Cancel(uint8_t team)
@@ -20,11 +23,12 @@ void TimerAggregator::ExpiresAfter(uint8_t team, const AsioTimer::duration& expi
 {
 	assert(team <= 1U);
 	timers[team].expires_after(expiryTime);
-	timers[team].async_wait([this, team](const asio::error_code& ec)
+	timers[team].async_wait(asio::bind_executor(strand,
+	[this, team](const asio::error_code& ec)
 	{
 		if(!ec)
 			room.Dispatch(Event::TimerExpired{team});
-	});
+	}));
 }
 
 AsioTimer::time_point TimerAggregator::Expiry(uint8_t team) const
