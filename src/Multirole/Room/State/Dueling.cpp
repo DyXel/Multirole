@@ -253,6 +253,19 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			s.currentPos[team] = (s.currentPos[team] + 1U) %
 				((team == 0U) ? hostInfo.t0Count : hostInfo.t1Count);
 		}
+		else if(msgType == MSG_MATCH_KILL)
+		{
+			// Too lazy to create a function in YGOPro::CoreUtils
+			uint32_t reason{};
+			std::memcpy(&reason, &msg[1U], sizeof(decltype(reason)));
+			s.matchKillReason = reason;
+		}
+		else if(msgType == MSG_NEW_TURN)
+		{
+			const auto time = std::chrono::seconds(hostInfo.timeLimitInSeconds)
+			                  + GRACE_PERIOD;
+			s.timeRemaining = {time, time};
+		}
 		else if(DoesMessageRequireAnswer(msgType))
 		{
 			uint8_t team = GetSwappedTeam(GetMessageReceivingTeam(msg));
@@ -391,19 +404,6 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		{
 			uint8_t winner = GetSwappedTeam(msg[1U]);
 			return DuelFinishReason{Reason::REASON_DUEL_WON, winner};
-		}
-		else if(msgType == MSG_MATCH_KILL)
-		{
-			// Too lazy to create a function in YGOPro::CoreUtils
-			uint32_t reason{};
-			std::memcpy(&reason, &msg[1U], sizeof(decltype(reason)));
-			s.matchKillReason = reason;
-		}
-		else if(msgType == MSG_NEW_TURN)
-		{
-			const auto time = std::chrono::seconds(hostInfo.timeLimitInSeconds)
-			                  + GRACE_PERIOD;
-			s.timeRemaining = {time, time};
 		}
 		else if(DoesMessageRequireAnswer(msgType))
 		{
