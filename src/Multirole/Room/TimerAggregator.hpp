@@ -1,5 +1,7 @@
 #ifndef ROOM_TIMER_AGGREGATOR_HPP
 #define ROOM_TIMER_AGGREGATOR_HPP
+#include <array>
+
 #include <asio/io_context_strand.hpp>
 #include <asio/system_timer.hpp>
 
