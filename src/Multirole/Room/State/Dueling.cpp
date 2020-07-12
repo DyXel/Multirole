@@ -348,12 +348,15 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		{
 			uint8_t team = GetMessageReceivingTeam(msg);
 			const auto sMsg = StripMessageForTeam(team, msg);
-			s.replier->Send(MakeGameMsg(sMsg));
+			auto& client = GetCurrentTeamClient(s, GetSwappedTeam(team));
+			client.Send(MakeGameMsg(sMsg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST:
 		{
-			s.replier->Send(MakeGameMsg(msg));
+			uint8_t team = GetMessageReceivingTeam(msg);
+			auto& client = GetCurrentTeamClient(s, GetSwappedTeam(team));
+			client.Send(MakeGameMsg(msg));
 			break;
 		}
 		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM:

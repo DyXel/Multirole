@@ -17,7 +17,8 @@ class TimerAggregator
 public:
 	TimerAggregator(Instance& room);
 
-	// Cancels any asynchronous operation that were set by calling ExpireAfter.
+	// Cancels one timer's asynchronous operations that were set by
+	// calling ExpireAfter.
 	void Cancel(uint8_t team);
 
 	// Sets one timer's expiry time relative to now, also sets
