@@ -200,7 +200,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 		using namespace std::chrono;
 		uint8_t team = e.client.Position().first;
 		auto delta = tagg.Expiry(team) - system_clock::now();
-		s.timeRemaining[team] = duration_cast<seconds>(delta);
+		s.timeRemaining[team] = duration_cast<milliseconds>(delta);
 		tagg.Cancel(team);
 	}
 	try
@@ -262,8 +262,10 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		}
 		else if(msgType == MSG_NEW_TURN)
 		{
-			const auto time = std::chrono::seconds(hostInfo.timeLimitInSeconds)
-			                  + GRACE_PERIOD;
+			using namespace std::chrono;
+			const auto& limitInSeconds = hostInfo.timeLimitInSeconds;
+			const auto secs = seconds(limitInSeconds) + GRACE_PERIOD;
+			const auto time = duration_cast<milliseconds>(secs);
 			s.timeRemaining = {time, time};
 		}
 		else if(DoesMessageRequireAnswer(msgType))
@@ -413,12 +415,16 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
 			if(hostInfo.timeLimitInSeconds != 0U)
 			{
+				using namespace std::chrono;
 				uint8_t team = GetSwappedTeam(GetMessageReceivingTeam(msg));
-				const auto& tr = s.timeRemaining[team]; // Time remaining
-				const auto atr = tr - GRACE_PERIOD; // Apparent time remaining
-				const auto seconds = uint16_t(std::max(atr.count(), {}));
+				// Time remaining in seconds.
+				const auto tr = duration_cast<seconds>(s.timeRemaining[team]);
+				// Apparent time remaining (time that is sent to clients).
+				const auto atr = tr - GRACE_PERIOD;
+				// Tick value (seconds as integer) clamped to 0.
+				const auto ticks = uint16_t(std::max(atr.count(), {}));
 				tagg.ExpiresAfter(team, tr);
-				SendToAll(MakeTimeLimit(GetSwappedTeam(team), seconds));
+				SendToAll(MakeTimeLimit(GetSwappedTeam(team), ticks));
 			}
 		}
 		return std::nullopt;

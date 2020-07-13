@@ -32,7 +32,7 @@ struct Dueling
 	Client* replier;
 	std::optional<uint32_t> matchKillReason;
 	std::deque<YGOPro::STOCMsg> spectatorCache;
-	std::array<std::chrono::seconds, 2U> timeRemaining;
+	std::array<std::chrono::milliseconds, 2U> timeRemaining;
 };
 
 struct Rematching
