@@ -111,6 +111,8 @@ protected:
 
 private:
 	const uint8_t t1max;
+
+	static YGOPro::STOCMsg MakeChat(uint16_t posOrType, std::u16string_view str16);
 };
 
 } // namespace Ignis::Multirole

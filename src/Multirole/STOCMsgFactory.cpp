@@ -22,49 +22,48 @@ STOCMsg STOCMsgFactory::MakeTypeChange(const Room::Client& c, bool isHost) const
 		pos = EncodePosition(posKey);
 	STOCMsg::TypeChange proto{};
 	proto.type = (static_cast<uint8_t>(isHost) << 4U) | pos;
-	return STOCMsg(proto);
+	return {proto};
 }
 
 STOCMsg STOCMsgFactory::MakeChat(const Room::Client::PosType& p, std::string_view str) const
 {
-	STOCMsg::Chat proto{};
-	proto.posOrType = EncodePosition(p);
-	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
-	return STOCMsg(proto).Shrink(size + sizeof(uint16_t));
+	return MakeChat(EncodePosition(p), UTF8ToUTF16(str));
 }
 
 STOCMsg STOCMsgFactory::MakeChat(ChatMsgType type, std::string_view str)
 {
-	STOCMsg::Chat proto{};
-	switch(type)
+	auto ChatTypeToPosOrType = [](ChatMsgType type) constexpr -> uint16_t
 	{
-	case CHAT_MSG_TYPE_SPECTATOR:
-	{
-		proto.posOrType = 10U;
-		break;
-	}
-	case CHAT_MSG_TYPE_SYSTEM:
-	{
-		proto.posOrType = 8U;
-		break;
-	}
-	case CHAT_MSG_TYPE_ERROR:
-	default:
-	{
-		proto.posOrType = 9U;
-		break;
-	}
-	}
-	const auto size = UTF16ToBuffer(proto.msg, UTF8ToUTF16(str));
-	return STOCMsg(proto).Shrink(size + sizeof(uint16_t));
+		switch(type)
+		{
+		case CHAT_MSG_TYPE_SPECTATOR:
+		{
+			return 10U;
+			break;
+		}
+		case CHAT_MSG_TYPE_SYSTEM:
+		{
+			return 8U;
+			break;
+		}
+		case CHAT_MSG_TYPE_ERROR:
+		default:
+		{
+			return 9U;
+			break;
+		}
+		}
+	};
+	return MakeChat(ChatTypeToPosOrType(type), UTF8ToUTF16(str));
 }
 
 STOCMsg STOCMsgFactory::MakePlayerEnter(const Room::Client& c) const
 {
+	const auto& str16 = UTF8ToUTF16(c.Name());
 	STOCMsg::PlayerEnter proto{};
-	UTF16ToBuffer(proto.name, UTF8ToUTF16(c.Name()));
+	std::memcpy(&proto.name, str16.data(), UTF16ByteCount(str16));
 	proto.pos = EncodePosition(c.Position());
-	return STOCMsg(proto);
+	return {proto};
 }
 
 STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c) const
@@ -73,7 +72,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c) const
 	const uint8_t pos = EncodePosition(c.Position());
 	PChangeType pct = (c.Ready()) ? PCHANGE_TYPE_READY : PCHANGE_TYPE_NOT_READY;
 	proto.status = (pos << 4U) | static_cast<uint8_t>(pct);
-	return STOCMsg(proto);
+	return {proto};
 }
 
 STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c, PChangeType pct) const
@@ -81,7 +80,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(const Room::Client& c, PChangeType pct)
 	STOCMsg::PlayerChange proto{};
 	const uint8_t pos = EncodePosition(c.Position());
 	proto.status = (pos << 4U) | static_cast<uint8_t>(pct);
-	return STOCMsg(proto);
+	return {proto};
 }
 
 STOCMsg STOCMsgFactory::MakePlayerChange(Room::Client::PosType p1, Room::Client::PosType p2) const
@@ -90,7 +89,7 @@ STOCMsg STOCMsgFactory::MakePlayerChange(Room::Client::PosType p1, Room::Client:
 	const uint8_t pos1 = EncodePosition(p1);
 	const uint8_t pos2 = EncodePosition(p2);
 	proto.status = (pos1 << 4U) | pos2;
-	return STOCMsg(proto);
+	return {proto};
 }
 
 STOCMsg STOCMsgFactory::MakeWatchChange(std::size_t count)
@@ -218,6 +217,19 @@ STOCMsg STOCMsgFactory::MakeSideError()
 uint8_t STOCMsgFactory::EncodePosition(Room::Client::PosType pos) const
 {
 	return (pos.first * t1max) + pos.second;
+}
+
+// private
+
+STOCMsg STOCMsgFactory::MakeChat(uint16_t posOrType, std::u16string_view str16)
+{
+	const std::size_t str16bc = UTF16ByteCount(str16);
+	std::vector<uint8_t> bytes(sizeof(decltype(posOrType)) + str16bc);
+	uint8_t* p = bytes.data();
+	std::memcpy(p, &posOrType, sizeof(decltype(posOrType)));
+	p += sizeof(decltype(posOrType));
+	std::memcpy(p, str16.data(), str16bc);
+	return {STOCMsg::MsgType::CHAT, bytes};
 }
 
 } // namespace Ignis::Multirole

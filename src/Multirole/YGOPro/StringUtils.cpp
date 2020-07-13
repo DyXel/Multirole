@@ -20,13 +20,6 @@ std::u16string BufferToUTF16(const void* data, std::size_t maxByteCount)
 	return std::u16string(p2, p - p2);
 }
 
-std::size_t UTF16ToBuffer(void* data, std::u16string str)
-{
-	std::size_t bytesCopied = (str.size() + 1U) * sizeof(char16_t);
-	std::memcpy(data, str.data(), bytesCopied);
-	return bytesCopied;
-}
-
 #define WCI std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}
 std::string UTF16ToUTF8(std::u16string_view str)
 {
