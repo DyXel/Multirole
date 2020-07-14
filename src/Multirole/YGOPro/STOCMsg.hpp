@@ -48,14 +48,14 @@ public:
 
 	struct ErrorMsg
 	{
-		static const auto val = MsgType::ERROR_MSG;
+		static constexpr auto val = MsgType::ERROR_MSG;
 		uint8_t msg;
 		uint32_t code;
 	};
 
 	struct DeckErrorMsg
 	{
-		static const auto val = MsgType::ERROR_MSG;
+		static constexpr auto val = MsgType::ERROR_MSG;
 		uint8_t msg;
 		uint32_t type;
 		struct
@@ -69,7 +69,7 @@ public:
 
 	struct VerErrorMsg
 	{
-		static const auto val = MsgType::ERROR_MSG;
+		static constexpr auto val = MsgType::ERROR_MSG;
 		uint8_t msg;
 		char : 8U; // Padding to keep the client version
 		char : 8U; // in the same place as the other
@@ -79,65 +79,65 @@ public:
 
 	struct RPSResult
 	{
-		static const auto val = MsgType::RPS_RESULT;
+		static constexpr auto val = MsgType::RPS_RESULT;
 		uint8_t res0;
 		uint8_t res1;
 	};
 
 	struct CreateGame
 	{
-		static const auto val = MsgType::CREATE_GAME;
+		static constexpr auto val = MsgType::CREATE_GAME;
 		uint32_t id;
 	};
 
 	struct TypeChange
 	{
-		static const auto val = MsgType::TYPE_CHANGE;
+		static constexpr auto val = MsgType::TYPE_CHANGE;
 		uint8_t type;
 	};
 
 	struct JoinGame
 	{
-		static const auto val = MsgType::JOIN_GAME;
+		static constexpr auto val = MsgType::JOIN_GAME;
 		HostInfo info;
 	};
 
 	struct TimeLimit
 	{
-		static const auto val = MsgType::TIME_LIMIT;
+		static constexpr auto val = MsgType::TIME_LIMIT;
 		uint8_t team;
 		uint16_t timeLeft;
 	};
 
 	struct Chat
 	{
-		static const auto val = MsgType::CHAT;
+		static constexpr auto val = MsgType::CHAT;
 		uint16_t posOrType;
 		uint16_t msg[256U];
 	};
 
 	struct PlayerEnter
 	{
-		static const auto val = MsgType::PLAYER_ENTER;
+		static constexpr auto val = MsgType::PLAYER_ENTER;
 		uint16_t name[20U];
 		uint8_t pos;
 	};
 
 	struct PlayerChange
 	{
-		static const auto val = MsgType::PLAYER_CHANGE;
+		static constexpr auto val = MsgType::PLAYER_CHANGE;
 		uint8_t status;
 	};
 
 	struct WatchChange
 	{
-		static const auto val = MsgType::WATCH_CHANGE;
+		static constexpr auto val = MsgType::WATCH_CHANGE;
 		uint16_t count;
 	};
 
 	struct CatchUp
 	{
-		static const auto val = MsgType::CATCHUP;
+		static constexpr auto val = MsgType::CATCHUP;
 		uint8_t catchingUp;
 	};
 

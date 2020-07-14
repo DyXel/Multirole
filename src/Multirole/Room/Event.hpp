@@ -13,76 +13,86 @@ class Client;
 namespace Event
 {
 
-namespace Detail
+struct Chat
 {
+	Client& client;
+	std::string_view msg;
+};
 
-struct ClientEvent
+struct ChooseRPS
+{
+	Client& client;
+	uint8_t value;
+};
+
+struct ChooseTurn
+{
+	Client& client;
+	bool goingFirst;
+};
+
+struct ConnectionLost
 {
 	Client& client;
 };
 
-} // namespace Detail
-
-struct Chat : public Detail::ClientEvent
+struct Join
 {
-	std::string_view msg;
+	Client& client;
 };
 
-struct ChooseRPS : public Detail::ClientEvent
+struct Ready
 {
-	uint8_t value;
-};
-
-struct ChooseTurn : public Detail::ClientEvent
-{
-	bool goingFirst;
-};
-
-struct ConnectionLost : public Detail::ClientEvent
-{};
-
-struct Join : public Detail::ClientEvent
-{};
-
-struct Ready : public Detail::ClientEvent
-{
+	Client& client;
 	bool value;
 };
 
-struct Rematch : public Detail::ClientEvent
+struct Rematch
 {
+	Client& client;
 	bool answer;
 };
 
-struct Response : public Detail::ClientEvent
+struct Response
 {
+	Client& client;
 	const std::vector<uint8_t>& data;
 };
 
-struct Surrender : public Detail::ClientEvent
-{};
+struct Surrender
+{
+	Client& client;
+};
 
 struct TimerExpired
 {
 	uint8_t team;
 };
 
-struct ToDuelist : public Detail::ClientEvent
-{};
-
-struct ToObserver : public Detail::ClientEvent
-{};
-
-struct TryKick : public Detail::ClientEvent
+struct ToDuelist
 {
+	Client& client;
+};
+
+struct ToObserver
+{
+	Client& client;
+};
+
+struct TryKick
+{
+	Client& client;
 	uint8_t pos;
 };
 
-struct TryStart : public Detail::ClientEvent
-{};
-
-struct UpdateDeck : public Detail::ClientEvent
+struct TryStart
 {
+	Client& client;
+};
+
+struct UpdateDeck
+{
+	Client& client;
 	const std::vector<uint32_t>& main;
 	const std::vector<uint32_t>& side;
 };
