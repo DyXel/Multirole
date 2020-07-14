@@ -24,12 +24,17 @@ class TimerAggregator;
 class Context : public STOCMsgFactory
 {
 public:
-	Context(
-		YGOPro::HostInfo&& hostInfo,
-		YGOPro::DeckLimits&& limits,
-		CoreProvider::CorePkg&& cpkg,
-		TimerAggregator& tagg,
-		const YGOPro::Banlist* banlist);
+	// Data passed on the ctor.
+	struct CreateInfo
+	{
+		TimerAggregator& tagg;
+		CoreProvider::CorePkg cpkg;
+		YGOPro::HostInfo hostInfo;
+		YGOPro::DeckLimits limits;
+		const YGOPro::Banlist* banlist;
+	};
+
+	Context(CreateInfo&& info);
 
 	const YGOPro::HostInfo& HostInfo() const;
 
@@ -117,12 +122,12 @@ private:
 	};
 
 	// Creation options and resources.
+	TimerAggregator& tagg;
+	CoreProvider::CorePkg cpkg;
 	const YGOPro::HostInfo hostInfo;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
 	const YGOPro::DeckLimits limits;
-	CoreProvider::CorePkg cpkg;
-	TimerAggregator& tagg;
 	const YGOPro::Banlist* banlist;
 
 	// Client management variables.

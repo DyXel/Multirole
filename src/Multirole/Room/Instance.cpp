@@ -5,19 +5,17 @@
 namespace Ignis::Multirole::Room
 {
 
-Instance::Instance(
-	CreateInfo&& info,
-	IRoomManager& owner,
-	asio::io_context& ioCtx)
+Instance::Instance(CreateInfo&& info)
 	:
-	owner(owner),
-	strand(ioCtx),
+	owner(info.owner),
+	strand(info.ioCtx),
 	tagg(*this),
-	ctx(std::move(info.hostInfo),
-		std::move(info.limits),
-		std::move(info.cpkg),
+	ctx({
 		tagg,
-		info.banlist),
+		std::move(info.cpkg),
+		std::move(info.hostInfo),
+		std::move(info.limits),
+		info.banlist}),
 	state(State::Waiting{nullptr}),
 	name(std::move(info.name)),
 	notes(std::move(info.notes)),

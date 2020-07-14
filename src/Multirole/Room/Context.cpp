@@ -11,21 +11,16 @@
 namespace Ignis::Multirole::Room
 {
 
-Context::Context(
-	YGOPro::HostInfo&& hostInfo,
-	YGOPro::DeckLimits&& limits,
-	CoreProvider::CorePkg&& cpkg,
-	TimerAggregator& tagg,
-	const YGOPro::Banlist* banlist)
+Context::Context(CreateInfo&& info)
 	:
-	STOCMsgFactory(hostInfo.t0Count),
-	hostInfo(std::move(hostInfo)),
+	STOCMsgFactory(info.hostInfo.t0Count),
+	tagg(info.tagg),
+	cpkg(std::move(info.cpkg)),
+	hostInfo(std::move(info.hostInfo)),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
-	limits(std::move(limits)),
-	cpkg(std::move(cpkg)),
-	tagg(tagg),
-	banlist(banlist)
+	limits(std::move(info.limits)),
+	banlist(info.banlist)
 {}
 
 const YGOPro::HostInfo& Context::HostInfo() const

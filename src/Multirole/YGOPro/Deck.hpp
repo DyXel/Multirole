@@ -37,6 +37,6 @@ private:
 	uint32_t error;
 };
 
-} // namespace Multirole
+} // namespace YGOPro
 
 #endif // YGOPRO_DECK_HPP

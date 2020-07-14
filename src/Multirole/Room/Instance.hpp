@@ -24,9 +24,11 @@ public:
 	// Data passed on the ctor.
 	struct CreateInfo
 	{
+		IRoomManager& owner;
+		asio::io_context& ioCtx;
+		CoreProvider::CorePkg cpkg;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
-		CoreProvider::CorePkg cpkg;
 		const YGOPro::Banlist* banlist;
 		std::string name;
 		std::string notes;
@@ -45,7 +47,7 @@ public:
 	};
 
 	// Ctor and registering.
-	Instance(CreateInfo&& info, IRoomManager& owner, asio::io_context& ioCtx);
+	Instance(CreateInfo&& info);
 	void RegisterToOwner();
 
 	// Check if the room state is not Waiting
@@ -74,9 +76,9 @@ private:
 	TimerAggregator tagg;
 	Context ctx;
 	StateVariant state;
-	std::string name;
-	std::string notes;
-	std::string pass;
+	const std::string name;
+	const std::string notes;
+	const std::string pass;
 	uint32_t id{};
 
 	std::set<std::shared_ptr<Client>> clients;

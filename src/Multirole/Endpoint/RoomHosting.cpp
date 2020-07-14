@@ -194,28 +194,33 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
 	{
 		auto p = msg.GetCreateGame();
-		if(!p || p->hostInfo.handshake != HANDSHAKE || p->hostInfo.version != SERVER_VERSION)
+		if(!p || p->hostInfo.handshake != HANDSHAKE ||
+		   p->hostInfo.version != SERVER_VERSION)
 			return SendVersionError(tc->soc);
 		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
-		Room::Instance::CreateInfo info;
-		info.hostInfo = p->hostInfo;
-		info.limits = LimitsFromFlags(info.hostInfo.extraRules);
-		info.cpkg = coreProvider.GetCorePkg();
-		info.banlist =
-			banlistProvider.GetBanlistByHash(info.hostInfo.banlistHash);
+		Room::Instance::CreateInfo info =
+		{
+			lobby,
+			ioCtx,
+			coreProvider.GetCorePkg(),
+			p->hostInfo,
+			LimitsFromFlags(info.hostInfo.extraRules),
+			banlistProvider.GetBanlistByHash(p->hostInfo.banlistHash),
+			UTF16_BUFFER_TO_STR(p->name),
+			std::string(p->notes),
+			UTF16_BUFFER_TO_STR(p->pass)
+		};
+		// Fix some of the options back into expected values in case of
+		// exceptions.
 		if(info.banlist == nullptr)
 			info.hostInfo.banlistHash = 0;
 		info.hostInfo.t0Count = std::clamp(info.hostInfo.t0Count, 1, 3);
 		info.hostInfo.t1Count = std::clamp(info.hostInfo.t1Count, 1, 3);
 		info.hostInfo.bestOf = std::max(info.hostInfo.bestOf, 1);
-		info.name = UTF16_BUFFER_TO_STR(p->name);
-		info.notes = std::string(p->notes);
-		info.pass = UTF16_BUFFER_TO_STR(p->pass);
-		auto room = std::make_shared<Room::Instance>(
-			std::move(info),
-			lobby,
-			ioCtx);
+		// Make new room with the set parameters
+		auto room = std::make_shared<Room::Instance>(std::move(info));
 		room->RegisterToOwner();
+		// Add the client to the newly created room
 		auto client = std::make_shared<Room::Client>(
 			*room,
 			std::move(tc->soc),
