@@ -1,5 +1,6 @@
 #ifndef CTOSMSG_HPP
 #define CTOSMSG_HPP
+#include <array>
 #include <optional>
 #include "MsgCommon.hpp"
 
@@ -78,24 +79,21 @@ public:
 		uint8_t answer;
 	};
 
-	CTOSMsg() : r(data + HEADER_LENGTH)
-	{}
-
-	LengthType GetLength() const
+	inline LengthType GetLength() const
 	{
-		LengthType v;
-		std::memcpy(&v, data, sizeof(LengthType));
+		LengthType v{};
+		std::memcpy(&v, bytes.data(), sizeof(LengthType));
 		return v - 1U;
 	}
 
-	MsgType GetType() const
+	inline MsgType GetType() const
 	{
-		MsgType v;
-		std::memcpy(&v, data + sizeof(LengthType), sizeof(MsgType));
+		MsgType v{};
+		std::memcpy(&v, bytes.data() + sizeof(LengthType), sizeof(MsgType));
 		return v;
 	}
 
-	bool IsHeaderValid() const
+	inline bool IsHeaderValid() const
 	{
 		if(GetLength() > MSG_MAX_LENGTH)
 			return false;
@@ -126,7 +124,7 @@ public:
 	}
 
 #define X(s) \
-	std::optional<s> Get##s() const \
+	inline std::optional<s> Get##s() const \
 	{ \
 		std::optional<s> p; \
 		if(GetLength() != sizeof(s)) \
@@ -144,13 +142,13 @@ public:
 	X(Rematch)
 #undef X
 
-	const uint8_t* Body() const
+	constexpr const uint8_t* Body() const
 	{
-		return data + HEADER_LENGTH;
+		return bytes.data() + HEADER_LENGTH;
 	}
 
 	template<typename T>
-	inline T Read(const uint8_t*& ptr) const
+	constexpr T Read(const uint8_t*& ptr) const
 	{
 		{
 			const uint8_t* s1 = ptr + sizeof(T);
@@ -163,19 +161,18 @@ public:
 		return val;
 	}
 
-	uint8_t* Data()
+	constexpr uint8_t* Data()
 	{
-		return data;
+		return bytes.data();
 	}
 
-	uint8_t* Body()
+	constexpr uint8_t* Body()
 	{
-		return data + HEADER_LENGTH;
+		return bytes.data() + HEADER_LENGTH;;
 	}
 
 private:
-	uint8_t data[HEADER_LENGTH + MSG_MAX_LENGTH];
-	uint8_t* r;
+	std::array<uint8_t, HEADER_LENGTH + MSG_MAX_LENGTH> bytes{};
 };
 
 } // namespace YGOPro
