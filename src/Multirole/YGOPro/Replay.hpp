@@ -2,8 +2,9 @@
 #define YGOPRO_REPLAY_HPP
 #include <array>
 #include <cstdint>
-#include <string>
 #include <list>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "Deck.hpp"
