@@ -31,20 +31,20 @@ Instance::Instance(const nlohmann::json& cfg) :
 	scriptProvider(
 		cfg.at("scriptProvider").at("fileRegex").get<std::string>()),
 	coreProvider(
-		cfg.at("coreProvider").at("fileRegex").get<std::string>(),
-		dataProvider,
-		scriptProvider),
+		cfg.at("coreProvider").at("fileRegex").get<std::string>()),
 	banlistProvider(
 		cfg.at("banlistProvider").at("fileRegex").get<std::string>()),
 	lobbyListing(
 		lIoCtx,
 		cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
-	roomHosting(
+	roomHosting({
 		lIoCtx,
 		cfg.at("roomHostingPort").get<unsigned short>(),
-		coreProvider,
 		banlistProvider,
-		lobby),
+		coreProvider,
+		dataProvider,
+		scriptProvider,
+		lobby}),
 	signalSet(lIoCtx)
 {
 	// Load up and update repositories while also adding them to the std::map

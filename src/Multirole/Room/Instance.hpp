@@ -26,7 +26,9 @@ public:
 	{
 		IRoomManager& owner;
 		asio::io_context& ioCtx;
-		CoreProvider::CorePkg cpkg;
+		CoreProvider& coreProvider;
+		ScriptProvider& scriptProvider;
+		std::shared_ptr<CardDatabase> cdb;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
 		const YGOPro::Banlist* banlist;

@@ -16,7 +16,14 @@ class Banlist;
 
 } // namespace YGOPro
 
-namespace Ignis::Multirole::Room
+namespace Ignis::Multirole
+{
+
+class CardDatabase;
+class CoreProvider;
+class ScriptProvider;
+
+namespace Room
 {
 
 class TimerAggregator;
@@ -28,7 +35,9 @@ public:
 	struct CreateInfo
 	{
 		TimerAggregator& tagg;
-		CoreProvider::CorePkg cpkg;
+		CoreProvider& coreProvider;
+		ScriptProvider& scriptProvider;
+		std::shared_ptr<CardDatabase> cdb;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
 		const YGOPro::Banlist* banlist;
@@ -123,7 +132,9 @@ private:
 
 	// Creation options and resources.
 	TimerAggregator& tagg;
-	CoreProvider::CorePkg cpkg;
+	CoreProvider& coreProvider;
+	ScriptProvider& scriptProvider;
+	std::shared_ptr<CardDatabase> cdb;
 	const YGOPro::HostInfo hostInfo;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
@@ -186,6 +197,8 @@ private:
 	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
 };
 
-} // namespace Ignis::Multirole::Room
+} // namespace Room
+
+} // namespace Ignis::Multirole
 
 #endif // ROOM_CONTEXT_HPP

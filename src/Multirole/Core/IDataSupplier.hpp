@@ -14,8 +14,10 @@ namespace Core
 class IDataSupplier
 {
 public:
-	virtual const OCG_CardData& DataFromCode(uint32_t code) = 0;
-	virtual void DataUsageDone(const OCG_CardData& data) = 0;
+	using CardData = OCG_CardData;
+
+	virtual const CardData& DataFromCode(uint32_t code) = 0;
+	virtual void DataUsageDone(const CardData& data) = 0;
 };
 
 } // namespace Core

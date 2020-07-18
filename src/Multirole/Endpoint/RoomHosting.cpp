@@ -5,6 +5,8 @@
 #include <asio/read.hpp>
 #include <asio/write.hpp>
 
+#include "../BanlistProvider.hpp"
+#include "../DataProvider.hpp"
 #include "../Lobby.hpp"
 #include "../STOCMsgFactory.hpp"
 #include "../Room/Client.hpp"
@@ -85,18 +87,15 @@ struct TmpClient
 
 // public
 
-RoomHosting::RoomHosting(
-	asio::io_context& ioCtx,
-	unsigned short port,
-	CoreProvider& coreProvider,
-	BanlistProvider& banlistProvider,
-	Lobby& lobby)
+RoomHosting::RoomHosting(CreateInfo&& info)
 	:
-	ioCtx(ioCtx),
-	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
-	coreProvider(coreProvider),
-	banlistProvider(banlistProvider),
-	lobby(lobby)
+	ioCtx(info.ioCtx),
+	acceptor(info.ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), info.port)),
+	banlistProvider(info.banlistProvider),
+	coreProvider(info.coreProvider),
+	dataProvider(info.dataProvider),
+	scriptProvider(info.scriptProvider),
+	lobby(info.lobby)
 {
 	DoAccept();
 }
@@ -202,7 +201,9 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		{
 			lobby,
 			ioCtx,
-			coreProvider.GetCorePkg(),
+			coreProvider,
+			scriptProvider,
+			dataProvider.GetDatabase(),
 			p->hostInfo,
 			LimitsFromFlags(info.hostInfo.extraRules),
 			banlistProvider.GetBanlistByHash(p->hostInfo.banlistHash),

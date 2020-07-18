@@ -5,56 +5,40 @@
 #include <mutex>
 
 #include "IGitRepoObserver.hpp"
-#include "Core/IWrapper.hpp"
-#include "Core/ILogger.hpp"
 
 namespace Ignis::Multirole
 {
 
-class CardDatabase;
-class DataProvider;
-class ScriptProvider;
+namespace Core
+{
 
-class CoreProvider : public IGitRepoObserver, public Core::ILogger
+class IWrapper;
+
+} // namespace Core
+
+class CoreProvider : public IGitRepoObserver
 {
 public:
-	enum CoreType
+	enum class CoreType
 	{
 		SHARED,
 		HORNET,
 	};
-	using CorePtr = std::shared_ptr<Core::IWrapper>;
-	struct CorePkg
-	{
-		// The shared pointer to CardDatabase is needed so the object
-		// can outlive the Core::IWrapper that uses it.
-		std::shared_ptr<CardDatabase> db;
-		CorePtr core;
-	};
 
-	CoreProvider(
-		std::string_view fnRegexStr,
-		DataProvider& dataProvider,
-		ScriptProvider& scriptProvider);
+	using CorePtr = std::shared_ptr<Core::IWrapper>;
+
+	CoreProvider(std::string_view fnRegexStr);
 	void SetLoadProperties(CoreType typeValue, bool loadPerCallValue);
 
-	// Will return a core instance based on the options set by SetLoadProperties
-	// along with the Core::IDataSupplier used for that same core instance
-	// already set as if by calling Core::IWrapper::SetDataSupplier and
-	// with the Data::ScriptProvider set as if by calling
-	// Core::IWrapper::SetScriptSupplier with `&scriptProvider`.
-	CorePkg GetCorePkg();
+	// Will return a core instance based on the options set by
+	// SetLoadProperties.
+	CorePtr GetCore();
 
 	// IGitRepoObserver overrides
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
 	void OnDiff(std::string_view path, const GitDiff& diff) override;
-
-	// Core::ILogger overrides
-	void Log(LogType type, std::string_view str) override;
 private:
 	const std::regex fnRegex;
-	DataProvider& dataProvider;
-	ScriptProvider& scriptProvider;
 	CoreType type;
 	bool loadPerCall;
 	std::string corePath;

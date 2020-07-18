@@ -19,16 +19,17 @@ static void DataReader(void* payload, int code, OCG_CardData* data)
 
 static int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 {
-	auto& srd = *static_cast<DLWrapper::ScriptReaderData*>(payload);
-	std::string script = srd.supplier->ScriptFromFilePath(name);
+	auto& ssd = *static_cast<Detail::ScriptSupplierData*>(payload);
+	std::string script = ssd.supplier.ScriptFromFilePath(name);
 	if(script.empty())
 		return 0;
-	return srd.OCG_LoadScript(duel, script.data(), script.length(), name);
+	return ssd.OCG_LoadScript(duel, script.data(), script.length(), name);
 }
 
 static void LogHandler(void* payload, const char* str, int t)
 {
-	static_cast<ILogger*>(payload)->Log(static_cast<ILogger::LogType>(t), str);
+	if(payload != nullptr)
+		static_cast<ILogger*>(payload)->Log(ILogger::LogType{t}, str);
 }
 
 static void DataReaderDone(void* payload, OCG_CardData* data)
@@ -56,7 +57,6 @@ DLWrapper::DLWrapper(std::string_view absFilePath)
 	}while(0);
 #include "../../ocgapi_funcs.inl"
 #undef OCGFUNC
-	scriptReaderData.OCG_LoadScript = OCG_LoadScript;
 }
 
 DLWrapper::~DLWrapper()
@@ -64,38 +64,11 @@ DLWrapper::~DLWrapper()
 	DLOpen::UnloadObject(handle);
 }
 
-void DLWrapper::SetDataSupplier(IDataSupplier* ds)
-{
-	dataSupplier = ds;
-}
-
-// IDataSupplier* DLWrapper::GetDataSupplier()
-// {
-// 	return dataSupplier;
-// }
-
-void DLWrapper::SetScriptSupplier(IScriptSupplier* ss)
-{
-	scriptReaderData.supplier = ss;
-}
-
-IScriptSupplier* DLWrapper::GetScriptSupplier()
-{
-	return scriptReaderData.supplier;
-}
-
-void DLWrapper::SetLogger(ILogger* l)
-{
-	logger = l;
-}
-
-// ILogger* DLWrapper::GetLogger()
-// {
-// 	return logger;
-// }
-
 IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 {
+	OCG_Duel duel{nullptr};
+	std::lock_guard<std::mutex> lock(ssdMutex);
+	auto ssdIter = ssdList.insert(ssdList.end(), {opts.scriptSupplier, OCG_LoadScript});
 	OCG_DuelOptions options =
 	{
 		opts.seed,
@@ -103,22 +76,29 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 		opts.team1,
 		opts.team2,
 		&DataReader,
-		dataSupplier,
+		&opts.dataSupplier,
 		&ScriptReader,
-		&scriptReaderData,
+		&*ssdIter,
 		&LogHandler,
-		logger,
+		opts.optLogger,
 		&DataReaderDone,
-		dataSupplier
+		&opts.dataSupplier
 	};
-	OCG_Duel duel = nullptr;
 	if(OCG_CreateDuel(&duel, options) != OCG_DUEL_CREATION_SUCCESS)
+	{
+		ssdList.erase(ssdIter);
 		throw std::runtime_error("Could not create duel");
+	}
+	ssdMap.insert({duel, ssdIter});
 	return duel;
 }
 
 void DLWrapper::DestroyDuel(Duel duel)
 {
+	{
+		std::lock_guard<std::mutex> lock(ssdMutex);
+		ssdMap.erase(duel);
+	}
 	OCG_DestroyDuel(duel);
 }
 
@@ -134,7 +114,7 @@ void DLWrapper::Start(Duel duel)
 
 IWrapper::DuelStatus DLWrapper::Process(Duel duel)
 {
-	return static_cast<DuelStatus>(OCG_DuelProcess(duel));
+	return DuelStatus{OCG_DuelProcess(duel)};
 }
 
 IWrapper::Buffer DLWrapper::GetMessages(Duel duel)

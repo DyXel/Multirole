@@ -11,8 +11,7 @@
   * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 * Check used enums and try to use `enum class` where possible
   * Also try to forward declare as many of them as possible
-* Make inheritance of `std::enable_shared_from_this` private/protected
-* Remove setters for `Core::IWrapper` and instead set them on ctors
+* Try to avoid including the banlist parser into BanlistProvider
 * Investigate possibility of using a lockless queue for `Room::Client` message sending
 * Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
 

@@ -1,5 +1,5 @@
-#ifndef IHIGHLEVELWRAPPER_HPP
-#define IHIGHLEVELWRAPPER_HPP
+#ifndef IWRAPPER_HPP
+#define IWRAPPER_HPP
 #include <cstdint>
 #include <vector>
 #include <string_view>
@@ -23,38 +23,31 @@ class IWrapper
 public:
 	using Buffer = std::vector<uint8_t>;
 	using Duel = OCG_Duel;
+	using NewCardInfo = OCG_NewCardInfo;
+	using Player = OCG_Player;
+	using QueryInfo = OCG_QueryInfo;
 
-	enum DuelStatus
+	enum class DuelStatus
 	{
 		DUEL_STATUS_END,
 		DUEL_STATUS_WAITING,
 		DUEL_STATUS_CONTINUE,
 	};
 
-	using Player = OCG_Player;
-
 	struct DuelOptions
 	{
+		IDataSupplier& dataSupplier;
+		IScriptSupplier& scriptSupplier;
+		ILogger* optLogger;
 		uint32_t seed;
 		int flags;
 		Player team1;
 		Player team2;
 	};
 
-	using QueryInfo = OCG_QueryInfo;
-
-	virtual ~IWrapper() = default;
-
-	virtual void SetDataSupplier(IDataSupplier* cds) = 0;
-// 	virtual IDataSupplier* GetDataSupplier() = 0;
-	virtual void SetScriptSupplier(IScriptSupplier* ss) = 0;
-	virtual IScriptSupplier* GetScriptSupplier() = 0;
-	virtual void SetLogger(ILogger* l) = 0;
-// 	virtual ILogger* GetLogger() = 0;
-
 	virtual Duel CreateDuel(const DuelOptions& opts) = 0;
 	virtual void DestroyDuel(Duel duel) = 0;
-	virtual void AddCard(Duel duel, const OCG_NewCardInfo& info) = 0;
+	virtual void AddCard(Duel duel, const NewCardInfo& info) = 0;
 	virtual void Start(Duel duel) = 0;
 
 	virtual DuelStatus Process(Duel duel) = 0;
@@ -74,4 +67,4 @@ public:
 
 } // namespace Ignis
 
-#endif // IHIGHLEVELWRAPPER_HPP
+#endif // IWRAPPER_HPP

@@ -12,7 +12,9 @@ Instance::Instance(CreateInfo&& info)
 	tagg(*this),
 	ctx({
 		tagg,
-		std::move(info.cpkg),
+		info.coreProvider,
+		info.scriptProvider,
+		std::move(info.cdb),
 		std::move(info.hostInfo),
 		std::move(info.limits),
 		info.banlist}),

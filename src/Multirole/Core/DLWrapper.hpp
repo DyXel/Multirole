@@ -1,32 +1,33 @@
-#ifndef DYNAMICLINKWRAPPER_HPP
-#define DYNAMICLINKWRAPPER_HPP
+#ifndef DLWRAPPER_HPP
+#define DLWRAPPER_HPP
+#include <list>
+#include <map>
+#include <mutex>
 #include "IWrapper.hpp"
 
 namespace Ignis::Multirole::Core
 {
 
+namespace Detail
+{
+
+struct ScriptSupplierData
+{
+	IScriptSupplier& supplier;
+	int (*OCG_LoadScript)(OCG_Duel, const char*, uint32_t, const char*);
+};
+
+} // namespace Detail
+
 class DLWrapper : public IWrapper
 {
 public:
-	struct ScriptReaderData
-	{
-		IScriptSupplier* supplier;
-		int (*OCG_LoadScript)(OCG_Duel, const char*, uint32_t, const char*);
-	};
-
 	DLWrapper(std::string_view absFilePath);
 	virtual ~DLWrapper();
 
-	void SetDataSupplier(IDataSupplier* ds) override;
-// 	IDataSupplier* GetDataSupplier() override;
-	void SetScriptSupplier(IScriptSupplier* ss) override;
-	IScriptSupplier* GetScriptSupplier() override;
-	void SetLogger(ILogger* l) override;
-// 	ILogger* GetLogger() override;
-
 	Duel CreateDuel(const DuelOptions& opts) override;
 	void DestroyDuel(Duel duel) override;
-	void AddCard(Duel duel, const OCG_NewCardInfo& info) override;
+	void AddCard(Duel duel, const NewCardInfo& info) override;
 	void Start(Duel duel) override;
 
 	DuelStatus Process(Duel duel) override;
@@ -46,11 +47,18 @@ private:
 #include "../../ocgapi_funcs.inl"
 #undef OCGFUNC
 
-	IDataSupplier* dataSupplier{nullptr};
-	ScriptReaderData scriptReaderData{nullptr, nullptr};
-	ILogger* logger{nullptr};
+	// The script supplier core callback must know which OCG_LoadScript
+	// function to call in order to pass the correct data to the core,
+	// this is achieved by saving both the script supplier as well as the
+	// function pointer in the same struct. We own that information through
+	// the list, but since the list has no associated duel, we must also
+	// save the iterator in a map when we actually get the necessary key,
+	// in this case, the duel pointer after duel creation has succeeded.
+	std::list<Detail::ScriptSupplierData> ssdList;
+	std::map<Duel, std::list<Detail::ScriptSupplierData>::iterator> ssdMap;
+	std::mutex ssdMutex;
 };
 
 } // namespace Ignis::Multirole::Core
 
-#endif // DYNAMICLINKWRAPPER_HPP
+#endif // DLWRAPPER_HPP

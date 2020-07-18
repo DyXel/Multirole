@@ -1,7 +1,9 @@
 #include "../Context.hpp"
 
 #include "../TimerAggregator.hpp"
-#include "../../Core/IScriptSupplier.hpp"
+#include "../../CardDatabase.hpp"
+#include "../../ScriptProvider.hpp"
+#include "../../Core/IWrapper.hpp"
 #include "../../YGOPro/Constants.hpp"
 #include "../../YGOPro/CoreUtils.hpp"
 
@@ -21,7 +23,6 @@ StateOpt Context::operator()(State::Dueling& s)
 	if(!rng)
 		rng = std::make_unique<std::mt19937>(id);
 	// Create core duel with room's options
-	auto& core = *cpkg.core;
 	const OCG_Player popt =
 	{
 		static_cast<int>(hostInfo.startingLP),
@@ -30,6 +31,9 @@ StateOpt Context::operator()(State::Dueling& s)
 	};
 	const Core::IWrapper::DuelOptions dopts =
 	{
+		*cdb,
+		scriptProvider,
+		nullptr, // TODO
 		static_cast<uint32_t>((*rng)()),
 		static_cast<int>(hostInfo.duelFlags),
 		popt,
@@ -37,12 +41,11 @@ StateOpt Context::operator()(State::Dueling& s)
 	};
 	try
 	{
-		s.duelPtr = core.CreateDuel(dopts);
-		auto& supplier = *core.GetScriptSupplier();
+		s.duelPtr = s.core->CreateDuel(dopts);
 		auto LoadScript = [&](std::string_view file)
 		{
-			if(auto scr = supplier.ScriptFromFilePath(file); !scr.empty())
-				core.LoadScript(s.duelPtr, file, scr);
+			if(auto scr = scriptProvider.ScriptFromFilePath(file); !scr.empty())
+				s.core->LoadScript(s.duelPtr, file, scr);
 		};
 		LoadScript("constant.lua");
 		LoadScript("utility.lua");
@@ -76,7 +79,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		for(auto code : extraCards)
 		{
 			nci.code = code;
-			core.AddCard(s.duelPtr, nci);
+			s.core->AddCard(s.duelPtr, nci);
 		}
 	}
 	CORE_EXCEPTION_HANDLER()
@@ -100,24 +103,24 @@ StateOpt Context::operator()(State::Dueling& s)
 			for(auto code : ReversedOrShuffled(deck.Main()))
 			{
 				nci.code = code;
-				core.AddCard(s.duelPtr, nci);
+				s.core->AddCard(s.duelPtr, nci);
 			}
 			nci.loc = LOCATION_EXTRA;
 			for(auto code : deck.Extra())
 			{
 				nci.code = code;
-				core.AddCard(s.duelPtr, nci);
+				s.core->AddCard(s.duelPtr, nci);
 			}
 		}
-		core.Start(s.duelPtr);
+		s.core->Start(s.duelPtr);
 		// Send MSG_START message to clients.
 		auto msgStart = CoreUtils::MakeStartMsg(
 			{
 				hostInfo.startingLP,
-				core.QueryCount(s.duelPtr, 0U, LOCATION_DECK),
-				core.QueryCount(s.duelPtr, 0U, LOCATION_EXTRA),
-				core.QueryCount(s.duelPtr, 1U, LOCATION_DECK),
-				core.QueryCount(s.duelPtr, 1U, LOCATION_EXTRA),
+				s.core->QueryCount(s.duelPtr, 0U, LOCATION_DECK),
+				s.core->QueryCount(s.duelPtr, 0U, LOCATION_EXTRA),
+				s.core->QueryCount(s.duelPtr, 1U, LOCATION_DECK),
+				s.core->QueryCount(s.duelPtr, 1U, LOCATION_EXTRA),
 			});
 		SendToTeam(GetSwappedTeam(0U), MakeGameMsg(msgStart));
 		msgStart[1] = 1U;
@@ -135,7 +138,7 @@ StateOpt Context::operator()(State::Dueling& s)
 				0U,
 				0U
 			};
-			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
+			const auto buffer = s.core->QueryLocation(s.duelPtr, qInfo);
 			// TODO: Save into replay.
 		};
 		RecordDecks(0U);
@@ -151,7 +154,7 @@ StateOpt Context::operator()(State::Dueling& s)
 				0U,
 				0U
 			};
-			const auto buffer = core.QueryLocation(s.duelPtr, qInfo);
+			const auto buffer = s.core->QueryLocation(s.duelPtr, qInfo);
 			using namespace YGOPro::CoreUtils;
 			SendToTeam(GetSwappedTeam(qInfo.con),
 				MakeGameMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer)));
@@ -205,7 +208,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 	}
 	try
 	{
-		cpkg.core->SetResponse(s.duelPtr, e.data);
+		s.core->SetResponse(s.duelPtr, e.data);
 	}
 	CORE_EXCEPTION_HANDLER()
 	if(const auto dfrOpt = Process(s); dfrOpt)
@@ -243,7 +246,6 @@ Client& Context::GetCurrentTeamClient(State::Dueling& s, uint8_t team)
 std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 {
 	using namespace YGOPro::CoreUtils;
-	auto& core = *cpkg.core;
 	auto PreAnalyzeMsg = [&](const Msg& msg)
 	{
 		uint8_t msgType = GetMessageType(msg);
@@ -294,7 +296,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 					req.seq,
 					0U
 				};
-				const auto fullBuffer = core.Query(s.duelPtr, qInfo);
+				const auto fullBuffer = s.core->Query(s.duelPtr, qInfo);
 				const auto query = DeserializeSingleQueryBuffer(fullBuffer);
 				const auto ownerBuffer = SerializeSingleQuery(query, false);
 				const auto strippedBuffer = SerializeSingleQuery(query, true);
@@ -321,7 +323,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 					0U
 				};
 				uint8_t team = GetSwappedTeam(req.con);
-				const auto fullBuffer = core.QueryLocation(s.duelPtr, qInfo);
+				const auto fullBuffer = s.core->QueryLocation(s.duelPtr, qInfo);
 				if(req.loc == LOCATION_DECK)
 				{
 					// TODO: Save into replay
@@ -441,11 +443,11 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 	{
 		for(;;)
 		{
-			Core::IWrapper::DuelStatus status = core.Process(s.duelPtr);
-			for(const auto& msg : SplitToMsgs(core.GetMessages(s.duelPtr)))
+			Core::IWrapper::DuelStatus status = s.core->Process(s.duelPtr);
+			for(const auto& msg : SplitToMsgs(s.core->GetMessages(s.duelPtr)))
 				if(auto dfrOpt = ProcessSingleMsg(msg); dfrOpt)
 					return dfrOpt;
-			if(status != Core::IWrapper::DUEL_STATUS_CONTINUE)
+			if(status != Core::IWrapper::DuelStatus::DUEL_STATUS_CONTINUE)
 				break;
 		}
 	}
@@ -463,7 +465,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		// as the crash frees all the memory for us.
 		try
 		{
-			cpkg.core->DestroyDuel(s.duelPtr);
+			s.core->DestroyDuel(s.duelPtr);
 		}
 		catch(...){}
 	}

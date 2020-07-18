@@ -15,7 +15,9 @@ Context::Context(CreateInfo&& info)
 	:
 	STOCMsgFactory(info.hostInfo.t0Count),
 	tagg(info.tagg),
-	cpkg(std::move(info.cpkg)),
+	coreProvider(info.coreProvider),
+	scriptProvider(info.scriptProvider),
+	cdb(std::move(info.cdb)),
 	hostInfo(std::move(info.hostInfo)),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
@@ -135,14 +137,13 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 			return true;
 		return false;
 	};
-	auto& db = *cpkg.db;
 	YGOPro::CodeVector m;
 	YGOPro::CodeVector e;
 	YGOPro::CodeVector s;
 	uint32_t err = 0U;
 	for(const auto code : main)
 	{
-		const auto& data = db.DataFromCode(code);
+		const auto& data = cdb->DataFromCode(code);
 		if(data.code == 0U)
 		{
 			err = code;
@@ -157,7 +158,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	}
 	for(const auto code : side)
 	{
-		const auto& data = db.DataFromCode(code);
+		const auto& data = cdb->DataFromCode(code);
 		if(data.code == 0U)
 		{
 			err = code;
@@ -193,10 +194,9 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
 	auto all = deck.GetCodeMap();
 	// Merge aliased cards to their original code and delete them
-	auto& db = *cpkg.db;
 	for(auto it = all.begin(), last = all.end(); it != last;)
 	{
-		if(uint32_t alias = db.DataFromCode(it->first).alias; alias != 0U)
+		if(uint32_t alias = cdb->DataFromCode(it->first).alias; alias != 0U)
 		{
 			all[alias] = all[alias] + it->second;
 			it = all.erase(it);
@@ -265,9 +265,9 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	{
 		if(kv.second > 3U)
 			return MakeErrorPtr(CARD_MORE_THAN_3, kv.first);
-		if((db.DataFromCode(kv.first).type & hostInfo.forb) != 0U)
+		if((cdb->DataFromCode(kv.first).type & hostInfo.forb) != 0U)
 			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, kv.first);
-		const auto& ced = db.ExtraFromCode(kv.first);
+		const auto& ced = cdb->ExtraFromCode(kv.first);
 		if(CheckUnofficial(ced.scope, hostInfo.allowed))
 			return MakeErrorPtr(CARD_UNOFFICIAL, kv.first);
 		if(CheckPrelease(ced.scope, hostInfo.allowed))

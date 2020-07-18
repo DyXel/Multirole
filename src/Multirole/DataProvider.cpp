@@ -7,6 +7,8 @@
 #include <spdlog/spdlog.h>
 #include <fmt/format.h>
 
+#include "CardDatabase.hpp"
+
 namespace Ignis::Multirole
 {
 
@@ -16,7 +18,7 @@ DataProvider::DataProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-std::shared_ptr<CardDatabase> DataProvider::GetDB()
+std::shared_ptr<CardDatabase> DataProvider::GetDatabase()
 {
 	std::lock_guard<std::mutex> lock(mDb);
 	return db;
@@ -34,7 +36,7 @@ void DataProvider::OnAdd(std::string_view path, const PathVector& fileList)
 		fullPath += fn;
 		paths.insert(fullPath);
 	}
-	ReloadDBs();
+	ReloadDatabases();
 }
 
 void DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
@@ -58,12 +60,12 @@ void DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
 		fullPath += fn;
 		paths.insert(fullPath);
 	}
-	ReloadDBs();
+	ReloadDatabases();
 }
 
 // private
 
-void DataProvider::ReloadDBs()
+void DataProvider::ReloadDatabases()
 {
 	auto newDb = std::make_shared<CardDatabase>();
 	for(const auto& path : paths)

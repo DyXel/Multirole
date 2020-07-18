@@ -7,12 +7,13 @@
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
-#include "../CoreProvider.hpp"
-#include "../BanlistProvider.hpp"
-
 namespace Ignis::Multirole
 {
 
+class BanlistProvider;
+class CoreProvider;
+class DataProvider;
+class ScriptProvider;
 class Lobby;
 
 namespace Endpoint
@@ -23,19 +24,29 @@ struct TmpClient;
 class RoomHosting
 {
 public:
-	RoomHosting(
-		asio::io_context& ioCtx,
-		unsigned short port,
-		CoreProvider& coreProvider,
-		BanlistProvider& banlistProvider,
-		Lobby& lobby);
+	// Data passed on the ctor.
+	struct CreateInfo
+	{
+		asio::io_context& ioCtx;
+		unsigned short port;
+		BanlistProvider& banlistProvider;
+		CoreProvider& coreProvider;
+		DataProvider& dataProvider;
+		ScriptProvider& scriptProvider;
+		Lobby& lobby;
+	};
+
+	RoomHosting(CreateInfo&& info);
 	void Stop();
 private:
 	asio::io_context& ioCtx;
 	asio::ip::tcp::acceptor acceptor;
-	CoreProvider& coreProvider;
 	BanlistProvider& banlistProvider;
+	CoreProvider& coreProvider;
+	DataProvider& dataProvider;
+	ScriptProvider& scriptProvider;
 	Lobby& lobby;
+
 	std::set<std::shared_ptr<TmpClient>> tmpClients;
 	std::mutex mTmpClients;
 

@@ -5,18 +5,19 @@
 #include <mutex>
 #include <set>
 
-#include "CardDatabase.hpp"
 #include "IGitRepoObserver.hpp"
 
 namespace Ignis::Multirole
 {
+
+class CardDatabase;
 
 class DataProvider final : public IGitRepoObserver
 {
 public:
 	DataProvider(std::string_view fnRegexStr);
 
-	std::shared_ptr<CardDatabase> GetDB();
+	std::shared_ptr<CardDatabase> GetDatabase();
 
 	// IGitRepoObserver overrides
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
@@ -27,7 +28,7 @@ private:
 	std::shared_ptr<CardDatabase> db;
 	std::mutex mDb;
 
-	void ReloadDBs();
+	void ReloadDatabases();
 };
 
 } // namespace Ignis::Multirole

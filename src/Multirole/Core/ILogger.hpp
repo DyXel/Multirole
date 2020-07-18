@@ -14,12 +14,13 @@ namespace Core
 class ILogger
 {
 public:
-	enum LogType
+	enum class LogType
 	{
 		LOG_TYPE_ERROR,
 		LOG_TYPE_FROM_SCRIPT,
 		LOG_TYPE_FOR_DEBUG,
 	};
+
 	virtual void Log(LogType type, std::string_view str) = 0;
 };
 

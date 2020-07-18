@@ -1,5 +1,6 @@
 #include "../Context.hpp"
 
+#include "../../CoreProvider.hpp"
 #include "../../YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole::Room
@@ -18,7 +19,16 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	isTeam1GoingFirst = static_cast<uint8_t>(
 		(e.client.Position().first == 0U && !e.goingFirst) ||
 		(e.client.Position().first == 1U && e.goingFirst));
-	return State::Dueling{nullptr, {0U, 0U}, nullptr, std::nullopt, {}, {}};
+	return State::Dueling
+	{
+		coreProvider.GetCore(),
+		nullptr,
+		{0U, 0U},
+		nullptr,
+		std::nullopt,
+		{},
+		{}
+	};
 }
 
 StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::ConnectionLost& e)

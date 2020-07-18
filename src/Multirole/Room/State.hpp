@@ -9,7 +9,17 @@
 
 #include "../YGOPro/STOCMsg.hpp"
 
-namespace Ignis::Multirole::Room
+namespace Ignis::Multirole
+{
+
+namespace Core
+{
+
+class IWrapper;
+
+} // namespace Core
+
+namespace Room
 {
 
 class Client;
@@ -27,6 +37,7 @@ struct Closing
 
 struct Dueling
 {
+	std::shared_ptr<Core::IWrapper> core;
 	void* duelPtr;
 	std::array<uint8_t, 2U> currentPos;
 	Client* replier;
@@ -70,6 +81,8 @@ using StateVariant = std::variant<
 
 using StateOpt = std::optional<StateVariant>;
 
-} // namespace Ignis::Multirole::Room
+} // namespace Room
+
+} // namespace Ignis::Multirole
 
 #endif // ROOM_STATE_HPP
