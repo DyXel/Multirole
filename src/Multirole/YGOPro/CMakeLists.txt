@@ -3,6 +3,7 @@ target_sources(multirole PRIVATE
 	${CSR}/Banlist.cpp
 	${CSR}/CoreUtils.cpp
 	${CSR}/Deck.cpp
+	${CSR}/Replay.cpp
 	${CSR}/StringUtils.cpp
 )
 unset(CSR)
