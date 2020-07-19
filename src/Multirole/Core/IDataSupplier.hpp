@@ -18,6 +18,8 @@ public:
 
 	virtual const CardData& DataFromCode(uint32_t code) = 0;
 	virtual void DataUsageDone(const CardData& data) = 0;
+protected:
+	inline ~IDataSupplier() = default;
 };
 
 } // namespace Core

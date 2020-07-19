@@ -16,6 +16,8 @@ class IScriptSupplier
 {
 public:
 	virtual std::string ScriptFromFilePath(std::string_view fp) = 0;
+protected:
+	inline ~IScriptSupplier() = default;
 };
 
 } // namespace Core

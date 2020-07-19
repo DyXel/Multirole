@@ -12,7 +12,7 @@ class Instance;
 
 using AsioTimer = asio::system_timer;
 
-class TimerAggregator
+class TimerAggregator final
 {
 public:
 	TimerAggregator(Instance& room);

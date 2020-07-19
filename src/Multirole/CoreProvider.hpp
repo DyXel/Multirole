@@ -16,7 +16,7 @@ class IWrapper;
 
 } // namespace Core
 
-class CoreProvider : public IGitRepoObserver
+class CoreProvider final : public IGitRepoObserver
 {
 public:
 	enum class CoreType

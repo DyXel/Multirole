@@ -59,6 +59,8 @@ public:
 	virtual Buffer Query(Duel duel, const QueryInfo& info) = 0;
 	virtual Buffer QueryLocation(Duel duel, const QueryInfo& info) = 0;
 	virtual Buffer QueryField(Duel duel) = 0;
+protected:
+	inline ~IWrapper() = default;
 };
 
 } // namespace Core

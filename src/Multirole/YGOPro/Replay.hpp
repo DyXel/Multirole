@@ -14,7 +14,7 @@
 namespace YGOPro
 {
 
-class Replay
+class Replay final
 {
 public:
 	struct Duelist

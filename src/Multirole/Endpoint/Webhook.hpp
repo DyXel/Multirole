@@ -12,6 +12,7 @@ public:
 	Webhook(asio::io_context& ioCtx, unsigned short port);
 	void Stop();
 protected:
+	inline ~Webhook() = default;
 	virtual void Callback(std::string_view payload);
 private:
 	asio::ip::tcp::acceptor acceptor;

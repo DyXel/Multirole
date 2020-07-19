@@ -8,7 +8,7 @@ namespace YGOPro
 
 using CodeSet = std::unordered_set<uint32_t>;
 
-class Banlist
+class Banlist final
 {
 public:
 	Banlist(CodeSet&& whit, CodeSet&& semi, CodeSet&& limi, CodeSet&& forb);

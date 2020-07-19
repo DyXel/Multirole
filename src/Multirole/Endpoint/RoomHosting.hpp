@@ -21,7 +21,7 @@ namespace Endpoint
 
 struct TmpClient;
 
-class RoomHosting
+class RoomHosting final
 {
 public:
 	// Data passed on the ctor.

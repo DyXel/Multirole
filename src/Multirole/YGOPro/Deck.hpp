@@ -18,7 +18,7 @@ struct DeckLimits
 	}main{40U, 60U}, extra{0U, 15U}, side{0U, 15U}; // NOLINT
 };
 
-class Deck
+class Deck final
 {
 public:
 	Deck(CodeVector&& m, CodeVector&& e, CodeVector&& s, uint32_t err);

@@ -8,7 +8,7 @@
 namespace Ignis::Multirole
 {
 
-class BanlistProvider : public IGitRepoObserver
+class BanlistProvider final : public IGitRepoObserver
 {
 public:
 	BanlistProvider(std::string_view fnRegexStr);

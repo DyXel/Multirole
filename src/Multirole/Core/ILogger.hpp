@@ -22,6 +22,8 @@ public:
 	};
 
 	virtual void Log(LogType type, std::string_view str) = 0;
+protected:
+	inline ~ILogger() = default;
 };
 
 } // namespace Core

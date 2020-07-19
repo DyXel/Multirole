@@ -16,6 +16,8 @@ class Instance;
 class IRoomManager
 {
 	friend Room::Instance;
+protected:
+	inline ~IRoomManager() = default;
 private:
 	virtual uint32_t Add(std::shared_ptr<Room::Instance> room) = 0;
 	virtual void Remove(uint32_t roomId) = 0;

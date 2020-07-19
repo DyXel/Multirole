@@ -21,6 +21,8 @@ class IGitRepoObserver
 public:
 	virtual void OnAdd(std::string_view path, const PathVector& fileList) = 0;
 	virtual void OnDiff(std::string_view path, const GitDiff& diff) = 0;
+protected:
+	inline ~IGitRepoObserver() = default;
 };
 
 } // namespace Ignis::Multirole
