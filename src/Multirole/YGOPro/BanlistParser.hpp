@@ -17,7 +17,7 @@ namespace Detail
 
 constexpr const BanlistHash BANLIST_HASH_MAGIC = 0x7DFCEE6A;
 
-constexpr BanlistHash Salt(BanlistHash hash, uint32_t code, uint32_t count)
+constexpr BanlistHash Salt(BanlistHash hash, uint32_t code, int32_t count)
 {
 	constexpr uint32_t HASH_MAGIC_1 = 18U;
 	constexpr uint32_t HASH_MAGIC_2 = 14U;
@@ -74,24 +74,25 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 			std::size_t p = l.find(' ');
 			if(p == std::string::npos)
 				throw MakeException("Card code separator not found");
-			std::size_t c = l.find_first_not_of("0123456789", p + 1U);
+			std::size_t c = l.find_first_not_of("-0123456789", p + 1U);
 			if(c != std::string::npos)
 				c -= p;
 			auto code = static_cast<uint32_t>(std::stoul(l.substr(0U, p)));
 			if(code == 0U)
 				throw MakeException("Card code cannot be 0");
-			auto count = static_cast<uint32_t>(std::stoul(l.substr(p, c)));
+			auto count = static_cast<int32_t>(std::stol(l.substr(p, c)));
 			hash = Detail::Salt(hash, code, count);
 			switch(count)
 			{
 #define X(val, uset) case val: {uset.insert(code); break;}
-			X(3U, whit)
-			X(2U, semi)
-			X(1U, limi)
-			X(0U, forb)
+			X(3, whit)
+			X(2, semi)
+			X(1, limi)
+			X(0, forb)
+			X(-1, forb)
 #undef X
 			default:
-				throw MakeException("Card count is not 0, 1, 2 or 3");
+				throw MakeException("Card count is not -1, 0, 1, 2 or 3");
 			}
 			continue;
 		}
