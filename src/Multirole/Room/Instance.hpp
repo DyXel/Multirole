@@ -60,7 +60,7 @@ public:
 	bool CheckPassword(std::string_view str) const;
 
 	// Query properties of the room.
-	Properties GetProperties();
+	Properties GetProperties() const;
 
 	// Tries to remove the room if its not started.
 	void TryClose();

@@ -18,9 +18,9 @@ DataProvider::DataProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-std::shared_ptr<CardDatabase> DataProvider::GetDatabase()
+std::shared_ptr<CardDatabase> DataProvider::GetDatabase() const
 {
-	std::lock_guard<std::mutex> lock(mDb);
+	std::shared_lock lock(mDb);
 	return db;
 }
 
@@ -76,7 +76,7 @@ void DataProvider::ReloadDatabases()
 			spdlog::error("DataProvider: Couldn't merge database");
 		}
 	}
-	std::lock_guard<std::mutex> lock(mDb);
+	std::scoped_lock lock(mDb);
 	db = newDb;
 }
 

@@ -2,7 +2,7 @@
 #define SCRIPTPROVIDER_HPP
 #include <regex>
 #include <unordered_map>
-#include <mutex>
+#include <shared_mutex>
 
 #include "IGitRepoObserver.hpp"
 #include "Core/IScriptSupplier.hpp"
@@ -20,11 +20,11 @@ public:
 	void OnDiff(std::string_view path, const GitDiff& diff) override;
 
 	// Core::IScriptSupplier overrides
-	std::string ScriptFromFilePath(std::string_view fp) override;
+	std::string ScriptFromFilePath(std::string_view fp) const override;
 private:
 	const std::regex fnRegex;
 	std::unordered_map<std::string, std::string> scripts;
-	std::mutex mScripts;
+	mutable std::shared_mutex mScripts;
 
 	void LoadScripts(std::string_view path, const PathVector& fileList);
 };

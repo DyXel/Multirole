@@ -11,7 +11,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
 	if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
 	{
 		{
-			std::lock_guard<std::mutex> lock(mDuelists);
+			std::scoped_lock lock(mDuelists);
 			duelists.erase(p);
 			teamCount[p.first]--;
 		}
@@ -30,7 +30,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 	if(s.host == nullptr)
 		s.host = &e.client;
 	e.client.Send(joinMsg);
-	std::lock_guard<std::mutex> lock(mDuelists);
+	std::scoped_lock lock(mDuelists);
 	if(TryEmplaceDuelist(e.client))
 	{
 		SendToAll(MakePlayerEnter(e.client));
@@ -50,7 +50,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e)
 {
 	const auto p = e.client.Position();
-	std::lock_guard<std::mutex> lock(mDuelists);
+	std::scoped_lock lock(mDuelists);
 	if(p == Client::POSITION_SPECTATOR)
 	{
 		// NOTE: ifs intentionally not short-circuited
@@ -86,7 +86,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
 	if(p == Client::POSITION_SPECTATOR)
 		return std::nullopt;
 	{
-		std::lock_guard<std::mutex> lock(mDuelists);
+		std::scoped_lock lock(mDuelists);
 		duelists.erase(p);
 		teamCount[p.first]--;
 	}
@@ -130,7 +130,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	Client* kicked = duelists[p];
 	kicked->Disconnect();
 	{
-		std::lock_guard<std::mutex> lock(mDuelists);
+		std::scoped_lock lock(mDuelists);
 		duelists.erase(p);
 		teamCount[p.first]--;
 	}
@@ -188,7 +188,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 				client.Send(MakeTypeChange(client, s.host == &client));
 			}
 		};
-		std::lock_guard<std::mutex> lock(mDuelists);
+		std::scoped_lock lock(mDuelists);
 		TightenTeam(0U);
 		TightenTeam(1U);
 		return true;

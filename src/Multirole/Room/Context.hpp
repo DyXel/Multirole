@@ -2,6 +2,7 @@
 #define ROOM_CONTEXT_HPP
 #include <map>
 #include <set>
+#include <shared_mutex>
 #include <random>
 
 #include "State.hpp"
@@ -46,9 +47,7 @@ public:
 	Context(CreateInfo&& info);
 
 	const YGOPro::HostInfo& HostInfo() const;
-
-	// Thread-safe getter for encoded information regarding duelists in the room.
-	std::map<uint8_t, std::string> GetDuelistsNames();
+	std::map<uint8_t, std::string> GetDuelistsNames() const;
 
 	void SetId(uint32_t newId);
 
@@ -144,7 +143,7 @@ private:
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;
 	std::array<uint8_t, 2U> teamCount{};
-	std::mutex mDuelists;
+	mutable std::shared_mutex mDuelists;
 	std::set<Client*> spectators;
 
 	// Additional data used by room states.

@@ -25,9 +25,9 @@ void ScriptProvider::OnDiff(std::string_view path, const GitDiff& diff)
 	LoadScripts(path, diff.added);
 }
 
-std::string ScriptProvider::ScriptFromFilePath(std::string_view fp)
+std::string ScriptProvider::ScriptFromFilePath(std::string_view fp) const
 {
-	std::lock_guard<std::mutex> lock(mScripts);
+	std::shared_lock lock(mScripts);
 	if(auto search = scripts.find(fp.data()); search != scripts.end())
 		return search->second;
 	return std::string();
@@ -40,7 +40,7 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 	int total = 0;
 	spdlog::info("ScriptProvider: Loading {:d} files...", fileList.size());
 	std::string fullPath(path);
-	std::lock_guard<std::mutex> lock(mScripts);
+	std::scoped_lock lock(mScripts);
 	for(const auto& fn : fileList)
 	{
 		if(!std::regex_match(fn, fnRegex))

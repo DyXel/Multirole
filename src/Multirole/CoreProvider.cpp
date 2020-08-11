@@ -20,9 +20,9 @@ void CoreProvider::SetLoadProperties(CoreType typeValue, bool loadPerCallValue)
 	loadPerCall = loadPerCallValue;
 }
 
-CoreProvider::CorePtr CoreProvider::GetCore()
+CoreProvider::CorePtr CoreProvider::GetCore() const
 {
-	std::lock_guard<std::mutex> lock(mCore);
+	std::shared_lock lock(mCore);
 	if(loadPerCall)
 		return LoadCore();
 	return core;
@@ -49,7 +49,7 @@ CoreProvider::CorePtr CoreProvider::LoadCore() const
 
 void CoreProvider::OnGitUpdate(std::string_view path, const PathVector& fl)
 {
-	std::lock_guard<std::mutex> lock(mCore);
+	std::scoped_lock lock(mCore);
 	for(auto it = fl.rbegin(); it != fl.rend(); ++it)
 	{
 		if(!std::regex_match(*it, fnRegex))

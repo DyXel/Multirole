@@ -30,11 +30,11 @@ const YGOPro::HostInfo& Context::HostInfo() const
 	return hostInfo;
 }
 
-std::map<uint8_t, std::string> Context::GetDuelistsNames()
+std::map<uint8_t, std::string> Context::GetDuelistsNames() const
 {
 	std::map<uint8_t, std::string> ret;
 	{
-		std::lock_guard<std::mutex> lock(mDuelists);
+		std::shared_lock lock(mDuelists);
 		for(auto& kv : duelists)
 			ret.emplace(EncodePosition(kv.first), kv.second->Name());
 	}

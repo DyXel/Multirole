@@ -1,7 +1,7 @@
 #ifndef BANLISTPROVIDER_HPP
 #define BANLISTPROVIDER_HPP
 #include <regex>
-#include <mutex>
+#include <shared_mutex>
 #include "IGitRepoObserver.hpp"
 #include "YGOPro/BanlistParser.hpp"
 
@@ -13,7 +13,7 @@ class BanlistProvider final : public IGitRepoObserver
 public:
 	BanlistProvider(std::string_view fnRegexStr);
 
-	const YGOPro::Banlist* GetBanlistByHash(YGOPro::BanlistHash hash);
+	const YGOPro::Banlist* GetBanlistByHash(YGOPro::BanlistHash hash) const;
 
 	// IGitRepoObserver overrides
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
@@ -21,7 +21,7 @@ public:
 private:
 	const std::regex fnRegex;
 	YGOPro::BanlistMap banlists;
-	std::mutex mBanlists;
+	mutable std::shared_mutex mBanlists;
 
 	void LoadBanlists(std::string_view path, const PathVector& fileList);
 };

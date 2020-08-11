@@ -88,7 +88,7 @@ void LobbyListing::DoSerialize()
 		constexpr auto eHandler = nlohmann::json::error_handler_t::ignore;
 		const std::string strJ = j.dump(-1, 0, false, eHandler); // DUMP EET
 		{
-			std::lock_guard<std::mutex> lock(mSerialized);
+			std::scoped_lock lock(mSerialized);
 			serialized = ComposeHeader(strJ.size(), "application/json") + strJ;
 		}
 		DoSerialize();
@@ -110,7 +110,7 @@ void LobbyListing::DoAccept()
 
 void LobbyListing::DoSendRoomList(asio::ip::tcp::socket&& soc)
 {
-	std::lock_guard<std::mutex> lock(mSerialized);
+	std::scoped_lock lock(mSerialized);
 	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
 	auto msg = std::make_shared<std::string>(serialized);
 	asio::async_write(*socPtr, asio::buffer(*msg),

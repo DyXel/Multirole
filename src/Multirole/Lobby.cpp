@@ -15,28 +15,28 @@ std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
 Lobby::Lobby() : rd(static_cast<std::mt19937::result_type>(TimeNowInt()))
 {}
 
-std::shared_ptr<Room::Instance> Lobby::GetRoomById(uint32_t id)
+std::shared_ptr<Room::Instance> Lobby::GetRoomById(uint32_t id) const
 {
-	std::lock_guard<std::mutex> lock(mRooms);
+	std::shared_lock lock(mRooms);
 	auto search = rooms.find(id);
 	if(search != rooms.end())
 		return search->second;
 	return nullptr;
 }
 
-std::size_t Lobby::GetStartedRoomsCount()
+std::size_t Lobby::GetStartedRoomsCount() const
 {
 	std::size_t count = 0U;
-	std::lock_guard<std::mutex> lock(mRooms);
+	std::shared_lock lock(mRooms);
 	for(auto& kv : rooms)
 		count += static_cast<std::size_t>(kv.second->Started());
 	return count;
 }
 
-std::list<Room::Instance::Properties> Lobby::GetAllRoomsProperties()
+std::list<Room::Instance::Properties> Lobby::GetAllRoomsProperties() const
 {
 	std::list<Room::Instance::Properties> list;
-	std::lock_guard<std::mutex> lock(mRooms);
+	std::shared_lock lock(mRooms);
 	for(auto& kv : rooms)
 		list.emplace_back(kv.second->GetProperties());
 	return list;
@@ -44,7 +44,7 @@ std::list<Room::Instance::Properties> Lobby::GetAllRoomsProperties()
 
 void Lobby::CloseNonStartedRooms()
 {
-	std::lock_guard<std::mutex> lock(mRooms);
+	std::scoped_lock lock(mRooms);
 	for(auto& kv : rooms)
 		kv.second->TryClose();
 }
@@ -53,7 +53,7 @@ void Lobby::CloseNonStartedRooms()
 
 uint32_t Lobby::Add(std::shared_ptr<Room::Instance> room)
 {
-	std::lock_guard<std::mutex> lock(mRooms);
+	std::scoped_lock lock(mRooms);
 	for(uint32_t newId = rd(); true; newId = rd())
 	{
 		if(newId == 0 || rooms.count(newId) > 0)
@@ -65,7 +65,7 @@ uint32_t Lobby::Add(std::shared_ptr<Room::Instance> room)
 
 void Lobby::Remove(uint32_t roomId)
 {
-	std::lock_guard<std::mutex> lock(mRooms);
+	std::scoped_lock lock(mRooms);
 	rooms.erase(roomId);
 }
 

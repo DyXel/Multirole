@@ -90,7 +90,7 @@ void Client::Send(const YGOPro::STOCMsg& msg)
 {
 	if(!socket.is_open())
 		return;
-	std::lock_guard<std::mutex> lock(mOutgoing);
+	std::scoped_lock lock(mOutgoing);
 	const bool writeInProgress = !outgoing.empty();
 	outgoing.push(msg);
 	if(!writeInProgress)
@@ -107,7 +107,7 @@ void Client::Disconnect()
 void Client::DeferredDisconnect()
 {
 	{
-		std::lock_guard<std::mutex> lock(mOutgoing);
+		std::scoped_lock lock(mOutgoing);
 		if(outgoing.empty())
 		{
 			Disconnect();
@@ -163,7 +163,7 @@ void Client::DoWrite()
 	{
 		if(ec)
 			return;
-		std::lock_guard<std::mutex> lock(mOutgoing);
+		std::scoped_lock lock(mOutgoing);
 		outgoing.pop();
 		if (!outgoing.empty() && socket.is_open())
 			DoWrite();

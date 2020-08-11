@@ -67,7 +67,7 @@ DLWrapper::~DLWrapper()
 IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 {
 	OCG_Duel duel{nullptr};
-	std::lock_guard<std::mutex> lock(ssdMutex);
+	std::scoped_lock lock(ssdMutex);
 	auto ssdIter = ssdList.insert(ssdList.end(), {opts.scriptSupplier, OCG_LoadScript});
 	OCG_DuelOptions options =
 	{
@@ -96,7 +96,7 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 void DLWrapper::DestroyDuel(Duel duel)
 {
 	{
-		std::lock_guard<std::mutex> lock(ssdMutex);
+		std::scoped_lock lock(ssdMutex);
 		ssdMap.erase(duel);
 	}
 	OCG_DestroyDuel(duel);

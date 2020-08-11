@@ -148,7 +148,7 @@ bool CardDatabase::Merge(std::string_view absFilePath)
 
 const OCG_CardData& CardDatabase::DataFromCode(uint32_t code)
 {
-	std::lock_guard<std::mutex> lock(mDataCache);
+	std::scoped_lock lock(mDataCache);
 	if(auto search = dataCache.find(code); search != dataCache.end())
 		return search->second;
 	auto AllocSetcodes = [&](uint64_t dbVal) -> uint16_t*
@@ -192,7 +192,7 @@ void CardDatabase::DataUsageDone([[maybe_unused]] const OCG_CardData& data)
 
 const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code)
 {
-	std::lock_guard<std::mutex> lock(mExtraCache);
+	std::scoped_lock lock(mExtraCache);
 	if(auto search = extraCache.find(code); search != extraCache.end())
 		return search->second;
 	CardExtraData& ced = extraCache[code]; // implicit insertion

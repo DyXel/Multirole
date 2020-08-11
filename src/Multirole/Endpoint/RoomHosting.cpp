@@ -103,7 +103,7 @@ RoomHosting::RoomHosting(CreateInfo&& info)
 void RoomHosting::Stop()
 {
 	acceptor.close();
-	std::lock_guard<std::mutex> lock(mTmpClients);
+	std::scoped_lock lock(mTmpClients);
 	std::error_code ignore;
 	for(const auto& c : tmpClients)
 	{
@@ -116,13 +116,13 @@ void RoomHosting::Stop()
 
 void RoomHosting::Add(const std::shared_ptr<TmpClient>& tc)
 {
-	std::lock_guard<std::mutex> lock(mTmpClients);
+	std::scoped_lock lock(mTmpClients);
 	tmpClients.insert(tc);
 }
 
 void RoomHosting::Remove(const std::shared_ptr<TmpClient>& tc)
 {
-	std::lock_guard<std::mutex> lock(mTmpClients);
+	std::scoped_lock lock(mTmpClients);
 	tmpClients.erase(tc);
 }
 

@@ -39,7 +39,7 @@ bool Instance::CheckPassword(std::string_view str) const
 	return pass.empty() || pass == str;
 }
 
-Instance::Properties Instance::GetProperties()
+Instance::Properties Instance::GetProperties() const
 {
 	return Properties
 	{
@@ -62,13 +62,13 @@ void Instance::TryClose()
 
 void Instance::Add(const std::shared_ptr<Client>& client)
 {
-	std::lock_guard<std::mutex> lock(mClients);
+	std::scoped_lock lock(mClients);
 	clients.insert(client);
 }
 
 void Instance::Remove(const std::shared_ptr<Client>& client)
 {
-	std::lock_guard<std::mutex> lock(mClients);
+	std::scoped_lock lock(mClients);
 	clients.erase(client);
 	if(clients.empty())
 	{

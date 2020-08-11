@@ -11,9 +11,9 @@ BanlistProvider::BanlistProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-const YGOPro::Banlist* BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash)
+const YGOPro::Banlist* BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) const
 {
-	std::lock_guard<std::mutex> lock (mBanlists);
+	std::shared_lock lock(mBanlists);
 	if(auto search = banlists.find(hash); search != banlists.end())
 		return &search->second;
 	return nullptr;
@@ -52,7 +52,7 @@ void BanlistProvider::LoadBanlists(std::string_view path, const PathVector& file
 			spdlog::error("BanlistProvider: Couldn't load banlist: {:s}", e.what());
 		}
 	}
-	std::lock_guard<std::mutex> lock (mBanlists);
+	std::scoped_lock lock(mBanlists);
 	// Delete banlists that have the same hash (`merge` does not replace them)
 	for(const auto& kv : tmp)
 		banlists.erase(kv.first);

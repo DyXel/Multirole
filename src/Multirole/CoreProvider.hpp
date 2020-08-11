@@ -2,7 +2,7 @@
 #define COREPROVIDER_HPP
 #include <regex>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 
 #include "IGitRepoObserver.hpp"
 
@@ -32,7 +32,7 @@ public:
 
 	// Will return a core instance based on the options set by
 	// SetLoadProperties.
-	CorePtr GetCore();
+	CorePtr GetCore() const;
 
 	// IGitRepoObserver overrides
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
@@ -43,7 +43,7 @@ private:
 	bool loadPerCall;
 	std::string corePath;
 	CorePtr core;
-	std::mutex mCore; // used for both corePath and core.
+	mutable std::shared_mutex mCore; // used for both corePath and core.
 
 	CorePtr LoadCore() const;
 
