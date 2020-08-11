@@ -16,8 +16,8 @@ class IDataSupplier
 public:
 	using CardData = OCG_CardData;
 
-	virtual const CardData& DataFromCode(uint32_t code) = 0;
-	virtual void DataUsageDone(const CardData& data) = 0;
+	virtual const CardData& DataFromCode(uint32_t code) const = 0;
+	virtual void DataUsageDone(const CardData& data) const = 0;
 protected:
 	inline ~IDataSupplier() = default;
 };

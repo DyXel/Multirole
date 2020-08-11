@@ -35,8 +35,8 @@ public:
 	bool Merge(std::string_view absFilePath);
 
 	// Core::IDataSupplier overrides
-	const OCG_CardData& DataFromCode(uint32_t code) override;
-	void DataUsageDone(const OCG_CardData& data) override;
+	const OCG_CardData& DataFromCode(uint32_t code) const override;
+	void DataUsageDone(const OCG_CardData& data) const override;
 
 	// Query extra data
 	const CardExtraData& ExtraFromCode(uint32_t code);
@@ -47,12 +47,12 @@ private:
 	sqlite3_stmt* sStmt{};
 	sqlite3_stmt* s2Stmt{};
 
-	std::unordered_map<uint32_t, OCG_CardData> dataCache;
-	std::unordered_map<uint32_t, std::unique_ptr<uint16_t[]>> scCache;
-	std::mutex mDataCache;
+	mutable std::unordered_map<uint32_t, OCG_CardData> dataCache;
+	mutable std::unordered_map<uint32_t, std::unique_ptr<uint16_t[]>> scCache;
+	mutable std::mutex mDataCache;
 
-	std::unordered_map<uint32_t, CardExtraData> extraCache;
-	std::mutex mExtraCache;
+	mutable std::unordered_map<uint32_t, CardExtraData> extraCache;
+	mutable std::mutex mExtraCache;
 };
 
 } // namespace Ignis::Multirole

@@ -146,7 +146,7 @@ bool CardDatabase::Merge(std::string_view absFilePath)
 	return true;
 }
 
-const OCG_CardData& CardDatabase::DataFromCode(uint32_t code)
+const OCG_CardData& CardDatabase::DataFromCode(uint32_t code) const
 {
 	std::scoped_lock lock(mDataCache);
 	if(auto search = dataCache.find(code); search != dataCache.end())
@@ -184,7 +184,7 @@ const OCG_CardData& CardDatabase::DataFromCode(uint32_t code)
 	return cd;
 }
 
-void CardDatabase::DataUsageDone([[maybe_unused]] const OCG_CardData& data)
+void CardDatabase::DataUsageDone([[maybe_unused]] const OCG_CardData& data) const
 {
 	// We could remove the elements here, but then what would be the
 	// the point of the cache?
