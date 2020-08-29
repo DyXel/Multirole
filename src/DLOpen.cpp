@@ -18,6 +18,7 @@ constexpr const char* ESTR_OBJECT = "Failed loading object {:s}: {:s}\n";
 constexpr const char* ESTR_FUNCTION = "Failed loading function {:s}: {:s}\n";
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 // NOTE: Might want to handle unicode
@@ -81,7 +82,7 @@ void* LoadFunction(void* handle, const char* name)
 	void* symbol = dlsym(handle, name);
 	if (symbol == nullptr)
 	{
-		// append an underscore for platforms that need that.
+		// prepend an underscore for platforms that need that.
 		std::string _name = std::string("_") + name;
 		symbol = dlsym(handle, _name.c_str());
 		if (symbol == nullptr)
