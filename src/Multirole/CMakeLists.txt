@@ -8,6 +8,7 @@ target_sources(multirole PRIVATE
 	${CSR}/Instance.cpp
 	${CSR}/Lobby.cpp
 	${CSR}/main.cpp
+	${CSR}/ReplayManager.cpp
 	${CSR}/ScriptProvider.cpp
 	${CSR}/STOCMsgFactory.cpp
 )
