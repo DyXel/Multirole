@@ -2,6 +2,7 @@
 	"concurrencyHint": -1,
 	"lobbyListingPort": 7922,
 	"roomHostingPort": 7911,
+	"replaysPath": "./replays",
 	"repos": [
 		{
 			"name": "scripts",

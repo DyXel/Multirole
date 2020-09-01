@@ -11,6 +11,7 @@
 #include "DataProvider.hpp"
 #include "GitRepo.hpp"
 #include "Lobby.hpp"
+#include "ReplayManager.hpp"
 #include "ScriptProvider.hpp"
 #include "Endpoint/LobbyListing.hpp"
 #include "Endpoint/RoomHosting.hpp"
@@ -28,6 +29,7 @@ private:
 	asio::io_context lIoCtx; // Lobby Io Context
 	asio::executor_work_guard<asio::io_context::executor_type> lIoCtxGuard;
 	unsigned int hostingConcurrency;
+	ReplayManager replayManager;
 	DataProvider dataProvider;
 	ScriptProvider scriptProvider;
 	CoreProvider coreProvider;

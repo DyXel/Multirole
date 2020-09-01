@@ -26,6 +26,7 @@ Instance::Instance(const nlohmann::json& cfg) :
 	lIoCtxGuard(asio::make_work_guard(lIoCtx)),
 	hostingConcurrency(
 		GetConcurrency(cfg.at("concurrencyHint").get<int>())),
+	replayManager(cfg.at("replaysPath").get<std::string>()),
 	dataProvider(
 		cfg.at("dataProvider").at("fileRegex").get<std::string>()),
 	scriptProvider(
