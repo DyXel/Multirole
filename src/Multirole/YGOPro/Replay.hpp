@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 #include <list>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -26,12 +25,14 @@ public:
 
 	Replay(uint32_t seed, const HostInfo& info, const CodeVector& extraCards);
 
+	const std::vector<uint8_t>& Bytes() const;
+
 	void AddDuelist(uint8_t team, Duelist&& duelist);
 
 	void RecordMsg(const STOCMsg& msg);
 	void RecordResponse(const std::vector<uint8_t>& response);
 
-	const std::vector<uint8_t>& Flush();
+	void Serialize();
 private:
 	const uint32_t seed;
 	const uint32_t startingLP;
@@ -44,7 +45,7 @@ private:
 	std::list<STOCMsg> messages;
 	std::list<std::vector<uint8_t>> responses;
 
-	std::optional<std::vector<uint8_t>> bytes;
+	std::vector<uint8_t> bytes;
 };
 
 } // namespace YGOPro
