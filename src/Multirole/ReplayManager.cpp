@@ -1,6 +1,5 @@
 #include "ReplayManager.hpp"
 
-#include <charconv> // std::to_chars
 #include <fstream>
 #include <spdlog/spdlog.h>
 
@@ -34,6 +33,9 @@ bool MakeDir(std::string_view path)
 namespace Ignis::Multirole
 {
 
+constexpr auto BINARY_IN = std::ios_base::binary | std::ios_base::in;
+constexpr auto BINARY_OUT = std::ios_base::binary | std::ios_base::out;
+
 ReplayManager::ReplayManager(std::string_view path) :
 	folder(path),
 	lastIdPath(folder + "/lastId")
@@ -41,9 +43,9 @@ ReplayManager::ReplayManager(std::string_view path) :
 	if(!MakeDir(folder))
 		throw std::runtime_error("ReplayManager: Could not make replay folder");
 	uint64_t v = 1U;
-	if(std::fstream f(lastIdPath, f.binary | f.in); f.is_open())
+	if(std::fstream f(lastIdPath, BINARY_IN); f.is_open())
 		f.read(reinterpret_cast<char*>(&v), sizeof(v));
-	else if(f.open(lastIdPath, f.binary | f.out); f.is_open())
+	else if(f.open(lastIdPath, BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<char*>(&v), sizeof(v));
 	else
 		throw std::runtime_error("ReplayManager: Could not create lastId file");
@@ -54,7 +56,7 @@ ReplayManager::ReplayManager(std::string_view path) :
 ReplayManager::~ReplayManager()
 {
 	uint64_t v = currentId;
-	if(std::fstream f(lastIdPath, f.binary | f.out); f.is_open())
+	if(std::fstream f(lastIdPath, BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<char*>(&v), sizeof(v));
 	else
 		spdlog::error("ReplayManager: Could not save ID to file. Was {}", v);
@@ -62,13 +64,9 @@ ReplayManager::~ReplayManager()
 
 void ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const
 {
-	std::array<char, 20U> n{};
-	auto tcr = std::to_chars(n.data(), n.data() + n.size(), id);
-	std::string finalPath(folder);
-	finalPath += std::string_view(n.data(), tcr.ptr - n.data());
-	finalPath += ".yrpx";
+	std::string finalPath(folder + std::to_string(id) + ".yrpx");
 	const auto& bytes = replay.Bytes();
-	if(std::fstream f(finalPath, f.binary | f.out); f.is_open())
+	if(std::fstream f(finalPath, BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 	else
 		spdlog::error("ReplayManager: Unable to save replay {}", finalPath);
