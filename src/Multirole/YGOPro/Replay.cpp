@@ -1,5 +1,7 @@
 #include "Replay.hpp"
 
+#include <cstring>
+
 #include "Constants.hpp"
 
 namespace YGOPro
