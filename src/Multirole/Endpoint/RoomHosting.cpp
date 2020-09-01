@@ -94,6 +94,7 @@ RoomHosting::RoomHosting(CreateInfo&& info)
 	banlistProvider(info.banlistProvider),
 	coreProvider(info.coreProvider),
 	dataProvider(info.dataProvider),
+	replayManager(info.replayManager),
 	scriptProvider(info.scriptProvider),
 	lobby(info.lobby)
 {
@@ -202,6 +203,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 			lobby,
 			ioCtx,
 			coreProvider,
+			replayManager,
 			scriptProvider,
 			dataProvider.GetDatabase(),
 			p->hostInfo,

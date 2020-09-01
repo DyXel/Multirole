@@ -27,6 +27,7 @@ public:
 		IRoomManager& owner;
 		asio::io_context& ioCtx;
 		CoreProvider& coreProvider;
+		ReplayManager& replayManager;
 		ScriptProvider& scriptProvider;
 		std::shared_ptr<CardDatabase> cdb;
 		YGOPro::HostInfo hostInfo;

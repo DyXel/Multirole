@@ -22,6 +22,7 @@ namespace Ignis::Multirole
 
 class CardDatabase;
 class CoreProvider;
+class ReplayManager;
 class ScriptProvider;
 
 namespace Room
@@ -37,6 +38,7 @@ public:
 	{
 		TimerAggregator& tagg;
 		CoreProvider& coreProvider;
+		ReplayManager& replayManager;
 		ScriptProvider& scriptProvider;
 		std::shared_ptr<CardDatabase> cdb;
 		YGOPro::HostInfo hostInfo;
@@ -132,6 +134,7 @@ private:
 	// Creation options and resources.
 	TimerAggregator& tagg;
 	CoreProvider& coreProvider;
+	ReplayManager& replayManager;
 	ScriptProvider& scriptProvider;
 	std::shared_ptr<CardDatabase> cdb;
 	const YGOPro::HostInfo hostInfo;

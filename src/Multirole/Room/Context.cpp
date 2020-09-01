@@ -16,6 +16,7 @@ Context::Context(CreateInfo&& info)
 	STOCMsgFactory(info.hostInfo.t0Count),
 	tagg(info.tagg),
 	coreProvider(info.coreProvider),
+	replayManager(info.replayManager),
 	scriptProvider(info.scriptProvider),
 	cdb(std::move(info.cdb)),
 	hostInfo(std::move(info.hostInfo)),

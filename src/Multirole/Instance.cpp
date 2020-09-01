@@ -44,6 +44,7 @@ Instance::Instance(const nlohmann::json& cfg) :
 		banlistProvider,
 		coreProvider,
 		dataProvider,
+		replayManager,
 		scriptProvider,
 		lobby}),
 	signalSet(lIoCtx)

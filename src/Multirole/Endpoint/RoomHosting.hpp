@@ -13,6 +13,7 @@ namespace Ignis::Multirole
 class BanlistProvider;
 class CoreProvider;
 class DataProvider;
+class ReplayManager;
 class ScriptProvider;
 class Lobby;
 
@@ -32,6 +33,7 @@ public:
 		BanlistProvider& banlistProvider;
 		CoreProvider& coreProvider;
 		DataProvider& dataProvider;
+		ReplayManager& replayManager;
 		ScriptProvider& scriptProvider;
 		Lobby& lobby;
 	};
@@ -44,6 +46,7 @@ private:
 	BanlistProvider& banlistProvider;
 	CoreProvider& coreProvider;
 	DataProvider& dataProvider;
+	ReplayManager& replayManager;
 	ScriptProvider& scriptProvider;
 	Lobby& lobby;
 

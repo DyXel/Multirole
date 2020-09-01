@@ -47,7 +47,7 @@ ReplayManager::ReplayManager(std::string_view path) :
 		f.write(reinterpret_cast<char*>(&v), sizeof(v));
 	else
 		throw std::runtime_error("ReplayManager: Could not create lastId file");
-	spdlog::info("ReplayManager: current id is {}", v);
+	spdlog::info("ReplayManager: Current ID is {}", v);
 	currentId = v;
 }
 
@@ -57,7 +57,7 @@ ReplayManager::~ReplayManager()
 	if(std::fstream f(lastIdPath, f.binary | f.out); f.is_open())
 		f.write(reinterpret_cast<char*>(&v), sizeof(v));
 	else
-		spdlog::error("ReplayManager: Could not save id to file. Was {}", v);
+		spdlog::error("ReplayManager: Could not save ID to file. Was {}", v);
 }
 
 void ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const

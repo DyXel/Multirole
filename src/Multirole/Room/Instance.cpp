@@ -13,6 +13,7 @@ Instance::Instance(CreateInfo&& info)
 	ctx({
 		tagg,
 		info.coreProvider,
+		info.replayManager,
 		info.scriptProvider,
 		std::move(info.cdb),
 		std::move(info.hostInfo),
