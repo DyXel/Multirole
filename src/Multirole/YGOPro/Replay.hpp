@@ -8,7 +8,6 @@
 
 #include "Deck.hpp"
 #include "MsgCommon.hpp"
-#include "STOCMsg.hpp"
 
 namespace YGOPro
 {
@@ -20,7 +19,7 @@ public:
 	{
 		std::string name;
 		CodeVector main;
-		CodeVector side;
+		CodeVector extra;
 	};
 
 	Replay(uint32_t seed, const HostInfo& info, const CodeVector& extraCards);
@@ -29,7 +28,7 @@ public:
 
 	void AddDuelist(uint8_t team, Duelist&& duelist);
 
-	void RecordMsg(const STOCMsg& msg);
+	void RecordMsg(const std::vector<uint8_t>& msg);
 	void RecordResponse(const std::vector<uint8_t>& response);
 
 	void Serialize();
@@ -42,7 +41,7 @@ private:
 	const CodeVector extraCards;
 
 	std::array<std::list<Duelist>, 2U> duelists;
-	std::list<STOCMsg> messages;
+	std::list<std::vector<uint8_t>> messages;
 	std::list<std::vector<uint8_t>> responses;
 
 	std::vector<uint8_t> bytes;

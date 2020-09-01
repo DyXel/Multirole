@@ -35,12 +35,7 @@ constexpr T Read(uint8_t*& ptr)
 	return Read<T>(const_cast<const uint8_t*&>(ptr));
 }
 
-template<typename T>
-constexpr void Write(uint8_t*& ptr, T value)
-{
-	std::memcpy(ptr, &value, sizeof(T));
-	ptr += sizeof(T);
-}
+#include "Write.inl"
 
 /*** Query utility functions ***/
 
