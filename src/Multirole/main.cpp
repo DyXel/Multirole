@@ -17,7 +17,7 @@
  */
 #include <cstdlib> // Exit flags
 #include <fstream> // std::ifstream
-#include <memory> // std::unique_ptr
+#include <optional> // std::optional
 
 #include <fmt/printf.h>
 #include <spdlog/spdlog.h>
@@ -32,19 +32,19 @@ Copyright (C) 2020  DyXel, edo9300, kevinlul
 
 inline int CreateAndRunServerInstance()
 {
-	std::unique_ptr<Ignis::Multirole::Instance> serverPtr;
+	std::optional<Ignis::Multirole::Instance> server;
 	try
 	{
 		std::ifstream f("multirole-config.json");
 		const auto cfg = nlohmann::json::parse(f);
-		serverPtr = std::make_unique<Ignis::Multirole::Instance>(cfg);
+		server.emplace(cfg);
 	}
 	catch(const std::exception& e)
 	{
 		fmt::print("Error while initializing server: {:s}\n", e.what());
 		return EXIT_FAILURE;
 	}
-	return serverPtr->Run();
+	return server->Run();
 }
 
 int main()
