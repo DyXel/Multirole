@@ -64,7 +64,7 @@ ReplayManager::~ReplayManager()
 
 void ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const
 {
-	std::string finalPath(folder + std::to_string(id) + ".yrpx");
+	std::string finalPath(folder + "/" + std::to_string(id) + ".yrpX");
 	const auto& bytes = replay.Bytes();
 	if(std::fstream f(finalPath, BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
