@@ -93,8 +93,12 @@ public:
 	// next messages
 	static YGOPro::STOCMsg MakeCatchUp(bool catchingUp);
 	// Creates a message that tells clients how much time a particular
-	// team has left.
+	// team has left
 	static YGOPro::STOCMsg MakeTimeLimit(uint8_t team, uint16_t timeLeft);
+	// Creates a message that wraps around a replay file to send to clients
+	static YGOPro::STOCMsg MakeSendReplay(const std::vector<uint8_t>& bytes);
+	// Creates a message that tells the client to save the sent replay
+	static YGOPro::STOCMsg MakeOpenReplayPrompt();
 
 	// Error messages
 	static YGOPro::STOCMsg MakeJoinError(Error::Join type);

@@ -23,6 +23,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	{
 		coreProvider.GetCore(),
 		nullptr,
+		nullptr,
 		{0U, 0U},
 		nullptr,
 		std::nullopt,

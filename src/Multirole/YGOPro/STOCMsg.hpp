@@ -41,6 +41,7 @@ public:
 		PLAYER_ENTER  = 0x20,
 		PLAYER_CHANGE = 0x21,
 		WATCH_CHANGE  = 0x22,
+		NEW_REPLAY    = 0x30,
 		CATCHUP       = 0xF0,
 		REMATCH       = 0xF1,
 		REMATCH_WAIT  = 0xF2,

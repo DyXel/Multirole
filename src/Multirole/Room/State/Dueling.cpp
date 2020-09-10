@@ -2,6 +2,7 @@
 
 #include "../TimerAggregator.hpp"
 #include "../../CardDatabase.hpp"
+#include "../../ReplayManager.hpp"
 #include "../../ScriptProvider.hpp"
 #include "../../Core/IWrapper.hpp"
 #include "../../YGOPro/Constants.hpp"
@@ -22,6 +23,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	// would have been a waste.
 	if(!rng)
 		rng = std::make_unique<std::mt19937>(id);
+	const auto seed = static_cast<uint32_t>((*rng)());
 	// Create core duel with room's options
 	const OCG_Player popt =
 	{
@@ -34,7 +36,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		*cdb,
 		scriptProvider,
 		nullptr, // TODO
-		static_cast<uint32_t>((*rng)()),
+		seed,
 		static_cast<int>(hostInfo.duelFlags),
 		popt,
 		popt
@@ -83,6 +85,8 @@ StateOpt Context::operator()(State::Dueling& s)
 		}
 	}
 	CORE_EXCEPTION_HANDLER()
+	// Construct replay.
+	s.replay = std::make_unique<YGOPro::Replay>(seed, hostInfo, extraCards);
 	// Add main and extra deck cards for all players.
 	auto ReversedOrShuffled = [&](CodeVector deck) // NOTE: Copy is intentional.
 	{
@@ -100,7 +104,8 @@ StateOpt Context::operator()(State::Dueling& s)
 			nci.team = nci.con = GetSwappedTeam(kv.first.first);
 			nci.duelist = kv.first.second;
 			nci.loc = LOCATION_DECK;
-			for(auto code : ReversedOrShuffled(deck.Main()))
+			auto finalMainDeck = ReversedOrShuffled(deck.Main());
+			for(auto code : finalMainDeck)
 			{
 				nci.code = code;
 				s.core->AddCard(s.duelPtr, nci);
@@ -111,9 +116,15 @@ StateOpt Context::operator()(State::Dueling& s)
 				nci.code = code;
 				s.core->AddCard(s.duelPtr, nci);
 			}
+			s.replay->AddDuelist(nci.team,
+			{
+				kv.second->Name(),
+				std::move(finalMainDeck),
+				deck.Extra()
+			});
 		}
 		s.core->Start(s.duelPtr);
-		// Send MSG_START message to clients.
+		// Create and send MSG_START message to clients.
 		auto msgStart = CoreUtils::MakeStartMsg(
 			{
 				hostInfo.startingLP,
@@ -122,12 +133,13 @@ StateOpt Context::operator()(State::Dueling& s)
 				s.core->QueryCount(s.duelPtr, 1U, LOCATION_DECK),
 				s.core->QueryCount(s.duelPtr, 1U, LOCATION_EXTRA),
 			});
+		s.replay->RecordMsg(msgStart);
 		SendToTeam(GetSwappedTeam(0U), MakeGameMsg(msgStart));
 		msgStart[1] = 1U;
 		SendToTeam(GetSwappedTeam(1U), MakeGameMsg(msgStart));
 		msgStart[1] = 0xF0 | isTeam1GoingFirst;
 		SendToSpectators(SaveToSpectatorCache(s, MakeGameMsg(msgStart)));
-		// Update replay with deck data.
+		// Record queries for deck data.
 		auto RecordDecks = [&](uint8_t team)
 		{
 			const Core::IWrapper::QueryInfo qInfo =
@@ -138,8 +150,9 @@ StateOpt Context::operator()(State::Dueling& s)
 				0U,
 				0U
 			};
+			using namespace YGOPro::CoreUtils;
 			const auto buffer = s.core->QueryLocation(s.duelPtr, qInfo);
-			// TODO: Save into replay.
+			s.replay->RecordMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer));
 		};
 		RecordDecks(0U);
 		RecordDecks(1U);
@@ -154,16 +167,17 @@ StateOpt Context::operator()(State::Dueling& s)
 				0U,
 				0U
 			};
-			const auto buffer = s.core->QueryLocation(s.duelPtr, qInfo);
 			using namespace YGOPro::CoreUtils;
-			SendToTeam(GetSwappedTeam(qInfo.con),
-				MakeGameMsg(MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer)));
+			const auto buffer = s.core->QueryLocation(s.duelPtr, qInfo);
+			const auto msg = MakeUpdateDataMsg(qInfo.con, qInfo.loc, buffer);
+			s.replay->RecordMsg(msg);
+			SendToTeam(GetSwappedTeam(qInfo.con), MakeGameMsg(msg));
 		};
 		SendExtraDecks(0U);
 		SendExtraDecks(1U);
 	}
 	CORE_EXCEPTION_HANDLER()
-	// Start processing the duel
+	// Start processing the duel.
 	if(const auto dfrOpt = Process(s); dfrOpt)
 		return Finish(s, *dfrOpt);
 	return std::nullopt;
@@ -208,6 +222,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 	}
 	try
 	{
+		s.replay->RecordResponse(e.data);
 		s.core->SetResponse(s.duelPtr, e.data);
 	}
 	CORE_EXCEPTION_HANDLER()
@@ -257,7 +272,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		}
 		else if(msgType == MSG_MATCH_KILL)
 		{
-			// Too lazy to create a function in YGOPro::CoreUtils
+			// So lazy can't create separate function.
 			uint32_t reason{};
 			std::memcpy(&reason, &msg[1U], sizeof(decltype(reason)));
 			s.matchKillReason = reason;
@@ -285,8 +300,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto& req = std::get<QuerySingleRequest>(reqVar);
 				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
 				{
-					return MakeGameMsg(
-						MakeUpdateCardMsg(req.con, req.loc, req.seq, qb));
+					return MakeGameMsg(MakeUpdateCardMsg(req.con, req.loc, req.seq, qb));
 				};
 				const Core::IWrapper::QueryInfo qInfo =
 				{
@@ -300,6 +314,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto query = DeserializeSingleQueryBuffer(fullBuffer);
 				const auto ownerBuffer = SerializeSingleQuery(query, false);
 				const auto strippedBuffer = SerializeSingleQuery(query, true);
+				s.replay->RecordMsg(MakeUpdateCardMsg(req.con, req.loc, req.seq, fullBuffer));
 				auto strippedMsg = MakeMsg(strippedBuffer);
 				uint8_t team = GetSwappedTeam(req.con);
 				SendToTeam(team, MakeMsg(ownerBuffer));
@@ -311,8 +326,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto& req = std::get<QueryLocationRequest>(reqVar);
 				auto MakeMsg = [&](const QueryBuffer& qb) -> YGOPro::STOCMsg
 				{
-					return MakeGameMsg(
-						MakeUpdateDataMsg(req.con, req.loc, qb));
+					return MakeGameMsg(MakeUpdateDataMsg(req.con, req.loc, qb));
 				};
 				const Core::IWrapper::QueryInfo qInfo =
 				{
@@ -324,9 +338,9 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				};
 				uint8_t team = GetSwappedTeam(req.con);
 				const auto fullBuffer = s.core->QueryLocation(s.duelPtr, qInfo);
+				s.replay->RecordMsg(MakeUpdateDataMsg(req.con, req.loc, fullBuffer));
 				if(req.loc == LOCATION_DECK)
 				{
-					// TODO: Save into replay
 					continue;
 				}
 				else if(req.loc == LOCATION_EXTRA)
@@ -346,6 +360,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 	};
 	auto DistributeMsg = [&](const Msg& msg)
 	{
+		s.replay->RecordMsg(msg);
 		switch(GetMessageDistributionType(msg))
 		{
 		case MsgDistType::MSG_DIST_TYPE_SPECIFIC_TEAM_DUELIST_STRIPPED:
@@ -473,7 +488,22 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	tagg.Cancel(1U);
 	auto SendWinMsg = [&](uint8_t reason)
 	{
-		SendToAll(MakeGameMsg({MSG_WIN, GetSwappedTeam(dfr.winner), reason}));
+		const std::vector<uint8_t> winMsg =
+		{
+			MSG_WIN,
+			GetSwappedTeam(dfr.winner),
+			reason
+		};
+		s.replay->RecordMsg(winMsg);
+		SendToAll(MakeGameMsg(winMsg));
+	};
+	auto SendReplay = [&]()
+	{
+		s.replay->Serialize();
+		// TODO: take newId when the duel is created rather than here
+		replayManager.Save(replayManager.NewId(), *s.replay);
+		SendToAll(MakeSendReplay(s.replay->Bytes()));
+		SendToAll(MakeOpenReplayPrompt());
 	};
 	auto turnDecider = [&]() -> Client*
 	{
@@ -495,6 +525,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 			SendWinMsg(WIN_REASON_TIMED_OUT);
 		else if(dfr.reason == Reason::REASON_WRONG_RESPONSE)
 			SendWinMsg(WIN_REASON_WRONG_RESPONSE);
+		SendReplay();
 		if(hostInfo.bestOf <= 1 || dfr.winner == 2U)
 			return State::Rematching{turnDecider, {}};
 		wins[dfr.winner] += (s.matchKillReason) ? hostInfo.bestOf : 1U;
@@ -508,6 +539,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	case Reason::REASON_CONNECTION_LOST:
 	{
 		SendWinMsg(WIN_REASON_CONNECTION_LOST);
+		SendReplay();
 		SendToAll(MakeDuelEnd());
 		return State::Closing{};
 	}

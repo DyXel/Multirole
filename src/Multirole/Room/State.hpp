@@ -7,6 +7,7 @@
 #include <set>
 #include <variant>
 
+#include "../YGOPro/Replay.hpp"
 #include "../YGOPro/STOCMsg.hpp"
 
 namespace Ignis::Multirole
@@ -39,6 +40,7 @@ struct Dueling
 {
 	std::shared_ptr<Core::IWrapper> core;
 	void* duelPtr;
+	std::unique_ptr<YGOPro::Replay> replay;
 	std::array<uint8_t, 2U> currentPos;
 	Client* replier;
 	std::optional<uint32_t> matchKillReason;
