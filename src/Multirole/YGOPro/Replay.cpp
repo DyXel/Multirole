@@ -26,6 +26,7 @@ enum ReplayFlags
 	REPLAY_LUA64       = 0x10,
 	REPLAY_NEWREPLAY   = 0x20,
 	REPLAY_HAND_TEST   = 0x40,
+	REPLAY_DIRECT_SEED = 0x80,
 };
 
 struct ReplayHeader
@@ -216,7 +217,7 @@ void Replay::Serialize()
 		{
 			REPLAY_YRP1,
 			0U, // TODO
-			REPLAY_LUA64 | REPLAY_NEWREPLAY,
+			REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_DIRECT_SEED,
 			seed,
 			static_cast<uint32_t>(YRPPastHeaderSize()),
 			0U,
