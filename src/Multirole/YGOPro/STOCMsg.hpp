@@ -18,7 +18,7 @@ public:
 	{
 		HEADER_LENGTH = 2U,
 	};
-	using LengthType = int16_t;
+	using LengthType = uint16_t;
 	enum class MsgType : uint8_t
 	{
 		GAME_MSG      = 0x1,

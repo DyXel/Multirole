@@ -39,6 +39,40 @@ struct ReplayHeader
 	uint8_t props[8]; // Used for LZMA compression (check their apis)
 };
 
+// ***** YRPX Binary format *****
+// ReplayHeader
+// team0Count [uint32_t]
+// team0Names [20 char16_t * team0Count]
+// team1Count [uint32_t]
+// team1Names [20 char16_t * team1Count]
+// duelFlags [uint32_t]
+// Core messages (repeat for number of messages):
+// 	msgType [uint8_t]
+// 	length [uint32_t]
+// 	data [uint8_t * length]
+
+// ***** YRP Binary format *****
+// ReplayHeader
+// team0Count [uint32_t]
+// team0Names [20 char16_t * team0Count]
+// team1Count [uint32_t]
+// team1Names [20 char16_t * team1Count]
+// startingLP [uint32_t]
+// startingDrawCount [uint32_t]
+// drawCountPerTurn [uint32_t]
+// duelFlags [uint32_t]
+// Deck & Extra Decks (repeat for each duelist):
+// 	deckCount [uint32_t]
+// 	cards [uint32_t * deckCount]
+// 	extraCount [uint32_t]
+// 	cards [uint32_t * extraCount]
+// Extra cards:
+// 	count [uint32_t]
+// 	cards [uint32_t * count]
+// Core responses (repeat for number of responses):
+// 	length [uint8_t]
+// 	data [uint8_t * length]
+
 Replay::Replay(uint32_t seed, const HostInfo& info, const CodeVector& extraCards) :
 	seed(seed),
 	startingLP(info.startingLP),
@@ -106,40 +140,51 @@ void Replay::RecordResponse(const std::vector<uint8_t>& response)
 
 void Replay::Serialize()
 {
-	auto Header1Size = [&]() -> uint32_t
+	auto YRPXPastHeaderSize = [&]() -> std::size_t
 	{
-		uint32_t size =
+		std::size_t size =
 			8U + // team0Count<4> + team1Count<4>
 			4U;  // duelFlags<4>
 		// Size occupied by each duelist
 		size += 40U * (duelists[0U].size() + duelists[1U].size());
 		// Size occupied by all core messages
-		size += [&]() -> uint32_t
+		size += [&]() -> std::size_t
 		{
-			uint32_t v{};
+			std::size_t v{};
 			for(const auto& msg : messages)
-				v += static_cast<uint32_t>(msg.size()) + 4U; // length
+				v += msg.size() + 4U; // length
 			return v;
 		}();
 		return size;
 	};
-	// Replay header for new replay format
-	const ReplayHeader header1
+	auto YRPPastHeaderSize = [&]() -> std::size_t
 	{
-		REPLAY_YRPX,
-		0U, // TODO
-		REPLAY_LUA64 | REPLAY_NEWREPLAY,
-		0U, // TODO
-		Header1Size(),
-		0U,
-		{}
+		std::size_t size =
+			8U + // team0Count<4> + team1Count<4>
+			8U + // startingLP<4> + startingDrawCount<4>
+			8U;  // drawCountPerTurn<4> + duelFlags<4>
+		// Size occupied by each duelist and their decks
+		for(const auto& l : duelists)
+		{
+			for(const auto& d : l)
+			{
+				size +=
+					40U + // name<2 * 20>
+					8U;   // deckCount<4> + extraCount<4>
+				size += d.main.size() * 4U;
+				size += d.extra.size() * 4U;
+			}
+		}
+		// Size occupied by extra cards
+		size += 4U + extraCards.size() * 4U;
+		// Size occupied by all player responses
+		for(const auto& r : responses)
+			size += r.size() + 1U; // length
+		return size;
 	};
-	// Write past-the-header data for new replay format
-	const auto pthData1 = [&]() -> std::vector<uint8_t>
+	// Write duelists count and their names
+	auto WriteDuelists = [&](uint8_t*& ptr)
 	{
-		std::vector<uint8_t> vec(header1.size);
-		uint8_t* ptr = vec.data();
-		// Duelist number and their names
 		for(std::size_t team = 0U; team < duelists.size(); team++)
 		{
 			Write(ptr, static_cast<uint32_t>(duelists[team].size()));
@@ -150,6 +195,67 @@ void Replay::Serialize()
 				ptr += 40U; // NOTE: Assuming all bytes were initialized to 0
 			}
 		}
+	};
+	// YRP replay is appended as a CORE message onto the YRPX messages list,
+	// for that reason, we serialize it first and as last step we serialize
+	// the whole YRPX past-the-header data.
+	[&](std::vector<uint8_t>& vec)
+	{
+		vec.resize(1U + sizeof(ReplayHeader) + YRPPastHeaderSize());
+		uint8_t* ptr = vec.data();
+		auto WriteCodeVector = [&ptr](const std::vector<uint32_t>& vec)
+		{
+			Write(ptr, static_cast<uint32_t>(vec.size()));
+			for(const auto& code : vec)
+				Write<uint32_t>(ptr, code);
+		};
+		// NOLINTNEXTLINE: Message type, Called OLD_REPLAY_FORMAT in common.h
+		Write<uint8_t>(ptr, 231U);
+		// Replay header for YRP replay format
+		Write(ptr, ReplayHeader
+		{
+			REPLAY_YRP1,
+			0U, // TODO
+			REPLAY_LUA64 | REPLAY_NEWREPLAY,
+			seed,
+			static_cast<uint32_t>(YRPPastHeaderSize()),
+			0U,
+			{}
+		});
+		// Duelists count and their names
+		WriteDuelists(ptr);
+		// Core flags
+		Write<uint32_t>(ptr, startingLP);
+		Write<uint32_t>(ptr, startingDrawCount);
+		Write<uint32_t>(ptr, drawCountPerTurn);
+		Write<uint32_t>(ptr, duelFlags);
+		// Decks & Extra Decks
+		for(const auto& l : duelists)
+		{
+			for(const auto& d : l)
+			{
+				WriteCodeVector(d.main);
+				WriteCodeVector(d.extra);
+			}
+		}
+		// Extra Cards
+		WriteCodeVector(extraCards);
+		// Core responses
+		for(const auto& r : responses)
+		{
+			Write(ptr, static_cast<uint8_t>(r.size()));
+			std::memcpy(ptr, r.data(), r.size());
+			ptr += r.size();
+		}
+		// Number of bytes written shall equal vec.size()
+		assert(static_cast<std::size_t>(ptr - vec.data()) == vec.size());
+	}(messages.emplace_back());
+	// Write past-the-header data for YRPX replay format
+	const auto pthData = [&]() -> std::vector<uint8_t>
+	{
+		std::vector<uint8_t> vec(YRPXPastHeaderSize());
+		uint8_t* ptr = vec.data();
+		WriteDuelists(ptr);
 		// Duel flags
 		Write<uint32_t>(ptr, duelFlags);
 		// Core messages
@@ -166,56 +272,22 @@ void Replay::Serialize()
 		return vec;
 	}();
 	// Write final binary replay
-	bytes.resize(sizeof(ReplayHeader) + pthData1.size());
+	bytes.resize(sizeof(ReplayHeader) + pthData.size());
 	uint8_t* ptr = bytes.data();
-	Write<ReplayHeader>(ptr, header1);
-	std::memcpy(ptr, pthData1.data(), pthData1.size());
-// 	ptr += pthData1.size();
-	// Size occupied by all player responses
-// 	header.size += [&]()
-// 	{
-// 		std::size_t v{};
-// 		for(const auto& r : responses)
-// 			v += r.size() + 1U; // length
-// 		return static_cast<uint32_t>(v);
-// 	}();
-	// Size occupied by each duelist and their decks
-// 	header.size += [&]()
-// 	{
-// 		constexpr std::size_t BASE =
-// 			40U + // name<2 * 20>
-// 			8U;   // deckCount<4> + extraCount<4>
-// 		std::size_t v{};
-// 		for(const auto& l : duelists)
-// 			for(const auto& d : l)
-// 				v += BASE + (d.main.size() * 4U) + (d.extra.size() * 4U);
-// 		return static_cast<uint32_t>(v);
-// 	}();
+	// Replay header for YRPX replay format
+	Write(ptr, ReplayHeader
+	{
+		REPLAY_YRPX,
+		0U, // TODO
+		REPLAY_LUA64 | REPLAY_NEWREPLAY,
+		0U, // TODO
+		static_cast<uint32_t>(pthData.size()),
+		0U,
+		{}
+	});
+	std::memcpy(ptr, pthData.data(), pthData.size());
+	// Remove message that was appended for serializing purposes.
+	messages.pop_back();
 }
-
-// ***** YRPX Binary format *****
-// ReplayHeader
-// team0Count [uint32_t]
-// team0Names [20 uint16_t * team0Count]
-// team1Count [uint32_t]
-// team1Names [20 uint16_t * team1Count]
-// duelFlags [uint32_t]
-// Core messages: uint8_t msgType, followed by uint32_t length of message, followed by uint8_t * length
-//
-
-// ***** YRP Binary format *****
-//
-// ReplayHeader
-// team0Count [uint32_t]
-// team0Names [20 uint16_t * team0Count]
-// team1Count [uint32_t]
-// team1Names [20 uint16_t * team1Count]
-// startingLP [uint32_t]
-// startingDrawCount [uint32_t]
-// drawCountPerTurn [uint32_t]
-// duelFlags [uint32_t]
-// DECKS
-// EXTRA_CARDS
-// Core responses: uint8_t length, followed by uint8_t * length
 
 } // namespace YGOPro
