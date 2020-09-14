@@ -502,7 +502,10 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		s.replay->Serialize();
 		// TODO: take newId when the duel is created rather than here
 		replayManager.Save(replayManager.NewId(), *s.replay);
-		SendToAll(MakeSendReplay(s.replay->Bytes()));
+		if(s.replay->Bytes().size() > YGOPro::STOCMsg::MAX_PAYLOAD_SIZE)
+			SendToAll(MakeChat(CHAT_MSG_TYPE_SYSTEM, "Cannot send replay. Too Big."));
+		else
+			SendToAll(MakeSendReplay(s.replay->Bytes()));
 		SendToAll(MakeOpenReplayPrompt());
 	};
 	auto turnDecider = [&]() -> Client*
