@@ -1,5 +1,5 @@
-#ifndef STOCMSG_HPP
-#define STOCMSG_HPP
+#ifndef YGOPRO_STOCMSG_HPP
+#define YGOPRO_STOCMSG_HPP
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -11,13 +11,11 @@
 namespace YGOPro
 {
 
+#include "Write.inl"
+
 class STOCMsg
 {
 public:
-	enum
-	{
-		HEADER_LENGTH = 2U,
-	};
 	using LengthType = uint16_t;
 	enum class MsgType : uint8_t
 	{
@@ -46,17 +44,19 @@ public:
 		REMATCH       = 0xF1,
 		REMATCH_WAIT  = 0xF2,
 	};
+	static constexpr std::size_t MAX_PAYLOAD_SIZE =
+		(~LengthType{}) - sizeof(LengthType) - sizeof(MsgType);
 
 	struct ErrorMsg
 	{
-		static constexpr auto val = MsgType::ERROR_MSG;
+		static constexpr auto MSG_TYPE = MsgType::ERROR_MSG;
 		uint8_t msg;
 		uint32_t code;
 	};
 
 	struct DeckErrorMsg
 	{
-		static constexpr auto val = MsgType::ERROR_MSG;
+		static constexpr auto MSG_TYPE = MsgType::ERROR_MSG;
 		uint8_t msg;
 		uint32_t type;
 		struct
@@ -70,7 +70,7 @@ public:
 
 	struct VerErrorMsg
 	{
-		static constexpr auto val = MsgType::ERROR_MSG;
+		static constexpr auto MSG_TYPE = MsgType::ERROR_MSG;
 		uint8_t msg;
 		char : 8U; // Padding to keep the client version
 		char : 8U; // in the same place as the other
@@ -80,65 +80,65 @@ public:
 
 	struct RPSResult
 	{
-		static constexpr auto val = MsgType::RPS_RESULT;
+		static constexpr auto MSG_TYPE = MsgType::RPS_RESULT;
 		uint8_t res0;
 		uint8_t res1;
 	};
 
 	struct CreateGame
 	{
-		static constexpr auto val = MsgType::CREATE_GAME;
+		static constexpr auto MSG_TYPE = MsgType::CREATE_GAME;
 		uint32_t id;
 	};
 
 	struct TypeChange
 	{
-		static constexpr auto val = MsgType::TYPE_CHANGE;
+		static constexpr auto MSG_TYPE = MsgType::TYPE_CHANGE;
 		uint8_t type;
 	};
 
 	struct JoinGame
 	{
-		static constexpr auto val = MsgType::JOIN_GAME;
+		static constexpr auto MSG_TYPE = MsgType::JOIN_GAME;
 		HostInfo info;
 	};
 
 	struct TimeLimit
 	{
-		static constexpr auto val = MsgType::TIME_LIMIT;
+		static constexpr auto MSG_TYPE = MsgType::TIME_LIMIT;
 		uint8_t team;
 		uint16_t timeLeft;
 	};
 
 	struct Chat
 	{
-		static constexpr auto val = MsgType::CHAT;
+		static constexpr auto MSG_TYPE = MsgType::CHAT;
 		uint16_t posOrType;
 		uint16_t msg[256U];
 	};
 
 	struct PlayerEnter
 	{
-		static constexpr auto val = MsgType::PLAYER_ENTER;
+		static constexpr auto MSG_TYPE = MsgType::PLAYER_ENTER;
 		uint16_t name[20U];
 		uint8_t pos;
 	};
 
 	struct PlayerChange
 	{
-		static constexpr auto val = MsgType::PLAYER_CHANGE;
+		static constexpr auto MSG_TYPE = MsgType::PLAYER_CHANGE;
 		uint8_t status;
 	};
 
 	struct WatchChange
 	{
-		static constexpr auto val = MsgType::WATCH_CHANGE;
+		static constexpr auto MSG_TYPE = MsgType::WATCH_CHANGE;
 		uint16_t count;
 	};
 
 	struct CatchUp
 	{
-		static constexpr auto val = MsgType::CATCHUP;
+		static constexpr auto MSG_TYPE = MsgType::CATCHUP;
 		uint8_t catchingUp;
 	};
 
@@ -152,34 +152,28 @@ public:
 	template<typename T>
 	STOCMsg(const T& msg)
 	{
-		static_assert(std::is_same_v<std::remove_cv_t<decltype(T::val)>, MsgType>);
-		const auto msgSize = static_cast<LengthType>(sizeof(T) + sizeof(MsgType));
-		uint8_t* p = ConstructUnionAndGetPtr(HEADER_LENGTH + msgSize);
-		std::memcpy(p, &msgSize, sizeof(msgSize));
-		p += sizeof(msgSize);
-		std::memcpy(p, &T::val, sizeof(MsgType));
-		p += sizeof(MsgType);
-		std::memcpy(p, &msg, sizeof(T));
+		const std::size_t msgSize = sizeof(MsgType) + sizeof(T);
+		uint8_t* ptr = ConstructUnionAndGetPtr(sizeof(LengthType) + msgSize);
+		Write(ptr, static_cast<LengthType>(msgSize));
+		Write(ptr, static_cast<MsgType>(T::MSG_TYPE));
+		Write(ptr, msg);
 	}
 
 	STOCMsg(MsgType type)
 	{
-		const auto msgSize = static_cast<LengthType>(1U + sizeof(MsgType));
-		uint8_t* p = ConstructUnionAndGetPtr(HEADER_LENGTH + msgSize);
-		std::memcpy(p, &msgSize, sizeof(msgSize));
-		p += sizeof(msgSize);
-		std::memcpy(p, &type, sizeof(MsgType));
+		const std::size_t msgSize = sizeof(MsgType);
+		uint8_t* ptr = ConstructUnionAndGetPtr(sizeof(LengthType) + msgSize);
+		Write(ptr, static_cast<LengthType>(msgSize));
+		Write<MsgType>(ptr, type);
 	}
 
 	STOCMsg(MsgType type, const uint8_t* data, std::size_t size)
 	{
-		const auto msgSize = static_cast<LengthType>(size + sizeof(MsgType));
-		uint8_t* p = ConstructUnionAndGetPtr(HEADER_LENGTH + msgSize);
-		std::memcpy(p, &msgSize, sizeof(msgSize));
-		p += sizeof(msgSize);
-		std::memcpy(p, &type, sizeof(MsgType));
-		p += sizeof(MsgType);
-		std::memcpy(p, data, size);
+		const std::size_t msgSize = sizeof(MsgType) + size;
+		uint8_t* ptr = ConstructUnionAndGetPtr(sizeof(LengthType) + msgSize);
+		Write(ptr, static_cast<LengthType>(msgSize));
+		Write<MsgType>(ptr, type);
+		std::memcpy(ptr, data, size);
 	}
 
 	template<typename ContiguousContainer>
@@ -287,4 +281,4 @@ private:
 
 } // namespace YGOPro
 
-#endif // STOCMSG_HPP
+#endif // YGOPRO_STOCMSG_HPP
