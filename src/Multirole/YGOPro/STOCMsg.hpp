@@ -3,6 +3,7 @@
 #include <array>
 #include <cassert>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <type_traits>
 
@@ -45,7 +46,8 @@ public:
 		REMATCH_WAIT  = 0xF2,
 	};
 	static constexpr std::size_t MAX_PAYLOAD_SIZE =
-		(~LengthType{}) - sizeof(LengthType) - sizeof(MsgType);
+		std::numeric_limits<LengthType>::max() -
+		sizeof(LengthType) - sizeof(MsgType);
 
 	struct ErrorMsg
 	{
