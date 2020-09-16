@@ -5,6 +5,8 @@
 
 #include "Constants.hpp"
 #include "StringUtils.hpp"
+#include "LZMA/LzmaEnc.h"
+#include "LZMA/Alloc.h" // g_Alloc
 
 namespace YGOPro
 {
@@ -252,7 +254,7 @@ void Replay::Serialize()
 		assert(static_cast<std::size_t>(ptr - vec.data()) == vec.size());
 	}(messages.emplace_back());
 	// Write past-the-header data for YRPX replay format
-	const auto pthData = [&]() -> std::vector<uint8_t>
+	auto pthData = [&]() -> std::vector<uint8_t>
 	{
 		std::vector<uint8_t> vec(YRPXPastHeaderSize());
 		uint8_t* ptr = vec.data();
@@ -272,11 +274,8 @@ void Replay::Serialize()
 		assert(static_cast<std::size_t>(ptr - vec.data()) == vec.size());
 		return vec;
 	}();
-	// Write final binary replay
-	bytes.resize(sizeof(ReplayHeader) + pthData.size());
-	uint8_t* ptr = bytes.data();
 	// Replay header for YRPX replay format
-	Write(ptr, ReplayHeader
+	ReplayHeader header
 	{
 		REPLAY_YRPX,
 		0U, // TODO
@@ -285,7 +284,35 @@ void Replay::Serialize()
 		static_cast<uint32_t>(pthData.size()),
 		0U,
 		{}
-	});
+	};
+	// Compress past-the-header data
+	std::vector<uint8_t> compData(pthData.size() * 2U);
+	CLzmaEncProps props;
+	LzmaEncProps_Init(&props);
+	props.numThreads = 1; // NOLINT: no multithreading
+	SizeT destLen = compData.size();
+	SizeT outPropSize = 5U; // NOLINT: must be 5 according to lzma SDK
+	LzmaEncode
+	(
+		compData.data(),
+		&destLen,
+		pthData.data(),
+		pthData.size(),
+		&props,
+		header.props,
+		&outPropSize,
+		0,
+		nullptr,
+		&g_Alloc,
+		&g_Alloc
+	);
+	compData.resize(destLen);
+	header.flags |= REPLAY_COMPRESSED;
+	pthData = std::move(compData);
+	// Write final binary replay
+	bytes.resize(sizeof(ReplayHeader) + pthData.size());
+	uint8_t* ptr = bytes.data();
+	Write<ReplayHeader>(ptr, header);
 	std::memcpy(ptr, pthData.data(), pthData.size());
 	// Remove message that was appended for serializing purposes.
 	messages.pop_back();
