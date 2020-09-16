@@ -86,6 +86,7 @@ endif()
 
 add_subdirectory(src)
 
+add_compile_definitions("_7ZIP_ST")
 if(WIN32)
 	add_compile_definitions(UNICODE)
 endif()

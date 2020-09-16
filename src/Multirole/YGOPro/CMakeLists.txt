@@ -7,3 +7,5 @@ target_sources(multirole PRIVATE
 	${CSR}/StringUtils.cpp
 )
 unset(CSR)
+
+add_subdirectory(LZMA)
