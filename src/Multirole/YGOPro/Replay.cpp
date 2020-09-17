@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 
+#include "Config.hpp"
 #include "Constants.hpp"
 #include "StringUtils.hpp"
 #include "LZMA/LzmaEnc.h"
@@ -10,6 +11,14 @@
 
 namespace YGOPro
 {
+
+constexpr auto ENCODED_SERVER_VERSION = [](const auto& v) constexpr -> uint32_t
+{
+	return  (v.client.major & 0xFF)         |
+	       ((v.client.minor & 0xFF) << 8 )  |
+	       ((v.core.major   & 0xFF) << 16)  |
+	       ((v.core.minor   & 0xFF) << 24);
+}(SERVER_VERSION);
 
 #include "Write.inl"
 
@@ -224,7 +233,7 @@ void Replay::Serialize()
 		Write(ptr, ReplayHeader
 		{
 			REPLAY_YRP1,
-			0U, // TODO
+			ENCODED_SERVER_VERSION,
 			REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_DIRECT_SEED,
 			seed,
 			static_cast<uint32_t>(YRPPastHeaderSize()),
@@ -284,7 +293,7 @@ void Replay::Serialize()
 	ReplayHeader header
 	{
 		REPLAY_YRPX,
-		0U, // TODO
+		ENCODED_SERVER_VERSION,
 		REPLAY_LUA64 | REPLAY_NEWREPLAY,
 		unixTimestamp,
 		static_cast<uint32_t>(pthData.size()),

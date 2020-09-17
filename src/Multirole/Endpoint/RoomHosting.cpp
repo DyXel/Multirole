@@ -11,24 +11,12 @@
 #include "../STOCMsgFactory.hpp"
 #include "../Room/Client.hpp"
 #include "../Room/Instance.hpp"
+#include "../YGOPro/Config.hpp"
 #include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/StringUtils.hpp"
 
 namespace Ignis::Multirole::Endpoint
 {
-
-constexpr YGOPro::ClientVersion SERVER_VERSION =
-{
-	{
-		38, // NOLINT: Client version major
-		1,  // NOLINT: Client version minor
-	},
-	{
-		8,  // NOLINT: Core version major
-		0   // NOLINT: Core version minor
-	}
-};
-constexpr uint32_t HANDSHAKE = 4043399681U;
 
 constexpr bool operator!=(
 	const YGOPro::ClientVersion& v1,
@@ -172,8 +160,9 @@ void RoomHosting::DoReadBody(const std::shared_ptr<TmpClient>& tc)
 
 bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 {
+	using namespace YGOPro;
 #define UTF16_BUFFER_TO_STR(a) \
-	YGOPro::UTF16ToUTF8(YGOPro::BufferToUTF16(a, sizeof(decltype(a))))
+	UTF16ToUTF8(BufferToUTF16(a, sizeof(decltype(a))))
 	auto SendVersionError = [](asio::ip::tcp::socket& s)
 	{
 		static const auto m = STOCMsgFactory::MakeVersionError(SERVER_VERSION);
@@ -183,7 +172,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 	auto& msg = tc->msg;
 	switch(msg.GetType())
 	{
-	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
+	case CTOSMsg::MsgType::PLAYER_INFO:
 	{
 		auto p = msg.GetPlayerInfo();
 		if(!p)
@@ -191,10 +180,10 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		tc->name = UTF16_BUFFER_TO_STR(p->name);
 		return true;
 	}
-	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
+	case CTOSMsg::MsgType::CREATE_GAME:
 	{
 		auto p = msg.GetCreateGame();
-		if(!p || p->hostInfo.handshake != HANDSHAKE ||
+		if(!p || p->hostInfo.handshake != SERVER_HANDSHAKE ||
 		   p->hostInfo.version != SERVER_VERSION)
 			return SendVersionError(tc->soc);
 		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
@@ -232,7 +221,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		client->Start(std::move(room));
 		return false;
 	}
-	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
+	case CTOSMsg::MsgType::JOIN_GAME:
 	{
 		auto p = msg.GetJoinGame();
 		if(!p || p->version != SERVER_VERSION)
