@@ -22,7 +22,11 @@ public:
 		CodeVector extra;
 	};
 
-	Replay(uint32_t seed, const HostInfo& info, const CodeVector& extraCards);
+	Replay(
+		uint32_t unixTimestamp,
+		uint32_t seed,
+		const HostInfo& info,
+		const CodeVector& extraCards);
 
 	const std::vector<uint8_t>& Bytes() const;
 
@@ -33,6 +37,7 @@ public:
 
 	void Serialize();
 private:
+	const uint32_t unixTimestamp;
 	const uint32_t seed;
 	const uint32_t startingLP;
 	const uint32_t startingDrawCount;

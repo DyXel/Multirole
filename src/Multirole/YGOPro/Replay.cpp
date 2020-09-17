@@ -76,7 +76,13 @@ struct ReplayHeader
 // 	length [uint8_t]
 // 	data [uint8_t * length]
 
-Replay::Replay(uint32_t seed, const HostInfo& info, const CodeVector& extraCards) :
+Replay::Replay(
+	uint32_t unixTimestamp,
+	uint32_t seed,
+	const HostInfo& info,
+	const CodeVector& extraCards)
+	:
+	unixTimestamp(unixTimestamp),
 	seed(seed),
 	startingLP(info.startingLP),
 	startingDrawCount(info.startingDrawCount),
@@ -280,7 +286,7 @@ void Replay::Serialize()
 		REPLAY_YRPX,
 		0U, // TODO
 		REPLAY_LUA64 | REPLAY_NEWREPLAY,
-		0U, // TODO
+		unixTimestamp,
 		static_cast<uint32_t>(pthData.size()),
 		0U,
 		{}

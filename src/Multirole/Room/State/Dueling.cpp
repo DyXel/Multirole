@@ -86,7 +86,18 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	CORE_EXCEPTION_HANDLER()
 	// Construct replay.
-	s.replay = std::make_unique<YGOPro::Replay>(seed, hostInfo, extraCards);
+	auto CurrentTime = []()
+	{
+		using namespace std::chrono;
+		return system_clock::to_time_t(system_clock::now());
+	};
+	s.replay = std::make_unique<YGOPro::Replay>
+	(
+		static_cast<uint32_t>(CurrentTime()),
+		seed,
+		hostInfo,
+		extraCards
+	);
 	// Add main and extra deck cards for all players.
 	auto ReversedOrShuffled = [&](CodeVector deck) // NOTE: Copy is intentional.
 	{
