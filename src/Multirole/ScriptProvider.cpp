@@ -66,7 +66,7 @@ void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileLi
 		// Read actual file into memory and place into script map
 		std::stringstream buffer;
 		buffer << file.rdbuf();
-		scripts.emplace(FilenameFromPath(fn), buffer.str());
+		scripts.insert_or_assign(FilenameFromPath(fn), buffer.str());
 		total++;
 	}
 	spdlog::info("ScriptProvider: Loaded {:d} files", total);
