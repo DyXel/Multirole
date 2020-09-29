@@ -19,12 +19,20 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	isTeam1GoingFirst = static_cast<uint8_t>(
 		(e.client.Position().first == 0U && !e.goingFirst) ||
 		(e.client.Position().first == 1U && e.goingFirst));
+	auto DecidePlayerOrder = [&]() -> decltype(State::Dueling::currentPos)
+	{
+		return
+		{
+			static_cast<uint8_t>(isTeam1GoingFirst ? hostInfo.t0Count - 1U : 0U),
+			static_cast<uint8_t>(isTeam1GoingFirst ? 0U : hostInfo.t1Count - 1U)
+		};
+	};
 	return State::Dueling
 	{
 		coreProvider.GetCore(),
 		nullptr,
 		nullptr,
-		{0U, 0U},
+		DecidePlayerOrder(),
 		nullptr,
 		std::nullopt,
 		{},
