@@ -21,6 +21,8 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 		(e.client.Position().first == 1U && e.goingFirst));
 	auto DecidePlayerOrder = [&]() -> decltype(State::Dueling::currentPos)
 	{
+		if((hostInfo.duelFlags & 0x80) != 0U) // NOLINT: DUEL_RELAY
+			return {0U, 0U};
 		return
 		{
 			static_cast<uint8_t>(isTeam1GoingFirst ? hostInfo.t0Count - 1U : 0U),
