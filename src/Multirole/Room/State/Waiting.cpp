@@ -1,5 +1,7 @@
 #include "../Context.hpp"
 
+#include "../../YGOPro/Constants.hpp"
+
 namespace Ignis::Multirole::Room
 {
 
@@ -142,7 +144,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 {
 	auto ValidateDuelistsSetup = [&]() -> bool
 	{
-		if((hostInfo.duelFlags & 0x80) == 0U) // NOLINT: DUEL_RELAY
+		if((hostInfo.duelFlags & DUEL_RELAY) == 0U)
 			return int32_t(duelists.size()) == hostInfo.t0Count + hostInfo.t1Count;
 		if(!(teamCount[0U] > 0U && teamCount[1U] > 0U))
 			return false;

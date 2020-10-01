@@ -21,13 +21,16 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 		(e.client.Position().first == 1U && e.goingFirst));
 	auto DecidePlayerOrder = [&]() -> decltype(State::Dueling::currentPos)
 	{
-		if((hostInfo.duelFlags & 0x80) != 0U) // NOLINT: DUEL_RELAY
-			return {0U, 0U};
-		return
+		if((hostInfo.duelFlags & DUEL_RELAY) == 0U)
 		{
-			static_cast<uint8_t>(isTeam1GoingFirst ? hostInfo.t0Count - 1U : 0U),
-			static_cast<uint8_t>(isTeam1GoingFirst ? 0U : hostInfo.t1Count - 1U)
-		};
+			const auto it1gf = static_cast<bool>(isTeam1GoingFirst);
+			return
+			{
+				static_cast<uint8_t>(it1gf ? teamCount[0U] - 1U : 0U),
+				static_cast<uint8_t>(it1gf ? 0U : teamCount[1U] - 1U)
+			};
+		}
+		return {uint8_t(0U), uint8_t(0U)};
 	};
 	return State::Dueling
 	{
