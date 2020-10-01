@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <list>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,7 @@ public:
 
 	const std::vector<uint8_t>& Bytes() const;
 
-	void AddDuelist(uint8_t team, Duelist&& duelist);
+	void AddDuelist(uint8_t team, uint8_t pos, Duelist&& duelist);
 
 	void RecordMsg(const std::vector<uint8_t>& msg);
 	void RecordResponse(const std::vector<uint8_t>& response);
@@ -45,7 +46,7 @@ private:
 	const uint32_t duelFlags;
 	const CodeVector extraCards;
 
-	std::array<std::list<Duelist>, 2U> duelists;
+	std::array<std::map<uint8_t, Duelist>, 2U> duelists;
 	std::list<std::vector<uint8_t>> messages;
 	std::list<std::vector<uint8_t>> responses;
 

@@ -105,9 +105,9 @@ const std::vector<uint8_t>& Replay::Bytes() const
 	return bytes;
 }
 
-void Replay::AddDuelist(uint8_t team, Duelist&& duelist)
+void Replay::AddDuelist(uint8_t team, uint8_t pos, Duelist&& duelist)
 {
-	duelists[team].emplace_back(duelist);
+	duelists[team].insert_or_assign(pos, duelist);
 }
 
 void Replay::RecordMsg(const std::vector<uint8_t>& msg)
@@ -182,15 +182,15 @@ void Replay::Serialize()
 			8U + // startingLP<4> + startingDrawCount<4>
 			8U;  // drawCountPerTurn<4> + duelFlags<4>
 		// Size occupied by each duelist and their decks
-		for(const auto& l : duelists)
+		for(const auto& m : duelists)
 		{
-			for(const auto& d : l)
+			for(const auto& d : m)
 			{
 				size +=
 					40U + // name<2 * 20>
 					8U;   // deckCount<4> + extraCount<4>
-				size += d.main.size() * 4U;
-				size += d.extra.size() * 4U;
+				size += d.second.main.size() * 4U;
+				size += d.second.extra.size() * 4U;
 			}
 		}
 		// Size occupied by extra cards
@@ -208,7 +208,7 @@ void Replay::Serialize()
 			Write(ptr, static_cast<uint32_t>(duelists[team].size()));
 			for(const auto& d : duelists[team])
 			{
-				const auto str16 = UTF8ToUTF16(d.name);
+				const auto str16 = UTF8ToUTF16(d.second.name);
 				std::memcpy(ptr, str16.data(), UTF16ByteCount(str16));
 				ptr += 40U; // NOTE: Assuming all bytes were initialized to 0
 			}
@@ -248,12 +248,12 @@ void Replay::Serialize()
 		Write<uint32_t>(ptr, drawCountPerTurn);
 		Write<uint32_t>(ptr, duelFlags);
 		// Decks & Extra Decks
-		for(const auto& l : duelists)
+		for(const auto& m : duelists)
 		{
-			for(const auto& d : l)
+			for(const auto& d : m)
 			{
-				WriteCodeVector(d.main);
-				WriteCodeVector(d.extra);
+				WriteCodeVector(d.second.main);
+				WriteCodeVector(d.second.extra);
 			}
 		}
 		// Extra Cards
