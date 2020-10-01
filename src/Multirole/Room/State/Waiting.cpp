@@ -30,7 +30,11 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
 StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 {
 	if(s.host == nullptr)
+	{
+		using namespace YGOPro;
+		e.client.Send(STOCMsg(STOCMsg::CreateGame{id}));
 		s.host = &e.client;
+	}
 	e.client.Send(joinMsg);
 	std::scoped_lock lock(mDuelists);
 	if(TryEmplaceDuelist(e.client))
