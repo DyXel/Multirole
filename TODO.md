@@ -1,7 +1,5 @@
 # TODO
 
-* Implement replays
-* Move YGOPro limits and constants that are used on the server to a single file where they can be tweaked easily
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
 * Handle crashes of core
 * Add IPC interface for discord bot
