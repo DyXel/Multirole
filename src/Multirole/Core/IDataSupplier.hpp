@@ -2,13 +2,7 @@
 #define IDATASUPPLIER_HPP
 #include "../../ocgapi_types.h"
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Core
+namespace Ignis::Multirole::Core
 {
 
 class IDataSupplier
@@ -22,10 +16,6 @@ protected:
 	inline ~IDataSupplier() = default;
 };
 
-} // namespace Core
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Core
 
 #endif // IDATASUPPLIER_HPP

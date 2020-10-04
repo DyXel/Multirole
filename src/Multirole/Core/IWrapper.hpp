@@ -5,13 +5,7 @@
 #include <string_view>
 #include "../../ocgapi_types.h"
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Core
+namespace Ignis::Multirole::Core
 {
 
 class IDataSupplier;
@@ -63,10 +57,6 @@ protected:
 	inline ~IWrapper() = default;
 };
 
-} // namespace Core
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Core
 
 #endif // IWRAPPER_HPP

@@ -19,11 +19,11 @@ struct ScriptSupplierData
 
 } // namespace Detail
 
-class DLWrapper : public IWrapper
+class DLWrapper final : public IWrapper
 {
 public:
 	DLWrapper(std::string_view absFilePath);
-	virtual ~DLWrapper();
+	~DLWrapper();
 
 	Duel CreateDuel(const DuelOptions& opts) override;
 	void DestroyDuel(Duel duel) override;

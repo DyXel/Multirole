@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "Core/DLWrapper.hpp"
+#include "Core/HornetWrapper.hpp"
 
 namespace Ignis::Multirole
 {
@@ -44,6 +45,8 @@ CoreProvider::CorePtr CoreProvider::LoadCore() const
 {
 	if(type == CoreType::SHARED)
 		return std::make_shared<Core::DLWrapper>(corePath);
+	else if (type == CoreType::HORNET)
+		return std::make_shared<Core::HornetWrapper>();
 	throw std::runtime_error("No other core type is implemented.");
 }
 

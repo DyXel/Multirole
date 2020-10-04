@@ -3,13 +3,7 @@
 #include <string>
 #include <string_view>
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Core
+namespace Ignis::Multirole::Core
 {
 
 class IScriptSupplier
@@ -20,10 +14,6 @@ protected:
 	inline ~IScriptSupplier() = default;
 };
 
-} // namespace Core
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Core
 
 #endif // ISCRIPTSUPPLIER_HPP

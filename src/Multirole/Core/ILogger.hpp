@@ -2,13 +2,7 @@
 #define ILOGGER_HPP
 #include <string_view>
 
-namespace Ignis
-{
-
-namespace Multirole
-{
-
-namespace Core
+namespace Ignis::Multirole::Core
 {
 
 class ILogger
@@ -26,10 +20,6 @@ protected:
 	inline ~ILogger() = default;
 };
 
-} // namespace Core
-
-} // namespace Multirole
-
-} // namespace Ignis
+} // namespace Ignis::Multirole::Core
 
 #endif // ILOGGER_HPP

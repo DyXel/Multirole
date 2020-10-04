@@ -23,6 +23,7 @@ src_files = files([
 	'src/Multirole/ScriptProvider.cpp',
 	'src/Multirole/STOCMsgFactory.cpp',
 	'src/Multirole/Core/DLWrapper.cpp',
+	'src/Multirole/Core/HornetWrapper.cpp',
 	'src/Multirole/Endpoint/LobbyListing.cpp',
 	'src/Multirole/Endpoint/RoomHosting.cpp',
 	'src/Multirole/Endpoint/Webhook.cpp',
