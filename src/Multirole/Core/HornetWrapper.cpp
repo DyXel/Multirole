@@ -14,12 +14,12 @@ namespace Ignis::Multirole::Core
 
 inline std::string MakeHornetName(uintptr_t addr)
 {
-	std::string str("Hornet");
-	str += std::to_string(addr);
+	std::array<char, 20U> buf{};
+	std::snprintf(buf.data(), buf.size(), "Hornet0x%lX", addr);
 	// Make sure the shared memory object doesn't exist before attempting
 	// to create it again.
-	ipc::shared_memory_object::remove(str.data());
-	return str;
+	ipc::shared_memory_object::remove(buf.data());
+	return std::string(buf.data());
 }
 
 inline ipc::shared_memory_object MakeShm(const std::string& str)
