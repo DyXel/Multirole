@@ -64,6 +64,13 @@ DLWrapper::~DLWrapper()
 	DLOpen::UnloadObject(handle);
 }
 
+std::pair<int, int> DLWrapper::Version()
+{
+	std::pair<int, int> p;
+	OCG_GetVersion(&p.first, &p.second);
+	return p;
+}
+
 IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 {
 	OCG_Duel duel{nullptr};

@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <vector>
 #include <string_view>
+#include <utility>
+
 #include "../../ocgapi_types.h"
 
 namespace Ignis::Multirole::Core
@@ -38,6 +40,8 @@ public:
 		Player team1;
 		Player team2;
 	};
+
+	virtual std::pair<int, int> Version() = 0;
 
 	virtual Duel CreateDuel(const DuelOptions& opts) = 0;
 	virtual void DestroyDuel(Duel duel) = 0;

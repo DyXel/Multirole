@@ -21,6 +21,8 @@ public:
 	HornetWrapper(std::string_view absFilePath);
 	~HornetWrapper();
 
+	std::pair<int, int> Version() override;
+
 	Duel CreateDuel(const DuelOptions& opts) override;
 	void DestroyDuel(Duel duel) override;
 	void AddCard(Duel duel, const NewCardInfo& info) override;

@@ -25,6 +25,8 @@ public:
 	DLWrapper(std::string_view absFilePath);
 	~DLWrapper();
 
+	std::pair<int, int> Version() override;
+
 	Duel CreateDuel(const DuelOptions& opts) override;
 	void DestroyDuel(Duel duel) override;
 	void AddCard(Duel duel, const NewCardInfo& info) override;

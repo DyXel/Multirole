@@ -48,6 +48,11 @@ HornetWrapper::~HornetWrapper()
 	ipc::shared_memory_object::remove(shmName.data());
 }
 
+std::pair<int, int> HornetWrapper::Version()
+{
+	return std::pair<int, int>{};
+}
+
 IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 {
 	return OCG_Duel{nullptr};
