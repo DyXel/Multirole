@@ -2,13 +2,23 @@
 #define HORNETWRAPPER_HPP
 #include "IWrapper.hpp"
 
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+
+namespace Ignis::Hornet
+{
+
+struct SharedSegment;
+
+} // namespace Ignis::Hornet
+
 namespace Ignis::Multirole::Core
 {
 
 class HornetWrapper final : public IWrapper
 {
 public:
-	HornetWrapper();
+	HornetWrapper(std::string_view absFilePath);
 	~HornetWrapper();
 
 	Duel CreateDuel(const DuelOptions& opts) override;
@@ -25,6 +35,11 @@ public:
 	Buffer Query(Duel duel, const QueryInfo& info) override;
 	Buffer QueryLocation(Duel duel, const QueryInfo& info) override;
 	Buffer QueryField(Duel duel) override;
+private:
+	const std::string shmName;
+	boost::interprocess::shared_memory_object shm;
+	boost::interprocess::mapped_region region;
+	Ignis::Hornet::SharedSegment* hss;
 };
 
 } // namespace Ignis::Multirole::Core
