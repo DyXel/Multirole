@@ -34,7 +34,7 @@ public:
 		IScriptSupplier& scriptSupplier;
 		ILogger* optLogger;
 		uint32_t seed;
-		int flags;
+		uint32_t flags;
 		Player team1;
 		Player team2;
 	};

@@ -91,6 +91,6 @@ void* LoadFunction(void* handle, const char* name)
 	return symbol;
 }
 
-#endif
+#endif // _WIN32
 
 } // namespace DLOpen

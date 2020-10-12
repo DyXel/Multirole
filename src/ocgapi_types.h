@@ -2,7 +2,7 @@
 #define OCGAPI_TYPES_H
 #include <stdint.h>
 
-#define OCG_VERSION_MAJOR 8
+#define OCG_VERSION_MAJOR 9
 #define OCG_VERSION_MINOR 0
 
 typedef enum OCG_LogTypes {
@@ -44,19 +44,19 @@ typedef struct OCG_CardData {
 }OCG_CardData;
 
 typedef struct OCG_Player {
-	int startingLP;
-	int startingDrawCount;
-	int drawCountPerTurn;
+	uint32_t startingLP;
+	uint32_t startingDrawCount;
+	uint32_t drawCountPerTurn;
 }OCG_Player;
 
-typedef void (*OCG_DataReader)(void* payload, int code, OCG_CardData* data);
+typedef void (*OCG_DataReader)(void* payload, uint32_t code, OCG_CardData* data);
 typedef void (*OCG_DataReaderDone)(void* payload, OCG_CardData* data);
 typedef int (*OCG_ScriptReader)(void* payload, OCG_Duel duel, const char* name);
 typedef void (*OCG_LogHandler)(void* payload, const char* string, int type);
 
 typedef struct OCG_DuelOptions {
 	uint32_t seed;
-	int flags;
+	uint32_t flags;
 	OCG_Player team1;
 	OCG_Player team2;
 	OCG_DataReader cardReader;

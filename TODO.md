@@ -2,6 +2,10 @@
 
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
 * Handle crashes of core
+* Deal with core not loading after webhook is triggered
+  * Try to fallback to the core that was working already
+* Fix names being swapped on replay
+  * Only happens on tag mode, for the players who went second
 * Add IPC interface for discord bot
 
 # Wishlist

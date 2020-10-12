@@ -72,9 +72,7 @@ void DataProvider::ReloadDatabases()
 	{
 		spdlog::info("DataProvider: Loading up {:s}...", path);
 		if(!newDb->Merge(path))
-		{
 			spdlog::error("DataProvider: Couldn't merge database");
-		}
 	}
 	std::scoped_lock lock(mDb);
 	db = newDb;

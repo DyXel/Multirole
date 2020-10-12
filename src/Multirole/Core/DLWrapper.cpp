@@ -12,7 +12,7 @@ namespace Ignis::Multirole::Core
 {
 
 // Core callbacks
-static void DataReader(void* payload, int code, OCG_CardData* data)
+static void DataReader(void* payload, uint32_t code, OCG_CardData* data)
 {
 	*data = static_cast<IDataSupplier*>(payload)->DataFromCode(code);
 }

@@ -27,7 +27,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	// Create core duel with room's options
 	const OCG_Player popt =
 	{
-		static_cast<int>(hostInfo.startingLP),
+		hostInfo.startingLP,
 		hostInfo.startingDrawCount,
 		hostInfo.drawCountPerTurn
 	};
@@ -37,7 +37,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		scriptProvider,
 		nullptr, // TODO
 		seed,
-		static_cast<int>(hostInfo.duelFlags),
+		hostInfo.duelFlags,
 		popt,
 		popt
 	};
