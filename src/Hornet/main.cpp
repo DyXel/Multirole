@@ -86,10 +86,10 @@ int MainLoop(const char* shmName)
 		{
 			ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
 			hss->cv.wait(lock, [&](){return hss->act != Action::NO_WORK;});
-			spdlog::info("Performing action: {}", hss->act);
 			switch(hss->act)
 			{
-			case Action::OCG_GET_VERSION:
+#define CASE(value) case value: spdlog::info("Performing " #value);
+			CASE(Action::OCG_GET_VERSION)
 			{
 				int major, minor;
 				OCG_GetVersion(&major, &minor);
@@ -98,6 +98,7 @@ int MainLoop(const char* shmName)
 				hss->cv.notify_one();
 				break;
 			}
+#undef CASE
 			default: // TODO: remove, every case should be handled.
 				break;
 			}
