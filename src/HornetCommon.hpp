@@ -12,10 +12,10 @@ namespace Ignis::Hornet
 enum class Action : uint8_t
 {
 	// Triggerable callbacks: doesn't apply
-	EXIT,
+	NO_WORK = 0U,
 
 	// Triggerable callbacks: doesn't apply
-	GOODBYE,
+	EXIT,
 
 	// Triggerable callbacks: none
 	OCG_GET_VERSION,
@@ -61,7 +61,7 @@ struct SharedSegment
 {
 	ipc::interprocess_mutex mtx;
 	ipc::interprocess_condition cv;
-	Action act;
+	Action act{Action::NO_WORK};
 	std::array<uint8_t, std::numeric_limits<uint16_t>::max()> bytes;
 };
 

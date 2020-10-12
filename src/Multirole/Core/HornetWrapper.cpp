@@ -1,6 +1,7 @@
 #include "HornetWrapper.hpp"
 
 #include <spdlog/spdlog.h> // TODO: remove
+#include <boost/interprocess/sync/scoped_lock.hpp>
 
 #include "IDataSupplier.hpp"
 #include "IScriptSupplier.hpp"
@@ -38,7 +39,7 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 {
 	void* addr = region.get_address();
 	hss = new (addr) Ignis::Hornet::SharedSegment();
-	Process::Launch("./hornet", shmName.data(), absFilePath.data());
+	Process::Launch("./hornet", absFilePath.data(), shmName.data());
 	spdlog::info("Hornet launched!");
 }
 
@@ -50,7 +51,14 @@ HornetWrapper::~HornetWrapper()
 
 std::pair<int, int> HornetWrapper::Version()
 {
-	return std::pair<int, int>{};
+	hss->act = Hornet::Action::OCG_GET_VERSION;
+	ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
+	std::pair<int, int> p;
+	std::memcpy(&p.first, hss->bytes.data(), sizeof(int));
+	std::memcpy(&p.second, hss->bytes.data() + sizeof(int), sizeof(int));
+	return p;
 }
 
 IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)

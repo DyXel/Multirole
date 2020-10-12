@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
 		spdlog::shutdown();
 		return r;
 	}
+	spdlog::info("Shared object loaded");
 	int exitFlag = MainLoop(argv[2]);
 	DLOpen::UnloadObject(handle);
 	spdlog::shutdown();
@@ -74,20 +75,36 @@ int LoadSO(const char* soPath)
 
 int MainLoop(const char* shmName)
 {
+	using namespace Ignis::Hornet;
 	try
 	{
 		ipc::shared_memory_object shm(ipc::open_only, shmName, ipc::read_write);
 		ipc::mapped_region r(shm, ipc::read_write);
-		auto* hss = static_cast<Ignis::Hornet::SharedSegment*>(r.get_address());
+		auto* hss = static_cast<SharedSegment*>(r.get_address());
 		bool quit = false;
 		do
 		{
 			ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
-			hss->cv.wait(lock);
-			// TODO
+			hss->cv.wait(lock, [&](){return hss->act != Action::NO_WORK;});
+			spdlog::info("Performing action: {}", hss->act);
+			switch(hss->act)
+			{
+			case Action::OCG_GET_VERSION:
+			{
+				int major, minor;
+				OCG_GetVersion(&major, &minor);
+				std::memcpy(hss->bytes.data(), &major, sizeof(int));
+				std::memcpy(hss->bytes.data() + sizeof(int), &minor, sizeof(int));
+				hss->cv.notify_one();
+				break;
+			}
+			default: // TODO: remove, every case should be handled.
+				break;
+			}
+			hss->act = Action::NO_WORK;
 		}while(!quit);
 	}
-	catch(const std::exception& e)
+	catch(const ipc::interprocess_exception& e)
 	{
 		spdlog::critical(e.what());
 		return 1;

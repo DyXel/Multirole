@@ -5,6 +5,7 @@
   * Do parameter streaming for big enough strings
   * Design exceptions
   * Detect if the process is dead before attempting to do IPC
+  * Use a mutex to avoid multiple threads using a hornet at the same time
 * Handle crashes of core
 * Deal with core not loading after webhook is triggered
   * Try to fallback to the core that was working already
