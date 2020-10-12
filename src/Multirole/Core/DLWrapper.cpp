@@ -52,7 +52,7 @@ DLWrapper::DLWrapper(std::string_view absFilePath)
 	if((name) == nullptr) \
 	{ \
 		DLOpen::UnloadObject(handle); \
-		throw std::runtime_error("Could not load API function."); \
+		throw std::runtime_error("Could not load API function " #name "."); \
 	} \
 	}while(0);
 #include "../../ocgapi_funcs.inl"

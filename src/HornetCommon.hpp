@@ -23,6 +23,9 @@ enum class Action : uint8_t
 	// Triggerable callbacks: none
 	OCG_CREATE_DUEL,
 
+	// Triggerable callbacks: none
+	OCG_DESTROY_DUEL,
+
 	// Triggerable callbacks: ?
 	OCG_DUEL_NEW_CARD,
 
