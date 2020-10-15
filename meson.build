@@ -2,14 +2,16 @@ project('multirole', ['c', 'cpp'], default_options : 'cpp_std=c++17')
 
 asio_dep    = dependency('asio', required : host_machine.system() == 'windows')
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
+boost_dep   = dependency('boost')
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 libgit2_dep = dependency('libgit2')
 njson_dep   = dependency('nlohmann_json')
+rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 spdlog_dep  = dependency('spdlog')
 sqlite3_dep = dependency('sqlite3')
 thread_dep  = dependency('threads')
 
-src_files = files([
+multirole_src_files = files([
 	'src/DLOpen.cpp',
 	'src/Multirole/BanlistProvider.cpp',
 	'src/Multirole/CardDatabase.cpp',
@@ -48,19 +50,39 @@ src_files = files([
 	'src/Multirole/YGOPro/LZMA/LzmaEnc.c'
 ])
 
-executable('multirole', src_files,
+hornet_src_files = files([
+	'src/DLOpen.cpp',
+	'src/Hornet/main.cpp'
+])
+
+executable('multirole', multirole_src_files,
 	c_args: ['-D_7ZIP_ST'],
 	cpp_args: [
 		'-DASIO_STANDALONE',
-		'-DSPDLOG_FMT_EXTERNAL'
+		'-DSPDLOG_FMT_EXTERNAL',
+		'-DBOOST_DATE_TIME_NO_LIB'
 	],
 	dependencies: [
 		asio_dep,
 		atomic_dep,
+		boost_dep,
 		dl_dep,
 		libgit2_dep,
 		njson_dep,
+		rt_dep,
 		spdlog_dep,
 		sqlite3_dep,
 		thread_dep
+	])
+
+executable('hornet', hornet_src_files,
+	cpp_args: [
+		'-DSPDLOG_FMT_EXTERNAL',
+		'-DBOOST_DATE_TIME_NO_LIB',
+	],
+	dependencies: [
+		boost_dep,
+		dl_dep,
+		rt_dep,
+		spdlog_dep
 	])
