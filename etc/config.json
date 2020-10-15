@@ -44,8 +44,8 @@
 	"coreProvider": {
 		"observedRepos" : ["bin"],
 		"fileRegex": ".*libocgcore\\.so",
-		"coreType": "shared",
-		"loadPerRoom": false
+		"coreType": "hornet",
+		"loadPerRoom": true
 	},
 	"banlistProvider": {
 		"observedRepos" : ["banlists"],
