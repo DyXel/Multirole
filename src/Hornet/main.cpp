@@ -8,6 +8,7 @@
 #include "../DLOpen.hpp"
 #include "../HornetCommon.hpp"
 #include "../ocgapi_types.h"
+#include "../Read.inl"
 #include "../Write.inl"
 
 static void* handle{nullptr};
@@ -99,6 +100,12 @@ int MainLoop(const char* shmName)
 				Write<int>(ptr, minor);
 				hss->cv.notify_one();
 				break;
+			}
+			CASE(Action::OCG_DESTROY_DUEL)
+			{
+				const auto* ptr = hss->bytes.data();
+				OCG_DestroyDuel(Read<OCG_Duel>(ptr));
+				hss->cv.notify_one();
 			}
 #undef CASE
 			default: // TODO: remove, every case should be handled.

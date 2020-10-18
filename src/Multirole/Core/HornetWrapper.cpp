@@ -13,6 +13,8 @@ namespace Ignis::Multirole::Core
 {
 
 #include "../../Read.inl"
+#include "../../Write.inl"
+
 inline std::string MakeHornetName(uintptr_t addr)
 {
 	std::array<char, 25U> buf;
@@ -70,7 +72,14 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 }
 
 void HornetWrapper::DestroyDuel(Duel duel)
-{}
+{
+	hss->act = Hornet::Action::OCG_DESTROY_DUEL;
+	auto* ptr = hss->bytes.data();
+	Write<OCG_Duel>(ptr, duel);
+	ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
+}
 
 void HornetWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
 {}
