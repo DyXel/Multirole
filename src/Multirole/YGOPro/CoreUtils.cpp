@@ -8,14 +8,8 @@
 namespace YGOPro::CoreUtils
 {
 
-template<typename T>
-constexpr T Read(const uint8_t*& ptr)
-{
-	T value{};
-	std::memcpy(&value, ptr, sizeof(T));
-	ptr += sizeof(T);
-	return value;
-}
+#include "../../Read.inl"
+#include "../../Write.inl"
 
 template<>
 constexpr LocInfo Read(const uint8_t*& ptr)
@@ -28,14 +22,6 @@ constexpr LocInfo Read(const uint8_t*& ptr)
 		Read<uint32_t>(ptr)
 	};
 }
-
-template<typename T>
-constexpr T Read(uint8_t*& ptr)
-{
-	return Read<T>(const_cast<const uint8_t*&>(ptr));
-}
-
-#include "Write.inl"
 
 /*** Query utility functions ***/
 

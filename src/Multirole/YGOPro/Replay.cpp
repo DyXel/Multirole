@@ -20,7 +20,7 @@ constexpr auto ENCODED_SERVER_VERSION = [](const auto& v) constexpr -> uint32_t
 	       ((v.core.minor   & 0xFF) << 24);
 }(SERVER_VERSION);
 
-#include "Write.inl"
+#include "../../Write.inl"
 
 enum ReplayTypes
 {

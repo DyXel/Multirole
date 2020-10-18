@@ -12,7 +12,7 @@
 namespace YGOPro
 {
 
-#include "Write.inl"
+#include "../../Write.inl"
 
 class STOCMsg
 {
