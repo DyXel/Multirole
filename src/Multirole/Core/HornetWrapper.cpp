@@ -156,7 +156,18 @@ IWrapper::Buffer HornetWrapper::Query(Duel duel, const QueryInfo& info)
 
 IWrapper::Buffer HornetWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 {
-	return {};
+	hss->act = Hornet::Action::OCG_DUEL_QUERY_LOCATION;
+	auto* ptr1 = hss->bytes.data();
+	Write<OCG_Duel>(ptr1, duel);
+	Write<OCG_QueryInfo>(ptr1, info);
+	ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
+	const auto* ptr2 = hss->bytes.data();
+	auto size = static_cast<std::size_t>(Read<uint32_t>(ptr2));
+	Buffer buffer(size);
+	std::memcpy(buffer.data(), ptr2, size);
+	return buffer;
 }
 
 IWrapper::Buffer HornetWrapper::QueryField(Duel duel)
