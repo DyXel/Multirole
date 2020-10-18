@@ -108,7 +108,16 @@ IWrapper::Buffer HornetWrapper::GetMessages(Duel duel)
 }
 
 void HornetWrapper::SetResponse(Duel duel, const Buffer& buffer)
-{}
+{
+	hss->act = Hornet::Action::OCG_DUEL_SET_RESPONSE;
+	auto* ptr1 = hss->bytes.data();
+	Write<OCG_Duel>(ptr1, duel);
+	Write<std::size_t>(ptr1, buffer.size());
+	std::memcpy(ptr1, buffer.data(), buffer.size());
+	ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
+}
 
 int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view str)
 {

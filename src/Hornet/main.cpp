@@ -117,6 +117,16 @@ int MainLoop(const char* shmName)
 				auto* ptr2 = hss->bytes.data();
 				Write<uint32_t>(ptr2, msgLength);
 				std::memcpy(ptr2, msgPtr, static_cast<std::size_t>(msgLength));
+				hss->cv.notify_one();
+				break;
+			}
+			CASE(Action::OCG_DUEL_SET_RESPONSE)
+			{
+				const auto* ptr1 = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(ptr1);
+				const auto length = Read<std::size_t>(ptr1);
+				OCG_DuelSetResponse(duel, ptr1, length);
+				hss->cv.notify_one();
 				break;
 			}
 #undef CASE
