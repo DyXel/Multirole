@@ -85,7 +85,14 @@ void HornetWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
 {}
 
 void HornetWrapper::Start(Duel duel)
-{}
+{
+	hss->act = Hornet::Action::OCG_START_DUEL;
+	auto* ptr = hss->bytes.data();
+	Write<OCG_Duel>(ptr, duel);
+	ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
+}
 
 IWrapper::DuelStatus HornetWrapper::Process(Duel duel)
 {

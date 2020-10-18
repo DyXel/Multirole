@@ -108,6 +108,13 @@ int MainLoop(const char* shmName)
 				hss->cv.notify_one();
 				break;
 			}
+			CASE(Action::OCG_START_DUEL)
+			{
+				const auto* ptr = hss->bytes.data();
+				OCG_StartDuel(Read<OCG_Duel>(ptr));
+				hss->cv.notify_one();
+				break;
+			}
 			CASE(Action::OCG_DUEL_GET_MESSAGE)
 			{
 				const auto* ptr1 = hss->bytes.data();

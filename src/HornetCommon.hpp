@@ -29,7 +29,7 @@ enum class Action : uint8_t
 	// Triggerable callbacks: ?
 	OCG_DUEL_NEW_CARD,
 
-	// Triggerable callbacks: ?
+	// Triggerable callbacks: none
 	OCG_START_DUEL,
 
 	// Triggerable callbacks: ?
