@@ -106,6 +106,18 @@ int MainLoop(const char* shmName)
 				const auto* ptr = hss->bytes.data();
 				OCG_DestroyDuel(Read<OCG_Duel>(ptr));
 				hss->cv.notify_one();
+				break;
+			}
+			CASE(Action::OCG_DUEL_GET_MESSAGE)
+			{
+				const auto* ptr1 = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(ptr1);
+				uint32_t msgLength = 0U;
+				auto* msgPtr = OCG_DuelGetMessage(duel, &msgLength);
+				auto* ptr2 = hss->bytes.data();
+				Write<uint32_t>(ptr2, msgLength);
+				std::memcpy(ptr2, msgPtr, static_cast<std::size_t>(msgLength));
+				break;
 			}
 #undef CASE
 			default: // TODO: remove, every case should be handled.
