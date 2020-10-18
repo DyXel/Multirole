@@ -12,6 +12,7 @@
 namespace Ignis::Multirole::Core
 {
 
+#include "../../Read.inl"
 inline std::string MakeHornetName(uintptr_t addr)
 {
 	std::array<char, 25U> buf;
@@ -55,10 +56,12 @@ std::pair<int, int> HornetWrapper::Version()
 	ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
 	hss->cv.notify_one();
 	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
-	std::pair<int, int> p;
-	std::memcpy(&p.first, hss->bytes.data(), sizeof(int));
-	std::memcpy(&p.second, hss->bytes.data() + sizeof(int), sizeof(int));
-	return p;
+	const auto* ptr = hss->bytes.data();
+	return
+	{
+		Read<int>(ptr),
+		Read<int>(ptr),
+	};
 }
 
 IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)

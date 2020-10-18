@@ -8,6 +8,7 @@
 #include "../DLOpen.hpp"
 #include "../HornetCommon.hpp"
 #include "../ocgapi_types.h"
+#include "../Write.inl"
 
 static void* handle{nullptr};
 
@@ -93,8 +94,9 @@ int MainLoop(const char* shmName)
 			{
 				int major, minor;
 				OCG_GetVersion(&major, &minor);
-				std::memcpy(hss->bytes.data(), &major, sizeof(int));
-				std::memcpy(hss->bytes.data() + sizeof(int), &minor, sizeof(int));
+				auto* ptr = hss->bytes.data();
+				Write<int>(ptr, major);
+				Write<int>(ptr, minor);
 				hss->cv.notify_one();
 				break;
 			}
