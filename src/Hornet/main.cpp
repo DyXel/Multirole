@@ -129,6 +129,17 @@ int MainLoop(const char* shmName)
 				hss->cv.notify_one();
 				break;
 			}
+			CASE(Action::OCG_DUEL_QUERY_COUNT)
+			{
+				const auto* ptr1 = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(ptr1);
+				const auto team = Read<uint8_t>(ptr1);
+				const auto loc = Read<uint32_t>(ptr1);
+				auto* ptr2 = hss->bytes.data();
+				Write<uint32_t>(ptr2, OCG_DuelQueryCount(duel, team, loc));
+				hss->cv.notify_one();
+				break;
+			}
 #undef CASE
 			default: // TODO: remove, every case should be handled.
 				break;

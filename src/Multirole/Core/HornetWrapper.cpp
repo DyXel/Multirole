@@ -126,7 +126,16 @@ int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view
 
 std::size_t HornetWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
 {
-	return 0U;
+	hss->act = Hornet::Action::OCG_DUEL_QUERY_COUNT;
+	auto* ptr1 = hss->bytes.data();
+	Write<OCG_Duel>(ptr1, duel);
+	Write<uint8_t>(ptr1, team);
+	Write<uint32_t>(ptr1, loc);
+	ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
+	const auto* ptr2 = hss->bytes.data();
+	return static_cast<std::size_t>(Read<uint32_t>(ptr2));
 }
 
 IWrapper::Buffer HornetWrapper::Query(Duel duel, const QueryInfo& info)
