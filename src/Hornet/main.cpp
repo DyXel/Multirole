@@ -166,6 +166,18 @@ int MainLoop(const char* shmName)
 				hss->cv.notify_one();
 				break;
 			}
+			CASE(Action::OCG_DUEL_QUERY_FIELD)
+			{
+				const auto* ptr1 = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(ptr1);
+				uint32_t qLength = 0U;
+				auto* qPtr = OCG_DuelQueryField(duel, &qLength);
+				auto* ptr2 = hss->bytes.data();
+				Write<uint32_t>(ptr2, qLength);
+				std::memcpy(ptr2, qPtr, static_cast<std::size_t>(qLength));
+				hss->cv.notify_one();
+				break;
+			}
 #undef CASE
 			default: // TODO: remove, every case should be handled.
 				break;
