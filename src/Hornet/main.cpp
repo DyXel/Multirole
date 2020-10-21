@@ -98,21 +98,18 @@ int MainLoop(const char* shmName)
 				auto* ptr = hss->bytes.data();
 				Write<int>(ptr, major);
 				Write<int>(ptr, minor);
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_DESTROY_DUEL)
 			{
 				const auto* ptr = hss->bytes.data();
 				OCG_DestroyDuel(Read<OCG_Duel>(ptr));
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_START_DUEL)
 			{
 				const auto* ptr = hss->bytes.data();
 				OCG_StartDuel(Read<OCG_Duel>(ptr));
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_DUEL_GET_MESSAGE)
@@ -124,7 +121,6 @@ int MainLoop(const char* shmName)
 				auto* ptr2 = hss->bytes.data();
 				Write<uint32_t>(ptr2, msgLength);
 				std::memcpy(ptr2, msgPtr, static_cast<std::size_t>(msgLength));
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_DUEL_SET_RESPONSE)
@@ -133,7 +129,6 @@ int MainLoop(const char* shmName)
 				const auto duel = Read<OCG_Duel>(ptr1);
 				const auto length = Read<std::size_t>(ptr1);
 				OCG_DuelSetResponse(duel, ptr1, length);
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY_COUNT)
@@ -144,7 +139,6 @@ int MainLoop(const char* shmName)
 				const auto loc = Read<uint32_t>(ptr1);
 				auto* ptr2 = hss->bytes.data();
 				Write<uint32_t>(ptr2, OCG_DuelQueryCount(duel, team, loc));
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY)
@@ -157,7 +151,6 @@ int MainLoop(const char* shmName)
 				auto* ptr2 = hss->bytes.data();
 				Write<uint32_t>(ptr2, qLength);
 				std::memcpy(ptr2, qPtr, static_cast<std::size_t>(qLength));
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY_LOCATION)
@@ -170,7 +163,6 @@ int MainLoop(const char* shmName)
 				auto* ptr2 = hss->bytes.data();
 				Write<uint32_t>(ptr2, qLength);
 				std::memcpy(ptr2, qPtr, static_cast<std::size_t>(qLength));
-				hss->cv.notify_one();
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY_FIELD)
@@ -182,7 +174,6 @@ int MainLoop(const char* shmName)
 				auto* ptr2 = hss->bytes.data();
 				Write<uint32_t>(ptr2, qLength);
 				std::memcpy(ptr2, qPtr, static_cast<std::size_t>(qLength));
-				hss->cv.notify_one();
 				break;
 			}
 #undef CASE
@@ -190,6 +181,7 @@ int MainLoop(const char* shmName)
 				break;
 			}
 			hss->act = Action::NO_WORK;
+			hss->cv.notify_one();
 		}while(!quit);
 	}
 	catch(const ipc::interprocess_exception& e)
