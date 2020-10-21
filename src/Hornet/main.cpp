@@ -11,12 +11,23 @@
 #include "../Read.inl"
 #include "../Write.inl"
 
+// Interprocess variables
+Ignis::Hornet::SharedSegment* hss;
+
+// Shared object variables
 static void* handle{nullptr};
 
 #define OCGFUNC(ret, name, args) static ret (*name) args{nullptr};
 #include "../ocgapi_funcs.inl"
 #undef OCGFUNC
 
+// Core callbacks
+void DataReader(void* payload, uint32_t code, OCG_CardData* data);
+int ScriptReader(void* payload, OCG_Duel duel, const char* name);
+void LogHandler(void* payload, const char* str, int t);
+void DataReaderDone(void* payload, OCG_CardData* data);
+
+// Other functions
 int LoadSO(const char* soPath);
 int MainLoop(const char* shmName);
 
@@ -82,7 +93,7 @@ int MainLoop(const char* shmName)
 	{
 		ipc::shared_memory_object shm(ipc::open_only, shmName, ipc::read_write);
 		ipc::mapped_region r(shm, ipc::read_write);
-		auto* hss = static_cast<SharedSegment*>(r.get_address());
+		hss = static_cast<SharedSegment*>(r.get_address());
 		bool quit = false;
 		do
 		{
