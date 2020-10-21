@@ -2,12 +2,14 @@
 #define HORNETWRAPPER_HPP
 #include "IWrapper.hpp"
 
-#include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 
 namespace Ignis::Hornet
 {
 
+enum class Action : uint8_t;
 struct SharedSegment;
 
 } // namespace Ignis::Hornet
@@ -38,10 +40,14 @@ public:
 	Buffer QueryLocation(Duel duel, const QueryInfo& info) override;
 	Buffer QueryField(Duel duel) override;
 private:
+	using LockType = boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>;
+
 	const std::string shmName;
 	boost::interprocess::shared_memory_object shm;
 	boost::interprocess::mapped_region region;
 	Ignis::Hornet::SharedSegment* hss;
+
+	[[nodiscard]] LockType NotifyAndWaitCompletion(Ignis::Hornet::Action act);
 };
 
 } // namespace Ignis::Multirole::Core
