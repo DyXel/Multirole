@@ -11,6 +11,8 @@
 #include "../Read.inl"
 #include "../Write.inl"
 
+using LockType = ipc::scoped_lock<ipc::interprocess_mutex>;
+
 // Interprocess variables
 Ignis::Hornet::SharedSegment* hss;
 
@@ -97,7 +99,7 @@ int MainLoop(const char* shmName)
 		bool quit = false;
 		do
 		{
-			ipc::scoped_lock<ipc::interprocess_mutex> lock(hss->mtx);
+			LockType lock(hss->mtx);
 			hss->cv.wait(lock, [&](){return hss->act != Action::NO_WORK;});
 			switch(hss->act)
 			{

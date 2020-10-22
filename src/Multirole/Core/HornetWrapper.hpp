@@ -45,9 +45,11 @@ private:
 	const std::string shmName;
 	boost::interprocess::shared_memory_object shm;
 	boost::interprocess::mapped_region region;
-	Ignis::Hornet::SharedSegment* hss;
+	Hornet::SharedSegment* hss;
 
-	[[nodiscard]] LockType NotifyAndWaitCompletion(Ignis::Hornet::Action act);
+	[[nodiscard]] LockType NotifyAndWaitCompletion(Hornet::Action act);
+
+	[[nodiscard]] LockType CallbackMechanism(Hornet::Action act);
 };
 
 } // namespace Ignis::Multirole::Core

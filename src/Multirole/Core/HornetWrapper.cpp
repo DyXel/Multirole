@@ -27,7 +27,7 @@ inline std::string MakeHornetName(uintptr_t addr)
 inline ipc::shared_memory_object MakeShm(const std::string& str)
 {
 	ipc::shared_memory_object shm(ipc::create_only, str.data(), ipc::read_write);
-	shm.truncate(sizeof(Ignis::Hornet::SharedSegment));
+	shm.truncate(sizeof(Hornet::SharedSegment));
 	return shm;
 }
 
@@ -40,7 +40,7 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 	hss(nullptr)
 {
 	void* addr = region.get_address();
-	hss = new (addr) Ignis::Hornet::SharedSegment();
+	hss = new (addr) Hornet::SharedSegment();
 	Process::Launch("./hornet", absFilePath.data(), shmName.data());
 	spdlog::info("Hornet launched!");
 }
@@ -164,8 +164,9 @@ IWrapper::Buffer HornetWrapper::QueryField(Duel duel)
 	return buffer;
 }
 
-HornetWrapper::LockType HornetWrapper::NotifyAndWaitCompletion(Ignis::Hornet::Action act)
+HornetWrapper::LockType HornetWrapper::NotifyAndWaitCompletion(Hornet::Action act)
 {
+	hss->act = act;
 	LockType lock(hss->mtx);
 	hss->cv.notify_one();
 	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
