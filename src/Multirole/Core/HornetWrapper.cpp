@@ -64,7 +64,27 @@ std::pair<int, int> HornetWrapper::Version()
 
 IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 {
-	return OCG_Duel{nullptr};
+	auto* wptr = hss->bytes.data();
+	Write<OCG_DuelOptions>(wptr,
+	{
+		opts.seed,
+		opts.flags,
+		opts.team1,
+		opts.team2,
+		nullptr, // NOTE: Set on Hornet
+		&opts.dataSupplier,
+		nullptr, // NOTE: Set on Hornet
+		&opts.scriptSupplier,
+		nullptr, // NOTE: Set on Hornet
+		opts.optLogger,
+		nullptr, // NOTE: Set on Hornet
+		&opts.dataSupplier
+	});
+	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_CREATE_DUEL);
+	const auto* rptr = hss->bytes.data();
+	if(Read<int>(rptr) != OCG_DUEL_CREATION_SUCCESS)
+		return nullptr; // TODO: throw?
+	return Read<OCG_Duel>(rptr);
 }
 
 void HornetWrapper::DestroyDuel(Duel duel)
@@ -75,7 +95,12 @@ void HornetWrapper::DestroyDuel(Duel duel)
 }
 
 void HornetWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
-{}
+{
+	auto* wptr = hss->bytes.data();
+	Write<OCG_Duel>(wptr, duel);
+	Write<OCG_NewCardInfo>(wptr, info);
+	auto lock = CallbackMechanism(Hornet::Action::OCG_DESTROY_DUEL);
+}
 
 void HornetWrapper::Start(Duel duel)
 {
@@ -86,7 +111,11 @@ void HornetWrapper::Start(Duel duel)
 
 IWrapper::DuelStatus HornetWrapper::Process(Duel duel)
 {
-	return DuelStatus::DUEL_STATUS_END;
+	auto* wptr = hss->bytes.data();
+	Write<OCG_Duel>(wptr, duel);
+	auto lock = CallbackMechanism(Hornet::Action::OCG_DUEL_PROCESS);
+	const auto* rptr = hss->bytes.data();
+	return DuelStatus{Read<int>(rptr)};
 }
 
 IWrapper::Buffer HornetWrapper::GetMessages(Duel duel)
@@ -112,7 +141,16 @@ void HornetWrapper::SetResponse(Duel duel, const Buffer& buffer)
 
 int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view str)
 {
-	return 1;
+	auto* wptr = hss->bytes.data();
+	Write<OCG_Duel>(wptr, duel);
+	Write<std::size_t>(wptr, name.size());
+	std::memcpy(wptr, name.data(), name.size());
+	wptr += name.size();
+	Write<std::size_t>(wptr, str.size());
+	std::memcpy(wptr, str.data(), str.size());
+	auto lock = CallbackMechanism(Hornet::Action::OCG_LOAD_SCRIPT);
+	const auto* rptr = hss->bytes.data();
+	return Read<int>(rptr);
 }
 
 std::size_t HornetWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
@@ -170,6 +208,65 @@ HornetWrapper::LockType HornetWrapper::NotifyAndWaitCompletion(Hornet::Action ac
 	LockType lock(hss->mtx);
 	hss->cv.notify_one();
 	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
+	return lock;
+}
+
+HornetWrapper::LockType HornetWrapper::CallbackMechanism(Hornet::Action act)
+{
+	LockType lock(hss->mtx);
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act != act;});
+	if(hss->act == Hornet::Action::NO_WORK)
+		return lock;
+	lock.unlock();
+	switch(hss->act)
+	{
+		case Hornet::Action::CB_DATA_READER:
+		{
+			const auto* rptr = hss->bytes.data();
+			auto* supplier = static_cast<IDataSupplier*>(Read<void*>(rptr));
+			const OCG_CardData data = supplier->DataFromCode(Read<uint32_t>(rptr));
+			auto* wptr = hss->bytes.data();
+			Write<OCG_CardData>(wptr, data);
+			uint16_t* ptr3 = data.setcodes;
+			do
+			{
+				Write<uint16_t>(wptr, *ptr3++);
+			}while(*ptr3 != 0U);
+			auto lock2 = CallbackMechanism(Hornet::Action::CB_DONE);
+			break;
+		}
+		case Hornet::Action::CB_SCRIPT_READER:
+		{
+			const auto* rptr = hss->bytes.data();
+			auto* supplier = static_cast<IScriptSupplier*>(Read<void*>(rptr));
+			const auto* name = reinterpret_cast<const char*>(rptr);
+			std::string script = supplier->ScriptFromFilePath(name);
+			auto* wptr = hss->bytes.data();
+			Write<std::size_t>(wptr, script.size());
+			if(!script.empty())
+				std::memcpy(wptr, script.data(), script.size());
+			auto lock2 = CallbackMechanism(Hornet::Action::CB_DONE);
+			break;
+		}
+		case Hornet::Action::CB_LOG_HANDLER:
+		{
+			const auto* rptr = hss->bytes.data();
+			auto* logger = static_cast<ILogger*>(Read<void*>(rptr));
+			const auto type = ILogger::LogType{Read<int>(rptr)};
+			logger->Log(type, reinterpret_cast<const char*>(rptr));
+			auto lock2 = CallbackMechanism(Hornet::Action::CB_DONE);
+			break;
+		}
+		case Hornet::Action::CB_DATA_READER_DONE:
+		{
+			// TODO
+			break;
+		}
+		default: // TODO: throw UB exception
+			break;
+	}
+	lock.lock();
 	return lock;
 }
 

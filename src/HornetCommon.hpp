@@ -55,6 +55,21 @@ enum class Action : uint8_t
 
 	// Triggerable callbacks: none
 	OCG_DUEL_QUERY_FIELD,
+
+	// Triggerable callbacks: doesn't apply
+	CB_DATA_READER,
+
+	// Triggerable callbacks: doesn't apply
+	CB_SCRIPT_READER,
+
+	// Triggerable callbacks: doesn't apply
+	CB_LOG_HANDLER,
+
+	// Triggerable callbacks: doesn't apply
+	CB_DATA_READER_DONE,
+
+	// Triggerable callbacks: doesn't apply
+	CB_DONE,
 };
 
 struct SharedSegment

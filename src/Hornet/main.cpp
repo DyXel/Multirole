@@ -64,6 +64,55 @@ int main(int argc, char* argv[])
 	return exitFlag;
 }
 
+void DataReader(void* payload, uint32_t code, OCG_CardData* data)
+{
+	auto* wptr = hss->bytes.data();
+	Write<void*>(wptr, payload);
+	Write<uint32_t>(wptr, code);
+	LockType lock(hss->mtx);
+	hss->act = Ignis::Hornet::Action::CB_DATA_READER;
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act != Ignis::Hornet::Action::CB_DATA_READER;});
+	std::memcpy(data, hss->bytes.data(), sizeof(OCG_CardData));
+	data->setcodes = reinterpret_cast<uint16_t*>(hss->bytes.data() + sizeof(OCG_CardData));
+}
+
+int ScriptReader(void* payload, OCG_Duel duel, const char* name)
+{
+	auto* wptr = hss->bytes.data();
+	Write<void*>(wptr, payload);
+	std::memcpy(wptr, name, std::strlen(name));
+	LockType lock(hss->mtx);
+	hss->act = Ignis::Hornet::Action::CB_SCRIPT_READER;
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act != Ignis::Hornet::Action::CB_SCRIPT_READER;});
+	const auto* rptr = hss->bytes.data();
+	const auto size = Read<std::size_t>(rptr);
+	if(size == 0U)
+		return 0;
+	return OCG_LoadScript(duel, reinterpret_cast<const char*>(rptr), size, name);
+}
+
+void LogHandler(void* payload, const char* str, int t)
+{
+	auto* wptr = hss->bytes.data();
+	Write<void*>(wptr, payload);
+	if(payload != nullptr)
+	{
+		Write<int>(wptr, t);
+		std::memcpy(wptr, str, std::strlen(str));
+	}
+	LockType lock(hss->mtx);
+	hss->act = Ignis::Hornet::Action::CB_LOG_HANDLER;
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act != Ignis::Hornet::Action::CB_LOG_HANDLER;});
+}
+
+void DataReaderDone(void* payload, OCG_CardData* data)
+{
+	// TODO
+}
+
 int LoadSO(const char* soPath)
 {
 	handle = DLOpen::LoadObject(soPath);
@@ -113,16 +162,51 @@ int MainLoop(const char* shmName)
 				Write<int>(wptr, minor);
 				break;
 			}
+			CASE(Action::OCG_CREATE_DUEL)
+			{
+				const auto* rptr = hss->bytes.data();
+				auto opts = Read<OCG_DuelOptions>(rptr);
+				opts.cardReader = &DataReader;
+				opts.scriptReader = &ScriptReader;
+				opts.logHandler = &LogHandler;
+				opts.cardReaderDone = &DataReaderDone;
+				OCG_Duel duel;
+				int r = OCG_CreateDuel(&duel, opts);
+				auto* wptr = hss->bytes.data();
+				Write<int>(wptr, r);
+				Write<OCG_Duel>(wptr, duel);
+				break;
+			}
 			CASE(Action::OCG_DESTROY_DUEL)
 			{
 				const auto* rptr = hss->bytes.data();
 				OCG_DestroyDuel(Read<OCG_Duel>(rptr));
 				break;
 			}
+			CASE(Action::OCG_DUEL_NEW_CARD)
+			{
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
+				lock.unlock();
+				OCG_DuelNewCard(duel, Read<OCG_NewCardInfo>(rptr));
+				lock.lock();
+				break;
+			}
 			CASE(Action::OCG_START_DUEL)
 			{
 				const auto* rptr = hss->bytes.data();
 				OCG_StartDuel(Read<OCG_Duel>(rptr));
+				break;
+			}
+			CASE(Action::OCG_DUEL_PROCESS)
+			{
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
+				lock.unlock();
+				int r = OCG_DuelProcess(duel);
+				lock.lock();
+				auto* wptr = hss->bytes.data();
+				Write<int>(wptr, r);
 				break;
 			}
 			CASE(Action::OCG_DUEL_GET_MESSAGE)
@@ -142,6 +226,22 @@ int MainLoop(const char* shmName)
 				const auto duel = Read<OCG_Duel>(rptr);
 				const auto length = Read<std::size_t>(rptr);
 				OCG_DuelSetResponse(duel, rptr, length);
+				break;
+			}
+			CASE(Action::OCG_LOAD_SCRIPT)
+			{
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
+				const auto nameSize = Read<std::size_t>(rptr);
+				const auto* name = reinterpret_cast<const char*>(rptr);
+				rptr += nameSize;
+				const auto strSize = Read<std::size_t>(rptr);
+				const auto* str = reinterpret_cast<const char*>(rptr);
+				lock.unlock();
+				int r = OCG_LoadScript(duel, str, strSize, name);
+				lock.lock();
+				auto* wptr = hss->bytes.data();
+				Write<int>(wptr, r);
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY_COUNT)
