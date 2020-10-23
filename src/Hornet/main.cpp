@@ -108,85 +108,85 @@ int MainLoop(const char* shmName)
 			{
 				int major, minor;
 				OCG_GetVersion(&major, &minor);
-				auto* ptr = hss->bytes.data();
-				Write<int>(ptr, major);
-				Write<int>(ptr, minor);
+				auto* wptr = hss->bytes.data();
+				Write<int>(wptr, major);
+				Write<int>(wptr, minor);
 				break;
 			}
 			CASE(Action::OCG_DESTROY_DUEL)
 			{
-				const auto* ptr = hss->bytes.data();
-				OCG_DestroyDuel(Read<OCG_Duel>(ptr));
+				const auto* rptr = hss->bytes.data();
+				OCG_DestroyDuel(Read<OCG_Duel>(rptr));
 				break;
 			}
 			CASE(Action::OCG_START_DUEL)
 			{
-				const auto* ptr = hss->bytes.data();
-				OCG_StartDuel(Read<OCG_Duel>(ptr));
+				const auto* rptr = hss->bytes.data();
+				OCG_StartDuel(Read<OCG_Duel>(rptr));
 				break;
 			}
 			CASE(Action::OCG_DUEL_GET_MESSAGE)
 			{
-				const auto* ptr1 = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(ptr1);
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
 				uint32_t msgLength = 0U;
 				auto* msgPtr = OCG_DuelGetMessage(duel, &msgLength);
-				auto* ptr2 = hss->bytes.data();
-				Write<uint32_t>(ptr2, msgLength);
-				std::memcpy(ptr2, msgPtr, static_cast<std::size_t>(msgLength));
+				auto* wptr = hss->bytes.data();
+				Write<uint32_t>(wptr, msgLength);
+				std::memcpy(wptr, msgPtr, static_cast<std::size_t>(msgLength));
 				break;
 			}
 			CASE(Action::OCG_DUEL_SET_RESPONSE)
 			{
-				const auto* ptr1 = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(ptr1);
-				const auto length = Read<std::size_t>(ptr1);
-				OCG_DuelSetResponse(duel, ptr1, length);
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
+				const auto length = Read<std::size_t>(rptr);
+				OCG_DuelSetResponse(duel, rptr, length);
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY_COUNT)
 			{
-				const auto* ptr1 = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(ptr1);
-				const auto team = Read<uint8_t>(ptr1);
-				const auto loc = Read<uint32_t>(ptr1);
-				auto* ptr2 = hss->bytes.data();
-				Write<uint32_t>(ptr2, OCG_DuelQueryCount(duel, team, loc));
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
+				const auto team = Read<uint8_t>(rptr);
+				const auto loc = Read<uint32_t>(rptr);
+				auto* wptr = hss->bytes.data();
+				Write<uint32_t>(wptr, OCG_DuelQueryCount(duel, team, loc));
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY)
 			{
-				const auto* ptr1 = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(ptr1);
-				const auto info = Read<OCG_QueryInfo>(ptr1);
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
+				const auto info = Read<OCG_QueryInfo>(rptr);
 				uint32_t qLength = 0U;
 				auto* qPtr = OCG_DuelQuery(duel, &qLength, info);
-				auto* ptr2 = hss->bytes.data();
-				Write<uint32_t>(ptr2, qLength);
-				std::memcpy(ptr2, qPtr, static_cast<std::size_t>(qLength));
+				auto* wptr = hss->bytes.data();
+				Write<uint32_t>(wptr, qLength);
+				std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY_LOCATION)
 			{
-				const auto* ptr1 = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(ptr1);
-				const auto info = Read<OCG_QueryInfo>(ptr1);
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
+				const auto info = Read<OCG_QueryInfo>(rptr);
 				uint32_t qLength = 0U;
 				auto* qPtr = OCG_DuelQueryLocation(duel, &qLength, info);
-				auto* ptr2 = hss->bytes.data();
-				Write<uint32_t>(ptr2, qLength);
-				std::memcpy(ptr2, qPtr, static_cast<std::size_t>(qLength));
+				auto* wptr = hss->bytes.data();
+				Write<uint32_t>(wptr, qLength);
+				std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
 				break;
 			}
 			CASE(Action::OCG_DUEL_QUERY_FIELD)
 			{
-				const auto* ptr1 = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(ptr1);
+				const auto* rptr = hss->bytes.data();
+				const auto duel = Read<OCG_Duel>(rptr);
 				uint32_t qLength = 0U;
 				auto* qPtr = OCG_DuelQueryField(duel, &qLength);
-				auto* ptr2 = hss->bytes.data();
-				Write<uint32_t>(ptr2, qLength);
-				std::memcpy(ptr2, qPtr, static_cast<std::size_t>(qLength));
+				auto* wptr = hss->bytes.data();
+				Write<uint32_t>(wptr, qLength);
+				std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
 				break;
 			}
 #undef CASE
