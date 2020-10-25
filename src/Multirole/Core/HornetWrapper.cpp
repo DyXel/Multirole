@@ -262,7 +262,10 @@ Hornet::LockType HornetWrapper::NotifyAndWait(Hornet::Action act)
 		}
 		case Hornet::Action::CB_DATA_READER_DONE:
 		{
-			// TODO
+			const auto* rptr = hss->bytes.data();
+			auto* supplier = static_cast<IDataSupplier*>(Read<void*>(rptr));
+			const auto data = Read<OCG_CardData>(rptr);
+			supplier->DataUsageDone(data);
 			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}

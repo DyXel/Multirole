@@ -91,7 +91,10 @@ void LogHandler(void* payload, const char* str, int t)
 void DataReaderDone(void* payload, OCG_CardData* data)
 {
 	spdlog::info("DataReaderDone: {}", data->code);
-	// TODO
+	auto* wptr = hss->bytes.data();
+	Write<void*>(wptr, payload);
+	std::memcpy(wptr, data, sizeof(OCG_CardData));
+	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_DATA_READER_DONE);
 }
 
 int LoadSO(const char* soPath)
@@ -118,7 +121,7 @@ int LoadSO(const char* soPath)
 	return 0;
 }
 
-int MainLoop()
+void MainLoop()
 {
 	using namespace Ignis::Hornet;
 	bool quit = false;
