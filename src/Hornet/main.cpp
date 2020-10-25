@@ -11,8 +11,6 @@
 #include "../Read.inl"
 #include "../Write.inl"
 
-using LockType = ipc::scoped_lock<ipc::interprocess_mutex>;
-
 // Interprocess variables
 Ignis::Hornet::SharedSegment* hss;
 
@@ -23,69 +21,34 @@ static void* handle{nullptr};
 #include "../ocgapi_funcs.inl"
 #undef OCGFUNC
 
-// Core callbacks
-void DataReader(void* payload, uint32_t code, OCG_CardData* data);
-int ScriptReader(void* payload, OCG_Duel duel, const char* name);
-void LogHandler(void* payload, const char* str, int t);
-void DataReaderDone(void* payload, OCG_CardData* data);
-
-// Other functions
-int LoadSO(const char* soPath);
-int MainLoop(const char* shmName);
-
-int main(int argc, char* argv[])
+// Methods
+[[nodiscard]] Ignis::Hornet::LockType NotifyAndWait(Ignis::Hornet::Action act)
 {
-	if(argc < 3)
-		return 1;
-	// Setup spdlog
-	{
-		std::string logName(argv[2]);
-		logName += ".log";
-		using namespace spdlog;
-		auto logger = basic_logger_st("file_logger", logName.data());
-		logger->flush_on(level::info);
-		set_default_logger(std::move(logger));
-		{
-			std::string args(argv[0]);
-			for(int i = 1; i < argc; i++)
-				args.append(" ").append(argv[i]);
-			spdlog::info("launched with args: {}", args);
-		}
-	}
-	if(int r = LoadSO(argv[1]); r != 0)
-	{
-		spdlog::shutdown();
-		return r;
-	}
-	spdlog::info("Shared object loaded");
-	int exitFlag = MainLoop(argv[2]);
-	DLOpen::UnloadObject(handle);
-	spdlog::shutdown();
-	return exitFlag;
+	Ignis::Hornet::LockType lock(hss->mtx);
+	hss->act = act;
+	hss->cv.notify_one();
+	hss->cv.wait(lock, [&](){return hss->act != act;});
+	return lock;
 }
 
 void DataReader(void* payload, uint32_t code, OCG_CardData* data)
 {
+	spdlog::info("DataReader: {}", code);
 	auto* wptr = hss->bytes.data();
 	Write<void*>(wptr, payload);
 	Write<uint32_t>(wptr, code);
-	LockType lock(hss->mtx);
-	hss->act = Ignis::Hornet::Action::CB_DATA_READER;
-	hss->cv.notify_one();
-	hss->cv.wait(lock, [&](){return hss->act != Ignis::Hornet::Action::CB_DATA_READER;});
+	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_DATA_READER);
 	std::memcpy(data, hss->bytes.data(), sizeof(OCG_CardData));
 	data->setcodes = reinterpret_cast<uint16_t*>(hss->bytes.data() + sizeof(OCG_CardData));
 }
 
 int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 {
+	spdlog::info("ScriptReader: {}", name);
 	auto* wptr = hss->bytes.data();
 	Write<void*>(wptr, payload);
 	std::memcpy(wptr, name, std::strlen(name));
-	LockType lock(hss->mtx);
-	hss->act = Ignis::Hornet::Action::CB_SCRIPT_READER;
-	hss->cv.notify_one();
-	hss->cv.wait(lock, [&](){return hss->act != Ignis::Hornet::Action::CB_SCRIPT_READER;});
+	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_SCRIPT_READER);
 	const auto* rptr = hss->bytes.data();
 	const auto size = Read<std::size_t>(rptr);
 	if(size == 0U)
@@ -95,21 +58,17 @@ int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 
 void LogHandler(void* payload, const char* str, int t)
 {
+	spdlog::info("LogHandler: [{}] {}", t, str);
 	auto* wptr = hss->bytes.data();
 	Write<void*>(wptr, payload);
-	if(payload != nullptr)
-	{
-		Write<int>(wptr, t);
-		std::memcpy(wptr, str, std::strlen(str));
-	}
-	LockType lock(hss->mtx);
-	hss->act = Ignis::Hornet::Action::CB_LOG_HANDLER;
-	hss->cv.notify_one();
-	hss->cv.wait(lock, [&](){return hss->act != Ignis::Hornet::Action::CB_LOG_HANDLER;});
+	Write<int>(wptr, t);
+	std::memcpy(wptr, str, std::strlen(str)+1U);
+	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_LOG_HANDLER);
 }
 
 void DataReaderDone(void* payload, OCG_CardData* data)
 {
+	spdlog::info("DataReaderDone: {}", data->code);
 	// TODO
 }
 
@@ -171,7 +130,9 @@ int MainLoop(const char* shmName)
 				opts.logHandler = &LogHandler;
 				opts.cardReaderDone = &DataReaderDone;
 				OCG_Duel duel;
+				lock.unlock();
 				int r = OCG_CreateDuel(&duel, opts);
+				lock.lock();
 				auto* wptr = hss->bytes.data();
 				Write<int>(wptr, r);
 				Write<OCG_Duel>(wptr, duel);
@@ -303,4 +264,35 @@ int MainLoop(const char* shmName)
 		return 1;
 	}
 	return 0;
+}
+
+int main(int argc, char* argv[])
+{
+	if(argc < 3)
+		return 1;
+	// Setup spdlog
+	{
+		std::string logName(argv[2]);
+		logName += ".log";
+		using namespace spdlog;
+		auto logger = basic_logger_st("file_logger", logName.data());
+		logger->flush_on(level::info);
+		set_default_logger(std::move(logger));
+		{
+			std::string args(argv[0]);
+			for(int i = 1; i < argc; i++)
+				args.append(" ").append(argv[i]);
+			spdlog::info("launched with args: {}", args);
+		}
+	}
+	if(int r = LoadSO(argv[1]); r != 0)
+	{
+		spdlog::shutdown();
+		return r;
+	}
+	spdlog::info("Shared object loaded");
+	int exitFlag = MainLoop(argv[2]);
+	DLOpen::UnloadObject(handle);
+	spdlog::shutdown();
+	return exitFlag;
 }
