@@ -63,9 +63,11 @@ void DataReader(void* payload, uint32_t code, OCG_CardData* data)
 int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 {
 	spdlog::info("ScriptReader: {}", name);
+	const std::size_t nameSz = std::strlen(name) + 1U;
 	auto* wptr = hss->bytes.data();
 	Write<void*>(wptr, payload);
-	std::memcpy(wptr, name, std::strlen(name));
+	Write<std::size_t>(wptr, nameSz);
+	std::memcpy(wptr, name, nameSz);
 	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_SCRIPT_READER);
 	const auto* rptr = hss->bytes.data();
 	const auto size = Read<std::size_t>(rptr);
@@ -77,10 +79,12 @@ int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 void LogHandler(void* payload, const char* str, int t)
 {
 	spdlog::info("LogHandler: [{}] {}", t, str);
+	const std::size_t strSz = std::strlen(str) + 1U;
 	auto* wptr = hss->bytes.data();
 	Write<void*>(wptr, payload);
 	Write<int>(wptr, t);
-	std::memcpy(wptr, str, std::strlen(str)+1U);
+	Write<std::size_t>(wptr, strSz);
+	std::memcpy(wptr, str, strSz);
 	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_LOG_HANDLER);
 }
 

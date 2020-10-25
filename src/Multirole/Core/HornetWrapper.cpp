@@ -232,8 +232,9 @@ Hornet::LockType HornetWrapper::NotifyAndWait(Hornet::Action act)
 		{
 			const auto* rptr = hss->bytes.data();
 			auto* supplier = static_cast<IScriptSupplier*>(Read<void*>(rptr));
-			const auto* name = reinterpret_cast<const char*>(rptr);
-			std::string script = supplier->ScriptFromFilePath(name);
+			const auto nameSz = Read<std::size_t>(rptr);
+			const std::string_view nameSv(reinterpret_cast<const char*>(rptr), nameSz);
+			std::string script = supplier->ScriptFromFilePath(nameSv);
 			auto* wptr = hss->bytes.data();
 			Write<std::size_t>(wptr, script.size());
 			if(!script.empty())
@@ -246,9 +247,11 @@ Hornet::LockType HornetWrapper::NotifyAndWait(Hornet::Action act)
 			const auto* rptr = hss->bytes.data();
 			auto* logger = static_cast<ILogger*>(Read<void*>(rptr));
 			const auto type = ILogger::LogType{Read<int>(rptr)};
-			spdlog::error(reinterpret_cast<const char*>(rptr));
+			const auto strSz = Read<std::size_t>(rptr);
+			const std::string_view strSv(reinterpret_cast<const char*>(rptr), strSz);
+			spdlog::error(strSv);
 			if(logger != nullptr)
-				logger->Log(type, reinterpret_cast<const char*>(rptr));
+				logger->Log(type, strSv);
 			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}
