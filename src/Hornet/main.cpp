@@ -11,7 +11,6 @@
 #include "../Read.inl"
 #include "../Write.inl"
 
-// Interprocess variables
 Ignis::Hornet::SharedSegment* hss;
 
 // Shared object variables
@@ -135,6 +134,11 @@ int MainLoop(const char* shmName)
 			switch(hss->act)
 			{
 #define CASE(value) case value: spdlog::info("Performing " #value);
+			CASE(Action::EXIT)
+			{
+				quit = true;
+				break;
+			}
 			CASE(Action::OCG_GET_VERSION)
 			{
 				int major, minor;
@@ -266,7 +270,12 @@ int MainLoop(const char* shmName)
 				break;
 			}
 #undef CASE
-			default: // TODO: remove, every case should be handled.
+			case Action::NO_WORK:
+			case Action::CB_DATA_READER
+			case Action::CB_SCRIPT_READER:
+			case Action::CB_LOG_HANDLER:
+			case Action::CB_DATA_READER_DONE:
+			case Action::CB_DONE:
 				break;
 			}
 			hss->act = Action::NO_WORK;

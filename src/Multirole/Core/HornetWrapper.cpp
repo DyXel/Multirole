@@ -42,12 +42,17 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 	void* addr = region.get_address();
 	hss = new (addr) Hornet::SharedSegment();
 	Process::Launch("./hornet", absFilePath.data(), shmName.data());
+	// TODO: check if hornet is alive and ready
 	spdlog::info("Hornet launched!");
 }
 
 HornetWrapper::~HornetWrapper()
 {
-	// TODO: signal closure and wait for hornet to send goodbye message
+	{
+		auto lock = NotifyAndWait(Hornet::action::EXIT);
+	} // NOTE: needed to make sure lock doesnt exist when segment dtor is called
+	// TODO: wait for hornet to quit
+	hss->~SharedSegment();
 	ipc::shared_memory_object::remove(shmName.data());
 }
 
@@ -179,9 +184,9 @@ IWrapper::Buffer HornetWrapper::Query(Duel duel, const QueryInfo& info)
 
 IWrapper::Buffer HornetWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 {
-	auto* ptr1 = hss->bytes.data();
-	Write<OCG_Duel>(ptr1, duel);
-	Write<OCG_QueryInfo>(ptr1, info);
+	auto* wptr = hss->bytes.data();
+	Write<OCG_Duel>(wptr, duel);
+	Write<OCG_QueryInfo>(wptr, info);
 	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_QUERY_LOCATION);
 	const auto* rptr = hss->bytes.data();
 	const auto size = static_cast<std::size_t>(Read<uint32_t>(rptr));
@@ -192,8 +197,8 @@ IWrapper::Buffer HornetWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 
 IWrapper::Buffer HornetWrapper::QueryField(Duel duel)
 {
-	auto* ptr1 = hss->bytes.data();
-	Write<OCG_Duel>(ptr1, duel);
+	auto* wptr = hss->bytes.data();
+	Write<OCG_Duel>(wptr, duel);
 	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_QUERY_FIELD);
 	const auto* rptr = hss->bytes.data();
 	auto size = static_cast<std::size_t>(Read<uint32_t>(rptr));
@@ -220,11 +225,11 @@ Hornet::LockType HornetWrapper::NotifyAndWait(Hornet::Action act)
 			const OCG_CardData data = supplier->DataFromCode(Read<uint32_t>(rptr));
 			auto* wptr = hss->bytes.data();
 			Write<OCG_CardData>(wptr, data);
-			uint16_t* ptr3 = data.setcodes;
+			uint16_t* wptr2 = data.setcodes;
 			do
 			{
-				Write<uint16_t>(wptr, *ptr3++);
-			}while(*ptr3 != 0U);
+				Write<uint16_t>(wptr, *wptr2++);
+			}while(*wptr2 != 0U);
 			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}

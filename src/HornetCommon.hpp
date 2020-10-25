@@ -14,65 +14,28 @@ using LockType = ipc::scoped_lock<ipc::interprocess_mutex>;
 
 enum class Action : uint8_t
 {
-	// Triggerable callbacks: doesn't apply
-	NO_WORK = 0U,
-
-	// Triggerable callbacks: doesn't apply
-	EXIT,
-
-	// Triggerable callbacks: none
-	OCG_GET_VERSION,
-
-	// Triggerable callbacks: LoadScript
-	OCG_CREATE_DUEL,
-
-	// Triggerable callbacks: none
-	OCG_DESTROY_DUEL,
-
-	// Triggerable callbacks: ?
-	OCG_DUEL_NEW_CARD,
-
-	// Triggerable callbacks: none
-	OCG_START_DUEL,
-
-	// Triggerable callbacks: ?
-	OCG_DUEL_PROCESS,
-
-	// Triggerable callbacks: none
-	OCG_DUEL_GET_MESSAGE,
-
-	// Triggerable callbacks: none
-	OCG_DUEL_SET_RESPONSE,
-
-	// Triggerable callbacks: ?
-	OCG_LOAD_SCRIPT,
-
-	// Triggerable callbacks: none
-	OCG_DUEL_QUERY_COUNT,
-
-	// Triggerable callbacks: none
-	OCG_DUEL_QUERY,
-
-	// Triggerable callbacks: none
-	OCG_DUEL_QUERY_LOCATION,
-
-	// Triggerable callbacks: none
-	OCG_DUEL_QUERY_FIELD,
-
-	// Triggerable callbacks: doesn't apply
-	CB_DATA_READER,
-
-	// Triggerable callbacks: doesn't apply
-	CB_SCRIPT_READER,
-
-	// Triggerable callbacks: doesn't apply
-	CB_LOG_HANDLER,
-
-	// Triggerable callbacks: doesn't apply
-	CB_DATA_READER_DONE,
-
-	// Triggerable callbacks: doesn't apply
-	CB_DONE,
+	// Any function that calls ScriptReader can potentially call LogHandler.
+	// ScriptReader can recurse onto itself to load nested scripts.
+	NO_WORK = 0U, // Callbacks: doesn't apply
+	EXIT, // Callbacks: doesn't apply
+	OCG_GET_VERSION, // Callbacks: none
+	OCG_CREATE_DUEL, // Callbacks: ScriptReader
+	OCG_DESTROY_DUEL, // Callbacks: none
+	OCG_DUEL_NEW_CARD, // Callbacks: DataReader, DataReaderDone, ScriptReader
+	OCG_START_DUEL, // Callbacks: none
+	OCG_DUEL_PROCESS, // Callbacks: DataReader, DataReaderDone, ScriptReader
+	OCG_DUEL_GET_MESSAGE, // Callbacks: none
+	OCG_DUEL_SET_RESPONSE, // Callbacks: none
+	OCG_LOAD_SCRIPT, // Callbacks: ScriptReader
+	OCG_DUEL_QUERY_COUNT, // Callbacks: none
+	OCG_DUEL_QUERY, // Callbacks: none
+	OCG_DUEL_QUERY_LOCATION, // Callbacks: none
+	OCG_DUEL_QUERY_FIELD, // Callbacks: none
+	CB_DATA_READER, // Callbacks: doesn't apply
+	CB_SCRIPT_READER, // Callbacks: doesn't apply
+	CB_LOG_HANDLER, // Callbacks: doesn't apply
+	CB_DATA_READER_DONE, // Callbacks: doesn't apply
+	CB_DONE, // Callbacks: doesn't apply
 };
 
 struct SharedSegment
