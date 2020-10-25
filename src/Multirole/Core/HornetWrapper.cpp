@@ -49,7 +49,7 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 HornetWrapper::~HornetWrapper()
 {
 	{
-		auto lock = NotifyAndWait(Hornet::action::EXIT);
+		auto lock = NotifyAndWait(Hornet::Action::EXIT);
 	} // NOTE: needed to make sure lock doesnt exist when segment dtor is called
 	// TODO: wait for hornet to quit
 	hss->~SharedSegment();

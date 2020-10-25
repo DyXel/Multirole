@@ -118,176 +118,164 @@ int LoadSO(const char* soPath)
 	return 0;
 }
 
-int MainLoop(const char* shmName)
+int MainLoop()
 {
 	using namespace Ignis::Hornet;
-	try
+	bool quit = false;
+	do
 	{
-		ipc::shared_memory_object shm(ipc::open_only, shmName, ipc::read_write);
-		ipc::mapped_region r(shm, ipc::read_write);
-		hss = static_cast<SharedSegment*>(r.get_address());
-		bool quit = false;
-		do
+		LockType lock(hss->mtx);
+		hss->cv.wait(lock, [&](){return hss->act != Action::NO_WORK;});
+		switch(hss->act)
 		{
-			LockType lock(hss->mtx);
-			hss->cv.wait(lock, [&](){return hss->act != Action::NO_WORK;});
-			switch(hss->act)
-			{
 #define CASE(value) case value: spdlog::info("Performing " #value);
-			CASE(Action::EXIT)
-			{
-				quit = true;
-				break;
-			}
-			CASE(Action::OCG_GET_VERSION)
-			{
-				int major, minor;
-				OCG_GetVersion(&major, &minor);
-				auto* wptr = hss->bytes.data();
-				Write<int>(wptr, major);
-				Write<int>(wptr, minor);
-				break;
-			}
-			CASE(Action::OCG_CREATE_DUEL)
-			{
-				const auto* rptr = hss->bytes.data();
-				auto opts = Read<OCG_DuelOptions>(rptr);
-				opts.cardReader = &DataReader;
-				opts.scriptReader = &ScriptReader;
-				opts.logHandler = &LogHandler;
-				opts.cardReaderDone = &DataReaderDone;
-				OCG_Duel duel;
-				int r = PadlockInvoke(lock, OCG_CreateDuel, &duel, opts);
-				auto* wptr = hss->bytes.data();
-				Write<int>(wptr, r);
-				Write<OCG_Duel>(wptr, duel);
-				break;
-			}
-			CASE(Action::OCG_DESTROY_DUEL)
-			{
-				const auto* rptr = hss->bytes.data();
-				OCG_DestroyDuel(Read<OCG_Duel>(rptr));
-				break;
-			}
-			CASE(Action::OCG_DUEL_NEW_CARD)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				PadlockInvoke(lock, OCG_DuelNewCard, duel, Read<OCG_NewCardInfo>(rptr));
-				break;
-			}
-			CASE(Action::OCG_START_DUEL)
-			{
-				const auto* rptr = hss->bytes.data();
-				OCG_StartDuel(Read<OCG_Duel>(rptr));
-				break;
-			}
-			CASE(Action::OCG_DUEL_PROCESS)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				int r = PadlockInvoke(lock, OCG_DuelProcess, duel);
-				auto* wptr = hss->bytes.data();
-				Write<int>(wptr, r);
-				break;
-			}
-			CASE(Action::OCG_DUEL_GET_MESSAGE)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				uint32_t msgLength = 0U;
-				auto* msgPtr = OCG_DuelGetMessage(duel, &msgLength);
-				auto* wptr = hss->bytes.data();
-				Write<uint32_t>(wptr, msgLength);
-				std::memcpy(wptr, msgPtr, static_cast<std::size_t>(msgLength));
-				break;
-			}
-			CASE(Action::OCG_DUEL_SET_RESPONSE)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				const auto length = Read<std::size_t>(rptr);
-				OCG_DuelSetResponse(duel, rptr, length);
-				break;
-			}
-			CASE(Action::OCG_LOAD_SCRIPT)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				const auto nameSize = Read<std::size_t>(rptr);
-				const auto* name = reinterpret_cast<const char*>(rptr);
-				rptr += nameSize;
-				const auto strSize = Read<std::size_t>(rptr);
-				const auto* str = reinterpret_cast<const char*>(rptr);
-				int r = PadlockInvoke(lock, OCG_LoadScript, duel, str, strSize, name);
-				auto* wptr = hss->bytes.data();
-				Write<int>(wptr, r);
-				break;
-			}
-			CASE(Action::OCG_DUEL_QUERY_COUNT)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				const auto team = Read<uint8_t>(rptr);
-				const auto loc = Read<uint32_t>(rptr);
-				auto* wptr = hss->bytes.data();
-				Write<uint32_t>(wptr, OCG_DuelQueryCount(duel, team, loc));
-				break;
-			}
-			CASE(Action::OCG_DUEL_QUERY)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				const auto info = Read<OCG_QueryInfo>(rptr);
-				uint32_t qLength = 0U;
-				auto* qPtr = OCG_DuelQuery(duel, &qLength, info);
-				auto* wptr = hss->bytes.data();
-				Write<uint32_t>(wptr, qLength);
-				std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
-				break;
-			}
-			CASE(Action::OCG_DUEL_QUERY_LOCATION)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				const auto info = Read<OCG_QueryInfo>(rptr);
-				uint32_t qLength = 0U;
-				auto* qPtr = OCG_DuelQueryLocation(duel, &qLength, info);
-				auto* wptr = hss->bytes.data();
-				Write<uint32_t>(wptr, qLength);
-				std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
-				break;
-			}
-			CASE(Action::OCG_DUEL_QUERY_FIELD)
-			{
-				const auto* rptr = hss->bytes.data();
-				const auto duel = Read<OCG_Duel>(rptr);
-				uint32_t qLength = 0U;
-				auto* qPtr = OCG_DuelQueryField(duel, &qLength);
-				auto* wptr = hss->bytes.data();
-				Write<uint32_t>(wptr, qLength);
-				std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
-				break;
-			}
+		CASE(Action::EXIT)
+		{
+			quit = true;
+			break;
+		}
+		CASE(Action::OCG_GET_VERSION)
+		{
+			int major, minor;
+			OCG_GetVersion(&major, &minor);
+			auto* wptr = hss->bytes.data();
+			Write<int>(wptr, major);
+			Write<int>(wptr, minor);
+			break;
+		}
+		CASE(Action::OCG_CREATE_DUEL)
+		{
+			const auto* rptr = hss->bytes.data();
+			auto opts = Read<OCG_DuelOptions>(rptr);
+			opts.cardReader = &DataReader;
+			opts.scriptReader = &ScriptReader;
+			opts.logHandler = &LogHandler;
+			opts.cardReaderDone = &DataReaderDone;
+			OCG_Duel duel;
+			int r = PadlockInvoke(lock, OCG_CreateDuel, &duel, opts);
+			auto* wptr = hss->bytes.data();
+			Write<int>(wptr, r);
+			Write<OCG_Duel>(wptr, duel);
+			break;
+		}
+		CASE(Action::OCG_DESTROY_DUEL)
+		{
+			const auto* rptr = hss->bytes.data();
+			OCG_DestroyDuel(Read<OCG_Duel>(rptr));
+			break;
+		}
+		CASE(Action::OCG_DUEL_NEW_CARD)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			PadlockInvoke(lock, OCG_DuelNewCard, duel, Read<OCG_NewCardInfo>(rptr));
+			break;
+		}
+		CASE(Action::OCG_START_DUEL)
+		{
+			const auto* rptr = hss->bytes.data();
+			OCG_StartDuel(Read<OCG_Duel>(rptr));
+			break;
+		}
+		CASE(Action::OCG_DUEL_PROCESS)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			int r = PadlockInvoke(lock, OCG_DuelProcess, duel);
+			auto* wptr = hss->bytes.data();
+			Write<int>(wptr, r);
+			break;
+		}
+		CASE(Action::OCG_DUEL_GET_MESSAGE)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			uint32_t msgLength = 0U;
+			auto* msgPtr = OCG_DuelGetMessage(duel, &msgLength);
+			auto* wptr = hss->bytes.data();
+			Write<uint32_t>(wptr, msgLength);
+			std::memcpy(wptr, msgPtr, static_cast<std::size_t>(msgLength));
+			break;
+		}
+		CASE(Action::OCG_DUEL_SET_RESPONSE)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			const auto length = Read<std::size_t>(rptr);
+			OCG_DuelSetResponse(duel, rptr, length);
+			break;
+		}
+		CASE(Action::OCG_LOAD_SCRIPT)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			const auto nameSize = Read<std::size_t>(rptr);
+			const auto* name = reinterpret_cast<const char*>(rptr);
+			rptr += nameSize;
+			const auto strSize = Read<std::size_t>(rptr);
+			const auto* str = reinterpret_cast<const char*>(rptr);
+			int r = PadlockInvoke(lock, OCG_LoadScript, duel, str, strSize, name);
+			auto* wptr = hss->bytes.data();
+			Write<int>(wptr, r);
+			break;
+		}
+		CASE(Action::OCG_DUEL_QUERY_COUNT)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			const auto team = Read<uint8_t>(rptr);
+			const auto loc = Read<uint32_t>(rptr);
+			auto* wptr = hss->bytes.data();
+			Write<uint32_t>(wptr, OCG_DuelQueryCount(duel, team, loc));
+			break;
+		}
+		CASE(Action::OCG_DUEL_QUERY)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			const auto info = Read<OCG_QueryInfo>(rptr);
+			uint32_t qLength = 0U;
+			auto* qPtr = OCG_DuelQuery(duel, &qLength, info);
+			auto* wptr = hss->bytes.data();
+			Write<uint32_t>(wptr, qLength);
+			std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
+			break;
+		}
+		CASE(Action::OCG_DUEL_QUERY_LOCATION)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			const auto info = Read<OCG_QueryInfo>(rptr);
+			uint32_t qLength = 0U;
+			auto* qPtr = OCG_DuelQueryLocation(duel, &qLength, info);
+			auto* wptr = hss->bytes.data();
+			Write<uint32_t>(wptr, qLength);
+			std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
+			break;
+		}
+		CASE(Action::OCG_DUEL_QUERY_FIELD)
+		{
+			const auto* rptr = hss->bytes.data();
+			const auto duel = Read<OCG_Duel>(rptr);
+			uint32_t qLength = 0U;
+			auto* qPtr = OCG_DuelQueryField(duel, &qLength);
+			auto* wptr = hss->bytes.data();
+			Write<uint32_t>(wptr, qLength);
+			std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
+			break;
+		}
 #undef CASE
-			case Action::NO_WORK:
-			case Action::CB_DATA_READER
-			case Action::CB_SCRIPT_READER:
-			case Action::CB_LOG_HANDLER:
-			case Action::CB_DATA_READER_DONE:
-			case Action::CB_DONE:
-				break;
-			}
-			hss->act = Action::NO_WORK;
-			hss->cv.notify_one();
-		}while(!quit);
-	}
-	catch(const ipc::interprocess_exception& e)
-	{
-		spdlog::critical(e.what());
-		return 1;
-	}
-	return 0;
+		case Action::NO_WORK:
+		case Action::CB_DATA_READER:
+		case Action::CB_SCRIPT_READER:
+		case Action::CB_LOG_HANDLER:
+		case Action::CB_DATA_READER_DONE:
+		case Action::CB_DONE:
+			break;
+		}
+		hss->act = Action::NO_WORK;
+		hss->cv.notify_one();
+	}while(!quit);
 }
 
 int main(int argc, char* argv[])
@@ -315,7 +303,19 @@ int main(int argc, char* argv[])
 		return r;
 	}
 	spdlog::info("Shared object loaded");
-	int exitFlag = MainLoop(argv[2]);
+	int exitFlag = 0;
+	try
+	{
+		ipc::shared_memory_object shm(ipc::open_only, argv[2], ipc::read_write);
+		ipc::mapped_region r(shm, ipc::read_write);
+		hss = static_cast<Ignis::Hornet::SharedSegment*>(r.get_address());
+		MainLoop();
+	}
+	catch(const ipc::interprocess_exception& e)
+	{
+		spdlog::critical(e.what());
+		exitFlag = 1;
+	}
 	DLOpen::UnloadObject(handle);
 	spdlog::shutdown();
 	return exitFlag;

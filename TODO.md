@@ -1,7 +1,7 @@
 # TODO
 
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
-  * Simple "stream-less" implementation as proof-of-concept
+  * Simple "stream-less" implementation as proof-of-concept [DONE]
   * Do parameter streaming for big enough strings
   * Design exceptions
   * Detect if the process is dead before attempting to do IPC
