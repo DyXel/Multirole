@@ -53,7 +53,7 @@ HornetWrapper::~HornetWrapper()
 
 std::pair<int, int> HornetWrapper::Version()
 {
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_GET_VERSION);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_GET_VERSION);
 	const auto* rptr = hss->bytes.data();
 	return
 	{
@@ -80,7 +80,7 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 		nullptr, // NOTE: Set on Hornet
 		&opts.dataSupplier
 	});
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_CREATE_DUEL);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_CREATE_DUEL);
 	const auto* rptr = hss->bytes.data();
 	if(Read<int>(rptr) != OCG_DUEL_CREATION_SUCCESS)
 		return nullptr; // TODO: throw?
@@ -91,7 +91,7 @@ void HornetWrapper::DestroyDuel(Duel duel)
 {
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_DESTROY_DUEL);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DESTROY_DUEL);
 }
 
 void HornetWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
@@ -99,21 +99,21 @@ void HornetWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<OCG_NewCardInfo>(wptr, info);
-	auto lock = CallbackMechanism(Hornet::Action::OCG_DESTROY_DUEL);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_NEW_CARD);
 }
 
 void HornetWrapper::Start(Duel duel)
 {
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_START_DUEL);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_START_DUEL);
 }
 
 IWrapper::DuelStatus HornetWrapper::Process(Duel duel)
 {
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
-	auto lock = CallbackMechanism(Hornet::Action::OCG_DUEL_PROCESS);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_PROCESS);
 	const auto* rptr = hss->bytes.data();
 	return DuelStatus{Read<int>(rptr)};
 }
@@ -122,7 +122,7 @@ IWrapper::Buffer HornetWrapper::GetMessages(Duel duel)
 {
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_DUEL_GET_MESSAGE);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_GET_MESSAGE);
 	const auto* rptr = hss->bytes.data();
 	const auto size = static_cast<std::size_t>(Read<uint32_t>(rptr));
 	Buffer buffer(size);
@@ -136,7 +136,7 @@ void HornetWrapper::SetResponse(Duel duel, const Buffer& buffer)
 	Write<OCG_Duel>(wptr, duel);
 	Write<std::size_t>(wptr, buffer.size());
 	std::memcpy(wptr, buffer.data(), buffer.size());
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_DUEL_SET_RESPONSE);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_SET_RESPONSE);
 }
 
 int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view str)
@@ -148,7 +148,7 @@ int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view
 	wptr += name.size();
 	Write<std::size_t>(wptr, str.size());
 	std::memcpy(wptr, str.data(), str.size());
-	auto lock = CallbackMechanism(Hornet::Action::OCG_LOAD_SCRIPT);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_LOAD_SCRIPT);
 	const auto* rptr = hss->bytes.data();
 	return Read<int>(rptr);
 }
@@ -159,7 +159,7 @@ std::size_t HornetWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
 	Write<OCG_Duel>(wptr, duel);
 	Write<uint8_t>(wptr, team);
 	Write<uint32_t>(wptr, loc);
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_DUEL_QUERY_COUNT);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_QUERY_COUNT);
 	const auto* rptr = hss->bytes.data();
 	return static_cast<std::size_t>(Read<uint32_t>(rptr));
 }
@@ -169,7 +169,7 @@ IWrapper::Buffer HornetWrapper::Query(Duel duel, const QueryInfo& info)
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<OCG_QueryInfo>(wptr, info);
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_DUEL_QUERY);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_QUERY);
 	const auto* rptr = hss->bytes.data();
 	const auto size = static_cast<std::size_t>(Read<uint32_t>(rptr));
 	Buffer buffer(size);
@@ -182,7 +182,7 @@ IWrapper::Buffer HornetWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 	auto* ptr1 = hss->bytes.data();
 	Write<OCG_Duel>(ptr1, duel);
 	Write<OCG_QueryInfo>(ptr1, info);
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_DUEL_QUERY_LOCATION);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_QUERY_LOCATION);
 	const auto* rptr = hss->bytes.data();
 	const auto size = static_cast<std::size_t>(Read<uint32_t>(rptr));
 	Buffer buffer(size);
@@ -194,7 +194,7 @@ IWrapper::Buffer HornetWrapper::QueryField(Duel duel)
 {
 	auto* ptr1 = hss->bytes.data();
 	Write<OCG_Duel>(ptr1, duel);
-	auto lock = NotifyAndWaitCompletion(Hornet::Action::OCG_DUEL_QUERY_FIELD);
+	auto lock = NotifyAndWait(Hornet::Action::OCG_DUEL_QUERY_FIELD);
 	const auto* rptr = hss->bytes.data();
 	auto size = static_cast<std::size_t>(Read<uint32_t>(rptr));
 	Buffer buffer(size);
@@ -202,18 +202,10 @@ IWrapper::Buffer HornetWrapper::QueryField(Duel duel)
 	return buffer;
 }
 
-HornetWrapper::LockType HornetWrapper::NotifyAndWaitCompletion(Hornet::Action act)
+Hornet::LockType HornetWrapper::NotifyAndWait(Hornet::Action act)
 {
+	Hornet::LockType lock(hss->mtx);
 	hss->act = act;
-	LockType lock(hss->mtx);
-	hss->cv.notify_one();
-	hss->cv.wait(lock, [&](){return hss->act == Hornet::Action::NO_WORK;});
-	return lock;
-}
-
-HornetWrapper::LockType HornetWrapper::CallbackMechanism(Hornet::Action act)
-{
-	LockType lock(hss->mtx);
 	hss->cv.notify_one();
 	hss->cv.wait(lock, [&](){return hss->act != act;});
 	if(hss->act == Hornet::Action::NO_WORK)
@@ -233,7 +225,7 @@ HornetWrapper::LockType HornetWrapper::CallbackMechanism(Hornet::Action act)
 			{
 				Write<uint16_t>(wptr, *ptr3++);
 			}while(*ptr3 != 0U);
-			auto lock2 = CallbackMechanism(Hornet::Action::CB_DONE);
+			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}
 		case Hornet::Action::CB_SCRIPT_READER:
@@ -246,7 +238,7 @@ HornetWrapper::LockType HornetWrapper::CallbackMechanism(Hornet::Action act)
 			Write<std::size_t>(wptr, script.size());
 			if(!script.empty())
 				std::memcpy(wptr, script.data(), script.size());
-			auto lock2 = CallbackMechanism(Hornet::Action::CB_DONE);
+			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}
 		case Hornet::Action::CB_LOG_HANDLER:
@@ -254,13 +246,16 @@ HornetWrapper::LockType HornetWrapper::CallbackMechanism(Hornet::Action act)
 			const auto* rptr = hss->bytes.data();
 			auto* logger = static_cast<ILogger*>(Read<void*>(rptr));
 			const auto type = ILogger::LogType{Read<int>(rptr)};
-			logger->Log(type, reinterpret_cast<const char*>(rptr));
-			auto lock2 = CallbackMechanism(Hornet::Action::CB_DONE);
+			spdlog::error(reinterpret_cast<const char*>(rptr));
+			if(logger != nullptr)
+				logger->Log(type, reinterpret_cast<const char*>(rptr));
+			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}
 		case Hornet::Action::CB_DATA_READER_DONE:
 		{
 			// TODO
+			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}
 		default: // TODO: throw UB exception

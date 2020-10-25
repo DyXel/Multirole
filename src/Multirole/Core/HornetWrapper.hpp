@@ -40,16 +40,15 @@ public:
 	Buffer QueryLocation(Duel duel, const QueryInfo& info) override;
 	Buffer QueryField(Duel duel) override;
 private:
-	using LockType = boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>;
-
 	const std::string shmName;
 	boost::interprocess::shared_memory_object shm;
 	boost::interprocess::mapped_region region;
 	Hornet::SharedSegment* hss;
 
-	[[nodiscard]] LockType NotifyAndWaitCompletion(Hornet::Action act);
-
-	[[nodiscard]] LockType CallbackMechanism(Hornet::Action act);
+	[[nodiscard]]
+	boost::interprocess::scoped_lock
+	<boost::interprocess::interprocess_mutex>
+	NotifyAndWait(Hornet::Action act);
 };
 
 } // namespace Ignis::Multirole::Core

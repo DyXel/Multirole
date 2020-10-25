@@ -3,11 +3,14 @@
 #include <array>
 #include <boost/interprocess/sync/interprocess_condition.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 
 namespace ipc = boost::interprocess;
 
 namespace Ignis::Hornet
 {
+
+using LockType = ipc::scoped_lock<ipc::interprocess_mutex>;
 
 enum class Action : uint8_t
 {
@@ -20,7 +23,7 @@ enum class Action : uint8_t
 	// Triggerable callbacks: none
 	OCG_GET_VERSION,
 
-	// Triggerable callbacks: none
+	// Triggerable callbacks: LoadScript
 	OCG_CREATE_DUEL,
 
 	// Triggerable callbacks: none
@@ -77,7 +80,7 @@ struct SharedSegment
 	ipc::interprocess_mutex mtx;
 	ipc::interprocess_condition cv;
 	Action act{Action::NO_WORK};
-	std::array<uint8_t, std::numeric_limits<uint16_t>::max()> bytes;
+	std::array<uint8_t, std::numeric_limits<uint16_t>::max()> bytes{};
 };
 
 } // namespace Ignis::Hornet
