@@ -31,6 +31,24 @@ static void* handle{nullptr};
 	return lock;
 }
 
+// Used by functions that might recurse by calling callbacks
+template<typename Lock, typename F, typename... Args>
+inline decltype(auto) PadlockInvoke(Lock& lock, F&& f, Args&&... args)
+{
+	lock.unlock();
+	if constexpr(std::is_same_v<std::invoke_result_t<F, Args...>, void>)
+	{
+		f(std::forward<Args>(args)...);
+		lock.lock();
+	}
+	else
+	{
+		decltype(auto) r = f(std::forward<Args>(args)...);
+		lock.lock();
+		return r;
+	}
+}
+
 void DataReader(void* payload, uint32_t code, OCG_CardData* data)
 {
 	spdlog::info("DataReader: {}", code);
@@ -130,9 +148,7 @@ int MainLoop(const char* shmName)
 				opts.logHandler = &LogHandler;
 				opts.cardReaderDone = &DataReaderDone;
 				OCG_Duel duel;
-				lock.unlock();
-				int r = OCG_CreateDuel(&duel, opts);
-				lock.lock();
+				int r = PadlockInvoke(lock, OCG_CreateDuel, &duel, opts);
 				auto* wptr = hss->bytes.data();
 				Write<int>(wptr, r);
 				Write<OCG_Duel>(wptr, duel);
@@ -148,9 +164,7 @@ int MainLoop(const char* shmName)
 			{
 				const auto* rptr = hss->bytes.data();
 				const auto duel = Read<OCG_Duel>(rptr);
-				lock.unlock();
-				OCG_DuelNewCard(duel, Read<OCG_NewCardInfo>(rptr));
-				lock.lock();
+				PadlockInvoke(lock, OCG_DuelNewCard, duel, Read<OCG_NewCardInfo>(rptr));
 				break;
 			}
 			CASE(Action::OCG_START_DUEL)
@@ -163,9 +177,7 @@ int MainLoop(const char* shmName)
 			{
 				const auto* rptr = hss->bytes.data();
 				const auto duel = Read<OCG_Duel>(rptr);
-				lock.unlock();
-				int r = OCG_DuelProcess(duel);
-				lock.lock();
+				int r = PadlockInvoke(lock, OCG_DuelProcess, duel);
 				auto* wptr = hss->bytes.data();
 				Write<int>(wptr, r);
 				break;
@@ -198,9 +210,7 @@ int MainLoop(const char* shmName)
 				rptr += nameSize;
 				const auto strSize = Read<std::size_t>(rptr);
 				const auto* str = reinterpret_cast<const char*>(rptr);
-				lock.unlock();
-				int r = OCG_LoadScript(duel, str, strSize, name);
-				lock.lock();
+				int r = PadlockInvoke(lock, OCG_LoadScript, duel, str, strSize, name);
 				auto* wptr = hss->bytes.data();
 				Write<int>(wptr, r);
 				break;
