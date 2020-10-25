@@ -73,7 +73,8 @@ int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 	const auto size = Read<std::size_t>(rptr);
 	if(size == 0U)
 		return 0;
-	return OCG_LoadScript(duel, reinterpret_cast<const char*>(rptr), size, name);
+	const char* data = reinterpret_cast<const char*>(rptr);
+	return PadlockInvoke(lock, OCG_LoadScript, duel, data, size, name);
 }
 
 void LogHandler(void* payload, const char* str, int t)
