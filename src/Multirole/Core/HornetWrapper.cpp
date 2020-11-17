@@ -225,11 +225,9 @@ Hornet::LockType HornetWrapper::NotifyAndWait(Hornet::Action act)
 			const OCG_CardData data = supplier->DataFromCode(Read<uint32_t>(rptr));
 			auto* wptr = hss->bytes.data();
 			Write<OCG_CardData>(wptr, data);
-			uint16_t* wptr2 = data.setcodes;
-			do
-			{
-				Write<uint16_t>(wptr, *wptr2++);
-			}while(*wptr2 != 0U);
+			for(uint16_t* wptr2 = data.setcodes; *wptr2 != 0U; wptr2++)
+				Write<uint16_t>(wptr, *wptr2);
+			Write<uint16_t>(wptr, 0U);
 			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}
