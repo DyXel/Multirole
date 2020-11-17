@@ -44,7 +44,7 @@ struct SharedSegment
 	ipc::interprocess_mutex mtx;
 	ipc::interprocess_condition cv;
 	Action act{Action::NO_WORK};
-	std::array<uint8_t, std::numeric_limits<uint16_t>::max()> bytes{};
+	std::array<uint8_t, std::numeric_limits<uint16_t>::max()*2U> bytes{};
 };
 
 } // namespace Ignis::Hornet
