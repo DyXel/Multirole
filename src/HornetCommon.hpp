@@ -14,16 +14,17 @@ using LockType = ipc::scoped_lock<ipc::interprocess_mutex>;
 
 enum class Action : uint8_t
 {
+	// Any function that calls DataReader also calls DataReaderDone.
 	// Any function that calls ScriptReader can potentially call LogHandler.
-	// ScriptReader can recurse onto itself to load nested scripts.
+	// ScriptReader can recurse to load nested scripts.
 	NO_WORK = 0U, // Callbacks: doesn't apply
 	EXIT, // Callbacks: doesn't apply
 	OCG_GET_VERSION, // Callbacks: none
 	OCG_CREATE_DUEL, // Callbacks: ScriptReader
 	OCG_DESTROY_DUEL, // Callbacks: none
-	OCG_DUEL_NEW_CARD, // Callbacks: DataReader, DataReaderDone, ScriptReader
+	OCG_DUEL_NEW_CARD, // Callbacks: DataReader, ScriptReader
 	OCG_START_DUEL, // Callbacks: none
-	OCG_DUEL_PROCESS, // Callbacks: DataReader, DataReaderDone, ScriptReader
+	OCG_DUEL_PROCESS, // Callbacks: DataReader, ScriptReader
 	OCG_DUEL_GET_MESSAGE, // Callbacks: none
 	OCG_DUEL_SET_RESPONSE, // Callbacks: none
 	OCG_LOAD_SCRIPT, // Callbacks: ScriptReader
