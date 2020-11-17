@@ -2,8 +2,9 @@
 
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
   * Simple "stream-less" implementation as proof-of-concept [DONE]
-  * Do parameter streaming for big enough strings
-  * Design exceptions
+  * Do parameter streaming for big enough strings [SCRAPPED]
+  * Design exception [DONE]
+  * Handle exception on `State::Dueling` [DONE]
   * Detect if the process is dead before attempting to do IPC
   * Use a mutex to avoid multiple threads using a hornet at the same time
 * Handle crashes of core
