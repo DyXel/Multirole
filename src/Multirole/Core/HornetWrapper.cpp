@@ -1,7 +1,5 @@
 #include "HornetWrapper.hpp"
 
-#include <spdlog/spdlog.h> // TODO: remove
-
 #include "IDataSupplier.hpp"
 #include "IScriptSupplier.hpp"
 #include "ILogger.hpp"
@@ -43,7 +41,6 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 	hss = new (addr) Hornet::SharedSegment();
 	Process::Launch("./hornet", absFilePath.data(), shmName.data());
 	// TODO: check if hornet is alive and ready
-	spdlog::info("Hornet launched!");
 }
 
 HornetWrapper::~HornetWrapper()
@@ -252,7 +249,6 @@ Hornet::LockType HornetWrapper::NotifyAndWait(Hornet::Action act)
 			const auto type = ILogger::LogType{Read<int>(rptr)};
 			const auto strSz = Read<std::size_t>(rptr);
 			const std::string_view strSv(reinterpret_cast<const char*>(rptr), strSz);
-			spdlog::error(strSv);
 			if(logger != nullptr)
 				logger->Log(type, strSv);
 			auto lock2 = NotifyAndWait(Hornet::Action::CB_DONE);
