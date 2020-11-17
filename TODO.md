@@ -12,6 +12,7 @@
 * Fix names being swapped on replay
   * Only happens on tag mode, for the players who went second
 * Add IPC interface for discord bot
+  * Filter error messages based on SCOPE of cards used in the duel
 
 # Wishlist
 
@@ -27,16 +28,16 @@
 
 ## Needed changes to make a compatible server
 1. Use `protobuf` described objects instead of hand-made `STOC msgs`
-   * `banlist.proto`
-   * `deck.proto`
-   * etc...
+  * `banlist.proto`
+  * `deck.proto`
+  * etc...
 
 ## Medium changes
 1. Move `Ignis::Multirole::Core` to `YGOpen::Core`
-   * `DLWrapper.*` -> `dlwrapper.*`
-   * `IDataSupplier.hpp` -> `data_supplier.hpp`
-   * `IWrapper.hpp` -> `wrapper.hpp`
-   * `ILogger.hpp` -> `logger.hpp`
-   * `IScriptSupplier.hpp` -> `script_supplier.hpp`
+  * `DLWrapper.*` -> `dlwrapper.*`
+  * `IDataSupplier.hpp` -> `data_supplier.hpp`
+  * `IWrapper.hpp` -> `wrapper.hpp`
+  * `ILogger.hpp` -> `logger.hpp`
+  * `IScriptSupplier.hpp` -> `script_supplier.hpp`
 2. Move and rename `src/Multirole/CardDatabase.*` to `src/card_database.*`
-   * Use "enums/type.hpp" instead of `TYPE_LINK` constant in `card_database.cpp`
+  * Use "enums/type.hpp" instead of `TYPE_LINK` constant in `card_database.cpp`
