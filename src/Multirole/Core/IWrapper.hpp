@@ -2,6 +2,7 @@
 #define IWRAPPER_HPP
 #include <cstdint>
 #include <vector>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 
@@ -13,6 +14,13 @@ namespace Ignis::Multirole::Core
 class IDataSupplier;
 class IScriptSupplier;
 class ILogger;
+
+class Exception final : public std::runtime_error
+{
+public:
+	Exception(std::string_view whatArg) : std::runtime_error(whatArg.data())
+	{}
+};
 
 class IWrapper
 {

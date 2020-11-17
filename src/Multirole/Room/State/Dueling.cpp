@@ -1,5 +1,7 @@
 #include "../Context.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "../TimerAggregator.hpp"
 #include "../../CardDatabase.hpp"
 #include "../../ReplayManager.hpp"
@@ -7,8 +9,6 @@
 #include "../../Core/IWrapper.hpp"
 #include "../../YGOPro/Constants.hpp"
 #include "../../YGOPro/CoreUtils.hpp"
-
-#define CORE_EXCEPTION_HANDLER() catch(...) { throw; } // TODO
 
 namespace Ignis::Multirole::Room
 {
@@ -52,7 +52,11 @@ StateOpt Context::operator()(State::Dueling& s)
 		LoadScript("constant.lua");
 		LoadScript("utility.lua");
 	}
-	CORE_EXCEPTION_HANDLER()
+	catch(Core::Exception& e)
+	{
+		spdlog::error("Core exception at creation: {}", e.what());
+		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
+	}
 	// Enable extra rules for the duel.
 	// These are controlled simply by adding custom cards
 	// with the rulesets to the game as playable cards, they will
@@ -84,7 +88,11 @@ StateOpt Context::operator()(State::Dueling& s)
 			s.core->AddCard(s.duelPtr, nci);
 		}
 	}
-	CORE_EXCEPTION_HANDLER()
+	catch(Core::Exception& e)
+	{
+		spdlog::error("Core exception at extra cards addition: {}", e.what());
+		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
+	}
 	// Construct replay.
 	auto CurrentTime = []()
 	{
@@ -188,7 +196,11 @@ StateOpt Context::operator()(State::Dueling& s)
 		SendExtraDecks(0U);
 		SendExtraDecks(1U);
 	}
-	CORE_EXCEPTION_HANDLER()
+	catch(Core::Exception& e)
+	{
+		spdlog::error("Core exception at starting: {}", e.what());
+		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
+	}
 	// Start processing the duel.
 	if(const auto dfrOpt = Process(s); dfrOpt)
 		return Finish(s, *dfrOpt);
@@ -232,12 +244,16 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 		s.timeRemaining[team] = duration_cast<milliseconds>(delta);
 		tagg.Cancel(team);
 	}
+	s.replay->RecordResponse(e.data);
 	try
 	{
-		s.replay->RecordResponse(e.data);
 		s.core->SetResponse(s.duelPtr, e.data);
 	}
-	CORE_EXCEPTION_HANDLER()
+	catch(Core::Exception& e)
+	{
+		spdlog::error("Core exception at response setting: {}", e.what());
+		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
+	}
 	if(const auto dfrOpt = Process(s); dfrOpt)
 		return Finish(s, *dfrOpt);
 	return std::nullopt;
@@ -478,7 +494,11 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				break;
 		}
 	}
-	CORE_EXCEPTION_HANDLER()
+	catch(Core::Exception& e)
+	{
+		spdlog::error("Core exception at processing: {}", e.what());
+		return DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U};
+	}
 	return std::nullopt;
 }
 
@@ -494,7 +514,10 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		{
 			s.core->DestroyDuel(s.duelPtr);
 		}
-		catch(...){}
+		catch(Core::Exception& e)
+		{
+			spdlog::info("Core exception at destruction: {}", e.what());
+		}
 	}
 	tagg.Cancel(0U);
 	tagg.Cancel(1U);
@@ -520,7 +543,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 			SendToAll(MakeSendReplay(s.replay->Bytes()));
 		SendToAll(MakeOpenReplayPrompt());
 	};
-	auto turnDecider = [&]() -> Client*
+	auto* turnDecider = [&]() -> Client*
 	{
 		if(dfr.winner <= 1U)
 			return duelists[{1U - dfr.winner, 0U}];
