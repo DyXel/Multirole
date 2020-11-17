@@ -137,6 +137,10 @@ void MainLoop()
 			quit = true;
 			break;
 		}
+		CASE(Action::HEARTBEAT)
+		{
+			break;
+		}
 		CASE(Action::OCG_GET_VERSION)
 		{
 			int major, minor;

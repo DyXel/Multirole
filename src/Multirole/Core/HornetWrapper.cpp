@@ -40,7 +40,7 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 	void* addr = region.get_address();
 	hss = new (addr) Hornet::SharedSegment();
 	Process::Launch("./hornet", absFilePath.data(), shmName.data());
-	// TODO: check if hornet is alive and ready
+	auto lock = NotifyAndWait(Hornet::Action::HEARTBEAT);
 }
 
 HornetWrapper::~HornetWrapper()

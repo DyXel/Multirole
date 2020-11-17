@@ -18,6 +18,7 @@ enum class Action : uint8_t
 	// Any function that calls ScriptReader can potentially call LogHandler.
 	// ScriptReader can recurse to load nested scripts.
 	NO_WORK = 0U, // Callbacks: doesn't apply
+	HEARTBEAT, // Callbacks: doesn't apply
 	EXIT, // Callbacks: doesn't apply
 	OCG_GET_VERSION, // Callbacks: none
 	OCG_CREATE_DUEL, // Callbacks: ScriptReader
