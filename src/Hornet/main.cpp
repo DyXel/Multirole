@@ -21,30 +21,13 @@ static void* handle{nullptr};
 #undef OCGFUNC
 
 // Methods
-[[nodiscard]] Ignis::Hornet::LockType NotifyAndWait(Ignis::Hornet::Action act)
+void NotifyAndWait(Ignis::Hornet::Action act)
 {
-	Ignis::Hornet::LockType lock(hss->mtx);
 	hss->act = act;
 	hss->cv.notify_one();
-	hss->cv.wait(lock, [&](){return hss->act != act;});
-	return lock;
-}
-
-// Used by functions that might recurse by calling callbacks
-template<typename Lock, typename F, typename... Args>
-inline decltype(auto) PadlockInvoke(Lock& lock, F&& f, Args&&... args)
-{
-	lock.unlock();
-	if constexpr(std::is_same_v<std::invoke_result_t<F, Args...>, void>)
 	{
-		f(std::forward<Args>(args)...);
-		lock.lock();
-	}
-	else
-	{
-		decltype(auto) r = f(std::forward<Args>(args)...);
-		lock.lock();
-		return r;
+		Ignis::Hornet::LockType lock(hss->mtx);
+		hss->cv.wait(lock, [&](){return hss->act != act;});
 	}
 }
 
@@ -54,7 +37,7 @@ void DataReader(void* payload, uint32_t code, OCG_CardData* data)
 	auto* wptr = hss->bytes.data();
 	Write<void*>(wptr, payload);
 	Write<uint32_t>(wptr, code);
-	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_DATA_READER);
+	NotifyAndWait(Ignis::Hornet::Action::CB_DATA_READER);
 	std::memcpy(data, hss->bytes.data(), sizeof(OCG_CardData));
 	data->setcodes = reinterpret_cast<uint16_t*>(hss->bytes.data() + sizeof(OCG_CardData));
 }
@@ -67,13 +50,13 @@ int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 	Write<void*>(wptr, payload);
 	Write<std::size_t>(wptr, nameSz);
 	std::memcpy(wptr, name, nameSz);
-	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_SCRIPT_READER);
+	NotifyAndWait(Ignis::Hornet::Action::CB_SCRIPT_READER);
 	const auto* rptr = hss->bytes.data();
 	const auto size = Read<std::size_t>(rptr);
 	if(size == 0U)
 		return 0;
 	const char* data = reinterpret_cast<const char*>(rptr);
-	return PadlockInvoke(lock, OCG_LoadScript, duel, data, size, name);
+	return OCG_LoadScript(duel, data, size, name);
 }
 
 void LogHandler(void* payload, const char* str, int t)
@@ -85,7 +68,7 @@ void LogHandler(void* payload, const char* str, int t)
 	Write<int>(wptr, t);
 	Write<std::size_t>(wptr, strSz);
 	std::memcpy(wptr, str, strSz);
-	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_LOG_HANDLER);
+	NotifyAndWait(Ignis::Hornet::Action::CB_LOG_HANDLER);
 }
 
 void DataReaderDone(void* payload, OCG_CardData* data)
@@ -94,7 +77,7 @@ void DataReaderDone(void* payload, OCG_CardData* data)
 	auto* wptr = hss->bytes.data();
 	Write<void*>(wptr, payload);
 	std::memcpy(wptr, data, sizeof(OCG_CardData));
-	auto lock = NotifyAndWait(Ignis::Hornet::Action::CB_DATA_READER_DONE);
+	NotifyAndWait(Ignis::Hornet::Action::CB_DATA_READER_DONE);
 }
 
 int LoadSO(const char* soPath)
@@ -127,8 +110,10 @@ void MainLoop()
 	bool quit = false;
 	do
 	{
-		LockType lock(hss->mtx);
-		hss->cv.wait(lock, [&](){return hss->act != Action::NO_WORK;});
+		{
+			LockType lock(hss->mtx);
+			hss->cv.wait(lock, [&](){return hss->act != Action::NO_WORK;});
+		}
 		switch(hss->act)
 		{
 #define CASE(value) case value: spdlog::info("Performing " #value);
@@ -159,7 +144,7 @@ void MainLoop()
 			opts.logHandler = &LogHandler;
 			opts.cardReaderDone = &DataReaderDone;
 			OCG_Duel duel;
-			int r = PadlockInvoke(lock, OCG_CreateDuel, &duel, opts);
+			int r = OCG_CreateDuel(&duel, opts);
 			auto* wptr = hss->bytes.data();
 			Write<int>(wptr, r);
 			Write<OCG_Duel>(wptr, duel);
@@ -175,7 +160,7 @@ void MainLoop()
 		{
 			const auto* rptr = hss->bytes.data();
 			const auto duel = Read<OCG_Duel>(rptr);
-			PadlockInvoke(lock, OCG_DuelNewCard, duel, Read<OCG_NewCardInfo>(rptr));
+			OCG_DuelNewCard(duel, Read<OCG_NewCardInfo>(rptr));
 			break;
 		}
 		CASE(Action::OCG_START_DUEL)
@@ -188,7 +173,7 @@ void MainLoop()
 		{
 			const auto* rptr = hss->bytes.data();
 			const auto duel = Read<OCG_Duel>(rptr);
-			int r = PadlockInvoke(lock, OCG_DuelProcess, duel);
+			int r = OCG_DuelProcess(duel);
 			auto* wptr = hss->bytes.data();
 			Write<int>(wptr, r);
 			break;
@@ -221,7 +206,7 @@ void MainLoop()
 			rptr += nameSize;
 			const auto strSize = Read<std::size_t>(rptr);
 			const auto* str = reinterpret_cast<const char*>(rptr);
-			int r = PadlockInvoke(lock, OCG_LoadScript, duel, str, strSize, name);
+			int r = OCG_LoadScript(duel, str, strSize, name);
 			auto* wptr = hss->bytes.data();
 			Write<int>(wptr, r);
 			break;
