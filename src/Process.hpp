@@ -1,11 +1,30 @@
 #ifndef PROCESS_HPP
 #define PROCESS_HPP
-
 namespace Process
 {
 
-template<typename... Args>
-void Launch(const char* program, Args&& ...args);
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+using Data = /*TODO*/;
+
+#else
+#include <sys/types.h>
+
+using Data = pid_t;
+
+#endif // _WIN32
+
+} // namespace Process
+
+#endif // PROCESS_HPP
+
+#ifdef PROCESS_IMPLEMENTATION
+#ifndef PROCESS_IMPL_HPP
+#define PROCESS_IMPL_HPP
+namespace Process
+{
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -44,21 +63,51 @@ void Launch(const char* program, Args&& ...args)
 	}
 }
 
+bool IsRunning(const Data& data)
+{
+	// TODO
+}
+
+void CleanUp(const Data& data)
+{
+	// TODO
+}
+
 #else
-#include <sys/types.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+bool IsRunning(const Data& data);
 
 template<typename... Args>
-void Launch(const char* program, Args&& ...args)
+std::pair<Data, bool> Launch(const char* program, Args&& ...args)
 {
-	if(vfork() != 0)
-		return;
+	pid_t id = vfork();
+	if(id == -1)
+		return std::pair<Data, bool>(0, false);
+	else if(id > 0)
+		return std::pair<Data, bool>(id, IsRunning(id));
+	// Child continues execution...
 	constexpr const char* NULL_CHAR_PTR = nullptr;
 	execlp(program, program, std::forward<Args>(args)..., NULL_CHAR_PTR);
+	// Immediately die if unable to change process image.
+	std::abort();
+}
+
+bool IsRunning(const Data& data)
+{
+	return waitpid(data, NULL, WNOHANG) == 0;
+}
+
+void CleanUp(const Data& data)
+{
+	waitpid(data, NULL, 0);
 }
 
 #endif // _WIN32
 
 } // namespace Process
 
-#endif // PROCESS_HPP
+#endif // PROCESS_IMPL_HPP
+#endif // PROCESS_IMPLEMENTATION
