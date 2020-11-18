@@ -586,9 +586,12 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, "Core crashed!"));
 		[[fallthrough]];
 	}
-	default:
+	default: // So compiler doesn't complain
+	{
+		SendReplay();
 		SendToAll(MakeDuelEnd());
 		return State::Closing{};
+	}
 	}
 }
 

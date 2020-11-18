@@ -3,11 +3,11 @@
 * Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
   * Simple "stream-less" implementation as proof-of-concept [DONE]
   * Do parameter streaming for big enough strings [SCRAPPED]
-  * Design exception [DONE]
-  * Handle exception on `State::Dueling` [DONE]
   * Detect if the process is dead before attempting to do IPC
   * Use a mutex to avoid multiple threads using a hornet at the same time
 * Handle crashes of core
+  * Design exception [DONE]
+  * Handle exception on `State::Dueling` [DONE]
 * Deal with core not loading after webhook is triggered
   * Try to fallback to the core that was working already
 * Fix names being swapped on replay
