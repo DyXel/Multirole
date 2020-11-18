@@ -6,6 +6,8 @@
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
+#include "../../Process.hpp"
+
 namespace Ignis::Hornet
 {
 
@@ -44,11 +46,10 @@ private:
 	boost::interprocess::shared_memory_object shm;
 	boost::interprocess::mapped_region region;
 	Hornet::SharedSegment* hss;
+	Process::Data proc;
 
-	[[nodiscard]]
-	boost::interprocess::scoped_lock
-	<boost::interprocess::interprocess_mutex>
-	NotifyAndWait(Hornet::Action act);
+	void DestroySharedSegment();
+	void NotifyAndWait(Hornet::Action act);
 };
 
 } // namespace Ignis::Multirole::Core
