@@ -72,6 +72,7 @@ HornetWrapper::~HornetWrapper()
 
 std::pair<int, int> HornetWrapper::Version()
 {
+	std::scoped_lock lock(mtx);
 	NotifyAndWait(Hornet::Action::OCG_GET_VERSION);
 	const auto* rptr = hss->bytes.data();
 	return
@@ -83,6 +84,7 @@ std::pair<int, int> HornetWrapper::Version()
 
 IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_DuelOptions>(wptr,
 	{
@@ -108,6 +110,7 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 
 void HornetWrapper::DestroyDuel(Duel duel)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	NotifyAndWait(Hornet::Action::OCG_DESTROY_DUEL);
@@ -115,6 +118,7 @@ void HornetWrapper::DestroyDuel(Duel duel)
 
 void HornetWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<OCG_NewCardInfo>(wptr, info);
@@ -123,6 +127,7 @@ void HornetWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
 
 void HornetWrapper::Start(Duel duel)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	NotifyAndWait(Hornet::Action::OCG_START_DUEL);
@@ -130,6 +135,7 @@ void HornetWrapper::Start(Duel duel)
 
 IWrapper::DuelStatus HornetWrapper::Process(Duel duel)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	NotifyAndWait(Hornet::Action::OCG_DUEL_PROCESS);
@@ -139,6 +145,7 @@ IWrapper::DuelStatus HornetWrapper::Process(Duel duel)
 
 IWrapper::Buffer HornetWrapper::GetMessages(Duel duel)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	NotifyAndWait(Hornet::Action::OCG_DUEL_GET_MESSAGE);
@@ -151,6 +158,7 @@ IWrapper::Buffer HornetWrapper::GetMessages(Duel duel)
 
 void HornetWrapper::SetResponse(Duel duel, const Buffer& buffer)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<std::size_t>(wptr, buffer.size());
@@ -160,6 +168,7 @@ void HornetWrapper::SetResponse(Duel duel, const Buffer& buffer)
 
 int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view str)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<std::size_t>(wptr, name.size());
@@ -174,6 +183,7 @@ int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view
 
 std::size_t HornetWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<uint8_t>(wptr, team);
@@ -185,6 +195,7 @@ std::size_t HornetWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
 
 IWrapper::Buffer HornetWrapper::Query(Duel duel, const QueryInfo& info)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<OCG_QueryInfo>(wptr, info);
@@ -198,6 +209,7 @@ IWrapper::Buffer HornetWrapper::Query(Duel duel, const QueryInfo& info)
 
 IWrapper::Buffer HornetWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	Write<OCG_QueryInfo>(wptr, info);
@@ -211,6 +223,7 @@ IWrapper::Buffer HornetWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 
 IWrapper::Buffer HornetWrapper::QueryField(Duel duel)
 {
+	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
 	NotifyAndWait(Hornet::Action::OCG_DUEL_QUERY_FIELD);

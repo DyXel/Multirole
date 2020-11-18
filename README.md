@@ -7,5 +7,7 @@ The server guarantees 3 things:
   2. After you signal the server to close, it will not do any more disks reads (even if `loadPerRoom` is set to true), and all acceptors will be closed so you can launch another instance of the server immediately (zero downtime).
   3. No disk write will ever be done, except by the replay manager in the future (write atomic value of last replay id, and write the replays ofc)
 
+Dont send SIGINT through Bash by doing CTRL+C, it might propagate the signal to child processes.
+
 After running for a while, libgit operations start failing with error `Too many open files`; This is a known issue, fixed upstream: https://github.com/libgit2/libgit2/pull/5386
   * A workaround (if you are stuck with packager's version) is raising the limit of open files Multirole can have, see the issue linked by the above PR for details

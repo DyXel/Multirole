@@ -2,6 +2,8 @@
 #define HORNETWRAPPER_HPP
 #include "IWrapper.hpp"
 
+#include <mutex>
+
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
@@ -47,6 +49,7 @@ private:
 	boost::interprocess::mapped_region region;
 	Hornet::SharedSegment* hss;
 	Process::Data proc;
+	std::mutex mtx;
 
 	void DestroySharedSegment();
 	void NotifyAndWait(Hornet::Action act);
