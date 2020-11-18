@@ -110,10 +110,6 @@ void MainLoop()
 			quit = true;
 			break;
 		}
-		case Action::HEARTBEAT:
-		{
-			break;
-		}
 		case Action::OCG_GET_VERSION:
 		{
 			int major, minor;
@@ -244,7 +240,9 @@ void MainLoop()
 			std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
 			break;
 		}
+		// Explicitly ignore these, in case we ever add more functionality...
 		case Action::NO_WORK:
+		case Action::HEARTBEAT:
 		case Action::CB_DATA_READER:
 		case Action::CB_SCRIPT_READER:
 		case Action::CB_LOG_HANDLER:

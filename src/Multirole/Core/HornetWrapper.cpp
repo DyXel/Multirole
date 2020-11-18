@@ -6,7 +6,6 @@
 #include "IScriptSupplier.hpp"
 #include "ILogger.hpp"
 #include "../../HornetCommon.hpp"
-
 #define PROCESS_IMPLEMENTATION
 #include "../../Process.hpp"
 
@@ -20,14 +19,14 @@ inline std::string MakeHornetName(uintptr_t addr)
 {
 	std::array<char, 25U> buf;
 	std::snprintf(buf.data(), buf.size(), "Hornet0x%lX", addr);
-	// Make sure the shared memory object doesn't exist before attempting
-	// to create it again.
-	ipc::shared_memory_object::remove(buf.data());
 	return std::string(buf.data());
 }
 
 inline ipc::shared_memory_object MakeShm(const std::string& str)
 {
+	// Make sure the shared memory object doesn't exist before attempting
+	// to create it again.
+	ipc::shared_memory_object::remove(str.data());
 	ipc::shared_memory_object shm(ipc::create_only, str.data(), ipc::read_write);
 	shm.truncate(sizeof(Hornet::SharedSegment));
 	return shm;
@@ -311,7 +310,24 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 			NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
 		}
-		default: // TODO: throw UB exception
+		// Explicitly ignore these, in case we ever add more functionality...
+		case Hornet::Action::NO_WORK:
+		case Hornet::Action::HEARTBEAT:
+		case Hornet::Action::EXIT:
+		case Hornet::Action::OCG_GET_VERSION:
+		case Hornet::Action::OCG_CREATE_DUEL:
+		case Hornet::Action::OCG_DESTROY_DUEL:
+		case Hornet::Action::OCG_DUEL_NEW_CARD:
+		case Hornet::Action::OCG_START_DUEL:
+		case Hornet::Action::OCG_DUEL_PROCESS:
+		case Hornet::Action::OCG_DUEL_GET_MESSAGE:
+		case Hornet::Action::OCG_DUEL_SET_RESPONSE:
+		case Hornet::Action::OCG_LOAD_SCRIPT:
+		case Hornet::Action::OCG_DUEL_QUERY_COUNT:
+		case Hornet::Action::OCG_DUEL_QUERY:
+		case Hornet::Action::OCG_DUEL_QUERY_LOCATION:
+		case Hornet::Action::OCG_DUEL_QUERY_FIELD:
+		case Hornet::Action::CB_DONE:
 			break;
 	}
 }
