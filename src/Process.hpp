@@ -7,7 +7,7 @@ namespace Process
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-using Data = /*TODO*/;
+using Data = HANDLE;
 
 #else
 #include <sys/types.h>
@@ -46,7 +46,7 @@ void AppendArgs(std::string& out, T&& arg, Args&& ...args)
 } // namespace Detail
 
 template<typename... Args>
-void Launch(const char* program, Args&& ...args)
+std::pair<Data, bool> Launch(const char* program, Args&& ...args)
 {
 	std::string param(program);
 	Detail::AppendArgs(param, std::forward<Args>(args)...);
@@ -55,22 +55,28 @@ void Launch(const char* program, Args&& ...args)
 	si.cb = sizeof(si);
 	si.dwFlags = STARTF_USESHOWWINDOW;
 	si.wShowWindow = SW_HIDE;
-	if(CreateProcessA(nullptr, param.data(), nullptr, nullptr,
-	   FALSE, 0, nullptr, nullptr, &si, &pi))
-	{
+	std::pair<Data, bool> data{};
+	data.second = CreateProcessA(nullptr, param.data(), nullptr, nullptr,
+	   FALSE, 0, nullptr, nullptr, &si, &pi);
+	CloseHandle(pi.hThread);
+	if(!data.second)
 		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-	}
+	else
+		data.first = pi.hProcess;
+	return data;
 }
 
 bool IsRunning(const Data& data)
 {
-	// TODO
+	DWORD lpExitCode{};
+	GetExitCodeProcess(data, &lpExitCode);
+	return lpExitCode == STILL_ACTIVE;
 }
 
 void CleanUp(const Data& data)
 {
-	// TODO
+	WaitForSingleObject(data, INFINITE);
+	CloseHandle(data);
 }
 
 #else
