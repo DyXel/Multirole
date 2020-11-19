@@ -1,18 +1,18 @@
 # TODO
 
-* Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`)
+* Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`) [DONE]
   * Simple "stream-less" implementation as proof-of-concept [DONE]
   * Do parameter streaming for big enough strings [SCRAPPED]
   * Detect if the process is dead before attempting to do IPC [DONE]
-    * Implement this for Windows
+    * Implement this for Windows [DONE]
   * Use a mutex to avoid multiple threads using a hornet at the same time [DONE]
-* Handle crashes of core
+* Handle crashes of core [DONE]
   * Design exception [DONE]
   * Handle exception on `State::Dueling` [DONE]
 * Deal with core not loading after webhook is triggered
   * Try to fallback to the core that was working already
-* Fix names being swapped on replay
-  * Only happens on tag mode, for the players who went second
+* Fix names being swapped on replay [DONE]
+  * Only happens on tag mode, for the players who went second [DONE]
 * Add IPC interface for discord bot
   * Filter error messages based on SCOPE of cards used in the duel
 
