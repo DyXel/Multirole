@@ -103,7 +103,7 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 	NotifyAndWait(Hornet::Action::OCG_CREATE_DUEL);
 	const auto* rptr = hss->bytes.data();
 	if(Read<int>(rptr) != OCG_DUEL_CREATION_SUCCESS)
-		return nullptr; // TODO: throw?
+		throw Core::Exception("OCG_CreateDuel failed!");
 	return Read<OCG_Duel>(rptr);
 }
 

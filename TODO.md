@@ -4,6 +4,7 @@
   * Simple "stream-less" implementation as proof-of-concept [DONE]
   * Do parameter streaming for big enough strings [SCRAPPED]
   * Detect if the process is dead before attempting to do IPC [DONE]
+    * Implement this for Windows
   * Use a mutex to avoid multiple threads using a hornet at the same time [DONE]
 * Handle crashes of core
   * Design exception [DONE]

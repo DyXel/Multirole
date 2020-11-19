@@ -1,7 +1,6 @@
 #include "DLWrapper.hpp"
 
-#include <cstring>
-#include <stdexcept> // std::runtime_error
+#include <cstring> // std::memcpy
 
 #include "IDataSupplier.hpp"
 #include "IScriptSupplier.hpp"
@@ -94,7 +93,7 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 	if(OCG_CreateDuel(&duel, options) != OCG_DUEL_CREATION_SUCCESS)
 	{
 		ssdList.erase(ssdIter);
-		throw std::runtime_error("Could not create duel");
+		throw Core::Exception("OCG_CreateDuel failed!");
 	}
 	ssdMap.insert({duel, ssdIter});
 	return duel;
