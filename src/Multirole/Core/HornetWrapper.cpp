@@ -247,10 +247,10 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 		using namespace boost::posix_time;
 		return microsec_clock::universal_time() + milliseconds(125);
 	};
-	hss->act = act;
-	hss->cv.notify_one();
 	{
 		Hornet::LockType lock(hss->mtx);
+		hss->act = act;
+		hss->cv.notify_one();
 		while(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != act;}))
 		{
 			if(Process::IsRunning(proc))

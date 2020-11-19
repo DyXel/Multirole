@@ -20,12 +20,10 @@ static void* handle{nullptr};
 // Methods
 void NotifyAndWait(Ignis::Hornet::Action act)
 {
+	Ignis::Hornet::LockType lock(hss->mtx);
 	hss->act = act;
 	hss->cv.notify_one();
-	{
-		Ignis::Hornet::LockType lock(hss->mtx);
-		hss->cv.wait(lock, [&](){return hss->act != act;});
-	}
+	hss->cv.wait(lock, [&]() {return hss->act != act; });
 }
 
 void DataReader(void* payload, uint32_t code, OCG_CardData* data)
