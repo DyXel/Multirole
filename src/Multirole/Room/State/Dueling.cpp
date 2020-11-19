@@ -138,7 +138,7 @@ StateOpt Context::operator()(State::Dueling& s)
 			}
 			s.replay->AddDuelist(nci.team, nci.duelist,
 			{
-				kv.second->Name(),
+				duelists[{kv.first.first, nci.duelist}]->Name(),
 				std::move(finalMainDeck),
 				deck.Extra()
 			});
