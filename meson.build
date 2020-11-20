@@ -76,10 +76,7 @@ executable('multirole', multirole_src_files,
 	])
 
 executable('hornet', hornet_src_files,
-	cpp_args: [
-		'-DSPDLOG_FMT_EXTERNAL',
-		'-DBOOST_DATE_TIME_NO_LIB',
-	],
+	cpp_args: '-DBOOST_DATE_TIME_NO_LIB',
 	dependencies: [
 		boost_dep,
 		dl_dep,
