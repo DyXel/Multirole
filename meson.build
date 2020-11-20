@@ -1,12 +1,14 @@
 project('multirole', ['c', 'cpp'], default_options : 'cpp_std=c++17')
 
-asio_dep    = dependency('asio', required : host_machine.system() == 'windows')
+is_window = host_machine.system() == 'windows'
+
+asio_dep    = dependency('asio', required : is_window)
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
 boost_dep   = dependency('boost')
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 fmt_dep     = dependency('fmt')
 libgit2_dep = dependency('libgit2')
-njson_dep   = dependency('nlohmann_json', required : false)
+njson_dep   = dependency('nlohmann_json', required : is_window)
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 spdlog_dep  = dependency('spdlog')
 sqlite3_dep = dependency('sqlite3')
@@ -90,7 +92,5 @@ executable('hornet', hornet_src_files,
 	dependencies: [
 		boost_dep,
 		dl_dep,
-		fmt_dep,
-		rt_dep,
-		spdlog_dep
+		rt_dep
 	])
