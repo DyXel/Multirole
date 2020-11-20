@@ -56,7 +56,11 @@ hornet_src_files = files([
 ])
 
 executable('multirole', multirole_src_files,
-	c_args: ['-D_7ZIP_ST'],
+	c_args: [
+		'-D_7ZIP_ST',
+		'-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS',
+		'-D_WINSOCK_DEPRECATED_NO_WARNINGS',
+	],
 	cpp_args: [
 		'-DASIO_STANDALONE',
 		'-DSPDLOG_FMT_EXTERNAL',
