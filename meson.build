@@ -60,6 +60,7 @@ executable('multirole', multirole_src_files,
 		'-D_7ZIP_ST',
 		'-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS',
 		'-D_WINSOCK_DEPRECATED_NO_WARNINGS',
+		'-DNOMINMAX'
 	],
 	cpp_args: [
 		'-DASIO_STANDALONE',
@@ -80,7 +81,10 @@ executable('multirole', multirole_src_files,
 	])
 
 executable('hornet', hornet_src_files,
-	cpp_args: '-DBOOST_DATE_TIME_NO_LIB',
+	cpp_args: [
+		'-DBOOST_DATE_TIME_NO_LIB',
+		'-DNOMINMAX'
+	],
 	dependencies: [
 		boost_dep,
 		dl_dep,
