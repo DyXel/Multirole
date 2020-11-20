@@ -76,18 +76,19 @@ int LoadSO(const char* soPath)
 	handle = DLOpen::LoadObject(soPath);
 	if(handle == nullptr)
 		return 1;
+	try
+	{
 #define OCGFUNC(ret, name, args) \
-	do{ \
-		void* funcPtr = DLOpen::LoadFunction(handle, #name); \
-		(name) = reinterpret_cast<decltype(name)>(funcPtr); \
-		if((name) == nullptr) \
-		{ \
-			DLOpen::UnloadObject(handle); \
-			return 1; \
-		} \
-	}while(0);
+		void* name##VoidPtr = DLOpen::LoadFunction(handle, #name); \
+		(name) = reinterpret_cast<decltype(name)>(name##VoidPtr);
 #include "../ocgapi_funcs.inl"
 #undef OCGFUNC
+	}
+	catch(std::runtime_error& e)
+	{
+		DLOpen::UnloadObject(handle);
+		return 1;
+	}
 	return 0;
 }
 

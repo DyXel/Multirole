@@ -1,6 +1,6 @@
 #include "DLOpen.hpp"
 
-#include <fmt/printf.h>
+#include <stdexcept> // std::runtime_error
 
 // "Native" functions below modified from implementations found in SDL2 library
 // Author: Sam Lantinga <slouken@libsdl.org>
@@ -13,9 +13,6 @@
 
 namespace DLOpen
 {
-
-constexpr const char* ESTR_OBJECT = "Failed loading object {:s}: {:s}\n";
-constexpr const char* ESTR_FUNCTION = "Failed loading function {:s}: {:s}\n";
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -41,22 +38,22 @@ std::string GetLastErrorStr()
 void* LoadObject(const char* file)
 {
 	void* handle = (void*)LoadLibraryA(file);
-	if (handle == nullptr)
-		fmt::print(FMT_STRING(ESTR_OBJECT), file, GetLastErrorStr());
+	if(handle == nullptr)
+		throw std::runtime_error(GetLastErrorStr());
 	return handle;
 }
 
 void  UnloadObject(void* handle)
 {
-	if (handle != nullptr)
+	if(handle != nullptr)
 		FreeLibrary((HMODULE) handle);
 }
 
 void* LoadFunction(void* handle, const char* name)
 {
 	void* symbol = (void*)GetProcAddress((HMODULE) handle, name);
-	if (symbol == nullptr)
-		fmt::print(FMT_STRING(ESTR_FUNCTION), name, GetLastErrorStr());
+	if(symbol == nullptr)
+		throw std::runtime_error(GetLastErrorStr());
 	return symbol;
 }
 
@@ -66,27 +63,27 @@ void* LoadFunction(void* handle, const char* name)
 void* LoadObject(const char* file)
 {
 	void* handle = dlopen(file, RTLD_NOW | RTLD_LOCAL);
-	if (handle == nullptr)
-		fmt::print(FMT_STRING(ESTR_OBJECT), file, dlerror());
+	if(handle == nullptr)
+		throw std::runtime_error(dlerror());
 	return handle;
 }
 
 void UnloadObject(void* handle)
 {
-	if (handle != nullptr)
+	if(handle != nullptr)
 		dlclose(handle);
 }
 
 void* LoadFunction(void* handle, const char* name)
 {
 	void* symbol = dlsym(handle, name);
-	if (symbol == nullptr)
+	if(symbol == nullptr)
 	{
 		// prepend an underscore for platforms that need that.
 		std::string _name = std::string("_") + name;
 		symbol = dlsym(handle, _name.c_str());
-		if (symbol == nullptr)
-			fmt::print(FMT_STRING(ESTR_FUNCTION), name, dlerror());
+		if(symbol == nullptr)
+			throw std::runtime_error(dlerror());
 	}
 	return symbol;
 }

@@ -41,21 +41,20 @@ static void DataReaderDone(void* payload, OCG_CardData* data)
 DLWrapper::DLWrapper(std::string_view absFilePath)
 {
 	handle = DLOpen::LoadObject(absFilePath.data());
-	if(handle == nullptr)
-		throw std::runtime_error("Could not load core.");
 	// Load every function from the shared object into the functions
+	try
+	{
 #define OCGFUNC(ret, name, args) \
-	do{ \
-	void* funcPtr = DLOpen::LoadFunction(handle, #name); \
-	(name) = reinterpret_cast<decltype(name)>(funcPtr); \
-	if((name) == nullptr) \
-	{ \
-		DLOpen::UnloadObject(handle); \
-		throw std::runtime_error("Could not load API function " #name "."); \
-	} \
-	}while(0);
+		void* name##VoidPtr = DLOpen::LoadFunction(handle, #name); \
+		(name) = reinterpret_cast<decltype(name)>(name##VoidPtr);
 #include "../../ocgapi_funcs.inl"
 #undef OCGFUNC
+	}
+	catch(std::runtime_error& e)
+	{
+		DLOpen::UnloadObject(handle);
+		throw;
+	}
 }
 
 DLWrapper::~DLWrapper()
