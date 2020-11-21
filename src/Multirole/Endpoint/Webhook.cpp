@@ -10,7 +10,7 @@ namespace Ignis::Multirole::Endpoint
 // public
 
 Webhook::Webhook(asio::io_context& ioCtx, unsigned short port) :
-	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port))
 {
 	DoAccept();
 }

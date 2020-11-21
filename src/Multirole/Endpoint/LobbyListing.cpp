@@ -16,7 +16,7 @@ LobbyListing::LobbyListing(
 	unsigned short port,
 	Lobby& lobby)
 	:
-	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
+	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port)),
 	serializeTimer(ioCtx),
 	lobby(lobby)
 {

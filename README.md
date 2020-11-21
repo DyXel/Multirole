@@ -1,5 +1,6 @@
 # dependencies
-`sqlite3 fmt asio spdlog libgit2`
+`meson ninja`
+`sqlite fmt asio spdlog libgit2 boost`
 
 # other
 The server guarantees 3 things:

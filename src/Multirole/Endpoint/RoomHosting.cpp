@@ -78,7 +78,7 @@ struct TmpClient
 RoomHosting::RoomHosting(CreateInfo&& info)
 	:
 	ioCtx(info.ioCtx),
-	acceptor(info.ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), info.port)),
+	acceptor(info.ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), info.port)),
 	banlistProvider(info.banlistProvider),
 	coreProvider(info.coreProvider),
 	dataProvider(info.dataProvider),
