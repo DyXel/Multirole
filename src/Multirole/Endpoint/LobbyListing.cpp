@@ -18,7 +18,8 @@ LobbyListing::LobbyListing(
 	:
 	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port)),
 	serializeTimer(ioCtx),
-	lobby(lobby)
+	lobby(lobby),
+	serialized(std::make_shared<std::string>())
 {
 	DoAccept();
 	DoSerialize();
@@ -78,10 +79,7 @@ void LobbyListing::DoSerialize()
 			{
 				ac.emplace_back();
 				auto& client = ac.back();
-// 				client["id"] = ???; // NOTE: UNUSED
 				client["name"] = kv.second;
-// 				client["ip"] = json::nlohmann::null; // NOTE: UNUSED
-// 				client["status"] = json::nlohmann::null; // NOTE: UNUSED
 				client["pos"] = kv.first;
 			}
 		}
@@ -89,7 +87,9 @@ void LobbyListing::DoSerialize()
 		const std::string strJ = j.dump(-1, 0, false, eHandler); // DUMP EET
 		{
 			std::scoped_lock lock(mSerialized);
-			serialized = ComposeHeader(strJ.size(), "application/json") + strJ;
+			serialized = std::make_shared<std::string>(
+				ComposeHeader(strJ.size(), "application/json") + strJ
+			);
 		}
 		DoSerialize();
 	});
@@ -98,23 +98,51 @@ void LobbyListing::DoSerialize()
 void LobbyListing::DoAccept()
 {
 	acceptor.async_accept(
-	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
+	[this](const std::error_code& ec, asio::ip::tcp::socket socket)
 	{
 		if(!acceptor.is_open())
 			return;
 		if(!ec)
-			DoSendRoomList(std::move(soc));
+		{
+			std::scoped_lock lock(mSerialized);
+			std::make_shared<Connection>(std::move(socket), serialized)->DoWrite();
+		}
 		DoAccept();
 	});
 }
 
-void LobbyListing::DoSendRoomList(asio::ip::tcp::socket&& soc)
+LobbyListing::Connection::Connection(
+	asio::ip::tcp::socket socket,
+	std::shared_ptr<std::string> data)
+	:
+	socket(std::move(socket)),
+	outgoing(std::move(data)),
+	incoming()
+{}
+
+void LobbyListing::Connection::DoWrite()
 {
-	std::scoped_lock lock(mSerialized);
-	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
-	auto msg = std::make_shared<std::string>(serialized);
-	asio::async_write(*socPtr, asio::buffer(*msg),
-	[socPtr, msg](const std::error_code& /*unused*/, std::size_t /*unused*/){});
+	auto self(shared_from_this());
+	asio::async_write(socket, asio::buffer(*outgoing),
+	[this, self](std::error_code ec, std::size_t /*unused*/)
+	{
+		if(!ec)
+		{
+			socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+			DoRead();
+		}
+	});
+}
+
+void LobbyListing::Connection::DoRead()
+{
+	auto self(shared_from_this());
+	socket.async_read_some(asio::buffer(incoming),
+	[this, self](const std::error_code& ec, std::size_t /*unused*/)
+	{
+		if(!ec)
+			DoRead();
+	});
 }
 
 } // namespace Ignis::Multirole::Endpoint

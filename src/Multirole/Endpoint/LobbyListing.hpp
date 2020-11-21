@@ -20,15 +20,27 @@ public:
 	LobbyListing(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
 	void Stop();
 private:
+	class Connection : public std::enable_shared_from_this<Connection>
+	{
+	public:
+		Connection(asio::ip::tcp::socket socket, std::shared_ptr<std::string> data);
+		void DoWrite();
+	private:
+		asio::ip::tcp::socket socket;
+		std::shared_ptr<std::string> outgoing;
+		std::array<char, 256> incoming;
+
+		void DoRead();
+	};
+
 	asio::ip::tcp::acceptor acceptor;
 	asio::steady_timer serializeTimer;
 	Lobby& lobby;
-	std::string serialized;
+	std::shared_ptr<std::string> serialized;
 	std::mutex mSerialized;
 
 	void DoAccept();
 	void DoSerialize();
-	void DoSendRoomList(asio::ip::tcp::socket&& soc);
 };
 
 } // namespace Endpoint
