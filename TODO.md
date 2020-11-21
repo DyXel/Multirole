@@ -1,16 +1,15 @@
 # TODO
 
-* Implement "Hornet" core-type (crash resilient implementation of `Core::IWrapper`) [DONE]
-  * Simple "stream-less" implementation as proof-of-concept [DONE]
-  * Do parameter streaming for big enough strings [SCRAPPED]
-  * Detect if the process is dead before attempting to do IPC [DONE]
-    * Implement this for Windows [DONE]
-  * Use a mutex to avoid multiple threads using a hornet at the same time [DONE]
-* Handle crashes of core [DONE]
-  * Design exception [DONE]
-  * Handle exception on `State::Dueling` [DONE]
-* Deal with core not loading after webhook is triggered
-  * Try to fallback to the core that was working already
+* Fix issue of http json file sending [DONE]
+* Avoid including the banlist parser into BanlistProvider
+* Add more functionality for CoreProvider
+  * Make copy of used shared library because it cannot be overwritten while being used
+  * Do sanity check at startup and after updating core
+  * Load and cache core version and remove compile-time version
+  * Handle core not loading after webhook is triggered
+    * Try to fallback to the core that was working already
+* Figure out how to make children processes not inherit port binding
+  * Messes up with multirole restarting
 * Fix names being swapped on replay [DONE]
   * Only happens on tag mode, for the players who went second [DONE]
 * Add IPC interface for discord bot
@@ -22,7 +21,6 @@
   * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 * Check used enums and try to use `enum class` where possible
   * Also try to forward declare as many of them as possible
-* Try to avoid including the banlist parser into BanlistProvider
 * Investigate possibility of using a lockless queue for `Room::Client` message sending
 * Separate parts of `STOCMsgFactory` that depend on Client from the parts that do not
 
