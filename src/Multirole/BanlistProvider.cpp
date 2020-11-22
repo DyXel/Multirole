@@ -4,6 +4,9 @@
 
 #include <spdlog/spdlog.h>
 
+#define YGOPRO_BANLIST_PARSER_IMPLEMENTATION
+#include "YGOPro/BanlistParser.hpp"
+
 namespace Ignis::Multirole
 {
 

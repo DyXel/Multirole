@@ -2,8 +2,6 @@
 #define YGOPRO_BANLIST_PARSER_HPP
 #include <unordered_map>
 
-#include <fmt/format.h>
-
 #include "Banlist.hpp"
 
 namespace YGOPro
@@ -11,6 +9,18 @@ namespace YGOPro
 
 using BanlistHash = uint32_t;
 using BanlistMap = std::unordered_map<BanlistHash, Banlist>;
+
+} // namespace YGOPro
+
+#endif // YGOPRO_BANLIST_PARSER_HPP
+
+#ifdef YGOPRO_BANLIST_PARSER_IMPLEMENTATION
+#ifndef YGOPRO_BANLIST_PARSER_IMPL_HPP
+#define YGOPRO_BANLIST_PARSER_IMPL_HPP
+#include <fmt/format.h>
+
+namespace YGOPro
+{
 
 namespace Detail
 {
@@ -103,4 +113,5 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 
 } // namespace YGOPro
 
-#endif // YGOPRO_BANLIST_PARSER_HPP
+#endif // YGOPRO_BANLIST_PARSER_IMPL_HPP
+#endif // YGOPRO_BANLIST_PARSER_IMPLEMENTATION

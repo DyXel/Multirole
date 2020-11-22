@@ -8,10 +8,8 @@
   * Load and cache core version and remove compile-time version
   * Handle core not loading after webhook is triggered
     * Try to fallback to the core that was working already
-* Figure out how to make children processes not inherit port binding
-  * Messes up with multirole restarting
+* Figure out how to make children processes not inherit port binding [DONE]
 * Fix names being swapped on replay [DONE]
-  * Only happens on tag mode, for the players who went second [DONE]
 * Add IPC interface for discord bot
   * Filter error messages based on SCOPE of cards used in the duel
 
