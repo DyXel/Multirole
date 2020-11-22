@@ -9,6 +9,7 @@
 #include "../DataProvider.hpp"
 #include "../Lobby.hpp"
 #include "../STOCMsgFactory.hpp"
+#include "../Workaround.hpp"
 #include "../Room/Client.hpp"
 #include "../Room/Instance.hpp"
 #include "../YGOPro/Config.hpp"
@@ -86,6 +87,7 @@ RoomHosting::RoomHosting(CreateInfo&& info)
 	scriptProvider(info.scriptProvider),
 	lobby(info.lobby)
 {
+	Workaround::SetCloseOnExec(acceptor.native_handle());
 	DoAccept();
 }
 
@@ -124,6 +126,7 @@ void RoomHosting::DoAccept()
 			return;
 		if(!ec)
 		{
+			Workaround::SetCloseOnExec(soc.native_handle());
 			auto tc = std::make_shared<TmpClient>(std::move(soc));
 			Add(tc);
 			DoReadHeader(tc);

@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "../Lobby.hpp"
+#include "../Workaround.hpp"
 
 namespace Ignis::Multirole::Endpoint
 {
@@ -21,6 +22,7 @@ LobbyListing::LobbyListing(
 	lobby(lobby),
 	serialized(std::make_shared<std::string>())
 {
+	Workaround::SetCloseOnExec(acceptor.native_handle());
 	DoAccept();
 	DoSerialize();
 }
@@ -104,6 +106,7 @@ void LobbyListing::DoAccept()
 			return;
 		if(!ec)
 		{
+			Workaround::SetCloseOnExec(socket.native_handle());
 			std::scoped_lock lock(mSerialized);
 			std::make_shared<Connection>(std::move(socket), serialized)->DoWrite();
 		}

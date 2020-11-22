@@ -4,6 +4,8 @@
 
 #include <asio/write.hpp>
 
+#include "../Workaround.hpp"
+
 namespace Ignis::Multirole::Endpoint
 {
 
@@ -12,6 +14,7 @@ namespace Ignis::Multirole::Endpoint
 Webhook::Webhook(asio::io_context& ioCtx, unsigned short port) :
 	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port))
 {
+	Workaround::SetCloseOnExec(acceptor.native_handle());
 	DoAccept();
 }
 
@@ -34,7 +37,10 @@ void Webhook::DoAccept()
 		if(ec == asio::error::operation_aborted)
 			return;
 		if(!ec)
+		{
+			Workaround::SetCloseOnExec(soc.native_handle());
 			DoReadHeader(std::move(soc));
+		}
 		DoAccept();
 	});
 }
