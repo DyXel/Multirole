@@ -1,7 +1,7 @@
 # TODO
 
 * Fix issue of http json file sending [DONE]
-* Avoid including the banlist parser into BanlistProvider
+* Avoid including the banlist parser into BanlistProvider [DONE]
 * Add more functionality for CoreProvider
   * Make copy of used shared library because it cannot be overwritten while being used
   * Do sanity check at startup and after updating core
