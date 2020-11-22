@@ -85,7 +85,7 @@ void LobbyListing::DoSerialize()
 				client["pos"] = kv.first;
 			}
 		}
-		constexpr auto eHandler = nlohmann::json::error_handler_t::ignore;
+		constexpr auto eHandler = nlohmann::json::error_handler_t::replace;
 		const std::string strJ = j.dump(-1, 0, false, eHandler); // DUMP EET
 		{
 			std::scoped_lock lock(mSerialized);
