@@ -24,13 +24,14 @@ private:
 	{
 	public:
 		Connection(asio::ip::tcp::socket socket, std::shared_ptr<std::string> data);
-		void DoWrite();
+		void DoRead();
 	private:
 		asio::ip::tcp::socket socket;
 		std::shared_ptr<std::string> outgoing;
 		std::array<char, 256> incoming;
+		bool writeCalled;
 
-		void DoRead();
+		void DoWrite();
 	};
 
 	asio::ip::tcp::acceptor acceptor;

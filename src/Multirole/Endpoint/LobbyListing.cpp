@@ -108,7 +108,7 @@ void LobbyListing::DoAccept()
 		{
 			Workaround::SetCloseOnExec(socket.native_handle());
 			std::scoped_lock lock(mSerialized);
-			std::make_shared<Connection>(std::move(socket), serialized)->DoWrite();
+			std::make_shared<Connection>(std::move(socket), serialized)->DoRead();
 		}
 		DoAccept();
 	});
@@ -120,22 +120,9 @@ LobbyListing::Connection::Connection(
 	:
 	socket(std::move(socket)),
 	outgoing(std::move(data)),
-	incoming()
+	incoming(),
+	writeCalled(false)
 {}
-
-void LobbyListing::Connection::DoWrite()
-{
-	auto self(shared_from_this());
-	asio::async_write(socket, asio::buffer(*outgoing),
-	[this, self](std::error_code ec, std::size_t /*unused*/)
-	{
-		if(!ec)
-		{
-			socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
-			DoRead();
-		}
-	});
-}
 
 void LobbyListing::Connection::DoRead()
 {
@@ -144,7 +131,29 @@ void LobbyListing::Connection::DoRead()
 	[this, self](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec)
+		{
+			if(!writeCalled)
+			{
+				writeCalled = true;
+				DoWrite();
+			}
 			DoRead();
+		}
+		else if(ec != asio::error::operation_aborted && socket.is_open())
+		{
+			socket.close();
+		}
+	});
+}
+
+void LobbyListing::Connection::DoWrite()
+{
+	auto self(shared_from_this());
+	asio::async_write(socket, asio::buffer(*outgoing),
+	[this, self](std::error_code ec, std::size_t /*unused*/)
+	{
+		if(!ec)
+			socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
 	});
 }
 
