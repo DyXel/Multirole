@@ -383,14 +383,14 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 		for(uint32_t i = 0; i < count; i++)
 		{
 			ptr += 4U; // Card code
-			const auto info = Read<LocInfo>(ptr);
-			if(team != info.con)
+			const auto con = Read<uint8_t>(ptr);
+			if(team != con)
 			{
-				ptr -= LocInfo::SIZE + 4U;
+				ptr -= 4U + 1U;
 				Write<uint32_t>(ptr, 0U);
-				ptr += LocInfo::SIZE;
+				ptr += 1U;
 			}
-			ptr += 1U; // Release param
+			ptr += 1U + 4U + 1U; // loc, seq, release_param
 		}
 		break;
 	}
