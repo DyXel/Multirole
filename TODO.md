@@ -1,9 +1,5 @@
 # TODO
 
-* Fix issue of http json file sending [DONE]
-* Avoid including the banlist parser into BanlistProvider [DONE]
-* Check issue with Level and Type declaring (Specimen Inspection)
-* Fix weird floating point exception
 * Add more functionality for CoreProvider
   * Make copy of used shared library because it cannot be overwritten while being used
   * Do sanity check at startup and after updating core
