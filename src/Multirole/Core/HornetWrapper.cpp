@@ -269,8 +269,9 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 			const OCG_CardData data = supplier->DataFromCode(Read<uint32_t>(rptr));
 			auto* wptr = hss->bytes.data();
 			Write<OCG_CardData>(wptr, data);
-			for(uint16_t* wptr2 = data.setcodes; *wptr2 != 0U; wptr2++)
-				Write<uint16_t>(wptr, *wptr2);
+			if(data.setcodes != nullptr)
+				for(uint16_t* wptr2 = data.setcodes; *wptr2 != 0U; wptr2++)
+					Write<uint16_t>(wptr, *wptr2);
 			Write<uint16_t>(wptr, 0U);
 			NotifyAndWait(Hornet::Action::CB_DONE);
 			break;
