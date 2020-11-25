@@ -99,11 +99,15 @@ void Client::Send(const YGOPro::STOCMsg& msg)
 
 void Client::Disconnect()
 {
-	if(!socket.is_open())
-		return;
-	std::error_code ignore;
-	socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
-	socket.close(ignore);
+	asio::post(strand,
+	[this, self = shared_from_this()]()
+	{
+		if(!socket.is_open())
+			return;
+		std::error_code ignore;
+		socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
+		socket.close(ignore);
+	});
 }
 
 void Client::DeferredDisconnect()
@@ -167,7 +171,7 @@ void Client::DoWrite()
 			return;
 		std::scoped_lock lock(mOutgoing);
 		outgoing.pop();
-		if (!outgoing.empty() && socket.is_open())
+		if(!outgoing.empty())
 			DoWrite();
 		else if(disconnecting)
 			Disconnect();
