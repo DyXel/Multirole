@@ -57,6 +57,7 @@ void Instance::TryClose()
 {
 	if(Started())
 		return;
+	std::scoped_lock lock(mClients);
 	for(const auto& c : clients)
 		c->Disconnect();
 }
