@@ -150,7 +150,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 	{
 		if((hostInfo.duelFlags & DUEL_RELAY) == 0U)
 			return int32_t(duelists.size()) == hostInfo.t0Count + hostInfo.t1Count;
-		if(!(teamCount[0U] > 0U && teamCount[1U] > 0U))
+		if(teamCount[0U] == 0U || teamCount[1U] == 0U)
 			return false;
 		// At this point it has been decided that this relay setup is
 		// valid, however we need to move the duelists to their first
