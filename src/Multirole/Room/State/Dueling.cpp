@@ -583,7 +583,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	}
 	case Reason::REASON_CORE_CRASHED:
 	{
-		SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, "Core crashed!"));
+		SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, "Core crashed! This incident has been reported."));
 		[[fallthrough]];
 	}
 	default: // So compiler doesn't complain
