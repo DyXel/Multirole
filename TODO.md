@@ -3,6 +3,8 @@
 * Prepare windows workflow build
 * Once signaled to quit, make sure no more duels can be made (that could increment replay count)
 * Make replaymanager write lastId to disk on each fetch
+* Review and adjust duel timers
+* Log room ID and replay number when a core crashes
 * Add more functionality for CoreProvider
   * Make copy of used shared library because it cannot be overwritten while being used
   * Do sanity check at startup and after updating core
