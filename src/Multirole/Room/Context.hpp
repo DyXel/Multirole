@@ -157,7 +157,7 @@ private:
 	// Get correctly swapped teams based on team1 going first or not.
 	uint8_t GetSwappedTeam(uint8_t team);
 
-	// Get the number of duelists on each team
+	// Get the number of duelists on each team.
 	std::array<uint8_t, 2U> GetTeamCounts() const;
 
 	// Utilities to send a message to multiple clients.
