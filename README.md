@@ -36,7 +36,7 @@ TODO
 
 ## Remarks
 
-  * Multirole can be signaled to close its acceptors (unbind sockets from ports) by sending SIGTERM so that another instance of it can be launched without having to terminate the current duels. Be mindful about signaling through a shell as the default behavior is to propagate the signal to child processes.
+  * Multirole registers a handle to capture the SIGTERM signal to close its acceptors and free repositories locks so that another instance of it can be launched without having to terminate the current duels.
 
   * Depending on the version of libgit2 library used, after updating the git repositories several times, operations will start failing with `Too many open files`; This is a known issue, [fixed upstream](https://github.com/libgit2/libgit2/pull/5386). A workaround (if you are stuck with packager's version that has this issue) is raising the limit of open files Multirole can have, see the issue linked by the PR for details.
 
