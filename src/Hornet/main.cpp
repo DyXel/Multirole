@@ -1,3 +1,7 @@
+#ifndef _WIN32
+#include <signal.h>
+#endif // _WIN32
+
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
@@ -23,7 +27,7 @@ void NotifyAndWait(Ignis::Hornet::Action act)
 	Ignis::Hornet::LockType lock(hss->mtx);
 	hss->act = act;
 	hss->cv.notify_one();
-	hss->cv.wait(lock, [&]() {return hss->act != act; });
+	hss->cv.wait(lock, [&](){return hss->act != act;});
 }
 
 void DataReader(void* payload, uint32_t code, OCG_CardData* data)
@@ -260,6 +264,10 @@ int main(int argc, char* argv[])
 		return 1;
 	if(int r = LoadSO(argv[1]); r != 0)
 		return 2;
+#ifndef _WIN32
+	if(signal(SIGINT, [](int){}) == SIG_ERR)
+		return 3;
+#endif // _WIN32
 	try
 	{
 		ipc::shared_memory_object shm(ipc::open_only, argv[2], ipc::read_write);
@@ -269,7 +277,8 @@ int main(int argc, char* argv[])
 	}
 	catch(const ipc::interprocess_exception& e)
 	{
-		return 3;
+		DLOpen::UnloadObject(handle);
+		return 4;
 	}
 	DLOpen::UnloadObject(handle);
 	return 0;
