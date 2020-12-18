@@ -145,7 +145,6 @@ private:
 
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;
-	std::array<uint8_t, 2U> teamCount{};
 	mutable std::shared_mutex mDuelists;
 	std::set<Client*> spectators;
 
@@ -157,6 +156,9 @@ private:
 
 	// Get correctly swapped teams based on team1 going first or not.
 	uint8_t GetSwappedTeam(uint8_t team);
+
+	// Get the number of duelists on each team
+	std::array<uint8_t, 2U> GetTeamCounts() const;
 
 	// Utilities to send a message to multiple clients.
 	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg);

@@ -55,6 +55,14 @@ uint8_t Context::GetSwappedTeam(uint8_t team)
 	return isTeam1GoingFirst ^ team;
 }
 
+std::array<uint8_t, 2U> Context::GetTeamCounts() const
+{
+	std::array<uint8_t, 2U> ret{};
+	for(const auto& kv : duelists)
+		ret[kv.first.first]++;
+	return ret;
+}
+
 void Context::SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg)
 {
 	assert(team <= 1U);

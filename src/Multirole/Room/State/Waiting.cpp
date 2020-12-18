@@ -15,7 +15,6 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
 		{
 			std::scoped_lock lock(mDuelists);
 			duelists.erase(p);
-			teamCount[p.first]--;
 		}
 		SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_LEAVE));
 	}
@@ -72,7 +71,6 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e)
 	else
 	{
 		duelists.erase(p);
-		teamCount[p.first]--;
 		auto nextPos = p;
 		nextPos.second++;
 		if(TryEmplaceDuelist(e.client, nextPos) && e.client.Position() != p)
@@ -94,7 +92,6 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
 	{
 		std::scoped_lock lock(mDuelists);
 		duelists.erase(p);
-		teamCount[p.first]--;
 	}
 	spectators.insert(&e.client);
 	SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_SPECTATE));
@@ -138,7 +135,6 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	{
 		std::scoped_lock lock(mDuelists);
 		duelists.erase(p);
-		teamCount[p.first]--;
 	}
 	SendToAll(MakePlayerChange(*kicked, PCHANGE_TYPE_LEAVE));
 	return std::nullopt;
@@ -150,6 +146,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 	{
 		if((hostInfo.duelFlags & DUEL_RELAY) == 0U)
 			return int32_t(duelists.size()) == hostInfo.t0Count + hostInfo.t1Count;
+		const auto teamCount = GetTeamCounts();
 		if(teamCount[0U] == 0U || teamCount[1U] == 0U)
 			return false;
 		// At this point it has been decided that this relay setup is
@@ -229,7 +226,6 @@ bool Context::TryEmplaceDuelist(Client& client, Client::PosType hint)
 			if(duelists.count(p) == 0U && duelists.emplace(p, &client).second)
 			{
 				client.SetPosition(p);
-				teamCount[p.first]++;
 				return true;
 			}
 		}

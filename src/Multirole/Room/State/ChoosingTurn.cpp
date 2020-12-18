@@ -23,6 +23,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	{
 		if((hostInfo.duelFlags & DUEL_RELAY) == 0U)
 		{
+			const auto teamCount = GetTeamCounts();
 			const auto it1gf = static_cast<bool>(isTeam1GoingFirst);
 			return
 			{

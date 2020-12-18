@@ -117,6 +117,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	};
 	try
 	{
+		const auto teamCount = GetTeamCounts();
 		for(const auto& kv : duelists)
 		{
 			const auto& deck = *kv.second->CurrentDeck();
