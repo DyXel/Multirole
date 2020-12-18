@@ -81,20 +81,12 @@ Instance::Instance(const nlohmann::json& cfg) :
 		coreProvider.SetLoadProperties(type, loadPerRoom);
 		RegRepos(coreProvider, cfg.at("coreProvider").at("observedRepos"));
 	}
-	// Register signals
+	// Register signal
 	spdlog::info("Setting up signal handling...");
-	signalSet.add(SIGINT);
 	signalSet.add(SIGTERM);
-	signalSet.async_wait([this](const std::error_code& /*unused*/, int sigNum)
+	signalSet.async_wait([this](std::error_code /*unused*/, int /*unused*/)
 	{
-		const char* sigName = nullptr;
-		switch(sigNum)
-		{
-			case SIGINT: sigName = "SIGINT"; break;
-			case SIGTERM: sigName = "SIGTERM"; break;
-			default: sigName = "Unknown signal"; break;
-		}
-		spdlog::info("{:s} received.", sigName);
+		spdlog::info("SIGTERM received.");
 		Stop();
 	});
 	spdlog::info("Hosting will use {:d} threads", hostingConcurrency);
