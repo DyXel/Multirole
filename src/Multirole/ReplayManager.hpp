@@ -1,8 +1,10 @@
 #ifndef REPLAYMANAGER_HPP
 #define REPLAYMANAGER_HPP
-#include <atomic>
+#include <mutex>
 #include <string>
 #include <string_view>
+
+#include <boost/interprocess/sync/file_lock.hpp>
 
 namespace YGOPro
 {
@@ -26,7 +28,8 @@ public:
 private:
 	const std::string folder;
 	const std::string lastIdPath;
-	std::atomic<uint64_t> currentId;
+	std::mutex mLastId; // guarantees thread-safety
+	boost::interprocess::file_lock lLastId; // guarantees process-safety
 };
 
 } // namespace Ignis::Multirole
