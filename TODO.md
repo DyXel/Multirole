@@ -1,8 +1,6 @@
 # TODO
-* Make ReplayManager write lastId to disk on each fetch
 * Fix webhooks not being marked as OK
   * Review all places where connections are terminated and make sure their termination is graceful
-* Review and adjust duel timers
 * Finish README
 * Add IPC interface for discord bot
   * Filter error messages based on SCOPE of cards used in the duel
