@@ -242,7 +242,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 		using namespace std::chrono;
 		uint8_t team = e.client.Position().first;
 		auto delta = tagg.Expiry(team) - system_clock::now();
-		s.timeRemaining[team] = duration_cast<milliseconds>(delta);
+		s.timeRemaining[team] = duration_cast<milliseconds>(ceil<seconds>(delta));
 		tagg.Cancel(team);
 	}
 	s.replay->RecordResponse(e.data);
