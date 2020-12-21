@@ -37,7 +37,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		scriptProvider,
 		nullptr, // TODO
 		seed,
-		hostInfo.duelFlags,
+		HostInfo::OrDuelFlags(hostInfo.duelFlagsHigh, hostInfo.duelFlagsLow),
 		popt,
 		popt
 	};

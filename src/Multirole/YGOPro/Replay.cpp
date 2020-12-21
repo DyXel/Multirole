@@ -30,14 +30,15 @@ enum ReplayTypes
 
 enum ReplayFlags
 {
-	REPLAY_COMPRESSED  = 0x1,
-	REPLAY_TAG         = 0x2,
-	REPLAY_DECODED     = 0x4,
-	REPLAY_SINGLE_MODE = 0x8,
-	REPLAY_LUA64       = 0x10,
-	REPLAY_NEWREPLAY   = 0x20,
-	REPLAY_HAND_TEST   = 0x40,
-	REPLAY_DIRECT_SEED = 0x80,
+	REPLAY_COMPRESSED     = 0x1,
+	REPLAY_TAG            = 0x2,
+	REPLAY_DECODED        = 0x4,
+	REPLAY_SINGLE_MODE    = 0x8,
+	REPLAY_LUA64          = 0x10,
+	REPLAY_NEWREPLAY      = 0x20,
+	REPLAY_HAND_TEST      = 0x40,
+	REPLAY_DIRECT_SEED    = 0x80,
+	REPLAY_64BIT_DUELFLAG = 0x100,
 };
 
 struct ReplayHeader
@@ -57,7 +58,7 @@ struct ReplayHeader
 // team0Names [20 char16_t * team0Count]
 // team1Count [uint32_t]
 // team1Names [20 char16_t * team1Count]
-// duelFlags [uint32_t]
+// duelFlags [uint64_t]
 // Core messages (repeat for number of messages):
 // 	msgType [uint8_t]
 // 	length [uint32_t]
@@ -72,7 +73,7 @@ struct ReplayHeader
 // startingLP [uint32_t]
 // startingDrawCount [uint32_t]
 // drawCountPerTurn [uint32_t]
-// duelFlags [uint32_t]
+// duelFlags [uint64_t]
 // Deck & Extra Decks (repeat for each duelist):
 // 	deckCount [uint32_t]
 // 	cards [uint32_t * deckCount]
@@ -96,7 +97,7 @@ Replay::Replay(
 	startingLP(info.startingLP),
 	startingDrawCount(info.startingDrawCount),
 	drawCountPerTurn(info.drawCountPerTurn),
-	duelFlags(info.duelFlags),
+	duelFlags(HostInfo::OrDuelFlags(info.duelFlagsHigh, info.duelFlagsLow)),
 	extraCards(extraCards)
 {}
 
@@ -162,7 +163,7 @@ void Replay::Serialize()
 	{
 		std::size_t size =
 			8U + // team0Count<4> + team1Count<4>
-			4U;  // duelFlags<4>
+			8U;  // duelFlags<8>
 		// Size occupied by each duelist
 		size += 40U * (duelists[0U].size() + duelists[1U].size());
 		// Size occupied by all core messages
@@ -180,7 +181,7 @@ void Replay::Serialize()
 		std::size_t size =
 			8U + // team0Count<4> + team1Count<4>
 			8U + // startingLP<4> + startingDrawCount<4>
-			8U;  // drawCountPerTurn<4> + duelFlags<4>
+			12U;  // drawCountPerTurn<4> + duelFlags<8>
 		// Size occupied by each duelist and their decks
 		for(const auto& m : duelists)
 		{
@@ -234,7 +235,7 @@ void Replay::Serialize()
 		{
 			REPLAY_YRP1,
 			ENCODED_SERVER_VERSION,
-			REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_DIRECT_SEED,
+			REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_DIRECT_SEED | REPLAY_64BIT_DUELFLAG,
 			seed,
 			static_cast<uint32_t>(YRPPastHeaderSize()),
 			0U,
@@ -246,7 +247,7 @@ void Replay::Serialize()
 		Write<uint32_t>(ptr, startingLP);
 		Write<uint32_t>(ptr, startingDrawCount);
 		Write<uint32_t>(ptr, drawCountPerTurn);
-		Write<uint32_t>(ptr, duelFlags);
+		Write<uint64_t>(ptr, duelFlags);
 		// Decks & Extra Decks
 		for(const auto& m : duelists)
 		{
@@ -275,7 +276,7 @@ void Replay::Serialize()
 		uint8_t* ptr = vec.data();
 		WriteDuelists(ptr);
 		// Duel flags
-		Write<uint32_t>(ptr, duelFlags);
+		Write<uint64_t>(ptr, duelFlags);
 		// Core messages
 		for(const auto& msg : messages)
 		{
@@ -294,7 +295,7 @@ void Replay::Serialize()
 	{
 		REPLAY_YRPX,
 		ENCODED_SERVER_VERSION,
-		REPLAY_LUA64 | REPLAY_NEWREPLAY,
+		REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG,
 		unixTimestamp,
 		static_cast<uint32_t>(pthData.size()),
 		0U,

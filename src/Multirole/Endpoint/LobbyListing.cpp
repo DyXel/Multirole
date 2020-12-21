@@ -56,25 +56,26 @@ void LobbyListing::DoSerialize()
 		{
 			ar.emplace_back();
 			auto& room = ar.back();
+			const auto& hi = rp.hostInfo;
 			room["roomid"] = rp.id;
 			room["roomname"] = ""; // NOTE: UNUSED but expected atm
 			room["roomnotes"] = rp.notes;
 			room["roommode"] = 0; // NOTE: UNUSED but expected atm
 			room["needpass"] = rp.passworded;
-			room["team1"] = rp.hostInfo.t0Count;
-			room["team2"] = rp.hostInfo.t1Count;
-			room["best_of"] = rp.hostInfo.bestOf;
-			room["duel_flag"] = rp.hostInfo.duelFlags;
-			room["forbidden_types"] = rp.hostInfo.forb;
-			room["extra_rules"] = rp.hostInfo.extraRules;
-			room["start_lp"] = rp.hostInfo.startingLP;
-			room["start_hand"] = rp.hostInfo.startingDrawCount;
-			room["draw_count"] = rp.hostInfo.drawCountPerTurn;
-			room["time_limit"] = rp.hostInfo.timeLimitInSeconds;
-			room["rule"] = rp.hostInfo.allowed;
-			room["no_check"] = static_cast<bool>(rp.hostInfo.dontCheckDeck);
-			room["no_shuffle"] = static_cast<bool>(rp.hostInfo.dontShuffleDeck);
-			room["banlist_hash"] = rp.hostInfo.banlistHash;
+			room["team1"] = hi.t0Count;
+			room["team2"] = hi.t1Count;
+			room["best_of"] = hi.bestOf;
+			room["duel_flag"] = YGOPro::HostInfo::OrDuelFlags(hi.duelFlagsHigh, hi.duelFlagsLow);
+			room["forbidden_types"] = hi.forb;
+			room["extra_rules"] = hi.extraRules;
+			room["start_lp"] = hi.startingLP;
+			room["start_hand"] = hi.startingDrawCount;
+			room["draw_count"] = hi.drawCountPerTurn;
+			room["time_limit"] = hi.timeLimitInSeconds;
+			room["rule"] = hi.allowed;
+			room["no_check"] = static_cast<bool>(hi.dontCheckDeck);
+			room["no_shuffle"] = static_cast<bool>(hi.dontShuffleDeck);
+			room["banlist_hash"] = hi.banlistHash;
 			room["istart"] = rp.started ? "start" : "waiting";
 			auto& ac = room["users"];
 			for(auto& kv : rp.duelists)

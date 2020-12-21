@@ -53,15 +53,20 @@ struct HostInfo
 	uint8_t startingDrawCount;
 	uint8_t drawCountPerTurn;
 	uint16_t timeLimitInSeconds;
-	uint32_t : 32U; //padding to account for the previous 64 bit value
+	uint32_t duelFlagsHigh; // OR'd with duelFlagsLow
 	uint32_t handshake;
 	ClientVersion version;
 	int32_t t0Count;
 	int32_t t1Count;
 	int32_t bestOf;
-	uint32_t duelFlags;
+	uint32_t duelFlagsLow; // OR'd with duelFlagsHigh
 	int32_t forb; // Forbidden types
 	uint16_t extraRules; // Double deck, Speed duel, etc
+
+	static constexpr uint64_t OrDuelFlags(uint32_t high, uint32_t low)
+	{
+		return low | (static_cast<uint64_t>(high) << 32U);
+	}
 };
 
 } // namespace YGOPro

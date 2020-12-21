@@ -144,7 +144,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 {
 	auto ValidateDuelistsSetup = [&]() -> bool
 	{
-		if((hostInfo.duelFlags & DUEL_RELAY) == 0U)
+		if((hostInfo.duelFlagsLow & DUEL_RELAY) == 0U)
 			return int32_t(duelists.size()) == hostInfo.t0Count + hostInfo.t1Count;
 		const auto teamCount = GetTeamCounts();
 		if(teamCount[0U] == 0U || teamCount[1U] == 0U)

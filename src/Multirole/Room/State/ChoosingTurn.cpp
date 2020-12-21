@@ -21,7 +21,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 		(e.client.Position().first == 1U && e.goingFirst));
 	auto DecidePlayerOrder = [&]() -> decltype(State::Dueling::currentPos)
 	{
-		if((hostInfo.duelFlags & DUEL_RELAY) == 0U)
+		if((hostInfo.duelFlagsLow & DUEL_RELAY) == 0U)
 		{
 			const auto teamCount = GetTeamCounts();
 			const auto it1gf = static_cast<bool>(isTeam1GoingFirst);

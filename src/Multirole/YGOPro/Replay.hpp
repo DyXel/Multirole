@@ -43,7 +43,7 @@ private:
 	const uint32_t startingLP;
 	const uint32_t startingDrawCount;
 	const uint32_t drawCountPerTurn;
-	const uint32_t duelFlags;
+	const uint64_t duelFlags;
 	const CodeVector extraCards;
 
 	std::array<std::map<uint8_t, Duelist>, 2U> duelists;
