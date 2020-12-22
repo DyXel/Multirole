@@ -24,7 +24,41 @@ StateOpt Context::operator()(State::Dueling& s)
 	if(!rng)
 		rng = std::make_unique<std::mt19937>(id);
 	const auto seed = static_cast<uint32_t>((*rng)());
-	// Create core duel with room's options
+	// Enable extra rules for the duel.
+	// These are controlled simply by adding custom cards
+	// with the rulesets to the game as playable cards, they will
+	// trigger immediately after the duel starts.
+	std::vector<uint32_t> extraCards;
+#define X(f, c) if(hostInfo.extraRules & (f)) extraCards.push_back(c)
+	// NOTE: no lint used because we dont want clang-tidy to complain
+	// about magic numbers we already know.
+	X(EXTRA_RULE_SEALED_DUEL,        511005092U); // NOLINT
+	X(EXTRA_RULE_BOOSTER_DUEL,       511005093U); // NOLINT
+	X(EXTRA_RULE_DESTINY_DRAW,       511004000U); // NOLINT
+	X(EXTRA_RULE_CONCENTRATION_DUEL, 511004322U); // NOLINT
+	X(EXTRA_RULE_BOSS_DUEL,          95000000U);  // NOLINT
+	X(EXTRA_RULE_BATTLE_CITY,        511004014U); // NOLINT
+	X(EXTRA_RULE_DUELIST_KINGDOM,    511002621U); // NOLINT
+	X(EXTRA_RULE_DIMENSION_DUEL,     511600002U); // NOLINT
+	X(EXTRA_RULE_TURBO_DUEL,         110000000U); // NOLINT
+	X(EXTRA_RULE_COMMAND_DUEL,       95200000U);  // NOLINT
+	X(EXTRA_RULE_DECK_MASTER,        300U);       // NOLINT
+	X(EXTRA_RULE_ACTION_DUEL,        151999999U); // NOLINT
+#undef X
+	// Construct replay.
+	auto CurrentTime = []()
+	{
+		using namespace std::chrono;
+		return system_clock::to_time_t(system_clock::now());
+	};
+	s.replay = std::make_unique<YGOPro::Replay>
+	(
+		static_cast<uint32_t>(CurrentTime()),
+		seed,
+		hostInfo,
+		extraCards
+	);
+	// Create core duel with room's options.
 	const OCG_Player popt =
 	{
 		hostInfo.startingLP,
@@ -57,27 +91,6 @@ StateOpt Context::operator()(State::Dueling& s)
 		spdlog::error("Core exception at creation: {}", e.what());
 		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
 	}
-	// Enable extra rules for the duel.
-	// These are controlled simply by adding custom cards
-	// with the rulesets to the game as playable cards, they will
-	// trigger immediately after the duel starts.
-	std::vector<uint32_t> extraCards;
-#define X(f, c) if(hostInfo.extraRules & (f)) extraCards.push_back(c)
-	// NOTE: no lint used because we dont want clang-tidy to complain
-	// about magic numbers we already know.
-	X(EXTRA_RULE_SEALED_DUEL,        511005092U); // NOLINT
-	X(EXTRA_RULE_BOOSTER_DUEL,       511005093U); // NOLINT
-	X(EXTRA_RULE_DESTINY_DRAW,       511004000U); // NOLINT
-	X(EXTRA_RULE_CONCENTRATION_DUEL, 511004322U); // NOLINT
-	X(EXTRA_RULE_BOSS_DUEL,          95000000U);  // NOLINT
-	X(EXTRA_RULE_BATTLE_CITY,        511004014U); // NOLINT
-	X(EXTRA_RULE_DUELIST_KINGDOM,    511002621U); // NOLINT
-	X(EXTRA_RULE_DIMENSION_DUEL,     511600002U); // NOLINT
-	X(EXTRA_RULE_TURBO_DUEL,         110000000U); // NOLINT
-	X(EXTRA_RULE_COMMAND_DUEL,       95200000U);  // NOLINT
-	X(EXTRA_RULE_DECK_MASTER,        300U);       // NOLINT
-	X(EXTRA_RULE_ACTION_DUEL,        151999999U); // NOLINT
-#undef X
 	OCG_NewCardInfo nci{};
 	try
 	{
@@ -93,19 +106,6 @@ StateOpt Context::operator()(State::Dueling& s)
 		spdlog::error("Core exception at extra cards addition: {}", e.what());
 		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
 	}
-	// Construct replay.
-	auto CurrentTime = []()
-	{
-		using namespace std::chrono;
-		return system_clock::to_time_t(system_clock::now());
-	};
-	s.replay = std::make_unique<YGOPro::Replay>
-	(
-		static_cast<uint32_t>(CurrentTime()),
-		seed,
-		hostInfo,
-		extraCards
-	);
 	// Add main and extra deck cards for all players.
 	auto ReversedOrShuffled = [&](CodeVector deck) // NOTE: Copy is intentional.
 	{
