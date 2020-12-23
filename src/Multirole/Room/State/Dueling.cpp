@@ -453,7 +453,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		}
 		else if(msgType == MSG_WIN)
 		{
-			uint8_t winner = GetSwappedTeam(msg[1U]);
+			uint8_t winner = (msg[1U] > 1U) ? 2U : GetSwappedTeam(msg[1U]);
 			return DuelFinishReason{Reason::REASON_DUEL_WON, winner};
 		}
 		else if(DoesMessageRequireAnswer(msgType))
