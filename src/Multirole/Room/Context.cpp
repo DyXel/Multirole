@@ -260,15 +260,13 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	//	true if card code exists on the banlist and exceeds the listed amount.
 	auto CheckBanlist = [](const auto& kv, const Banlist& bl) -> bool
 	{
-		if(bl.IsWhitelist() && bl.Whitelist().count(kv.first) == 0U)
-			return true;
 		if(bl.Forbidden().count(kv.first) != 0U)
 			return true;
-		if(kv.second > 1U && (bl.Limited().count(kv.first) != 0U))
-			return true;
-		if(kv.second > 2U && (bl.Semilimited().count(kv.first) != 0U))
-			return true;
-		return false;
+		if(bl.Limited().count(kv.first) != 0U)
+			return kv.second > 1U;
+		if(bl.Semilimited().count(kv.first) != 0U)
+			return kv.second > 2U;
+		return bl.IsWhitelist() && (bl.Whitelist().count(kv.first) == 0U);
 	};
 	for(const auto& kv : all)
 	{
