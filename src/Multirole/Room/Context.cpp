@@ -201,20 +201,6 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	// Check if the deck had any error while loading.
 	if(deck.Error() != 0U)
 		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
-	auto all = deck.GetCodeMap();
-	// Merge aliased cards to their original code and delete them
-	for(auto it = all.begin(), last = all.end(); it != last;)
-	{
-		if(uint32_t alias = cdb->DataFromCode(it->first).alias; alias != 0U)
-		{
-			all[alias] = all[alias] + it->second;
-			it = all.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
 	// Check if the deck obeys the limits.
 	auto OutOfBound = [](const auto& lim, const CodeVector& vector) -> auto
 	{
@@ -227,8 +213,46 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		return MakeErrorLimitsPtr(DECK_BAD_EXTRA_COUNT, p.first, limits.extra);
 	if(const auto p = OutOfBound(limits.side, deck.Side()); p.second)
 		return MakeErrorLimitsPtr(DECK_BAD_SIDE_COUNT, p.first, limits.side);
+	// Check per-code properties.
+	// Get un-aliased map that will be updated a bit later...
+	auto aliased = deck.GetCodeMap();
+	// Make copy of "un-aliased" card codes.
+	const auto codes = [&aliased]()
+	{
+		std::set<uint32_t> ret;
+		for(const auto& kv : aliased)
+			ret.insert(kv.first);
+		return ret;
+	}();
+	// Save alias mapping while updating map to only store aliased counts.
+	const auto aliases = [&]()
+	{
+		std::map<uint32_t, uint32_t> ret;
+		for(auto it = aliased.begin(), last = aliased.end(); it != last;)
+		{
+			uint32_t code = it->first;
+			if(uint32_t alias = cdb->DataFromCode(code).alias; alias != 0U)
+			{
+				ret[code] = alias;
+				aliased[alias] = aliased[alias] + it->second;
+				it = aliased.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+		return ret;
+	}();
+	// Fetch actual count of particular card even if aliased.
+	auto GetTotalCount = [&aliased, &aliases](uint32_t code) -> std::size_t
+	{
+		if(auto search = aliases.find(code); search != aliases.end())
+			return aliased[search->second];
+		return aliased[code];
+	};
 	// Custom predicates...
-	//	true if card scope is unnofficial using currently allowed mode.
+	//	true if card scope is unnofficial and not allowed.
 	auto CheckUnofficial = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
 		switch(allowed)
@@ -258,33 +282,34 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		return allowed == ALLOWED_CARDS_TCG_ONLY && ((scope & SCOPE_TCG) == 0U);
 	};
 	//	true if card code exists on the banlist and exceeds the listed amount.
-	auto CheckBanlist = [](const auto& kv, const Banlist& bl) -> bool
+	auto CheckBanlist = [&](uint32_t code, std::size_t count, const Banlist& bl) -> bool
 	{
-		if(bl.Forbidden().count(kv.first) != 0U)
+		if(bl.Forbidden().count(code) != 0U)
 			return true;
-		if(bl.Limited().count(kv.first) != 0U)
-			return kv.second > 1U;
-		if(bl.Semilimited().count(kv.first) != 0U)
-			return kv.second > 2U;
-		return bl.IsWhitelist() && (bl.Whitelist().count(kv.first) == 0U);
+		if(bl.Limited().count(code) != 0U)
+			return count > 1U;
+		if(bl.Semilimited().count(code) != 0U)
+			return count > 2U;
+		return bl.IsWhitelist() && (bl.Whitelist().count(code) == 0U);
 	};
-	for(const auto& kv : all)
+	for(const auto code : codes)
 	{
-		if(kv.second > 3U)
-			return MakeErrorPtr(CARD_MORE_THAN_3, kv.first);
-		if((cdb->DataFromCode(kv.first).type & hostInfo.forb) != 0U)
-			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, kv.first);
-		const auto& ced = cdb->ExtraFromCode(kv.first);
+		const uint32_t totalCount = GetTotalCount(code);
+		if(totalCount > 3U)
+			return MakeErrorPtr(CARD_MORE_THAN_3, code);
+		if((cdb->DataFromCode(code).type & hostInfo.forb) != 0U)
+			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, code);
+		const auto& ced = cdb->ExtraFromCode(code);
 		if(CheckUnofficial(ced.scope, hostInfo.allowed))
-			return MakeErrorPtr(CARD_UNOFFICIAL, kv.first);
+			return MakeErrorPtr(CARD_UNOFFICIAL, code);
 		if(CheckPrelease(ced.scope, hostInfo.allowed))
-			return MakeErrorPtr(CARD_UNOFFICIAL, kv.first);
+			return MakeErrorPtr(CARD_UNOFFICIAL, code);
 		if(CheckOCG(ced.scope, hostInfo.allowed))
-			return MakeErrorPtr(CARD_TCG_ONLY, kv.first);
+			return MakeErrorPtr(CARD_TCG_ONLY, code);
 		if(CheckTCG(ced.scope, hostInfo.allowed))
-			return MakeErrorPtr(CARD_OCG_ONLY, kv.first);
-		if((banlist != nullptr) && CheckBanlist(kv, *banlist))
-			return MakeErrorPtr(CARD_BANLISTED, kv.first);
+			return MakeErrorPtr(CARD_OCG_ONLY, code);
+		if((banlist != nullptr) && CheckBanlist(code, totalCount, *banlist))
+			return MakeErrorPtr(CARD_BANLISTED, code);
 	}
 	return nullptr;
 }
