@@ -574,6 +574,12 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x30681FFF});
 		break;
 	}
+	case MSG_RELOAD_FIELD:
+	{
+		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_EXTRA, 0x381FFF});
+		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_EXTRA, 0x381FFF});
+		break;
+	}
 	}
 	return qreqs;
 }
