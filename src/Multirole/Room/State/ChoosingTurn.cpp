@@ -37,6 +37,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	{
 		coreProvider.GetCore(),
 		nullptr,
+		0U,
 		nullptr,
 		DecidePlayerOrder(),
 		nullptr,

@@ -40,6 +40,7 @@ struct Dueling
 {
 	std::shared_ptr<Core::IWrapper> core;
 	void* duelPtr;
+	uint64_t replayId;
 	std::unique_ptr<YGOPro::Replay> replay;
 	std::array<uint8_t, 2U> currentPos;
 	Client* replier;

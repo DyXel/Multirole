@@ -46,6 +46,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	X(EXTRA_RULE_ACTION_DUEL,        151999999U); // NOLINT
 #undef X
 	// Construct replay.
+	s.replayId = replayManager.NewId();
 	auto CurrentTime = []()
 	{
 		using namespace std::chrono;
@@ -88,7 +89,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error("Core exception at creation: {}", e.what());
+		spdlog::error("Core exception at creation (Replay ID: {}): {}", s.replayId, e.what());
 		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
 	}
 	OCG_NewCardInfo nci{};
@@ -103,7 +104,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error("Core exception at extra cards addition: {}", e.what());
+		spdlog::error("Core exception at extra cards addition (Replay ID: {}): {}", s.replayId, e.what());
 		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
 	}
 	// Add main and extra deck cards for all players.
@@ -199,7 +200,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error("Core exception at starting: {}", e.what());
+		spdlog::error("Core exception at starting (Replay ID: {}): {}", s.replayId, e.what());
 		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
 	}
 	// Start processing the duel.
@@ -252,7 +253,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error("Core exception at response setting: {}", e.what());
+		spdlog::error("Core exception at response setting (Replay ID: {}): {}", s.replayId, e.what());
 		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
 	}
 	if(const auto dfrOpt = Process(s); dfrOpt)
@@ -448,6 +449,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		uint8_t msgType = GetMessageType(msg);
 		if(msgType == MSG_RETRY)
 		{
+			spdlog::error("MSG_RETRY received from core. Replay ID: {}", s.replayId);
 			uint8_t winner = 1U - s.replier->Position().first;
 			return DuelFinishReason{Reason::REASON_WRONG_RESPONSE, winner};
 		}
@@ -497,7 +499,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error("Core exception at processing: {}", e.what());
+		spdlog::error("Core exception at processing (Replay ID: {}): {}", s.replayId, e.what());
 		return DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U};
 	}
 	return std::nullopt;
@@ -517,7 +519,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		}
 		catch(Core::Exception& e)
 		{
-			spdlog::info("Core exception at destruction: {}", e.what());
+			spdlog::info("Core exception at destruction (Replay ID: {}): {}", s.replayId, e.what());
 		}
 	}
 	tagg.Cancel(0U);
@@ -536,8 +538,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	auto SendReplay = [&]()
 	{
 		s.replay->Serialize();
-		// TODO: take newId when the duel is created rather than here
-		replayManager.Save(replayManager.NewId(), *s.replay);
+		replayManager.Save(s.replayId, *s.replay);
 		if(s.replay->Bytes().size() > YGOPro::STOCMsg::MAX_PAYLOAD_SIZE)
 			SendToAll(MakeChat(CHAT_MSG_TYPE_SYSTEM, "Cannot send replay. Too Big."));
 		else
