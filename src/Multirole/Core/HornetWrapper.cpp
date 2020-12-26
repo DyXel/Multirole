@@ -239,7 +239,7 @@ void HornetWrapper::DestroySharedSegment()
 	ipc::shared_memory_object::remove(shmName.data());
 }
 
-void HornetWrapper::NotifyAndWait(Hornet::Action act)
+void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 {
 	// Time to wait before checking for process being dead
 	auto NowPlusOffset = []() -> boost::posix_time::ptime
@@ -247,6 +247,7 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 		using namespace boost::posix_time;
 		return microsec_clock::universal_time() + milliseconds(125);
 	};
+	Hornet::Action recvAct = Hornet::Action::NO_WORK;
 	{
 		Hornet::LockType lock(hss->mtx);
 		hss->act = act;
@@ -257,10 +258,9 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 				continue;
 			throw Core::Exception("Hornet hanged!");
 		}
+		recvAct = hss->act;
 	}
-	if(hss->act == Hornet::Action::NO_WORK)
-		return;
-	switch(hss->act)
+	switch(recvAct)
 	{
 		case Hornet::Action::CB_DATA_READER:
 		{
