@@ -163,6 +163,7 @@ bool DoesMessageRequireAnswer(uint8_t msgType)
 	case MSG_SELECT_PLACE:
 	case MSG_SELECT_DISFIELD:
 	case MSG_SELECT_POSITION:
+	case MSG_SORT_CARD:
 	case MSG_SORT_CHAIN:
 	case MSG_SELECT_COUNTER:
 	case MSG_SELECT_SUM:
@@ -201,6 +202,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	case MSG_SELECT_PLACE:
 	case MSG_SELECT_DISFIELD:
 	case MSG_SELECT_POSITION:
+	case MSG_SORT_CARD:
 	case MSG_SORT_CHAIN:
 	case MSG_SELECT_COUNTER:
 	case MSG_SELECT_SUM:
