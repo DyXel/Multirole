@@ -1,6 +1,4 @@
 # TODO
-* Fix banlist being removed and replaced while rooms are still using them
-  * Return smart pointer of banlists rather than normal pointer
 * Add more functionality for CoreProvider
   * Make copy of used shared library because it cannot be overwritten while being used
   * Do sanity check at startup and after updating core
@@ -8,6 +6,8 @@
   * Handle core not loading after webhook is triggered
     * Try to fallback to the core that was working already
 * Investigate Sealed Duel finishing with time up
+* Investigate top deck being moved to overlay and not showing
+* Fix tag duels having swapped decks (reported only 3v3)
 * Implement STOC_CHAT_2
 * Implement anti-stalling measures
 * Fix webhooks not being marked as OK
