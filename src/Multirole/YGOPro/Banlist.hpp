@@ -1,6 +1,7 @@
 #ifndef YGOPRO_BANLIST_HPP
 #define YGOPRO_BANLIST_HPP
 #include <cstdint>
+#include <memory>
 #include <unordered_set>
 
 namespace YGOPro
@@ -24,6 +25,8 @@ private:
 	CodeSet limited;
 	CodeSet forbidden;
 };
+
+using BanlistPtr = std::shared_ptr<Banlist>;
 
 } // namespace Multirole
 

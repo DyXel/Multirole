@@ -32,7 +32,7 @@ public:
 		std::shared_ptr<CardDatabase> cdb;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
-		const YGOPro::Banlist* banlist;
+		YGOPro::BanlistPtr banlist;
 		std::string name;
 		std::string notes;
 		std::string pass;

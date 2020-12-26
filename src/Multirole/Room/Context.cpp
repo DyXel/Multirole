@@ -23,7 +23,7 @@ Context::Context(CreateInfo&& info)
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
 	limits(std::move(info.limits)),
-	banlist(info.banlist)
+	banlist(std::move(info.banlist))
 {}
 
 const YGOPro::HostInfo& Context::HostInfo() const

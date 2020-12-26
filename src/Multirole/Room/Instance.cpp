@@ -18,7 +18,7 @@ Instance::Instance(CreateInfo&& info)
 		std::move(info.cdb),
 		std::move(info.hostInfo),
 		std::move(info.limits),
-		info.banlist}),
+		std::move(info.banlist)}),
 	state(State::Waiting{nullptr}),
 	name(std::move(info.name)),
 	notes(std::move(info.notes)),

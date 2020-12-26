@@ -14,6 +14,7 @@ namespace YGOPro
 {
 
 class Banlist;
+using BanlistPtr = std::shared_ptr<Banlist>;
 
 } // namespace YGOPro
 
@@ -43,7 +44,7 @@ public:
 		std::shared_ptr<CardDatabase> cdb;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
-		const YGOPro::Banlist* banlist;
+		YGOPro::BanlistPtr banlist;
 	};
 
 	Context(CreateInfo&& info);
@@ -141,7 +142,7 @@ private:
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
 	const YGOPro::DeckLimits limits;
-	const YGOPro::Banlist* banlist;
+	YGOPro::BanlistPtr banlist;
 
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;

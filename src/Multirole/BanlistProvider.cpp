@@ -14,11 +14,11 @@ BanlistProvider::BanlistProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-const YGOPro::Banlist* BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) const
+YGOPro::BanlistPtr BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) const
 {
 	std::shared_lock lock(mBanlists);
 	if(auto search = banlists.find(hash); search != banlists.end())
-		return &search->second;
+		return search->second;
 	return nullptr;
 }
 

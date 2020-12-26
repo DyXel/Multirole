@@ -8,7 +8,7 @@ namespace YGOPro
 {
 
 using BanlistHash = uint32_t;
-using BanlistMap = std::unordered_map<BanlistHash, Banlist>;
+using BanlistMap = std::unordered_map<BanlistHash, BanlistPtr>;
 
 } // namespace YGOPro
 
@@ -48,13 +48,15 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 	{
 		if(hash == Detail::BANLIST_HASH_MAGIC)
 			return;
-		banlists.emplace(std::piecewise_construct, std::forward_as_tuple(hash),
-			std::forward_as_tuple(
-				std::move(whit),
-				std::move(semi),
-				std::move(limi),
-				std::move(forb)
-			)
+		auto banlist = std::make_shared<Banlist>(
+			std::move(whit),
+			std::move(semi),
+			std::move(limi),
+			std::move(forb)
+		);
+		banlists.emplace(std::piecewise_construct,
+			std::forward_as_tuple(hash),
+			std::forward_as_tuple(std::move(banlist))
 		);
 	};
 	std::string l;
