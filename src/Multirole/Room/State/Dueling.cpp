@@ -300,10 +300,26 @@ Client& Context::GetCurrentTeamClient(State::Dueling& s, uint8_t team)
 std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 {
 	using namespace YGOPro::CoreUtils;
-	auto PreAnalyzeMsg = [&](const Msg& msg)
+	auto PreAnalyzeMsg = [&](const Msg& msg) -> bool
 	{
 		uint8_t msgType = GetMessageType(msg);
-		if(msgType == MSG_TAG_SWAP)
+		if(msgType == MSG_RETRY)
+		{
+			if(s.retryCount[s.replier->Position().first]++ < 2)
+			{
+				s.replier->Send(retryErrorMsg);
+				if(s.lastHint.size() > 0U)
+					s.replier->Send(MakeGameMsg(s.lastHint));
+				s.replier->Send(MakeGameMsg(s.lastRequest));
+				s.replay->PopBackResponse();
+				return false;
+			}
+		}
+		else if(msgType == MSG_HINT && msg[1U] == 3U) // NOLINT: HINT_SELECTMSG
+		{
+			s.lastHint = msg;
+		}
+		else if(msgType == MSG_TAG_SWAP)
 		{
 			uint8_t team = GetSwappedTeam(msg[1U]);
 			s.currentPos[team] = (s.currentPos[team] + 1U) %
@@ -324,7 +340,9 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		{
 			uint8_t team = GetSwappedTeam(GetMessageReceivingTeam(msg));
 			s.replier = &GetCurrentTeamClient(s, team);
+			s.lastRequest = msg;
 		}
+		return true;
 	};
 	auto ProcessQueryRequests = [&](const std::vector<QueryRequest>& qreqs)
 	{
@@ -484,7 +502,8 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 	};
 	auto ProcessSingleMsg = [&](const Msg& msg) -> std::optional<DuelFinishReason>
 	{
-		PreAnalyzeMsg(msg);
+		if(!PreAnalyzeMsg(msg))
+			return std::nullopt;
 		ProcessQueryRequests(GetPreDistQueryRequests(msg));
 		DistributeMsg(msg);
 		ProcessQueryRequests(GetPostDistQueryRequests(msg));

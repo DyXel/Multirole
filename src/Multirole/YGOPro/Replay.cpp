@@ -157,6 +157,11 @@ void Replay::RecordResponse(const std::vector<uint8_t>& response)
 	responses.emplace_back(response);
 }
 
+void Replay::PopBackResponse()
+{
+	responses.pop_back();
+}
+
 void Replay::Serialize()
 {
 	auto YRPXPastHeaderSize = [&]() -> std::size_t

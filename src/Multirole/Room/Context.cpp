@@ -22,6 +22,7 @@ Context::Context(CreateInfo&& info)
 	hostInfo(std::move(info.hostInfo)),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
+	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, "Error while processing client response.")),
 	limits(std::move(info.limits)),
 	banlist(std::move(info.banlist))
 {}

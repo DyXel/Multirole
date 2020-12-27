@@ -141,6 +141,7 @@ private:
 	const YGOPro::HostInfo hostInfo;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
+	const YGOPro::STOCMsg retryErrorMsg;
 	const YGOPro::DeckLimits limits;
 	YGOPro::BanlistPtr banlist;
 

@@ -36,6 +36,8 @@ public:
 	void RecordMsg(const std::vector<uint8_t>& msg);
 	void RecordResponse(const std::vector<uint8_t>& response);
 
+	void PopBackResponse();
+
 	void Serialize();
 private:
 	const uint32_t unixTimestamp;

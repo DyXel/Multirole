@@ -43,6 +43,9 @@ struct Dueling
 	uint64_t replayId;
 	std::unique_ptr<YGOPro::Replay> replay;
 	std::array<uint8_t, 2U> currentPos;
+	std::array<uint8_t, 2U> retryCount;
+	std::vector<uint8_t> lastHint;
+	std::vector<uint8_t> lastRequest;
 	Client* replier;
 	std::optional<uint32_t> matchKillReason;
 	std::deque<YGOPro::STOCMsg> spectatorCache;
