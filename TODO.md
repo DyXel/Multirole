@@ -1,17 +1,13 @@
 # TODO
-* Add more functionality for CoreProvider
-  * Make copy of used shared library because it cannot be overwritten while being used
-  * Do sanity check at startup and after updating core
-  * Load and cache core version and remove compile-time version
-  * Handle core not loading after webhook is triggered
-    * Try to fallback to the core that was working already
-* Investigate Sealed Duel finishing with time up
-* Investigate top deck being moved to overlay and not showing
 * Fix tag duels having swapped decks (reported only 3v3)
+* Review all places where connections are terminated and make sure their termination is graceful (closed by client)
+  * Webhook (Not marked as OK by github)
+  * RoomHosting
+  * All State(s), specially State::Closing
 * Implement STOC_CHAT_2
 * Implement anti-stalling measures
-* Fix webhooks not being marked as OK
-  * Review all places where connections are terminated and make sure their termination is graceful
+* Implement banlist "anime check"
+* Investigate top deck being moved to overlay and not showing
 * Finish README
 * Overhaul error logging mechanism
   * Send error messages to clients
@@ -25,4 +21,11 @@
 * Make `GitRepo` able to use local repositories, either without cloning or cloning locally
 * Check used enums and try to use `enum class` where possible
   * Also try to forward declare as many of them as possible
+* CoreProvider: Load and cache core version and remove compile-time version.
 * Search workarounds for LZMA compression allocating big blocks of memory
+* Use boost througly rather than handrolled solutions
+  * FileSystem.hpp == boost.FileSystem
+  * Hornet core process launching mechanism == boost.Process
+  * asio == Boost.Asio
+  * nlohmann.Json == Boost.Json?
+  * spdlog == Boost.Log?
