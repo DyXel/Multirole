@@ -18,6 +18,16 @@ constexpr unsigned int GetConcurrency(int hint)
 	return static_cast<unsigned int>(hint);
 }
 
+inline CoreProvider::CoreType GetCoreType(std::string_view str)
+{
+	CoreProvider::CoreType ret = CoreProvider::CoreType::SHARED;
+	if(str == "hornet")
+		ret = CoreProvider::CoreType::HORNET;
+	else if(str != "shared")
+		throw std::runtime_error("Incorrect type of core.");
+	return ret;
+}
+
 // public
 
 Instance::Instance(const nlohmann::json& cfg) :
@@ -32,7 +42,10 @@ Instance::Instance(const nlohmann::json& cfg) :
 	scriptProvider(
 		cfg.at("scriptProvider").at("fileRegex").get<std::string>()),
 	coreProvider(
-		cfg.at("coreProvider").at("fileRegex").get<std::string>()),
+		cfg.at("coreProvider").at("fileRegex").get<std::string>(),
+		cfg.at("coreProvider").at("tmpPath").get<std::string>(),
+		GetCoreType(cfg.at("coreProvider").at("coreType").get<std::string>()),
+		cfg.at("coreProvider").at("loadPerRoom").get<bool>()),
 	banlistProvider(
 		cfg.at("banlistProvider").at("fileRegex").get<std::string>()),
 	lobbyListing(
@@ -68,19 +81,7 @@ Instance::Instance(const nlohmann::json& cfg) :
 	RegRepos(dataProvider, cfg.at("dataProvider").at("observedRepos"));
 	RegRepos(scriptProvider, cfg.at("scriptProvider").at("observedRepos"));
 	RegRepos(banlistProvider, cfg.at("banlistProvider").at("observedRepos"));
-	// Set up coreProvider
-	{
-		const auto& cpProps = cfg.at("coreProvider");
-		const auto& coreTypeStr = cpProps.at("coreType").get<std::string>();
-		const auto loadPerRoom = cpProps.at("loadPerRoom").get<bool>();
-		CoreProvider::CoreType type = CoreProvider::CoreType::SHARED;
-		if(coreTypeStr == "hornet")
-			type = CoreProvider::CoreType::HORNET;
-		else if(coreTypeStr != "shared")
-			throw std::runtime_error("Incorrect type of core.");
-		coreProvider.SetLoadProperties(type, loadPerRoom);
-		RegRepos(coreProvider, cfg.at("coreProvider").at("observedRepos"));
-	}
+	RegRepos(coreProvider, cfg.at("coreProvider").at("observedRepos"));
 	// Register signal
 	spdlog::info("Setting up signal handling...");
 	signalSet.add(SIGTERM);
@@ -112,7 +113,7 @@ int Instance::Run()
 constexpr const char* UNFINISHED_DUELS_STRING =
 "All done, server will gracefully finish execution"
 " after all duels finish. If you wish to forcefully end"
-" you can terminate the process safely now (SIGKILL)";
+" you can terminate the process safely now (SIGTERM/SIGKILL)";
 
 void Instance::Stop()
 {

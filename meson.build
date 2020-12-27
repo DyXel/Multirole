@@ -16,6 +16,7 @@ thread_dep  = dependency('threads')
 
 multirole_src_files = files([
 	'src/DLOpen.cpp',
+	'src/FileSystem.cpp',
 	'src/Multirole/BanlistProvider.cpp',
 	'src/Multirole/CardDatabase.cpp',
 	'src/Multirole/CoreProvider.cpp',

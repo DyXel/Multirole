@@ -1,5 +1,6 @@
 #ifndef COREPROVIDER_HPP
 #define COREPROVIDER_HPP
+#include <chrono>
 #include <regex>
 #include <memory>
 #include <shared_mutex>
@@ -27,11 +28,10 @@ public:
 
 	using CorePtr = std::shared_ptr<Core::IWrapper>;
 
-	CoreProvider(std::string_view fnRegexStr);
-	void SetLoadProperties(CoreType typeValue, bool loadPerCallValue);
+	CoreProvider(std::string_view fnRegexStr, std::string_view tmpPath, CoreType type, bool loadPerCall);
+	~CoreProvider();
 
-	// Will return a core instance based on the options set by
-	// SetLoadProperties.
+	// Will return a core instance based on the options set.
 	CorePtr GetCore() const;
 
 	// IGitRepoObserver overrides
@@ -39,8 +39,12 @@ public:
 	void OnDiff(std::string_view path, const GitDiff& diff) override;
 private:
 	const std::regex fnRegex;
-	CoreType type;
-	bool loadPerCall;
+	const std::string tmpPath;
+	const CoreType type;
+	const bool loadPerCall;
+	const std::chrono::system_clock::rep uniqueId;
+	std::size_t loadCount;
+	bool shouldTest;
 	std::string corePath;
 	CorePtr core;
 	mutable std::shared_mutex mCore; // used for both corePath and core.

@@ -43,6 +43,7 @@
 	},
 	"coreProvider": {
 		"observedRepos" : ["bin"],
+		"tmpPath" : "./tmp",
 		"fileRegex": ".*libocgcore\\.so",
 		"coreType": "hornet",
 		"loadPerRoom": true

@@ -4,32 +4,8 @@
 #include <spdlog/spdlog.h>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
+#include "../FileSystem.hpp"
 #include "YGOPro/Replay.hpp"
-
-// Creates a folder on the given path.
-// Returns true if succesful or if directory already existed, false otherwise.
-bool MakeDir(std::string_view path);
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-bool MakeDir(std::string_view path)
-{
-	return CreateDirectoryA(path.data(), NULL) || ERROR_ALREADY_EXISTS == GetLastError();
-}
-
-#else
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-bool MakeDir(std::string_view path)
-{
-	return !mkdir(path.data(), 0777) || errno == EEXIST;
-}
-
-#endif
 
 namespace Ignis::Multirole
 {
@@ -40,7 +16,7 @@ constexpr auto IOS_BINARY_OUT = IOS_BINARY | std::ios_base::out;
 
 inline std::string MakeDirAndString(std::string_view path)
 {
-	if(!MakeDir(path))
+	if(!FileSystem::MakeDir(path))
 		throw std::runtime_error("ReplayManager: Could not make replay folder");
 	return std::string(path);
 }
