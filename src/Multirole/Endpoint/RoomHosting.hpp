@@ -7,6 +7,8 @@
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
+#include "../YGOPro/STOCMsg.hpp"
+
 namespace Ignis::Multirole
 {
 
@@ -41,6 +43,10 @@ public:
 	RoomHosting(CreateInfo&& info);
 	void Stop();
 private:
+	const YGOPro::STOCMsg versionMismatch;
+	const YGOPro::STOCMsg roomNotFound1;
+	const YGOPro::STOCMsg roomNotFound2;
+	const YGOPro::STOCMsg wrongPass;
 	asio::io_context& ioCtx;
 	asio::ip::tcp::acceptor acceptor;
 	BanlistProvider& banlistProvider;

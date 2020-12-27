@@ -19,6 +19,8 @@
 namespace Ignis::Multirole::Endpoint
 {
 
+constexpr const char* ROOM_404 = "Room not found. Try refreshing the list!";
+
 constexpr bool operator!=(
 	const YGOPro::ClientVersion& v1,
 	const YGOPro::ClientVersion& v2)
@@ -62,6 +64,13 @@ constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
 	return l;
 }
 
+template<typename Buffer>
+inline std::string Utf16BufferToStr(const Buffer& buffer)
+{
+	using namespace YGOPro;
+	return UTF16ToUTF8(BufferToUTF16(buffer, sizeof(Buffer)));
+}
+
 // Holds information about the client before a proper connection to a Room
 // has been established.
 struct TmpClient
@@ -78,6 +87,10 @@ struct TmpClient
 
 RoomHosting::RoomHosting(CreateInfo&& info)
 	:
+	versionMismatch(STOCMsgFactory::MakeVersionError(YGOPro::SERVER_VERSION)),
+	roomNotFound1(STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_SYSTEM, ROOM_404)),
+	roomNotFound2(STOCMsgFactory::MakeJoinError(Error::JOIN_NOT_FOUND)),
+	wrongPass(STOCMsgFactory::MakeJoinError(Error::JOIN_WRONG_PASS)),
 	ioCtx(info.ioCtx),
 	acceptor(info.ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), info.port)),
 	banlistProvider(info.banlistProvider),
@@ -163,32 +176,30 @@ void RoomHosting::DoReadBody(const std::shared_ptr<TmpClient>& tc)
 
 bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 {
-	using namespace YGOPro;
-#define UTF16_BUFFER_TO_STR(a) \
-	UTF16ToUTF8(BufferToUTF16(a, sizeof(decltype(a))))
-	auto SendVersionError = [](asio::ip::tcp::socket& s)
+	auto SendMsg = [&socket=tc->soc](const YGOPro::STOCMsg& msg)
 	{
-		static const auto m = STOCMsgFactory::MakeVersionError(SERVER_VERSION);
-		asio::write(s, asio::buffer(m.Data(), m.Length()));
-		return false;
+		asio::write(socket, asio::buffer(msg.Data(), msg.Length()));
 	};
 	auto& msg = tc->msg;
 	switch(msg.GetType())
 	{
-	case CTOSMsg::MsgType::PLAYER_INFO:
+	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
 	{
 		auto p = msg.GetPlayerInfo();
 		if(!p)
 			return false;
-		tc->name = UTF16_BUFFER_TO_STR(p->name);
+		tc->name = Utf16BufferToStr(p->name);
 		return true;
 	}
-	case CTOSMsg::MsgType::CREATE_GAME:
+	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
 	{
 		auto p = msg.GetCreateGame();
-		if(!p || p->hostInfo.handshake != SERVER_HANDSHAKE ||
-		   p->hostInfo.version != SERVER_VERSION)
-			return SendVersionError(tc->soc);
+		if(!p || p->hostInfo.handshake != YGOPro::SERVER_HANDSHAKE ||
+		   p->hostInfo.version != YGOPro::SERVER_VERSION)
+		{
+			SendMsg(versionMismatch);
+			return false;
+		}
 		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
 		Room::Instance::CreateInfo info =
 		{
@@ -201,9 +212,9 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 			p->hostInfo,
 			LimitsFromFlags(info.hostInfo.extraRules),
 			banlistProvider.GetBanlistByHash(p->hostInfo.banlistHash),
-			UTF16_BUFFER_TO_STR(p->name),
+			Utf16BufferToStr(p->name),
 			std::string(p->notes),
-			UTF16_BUFFER_TO_STR(p->pass)
+			Utf16BufferToStr(p->pass)
 		};
 		// Fix some of the options back into expected values in case of
 		// exceptions.
@@ -224,13 +235,23 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 		client->Start(std::move(room));
 		return false;
 	}
-	case CTOSMsg::MsgType::JOIN_GAME:
+	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
 	{
 		auto p = msg.GetJoinGame();
-		if(!p || p->version != SERVER_VERSION)
-			return SendVersionError(tc->soc);
-		auto room = lobby.GetRoomById(p->id);
-		if(room && room->CheckPassword(UTF16_BUFFER_TO_STR(p->pass)))
+		if(!p || p->version != YGOPro::SERVER_VERSION)
+		{
+			SendMsg(versionMismatch);
+		}
+		if(auto room = lobby.GetRoomById(p->id); !room)
+		{
+			SendMsg(roomNotFound1);
+			SendMsg(roomNotFound2);
+		}
+		else if(!room->CheckPassword(Utf16BufferToStr(p->pass)))
+		{
+			SendMsg(wrongPass);
+		}
+		else
 		{
 			auto client = std::make_shared<Room::Client>(
 				*room,
@@ -239,7 +260,7 @@ bool RoomHosting::HandleMsg(const std::shared_ptr<TmpClient>& tc)
 			client->RegisterToOwner();
 			client->Start(std::move(room));
 		}
-		return false;
+		[[fallthrough]];
 	}
 	default: return false;
 	}

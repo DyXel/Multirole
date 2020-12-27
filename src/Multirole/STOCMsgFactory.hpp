@@ -11,9 +11,9 @@ namespace Error
 
 enum Join : uint32_t
 {
-	JOIN_NOT_FOUND  = 0x0,
 	JOIN_WRONG_PASS = 0x1,
 // 	JOIN_REFUSED    = 0x2,
+	JOIN_NOT_FOUND  = 0x9,
 };
 
 enum DeckOrCard : uint8_t
