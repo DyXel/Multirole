@@ -15,6 +15,14 @@ namespace Ignis::Multirole::Room
 
 constexpr auto GRACE_PERIOD = std::chrono::seconds(5);
 
+inline void ResetTimers(State::Dueling& s, uint32_t limitInSeconds)
+{
+	using namespace std::chrono;
+	const auto secs = seconds(limitInSeconds) + GRACE_PERIOD;
+	const auto time = duration_cast<milliseconds>(secs);
+	s.timeRemaining = {time, time};
+}
+
 StateOpt Context::operator()(State::Dueling& s)
 {
 	using namespace YGOPro;
@@ -204,6 +212,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		return Finish(s, DuelFinishReason{DuelFinishReason::Reason::REASON_CORE_CRASHED, 2U});
 	}
 	// Start processing the duel.
+	ResetTimers(s, hostInfo.timeLimitInSeconds);
 	if(const auto dfrOpt = Process(s); dfrOpt)
 		return Finish(s, *dfrOpt);
 	return std::nullopt;
@@ -309,11 +318,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		}
 		else if(msgType == MSG_NEW_TURN)
 		{
-			using namespace std::chrono;
-			const auto& limitInSeconds = hostInfo.timeLimitInSeconds;
-			const auto secs = seconds(limitInSeconds) + GRACE_PERIOD;
-			const auto time = duration_cast<milliseconds>(secs);
-			s.timeRemaining = {time, time};
+			ResetTimers(s, hostInfo.timeLimitInSeconds);
 		}
 		else if(DoesMessageRequireAnswer(msgType))
 		{
