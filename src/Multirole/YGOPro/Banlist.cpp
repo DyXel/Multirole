@@ -3,36 +3,19 @@
 namespace YGOPro
 {
 
-Banlist::Banlist(CodeSet&& whit, CodeSet&& semi, CodeSet&& limi, CodeSet&& forb) :
-	whitelist(std::move(whit)),
-	semilimited(std::move(semi)),
-	limited(std::move(limi)),
-	forbidden(std::move(forb))
+Banlist::Banlist(bool whitelist, DictType dict) :
+	whitelist(whitelist),
+	dict(std::move(dict))
 {}
 
 bool Banlist::IsWhitelist() const
 {
-	return !whitelist.empty();
-}
-
-const CodeSet& Banlist::Whitelist() const
-{
 	return whitelist;
 }
 
-const CodeSet& Banlist::Semilimited() const
+const Banlist::DictType& Banlist::Dict() const
 {
-	return semilimited;
-}
-
-const CodeSet& Banlist::Limited() const
-{
-	return limited;
-}
-
-const CodeSet& Banlist::Forbidden() const
-{
-	return forbidden;
+	return dict;
 }
 
 } // namespace YGOPro

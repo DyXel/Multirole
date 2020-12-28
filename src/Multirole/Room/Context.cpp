@@ -266,7 +266,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 			return false;
 		}
 	};
-	//	true if card scope is prerelease and they aren't allowed
+	//	true if card scope is prerelease and they are not allowed.
 	auto CheckPrelease = [](uint32_t scope, uint8_t allowed) constexpr -> bool
 	{
 		return allowed == ALLOWED_CARDS_WITH_PRERELEASE &&
@@ -282,16 +282,17 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	{
 		return allowed == ALLOWED_CARDS_TCG_ONLY && ((scope & SCOPE_TCG) == 0U);
 	};
-	//	true if card code exists on the banlist and exceeds the listed amount.
+	//	true if card code and its count is banlisted.
 	auto CheckBanlist = [&](uint32_t code, std::size_t count, const Banlist& bl) -> bool
 	{
-		if(bl.Forbidden().count(code) != 0U)
-			return true;
-		if(bl.Limited().count(code) != 0U)
-			return count > 1U;
-		if(bl.Semilimited().count(code) != 0U)
-			return count > 2U;
-		return bl.IsWhitelist() && (bl.Whitelist().count(code) == 0U);
+		const auto& d = bl.Dict();
+		const auto eit = d.end();
+		auto it = d.find(code);
+		if(it == eit)
+			if(auto search = aliases.find(code); search != aliases.end())
+				it = d.find(search->second);
+		return ((it != eit) && static_cast<int32_t>(count) > it->second) ||
+		       ((it == eit) && bl.IsWhitelist());
 	};
 	for(const auto code : codes)
 	{

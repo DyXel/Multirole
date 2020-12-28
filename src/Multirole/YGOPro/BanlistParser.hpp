@@ -43,17 +43,13 @@ template<typename Stream>
 void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 {
 	BanlistHash hash = Detail::BANLIST_HASH_MAGIC;
-	CodeSet whit, semi, limi, forb;
+	bool whitelist = false;
+	Banlist::DictType dict;
 	auto ConditionallyAdd = [&]()
 	{
 		if(hash == Detail::BANLIST_HASH_MAGIC)
 			return;
-		auto banlist = std::make_shared<Banlist>(
-			std::move(whit),
-			std::move(semi),
-			std::move(limi),
-			std::move(forb)
-		);
+		auto banlist = std::make_shared<Banlist>(whitelist, std::move(dict));
 		banlists.emplace(std::piecewise_construct,
 			std::forward_as_tuple(hash),
 			std::forward_as_tuple(std::move(banlist))
@@ -67,6 +63,11 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 	};
 	while(++lc, std::getline(stream, l))
 	{
+		if(l.find("$whitelist") != std::string::npos)
+		{
+			whitelist = true;
+			continue;
+		}
 		switch(l[0U])
 		{
 		case '!':
@@ -74,10 +75,8 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 			ConditionallyAdd();
 			// Reset state
 			hash = Detail::BANLIST_HASH_MAGIC;
-			whit.clear();
-			semi.clear();
-			limi.clear();
-			forb.clear();
+			whitelist = false;
+			dict.clear();
 			continue;
 		}
 		case '0': case '1': case '2': case '3': case '4':
@@ -94,18 +93,7 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 				throw MakeException("Card code cannot be 0");
 			auto count = static_cast<int32_t>(std::stol(l.substr(p, c)));
 			hash = Detail::Salt(hash, code, count);
-			switch(count)
-			{
-#define X(val, uset) case val: {uset.insert(code); break;}
-			X(3, whit)
-			X(2, semi)
-			X(1, limi)
-			X(0, forb)
-			X(-1, forb)
-#undef X
-			default:
-				throw MakeException("Card count is not -1, 0, 1, 2 or 3");
-			}
+			dict[code] = count;
 			continue;
 		}
 		}
