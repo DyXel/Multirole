@@ -129,10 +129,10 @@ StateOpt Context::operator()(State::Dueling& s)
 		const auto teamCount = GetTeamCounts();
 		for(const auto& kv : duelists)
 		{
+			const uint8_t t = kv.first.first;
 			const auto& deck = *kv.second->CurrentDeck();
-			nci.team = nci.con = GetSwappedTeam(kv.first.first);
-			nci.duelist = (s.currentPos[kv.first.first] + kv.first.second) %
-			              teamCount[kv.first.first];
+			nci.team = nci.con = GetSwappedTeam(t);
+			nci.duelist = (kv.first.second + !!s.currentPos[t]) % teamCount[t];
 			nci.loc = LOCATION_DECK;
 			auto finalMainDeck = ReversedOrShuffled(deck.Main());
 			for(auto code : finalMainDeck)
@@ -148,7 +148,7 @@ StateOpt Context::operator()(State::Dueling& s)
 			}
 			s.replay->AddDuelist(nci.team, nci.duelist,
 			{
-				duelists[{kv.first.first, nci.duelist}]->Name(),
+				duelists[{t, nci.duelist}]->Name(),
 				std::move(finalMainDeck),
 				deck.Extra()
 			});
