@@ -1,12 +1,11 @@
 # TODO
-* Fix tag duels having swapped decks (reported only 3v3)
+* Make core crash not terminate the room
 * Review all places where connections are terminated and make sure their termination is graceful (closed by client)
   * Webhook (Not marked as OK by github)
   * RoomHosting
   * All State(s), specially State::Closing
 * Implement STOC_CHAT_2
 * Implement anti-stalling measures
-* Implement banlist "anime check"
 * Investigate top deck being moved to overlay and not showing
 * Finish README
 * Overhaul error logging mechanism
