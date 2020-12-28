@@ -20,6 +20,6 @@ jobs:
           libspdlog-dev libsqlite3-dev meson ninja-build nlohmann-json3-dev
     - name: Meson build
       run: |
-        meson setup build
+        CC=clang CXX=clang++ meson setup build
         cd build
         ninja
