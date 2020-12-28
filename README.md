@@ -1,4 +1,9 @@
-![Logo](./logo.svg)
+<p align="center">
+	<img src="./logo.svg" alt="Multirole logo"/>
+</p>
+
+![x64-linux](https://github.com/ProjectIgnis/Multirole/workflows/x64-linux/badge.svg)
+
 # Multirole: A C++ server for EDOPro
 Multirole manages client connections to a singular lobby where rooms can be hosted and a list of said rooms fetched by other clients to join. It is in charge of creating, processing and logging duels (saving their replays) by interfacing with [EDOPro's core](https://github.com/edo9300/ygopro-core).
 
