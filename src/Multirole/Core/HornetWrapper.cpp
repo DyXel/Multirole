@@ -244,8 +244,9 @@ void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 	// Time to wait before checking for process being dead
 	auto NowPlusOffset = []() -> boost::posix_time::ptime
 	{
-		using namespace boost::posix_time;
-		return microsec_clock::universal_time() + milliseconds(125);
+		auto now = boost::posix_time::second_clock::universal_time();
+		now += boost::posix_time::seconds(1U);
+		return now;
 	};
 	Hornet::Action recvAct = Hornet::Action::NO_WORK;
 	{
