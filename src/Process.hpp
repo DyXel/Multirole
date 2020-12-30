@@ -79,8 +79,14 @@ void CleanUp(const Data& data)
 	CloseHandle(data);
 }
 
+void Kill(const Data& data)
+{
+	TerminateProcess(data, 1U);
+}
+
 #else
 #include <unistd.h>
+#include <sys/signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -109,6 +115,11 @@ bool IsRunning(const Data& data)
 void CleanUp(const Data& data)
 {
 	waitpid(data, NULL, 0);
+}
+
+void Kill(const Data& data)
+{
+	kill(data, SIGKILL);
 }
 
 #endif // _WIN32

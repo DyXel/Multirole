@@ -9,6 +9,10 @@
 #define PROCESS_IMPLEMENTATION
 #include "../../Process.hpp"
 
+#ifndef MULTIROLE_HORNET_MAX_LOOP_COUNT
+#define MULTIROLE_HORNET_MAX_LOOP_COUNT 128U
+#endif // MULTIROLE_HORNET_MAX_LOOP_COUNT
+
 namespace Ignis::Multirole::Core
 {
 
@@ -38,7 +42,8 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 	shmName(MakeHornetName(reinterpret_cast<uintptr_t>(this))),
 	shm(MakeShm(shmName)),
 	region(shm, ipc::read_write),
-	hss(nullptr)
+	hss(nullptr),
+	hanged(false)
 {
 	void* addr = region.get_address();
 	hss = new (addr) Hornet::SharedSegment();
@@ -55,6 +60,8 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 	}
 	catch(Core::Exception& e)
 	{
+		// NOTE: Not necessary to check hanged or kill as HEARTBEAT is
+		// under our control.
 		Process::CleanUp(proc);
 		DestroySharedSegment();
 		throw std::runtime_error("Heartbeat failed");
@@ -63,8 +70,17 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 
 HornetWrapper::~HornetWrapper()
 {
-	hss->act = Hornet::Action::EXIT;
-	hss->cv.notify_one();
+	if(hanged)
+	{
+		// If process is hanged we can't guarantee it'll handle our notification.
+		Process::Kill(proc);
+		Process::CleanUp(proc);
+	}
+	else
+	{
+		hss->act = Hornet::Action::EXIT;
+		hss->cv.notify_one();
+	}
 	Process::CleanUp(proc);
 	DestroySharedSegment();
 }
@@ -235,6 +251,12 @@ IWrapper::Buffer HornetWrapper::QueryField(Duel duel)
 
 void HornetWrapper::DestroySharedSegment()
 {
+	// NOTE: From Boost.Interprocess documentation:
+	// Unlike std::condition_variable in C++11, it is NOT safe to invoke the
+	// destructor if all threads have been only notified. It is required that
+	// they have exited their respective wait functions.
+	// If this is called while Hornet is waiting on the condition variable
+	// the calling thread will hang, or worse, the whole process will crash.
 	hss->~SharedSegment();
 	ipc::shared_memory_object::remove(shmName.data());
 }
@@ -249,8 +271,14 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 		return now;
 	};
 	Hornet::Action recvAct = Hornet::Action::NO_WORK;
+	std::size_t loopCount = 0U;
 	do
 	{
+		if(loopCount++ > MULTIROLE_HORNET_MAX_LOOP_COUNT)
+		{
+			hanged = true;
+			throw Core::Exception("Max loop count reached");
+		}
 		// Atomically fetch next action, if any.
 		{
 			Hornet::LockType lock(hss->mtx);
