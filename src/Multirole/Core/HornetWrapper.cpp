@@ -13,6 +13,10 @@
 #define MULTIROLE_HORNET_MAX_LOOP_COUNT 128U
 #endif // MULTIROLE_HORNET_MAX_LOOP_COUNT
 
+#ifndef MULTIROLE_HORNET_MAX_WAIT_COUNT
+#define MULTIROLE_HORNET_MAX_WAIT_COUNT 10U
+#endif // MULTIROLE_HORNET_MAX_WAIT_COUNT
+
 namespace Ignis::Multirole::Core
 {
 
@@ -265,7 +269,8 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 	auto NowPlusOffset = []() -> boost::posix_time::ptime
 	{
 		auto now = boost::posix_time::second_clock::universal_time();
-		now += boost::posix_time::seconds(1U);
+		// NOTE: Will wait for 1 second most of the time (rounding probably).
+		now += boost::posix_time::seconds(2U);
 		return now;
 	};
 	Hornet::Action recvAct = Hornet::Action::NO_WORK;
@@ -279,14 +284,18 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 		}
 		// Atomically fetch next action, if any.
 		{
+			std::size_t waitCount = 0U;
 			Hornet::LockType lock(hss->mtx);
 			hss->act = act;
 			hss->cv.notify_one();
 			while(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != act;}))
 			{
-				if(Process::IsRunning(proc))
+				if(!Process::IsRunning(proc))
+					throw Core::Exception("Process is not running");
+				if(waitCount++ <= MULTIROLE_HORNET_MAX_WAIT_COUNT)
 					continue;
-				throw Core::Exception("Hornet hanged!");
+				hanged = true;
+				throw Core::Exception("Process is unresponsive");
 			}
 			recvAct = hss->act;
 		}
