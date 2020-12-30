@@ -239,7 +239,7 @@ void HornetWrapper::DestroySharedSegment()
 	ipc::shared_memory_object::remove(shmName.data());
 }
 
-void HornetWrapper::NotifyAndWait(const Hornet::Action act)
+void HornetWrapper::NotifyAndWait(Hornet::Action act)
 {
 	// Time to wait before checking for process being dead
 	auto NowPlusOffset = []() -> boost::posix_time::ptime
@@ -249,20 +249,26 @@ void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 		return now;
 	};
 	Hornet::Action recvAct = Hornet::Action::NO_WORK;
+	do
 	{
-		Hornet::LockType lock(hss->mtx);
-		hss->act = act;
-		hss->cv.notify_one();
-		while(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != act;}))
+		// Atomically fetch next action, if any.
 		{
-			if(Process::IsRunning(proc))
-				continue;
-			throw Core::Exception("Hornet hanged!");
+			Hornet::LockType lock(hss->mtx);
+			hss->act = act;
+			hss->cv.notify_one();
+			while(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != act;}))
+			{
+				if(Process::IsRunning(proc))
+					continue;
+				throw Core::Exception("Hornet hanged!");
+			}
+			recvAct = hss->act;
 		}
-		recvAct = hss->act;
-	}
-	switch(recvAct)
-	{
+		// If action sent by hornet requires handling then it should be
+		// implemented here and hornet should always be notified back,
+		// otherwise it'll wait endlessly.
+		switch(recvAct)
+		{
 		case Hornet::Action::CB_DATA_READER:
 		{
 			const auto* rptr = hss->bytes.data();
@@ -274,7 +280,7 @@ void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 				for(uint16_t* wptr2 = data.setcodes; *wptr2 != 0U; wptr2++)
 					Write<uint16_t>(wptr, *wptr2);
 			Write<uint16_t>(wptr, 0U);
-			NotifyAndWait(Hornet::Action::CB_DONE);
+			act = Hornet::Action::CB_DONE;
 			break;
 		}
 		case Hornet::Action::CB_SCRIPT_READER:
@@ -288,7 +294,7 @@ void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 			Write<std::size_t>(wptr, script.size());
 			if(!script.empty())
 				std::memcpy(wptr, script.data(), script.size());
-			NotifyAndWait(Hornet::Action::CB_DONE);
+			act = Hornet::Action::CB_DONE;
 			break;
 		}
 		case Hornet::Action::CB_LOG_HANDLER:
@@ -300,7 +306,7 @@ void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 			const std::string_view strSv(reinterpret_cast<const char*>(rptr), strSz);
 			if(logger != nullptr)
 				logger->Log(type, strSv);
-			NotifyAndWait(Hornet::Action::CB_DONE);
+			act = Hornet::Action::CB_DONE;
 			break;
 		}
 		case Hornet::Action::CB_DATA_READER_DONE:
@@ -309,7 +315,7 @@ void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 			auto* supplier = static_cast<IDataSupplier*>(Read<void*>(rptr));
 			const auto data = Read<OCG_CardData>(rptr);
 			supplier->DataUsageDone(data);
-			NotifyAndWait(Hornet::Action::CB_DONE);
+			act = Hornet::Action::CB_DONE;
 			break;
 		}
 		// Explicitly ignore these, in case we ever add more functionality...
@@ -331,7 +337,8 @@ void HornetWrapper::NotifyAndWait(const Hornet::Action act)
 		case Hornet::Action::OCG_DUEL_QUERY_FIELD:
 		case Hornet::Action::CB_DONE:
 			break;
-	}
+		}
+	}while(recvAct != Hornet::Action::NO_WORK);
 }
 
 } // namespace Ignis::Multirole::Core

@@ -50,7 +50,7 @@ private:
 	std::mutex mtx;
 
 	void DestroySharedSegment();
-	void NotifyAndWait(const Hornet::Action act);
+	void NotifyAndWait(Hornet::Action act);
 };
 
 } // namespace Ignis::Multirole::Core
