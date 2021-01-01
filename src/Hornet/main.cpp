@@ -24,10 +24,20 @@ static void* handle{nullptr};
 // Methods
 void NotifyAndWait(Ignis::Hornet::Action act)
 {
-	Ignis::Hornet::LockType lock(hss->mtx);
-	hss->act = act;
-	hss->cv.notify_one();
-	hss->cv.wait(lock, [&](){return hss->act != act;});
+	Ignis::Hornet::Action recvAct = Ignis::Hornet::Action::NO_WORK;
+	{
+		Ignis::Hornet::LockType lock(hss->mtx);
+		hss->act = act;
+		hss->cv.notify_one();
+		hss->cv.wait(lock, [&](){return hss->act != act;});
+		recvAct = hss->act;
+	}
+	// The only scenario where this would not be CB_DONE is when
+	// multirole declares this horned as hanged. We have to terminate to
+	// guarantee that the resources will not be in usage when multirole
+	// destroys the shared segment.
+	if(recvAct != Ignis::Hornet::Action::CB_DONE)
+		std::terminate();
 }
 
 void DataReader(void* payload, uint32_t code, OCG_CardData* data)
