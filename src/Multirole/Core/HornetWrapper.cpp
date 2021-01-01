@@ -10,11 +10,11 @@
 #include "../../Process.hpp"
 
 #ifndef MULTIROLE_HORNET_MAX_LOOP_COUNT
-#define MULTIROLE_HORNET_MAX_LOOP_COUNT 128U
+#define MULTIROLE_HORNET_MAX_LOOP_COUNT 512U
 #endif // MULTIROLE_HORNET_MAX_LOOP_COUNT
 
 #ifndef MULTIROLE_HORNET_MAX_WAIT_COUNT
-#define MULTIROLE_HORNET_MAX_WAIT_COUNT 10U
+#define MULTIROLE_HORNET_MAX_WAIT_COUNT 5U
 #endif // MULTIROLE_HORNET_MAX_WAIT_COUNT
 
 namespace Ignis::Multirole::Core
@@ -272,8 +272,7 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 	auto NowPlusOffset = []() -> boost::posix_time::ptime
 	{
 		auto now = boost::posix_time::second_clock::universal_time();
-		// NOTE: Will wait for 1 second most of the time (rounding probably).
-		now += boost::posix_time::seconds(2U);
+		now += boost::posix_time::seconds(10U);
 		return now;
 	};
 	Hornet::Action recvAct = Hornet::Action::NO_WORK;
