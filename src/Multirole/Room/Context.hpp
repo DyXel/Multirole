@@ -47,6 +47,20 @@ public:
 		YGOPro::BanlistPtr banlist;
 	};
 
+	struct DuelFinishReason
+	{
+		enum class Reason : uint8_t
+		{
+			REASON_DUEL_WON,
+			REASON_SURRENDERED,
+			REASON_TIMED_OUT,
+			REASON_WRONG_RESPONSE,
+			REASON_CONNECTION_LOST,
+			REASON_CORE_CRASHED,
+		} reason;
+		uint8_t winner; // 2 == DRAW
+	};
+
 	Context(CreateInfo&& info);
 
 	const YGOPro::HostInfo& HostInfo() const;
@@ -118,20 +132,6 @@ public:
 		return std::nullopt;
 	}
 private:
-	struct DuelFinishReason
-	{
-		enum class Reason : uint8_t
-		{
-			REASON_DUEL_WON,
-			REASON_SURRENDERED,
-			REASON_TIMED_OUT,
-			REASON_WRONG_RESPONSE,
-			REASON_CONNECTION_LOST,
-			REASON_CORE_CRASHED,
-		} reason;
-		uint8_t winner; // 2 == DRAW
-	};
-
 	// Creation options and resources.
 	TimerAggregator& tagg;
 	CoreProvider& coreProvider;
