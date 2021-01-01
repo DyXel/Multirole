@@ -305,7 +305,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		uint8_t msgType = GetMessageType(msg);
 		if(msgType == MSG_RETRY)
 		{
-			if(s.retryCount[s.replier->Position().first]++ < 2)
+			if(s.retryCount[s.replier->Position().first]++ < 1)
 			{
 				s.replier->Send(retryErrorMsg);
 				if(s.lastHint.size() > 0U)
