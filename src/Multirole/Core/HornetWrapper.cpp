@@ -77,11 +77,14 @@ HornetWrapper::~HornetWrapper()
 	// Even if process was hanged, there is no guarantee that it will be now
 	// and that hornet is not performing a wait on the condition variable.
 	// This avoids deadlocking when calling the shared segment destructor.
-	hss->act = Hornet::Action::EXIT;
-	hss->cv.notify_one();
+	{
+		Hornet::LockType lock(hss->mtx);
+		hss->act = Hornet::Action::EXIT;
+		hss->cv.notify_one();
+	}
 	// If process is hanged we can't guarantee it'll handle our notification.
 	// Kill anyways.
-	if(hanged)
+	if(hanged && Process::IsRunning(proc))
 		Process::Kill(proc);
 	Process::CleanUp(proc);
 	DestroySharedSegment();
