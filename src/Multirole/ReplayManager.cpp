@@ -49,7 +49,7 @@ ReplayManager::ReplayManager(std::string_view path) :
 		spdlog::info("ReplayManager: Started replay ID at {}", id);
 		return;
 	}
-	spdlog::error("Unable to write starting replay ID to file");
+	spdlog::error("ReplayManager: Unable to write starting replay ID to file");
 }
 
 ReplayManager::~ReplayManager()
@@ -98,7 +98,7 @@ uint64_t ReplayManager::NewId()
 		f.write(reinterpret_cast<char*>(&id), sizeof(id));
 		return prevId;
 	}
-	spdlog::error("Unable to write next replay ID to file");
+	spdlog::error("ReplayManager: Unable to write next replay ID to file");
 	return 0U;
 }
 
