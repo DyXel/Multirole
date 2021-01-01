@@ -125,6 +125,7 @@ void Replay::RecordMsg(const std::vector<uint8_t>& msg)
 				case 3U: case 5U:
 					return;
 			}
+			break;
 		}
 		case MSG_SELECT_BATTLECMD:
 		case MSG_SELECT_IDLECMD:
