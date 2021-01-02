@@ -585,7 +585,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		const std::vector<uint8_t> winMsg =
 		{
 			MSG_WIN,
-			GetSwappedTeam(dfr.winner),
+			(dfr.winner != 2U) ? GetSwappedTeam(dfr.winner) : uint8_t(2U),
 			reason
 		};
 		s.replay->RecordMsg(winMsg);
