@@ -55,7 +55,6 @@ StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::Conne
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
 	{
-		e.client.Disconnect();
 		spectators.erase(&e.client);
 		return std::nullopt;
 	}

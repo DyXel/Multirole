@@ -5,11 +5,15 @@
 namespace Ignis::Multirole::Room
 {
 
+StateOpt Context::operator()(State::Waiting&, const Event::Close&)
+{
+	return State::Closing{};
+}
+
 StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
 {
 	if(s.host == &e.client)
 		return State::Closing{};
-	e.client.Disconnect();
 	if(const auto p = e.client.Position(); p != Client::POSITION_SPECTATOR)
 	{
 		{

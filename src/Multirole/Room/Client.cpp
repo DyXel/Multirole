@@ -11,30 +11,31 @@ namespace Ignis::Multirole::Room
 {
 
 Client::Client(
-	Instance& room,
+	std::shared_ptr<Instance> room,
 	asio::ip::tcp::socket&& socket,
 	std::string&& name)
 	:
 	room(room),
-	strand(room.Strand()),
+	strand(room->Strand()),
 	socket(std::move(socket)),
-	disconnecting(false),
 	name(std::move(name)),
+	disconnecting(false),
 	position(POSITION_SPECTATOR),
 	ready(false)
 {}
 
 void Client::RegisterToOwner()
 {
-	room.Add(shared_from_this());
+	room->Add(shared_from_this());
 }
 
-void Client::Start(std::shared_ptr<Instance>&& ptr)
+void Client::Start()
 {
+	auto self(shared_from_this());
 	asio::post(strand,
-	[this, self = shared_from_this(), roomPtr = std::move(ptr)]()
+	[this, self, r=room]()
 	{
-		room.Dispatch(Event::Join{*this});
+		r->Dispatch(Event::Join{*this});
 	});
 	DoReadHeader();
 }
@@ -99,35 +100,19 @@ void Client::Send(const YGOPro::STOCMsg& msg)
 
 void Client::Disconnect()
 {
-	asio::post(strand,
-	[this, self = shared_from_this()]()
-	{
-		if(!socket.is_open())
-			return;
-		std::error_code ignore;
-		socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
-		socket.close(ignore);
-	});
-}
-
-void Client::DeferredDisconnect()
-{
-	{
-		std::scoped_lock lock(mOutgoing);
-		if(outgoing.empty())
-		{
-			Disconnect();
-			return;
-		}
-	}
-	disconnecting = true;
+	std::scoped_lock lock(mOutgoing);
+	if(outgoing.empty())
+		Shutdown();
+	else
+		disconnecting = true;
 }
 
 void Client::DoReadHeader()
 {
 	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
+	auto self(shared_from_this());
 	asio::async_read(socket, buffer, asio::bind_executor(strand,
-	[this](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self, r=room](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
 		{
@@ -135,16 +120,17 @@ void Client::DoReadHeader()
 			return;
 		}
 		if(ec != asio::error::operation_aborted)
-			room.Dispatch(Event::ConnectionLost{*this});
-		room.Remove(shared_from_this());
+			r->Dispatch(Event::ConnectionLost{*this});
+		r->Remove(self);
 	}));
 }
 
 void Client::DoReadBody()
 {
 	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
+	auto self(shared_from_this());
 	asio::async_read(socket, buffer, asio::bind_executor(strand,
-	[this](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self, r=room](const std::error_code& ec, std::size_t /*unused*/)
 	{
 		if(!ec)
 		{
@@ -155,8 +141,8 @@ void Client::DoReadBody()
 			return;
 		}
 		if(ec != asio::error::operation_aborted)
-			room.Dispatch(Event::ConnectionLost{*this});
-		room.Remove(shared_from_this());
+			r->Dispatch(Event::ConnectionLost{*this});
+		r->Remove(self);
 	}));
 }
 
@@ -174,8 +160,14 @@ void Client::DoWrite()
 		if(!outgoing.empty())
 			DoWrite();
 		else if(disconnecting)
-			Disconnect();
+			Shutdown();
 	});
+}
+
+void Client::Shutdown()
+{
+	std::error_code ignore;
+	socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
 }
 
 void Client::HandleMsg()
@@ -186,7 +178,7 @@ void Client::HandleMsg()
 	{
 		std::vector<uint8_t> data(incoming.GetLength());
 		std::memcpy(data.data(), incoming.Body(), data.size());
-		room.Dispatch(Event::Response{*this, data});
+		room->Dispatch(Event::Response{*this, data});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::UPDATE_DECK:
@@ -209,7 +201,7 @@ void Client::HandleMsg()
 		{
 			//Send DECK_INVALID_SIZE to the client
 		}
-		room.Dispatch(Event::UpdateDeck{*this, main, side});
+		room->Dispatch(Event::UpdateDeck{*this, main, side});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::RPS_CHOICE:
@@ -217,7 +209,7 @@ void Client::HandleMsg()
 		auto p = incoming.GetRPSChoice();
 		if(!p)
 			return;
-		room.Dispatch(Event::ChooseRPS{*this, p->value});
+		room->Dispatch(Event::ChooseRPS{*this, p->value});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TURN_CHOICE:
@@ -225,12 +217,12 @@ void Client::HandleMsg()
 		auto p = incoming.GetTurnChoice();
 		if(!p)
 			return;
-		room.Dispatch(Event::ChooseTurn{*this, p->value != 0U});
+		room->Dispatch(Event::ChooseTurn{*this, p->value != 0U});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::SURRENDER:
 	{
-		room.Dispatch(Event::Surrender{*this});
+		room->Dispatch(Event::Surrender{*this});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::CHAT:
@@ -238,27 +230,27 @@ void Client::HandleMsg()
 		using namespace YGOPro;
 		auto str16 = BufferToUTF16(incoming.Body(), incoming.GetLength());
 		auto str = UTF16ToUTF8(str16);
-		room.Dispatch(Event::Chat{*this, str});
+		room->Dispatch(Event::Chat{*this, str});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TO_DUELIST:
 	{
-		room.Dispatch(Event::ToDuelist{*this});
+		room->Dispatch(Event::ToDuelist{*this});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TO_OBSERVER:
 	{
-		room.Dispatch(Event::ToObserver{*this});
+		room->Dispatch(Event::ToObserver{*this});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::READY:
 	{
-		room.Dispatch(Event::Ready{*this, true});
+		room->Dispatch(Event::Ready{*this, true});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::NOT_READY:
 	{
-		room.Dispatch(Event::Ready{*this, false});
+		room->Dispatch(Event::Ready{*this, false});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TRY_KICK:
@@ -266,12 +258,12 @@ void Client::HandleMsg()
 		auto p = incoming.GetTryKick();
 		if(!p)
 			return;
-		room.Dispatch(Event::TryKick{*this, p->pos});
+		room->Dispatch(Event::TryKick{*this, p->pos});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::TRY_START:
 	{
-		room.Dispatch(Event::TryStart{*this});
+		room->Dispatch(Event::TryStart{*this});
 		break;
 	}
 	case YGOPro::CTOSMsg::MsgType::REMATCH:
@@ -279,7 +271,7 @@ void Client::HandleMsg()
 		auto p = incoming.GetRematch();
 		if(!p)
 			return;
-		room.Dispatch(Event::Rematch{*this, static_cast<bool>(p->answer)});
+		room->Dispatch(Event::Rematch{*this, static_cast<bool>(p->answer)});
 		break;
 	}
 	default:

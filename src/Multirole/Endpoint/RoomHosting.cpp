@@ -257,11 +257,11 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		room->RegisterToOwner();
 		// Add the client to the newly created room
 		auto client = std::make_shared<Room::Client>(
-			*room,
+			room,
 			std::move(socket),
 			std::move(name));
 		client->RegisterToOwner();
-		client->Start(room);
+		client->Start();
 		return Status::STATUS_MOVED;
 	}
 	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
@@ -286,11 +286,11 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		else
 		{
 			auto client = std::make_shared<Room::Client>(
-				*room,
+				room,
 				std::move(socket),
 				std::move(name));
 			client->RegisterToOwner();
-			client->Start(room);
+			client->Start();
 			return Status::STATUS_MOVED;
 		}
 	}

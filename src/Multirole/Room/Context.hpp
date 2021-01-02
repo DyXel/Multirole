@@ -76,7 +76,6 @@ public:
 	StateOpt operator()(State::ChoosingTurn&, const Event::Join& e);
 	// State/Closing.cpp
 	StateOpt operator()(State::Closing&);
-	StateOpt operator()(State::Closing&, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Closing&, const Event::Join& e);
 	// State/Dueling.cpp
 	StateOpt operator()(State::Dueling& s);
@@ -101,6 +100,7 @@ public:
 	StateOpt operator()(State::Sidedecking& s, const Event::UpdateDeck& e);
 	StateOpt operator()(State::Sidedecking&, const Event::Join& e);
 	// State/Waiting.cpp
+	StateOpt operator()(State::Waiting&, const Event::Close&);
 	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e);
 	StateOpt operator()(State::Waiting& s, const Event::Join& e);
 	StateOpt operator()(State::Waiting& s, const Event::ToDuelist& e);

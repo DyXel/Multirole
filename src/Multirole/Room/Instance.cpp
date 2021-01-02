@@ -22,7 +22,8 @@ Instance::Instance(CreateInfo&& info)
 	state(State::Waiting{nullptr}),
 	name(std::move(info.name)),
 	notes(std::move(info.notes)),
-	pass(std::move(info.pass))
+	pass(std::move(info.pass)),
+	id(0U)
 {}
 
 void Instance::RegisterToOwner()
@@ -55,32 +56,26 @@ Instance::Properties Instance::GetProperties() const
 
 void Instance::TryClose()
 {
-	if(Started())
-		return;
-	std::scoped_lock lock(mClients);
-	for(const auto& c : clients)
-		c->Disconnect();
+	auto self(shared_from_this());
+	asio::post(strand,
+	[this, self]()
+	{
+		Dispatch(Event::Close{});
+	});
 }
 
-void Instance::Add(const std::shared_ptr<Client>& client)
+void Instance::Add(std::shared_ptr<Client> client)
 {
 	std::scoped_lock lock(mClients);
 	clients.insert(client);
 }
 
-void Instance::Remove(const std::shared_ptr<Client>& client)
+void Instance::Remove(std::shared_ptr<Client> client)
 {
 	std::scoped_lock lock(mClients);
 	clients.erase(client);
 	if(clients.empty())
-	{
-		asio::post(strand,
-		[this, self = shared_from_this()]()
-		{
-			owner.Remove(id);
-			// NOTE: Destructor of this Room instance is called here
-		});
-	}
+		owner.Remove(id);
 }
 
 asio::io_context::strand& Instance::Strand()

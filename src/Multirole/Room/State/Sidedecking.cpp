@@ -21,7 +21,6 @@ StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::Connec
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
 	{
-		e.client.Disconnect();
 		spectators.erase(&e.client);
 		return std::nullopt;
 	}

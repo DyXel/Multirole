@@ -22,9 +22,12 @@ public:
 	using PosType = std::pair<uint8_t, uint8_t>;
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
-	Client(Instance& room, asio::ip::tcp::socket&& socket, std::string&& name);
+	Client(
+		std::shared_ptr<Instance> room,
+		asio::ip::tcp::socket&& socket,
+		std::string&& name);
 	void RegisterToOwner();
-	void Start(std::shared_ptr<Instance>&& ptr);
+	void Start();
 
 	// Getters
 	std::string Name() const;
@@ -43,20 +46,16 @@ public:
 	// Adds a message to the queue that is written to the client socket
 	void Send(const YGOPro::STOCMsg& msg);
 
-	// Immediately disconnects from the room, cancelling all outstanding write
-	// operations.
-	void Disconnect();
-
 	// Tries to disconnect immediately if there are no messages in the queue,
 	// sets a flag if there are messages in the queue to disconnect
 	// upon finishing writes.
-	void DeferredDisconnect();
+	void Disconnect();
 private:
-	Instance& room;
+	std::shared_ptr<Instance> room;
 	asio::io_context::strand& strand;
 	asio::ip::tcp::socket socket;
-	bool disconnecting;
 	std::string name;
+	bool disconnecting;
 	PosType position;
 	bool ready;
 	std::unique_ptr<YGOPro::Deck> originalDeck;
@@ -71,6 +70,9 @@ private:
 	void DoReadHeader();
 	void DoReadBody();
 	void DoWrite();
+
+	// Shuts down socket immediately, disallowing any read or writes.
+	void Shutdown();
 
 	// Handles received CTOS message
 	void HandleMsg();

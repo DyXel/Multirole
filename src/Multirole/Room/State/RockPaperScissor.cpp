@@ -45,7 +45,6 @@ StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::C
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
 	{
-		e.client.Disconnect();
 		spectators.erase(&e.client);
 		return std::nullopt;
 	}

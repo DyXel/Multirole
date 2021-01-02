@@ -66,11 +66,8 @@ public:
 	// Tries to remove the room if its not started.
 	void TryClose();
 
-	// IClientManager overrides
-	void Add(const std::shared_ptr<Client>& client);
-	void Remove(const std::shared_ptr<Client>& client);
-
-	// IClientListener overrides
+	void Add(std::shared_ptr<Client> client);
+	void Remove(std::shared_ptr<Client> client);
 	asio::io_context::strand& Strand();
 	void Dispatch(const EventVariant& e);
 private:
@@ -82,7 +79,7 @@ private:
 	const std::string name;
 	const std::string notes;
 	const std::string pass;
-	uint32_t id{};
+	uint32_t id;
 
 	std::set<std::shared_ptr<Client>> clients;
 	std::mutex mClients;

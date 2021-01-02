@@ -16,7 +16,6 @@ StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::Connect
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 	{
-		e.client.Disconnect();
 		spectators.erase(&e.client);
 		return std::nullopt;
 	}

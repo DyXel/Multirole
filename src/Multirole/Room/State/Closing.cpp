@@ -6,17 +6,11 @@ namespace Ignis::Multirole::Room
 StateOpt Context::operator()(State::Closing& /*unused*/)
 {
 	for(const auto& kv : duelists)
-		kv.second->DeferredDisconnect();
+		kv.second->Disconnect();
 	duelists.clear();
 	for(const auto& c : spectators)
-		c->DeferredDisconnect();
+		c->Disconnect();
 	spectators.clear();
-	return std::nullopt;
-}
-
-StateOpt Context::operator()(State::Closing& /*unused*/, const Event::ConnectionLost& e)
-{
-	e.client.Disconnect();
 	return std::nullopt;
 }
 

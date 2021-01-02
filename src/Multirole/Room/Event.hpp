@@ -31,6 +31,9 @@ struct ChooseTurn
 	bool goingFirst;
 };
 
+struct Close
+{};
+
 struct ConnectionLost
 {
 	Client& client;
@@ -103,6 +106,7 @@ using EventVariant = std::variant<
 	Event::Chat,
 	Event::ChooseRPS,
 	Event::ChooseTurn,
+	Event::Close,
 	Event::ConnectionLost,
 	Event::Join,
 	Event::Ready,
