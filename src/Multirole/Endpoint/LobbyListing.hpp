@@ -20,7 +20,7 @@ public:
 	LobbyListing(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
 	void Stop();
 private:
-	class Connection : public std::enable_shared_from_this<Connection>
+	class Connection final : public std::enable_shared_from_this<Connection>
 	{
 	public:
 		Connection(asio::ip::tcp::socket socket, std::shared_ptr<std::string> data);

@@ -105,13 +105,12 @@ void LobbyListing::DoAccept()
 	{
 		if(!acceptor.is_open())
 			return;
-		if(!ec)
-		{
-			Workaround::SetCloseOnExec(socket.native_handle());
-			std::scoped_lock lock(mSerialized);
-			std::make_shared<Connection>(std::move(socket), serialized)->DoRead();
-		}
 		DoAccept();
+		if(ec)
+			return;
+		Workaround::SetCloseOnExec(socket.native_handle());
+		std::scoped_lock lock(mSerialized);
+		std::make_shared<Connection>(std::move(socket), serialized)->DoRead();
 	});
 }
 
