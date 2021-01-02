@@ -1,17 +1,19 @@
 # TODO
-* Make core crash not terminate the room
 * Review all places where connections are terminated and make sure their termination is graceful (closed by client)
   * Webhook (Not marked as OK by github)
-  * RoomHosting
-  * All State(s), specially State::Closing
+* Limit number of messages/memory a particular room can have allocated
+  * Use all collected replays to calculate a suitable default max
 * Implement STOC_CHAT_2
 * Implement anti-stalling measures
 * Investigate top deck being moved to overlay and not showing
 * Finish README
+  * Remark that "Too Many Open Files" error not only affects the update mechanism and should be of high priority if dealing with a high server load, as each hornet and replay saving also consumes file descriptors
 * Overhaul error logging mechanism
   * Send error messages to clients
   * Log room ID and replay number when a core crashes
   * Filter error messages based on SCOPE of cards used in the room/duels
+* Review places where file handles can be opened and check for their errors
+  * An idea would be to artifically lower the limit in order to test places randomly
 * Prepare windows workflow build
 
 # Wishlist
