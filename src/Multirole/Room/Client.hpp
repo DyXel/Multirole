@@ -71,7 +71,8 @@ private:
 	void DoReadBody();
 	void DoWrite();
 
-	// Shuts down socket immediately, disallowing any read or writes.
+	// Shuts down socket immediately, disallowing any read or writes,
+	// doing that starts the graceful connection closure.
 	void Shutdown();
 
 	// Handles received CTOS message
