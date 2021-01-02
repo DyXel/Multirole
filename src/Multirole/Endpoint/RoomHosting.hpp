@@ -7,6 +7,8 @@
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
+#include "../Room/Instance.hpp"
+#include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/STOCMsg.hpp"
 
 namespace Ignis::Multirole
@@ -21,8 +23,6 @@ class Lobby;
 
 namespace Endpoint
 {
-
-struct TmpClient;
 
 class RoomHosting final
 {
@@ -40,13 +40,53 @@ public:
 		Lobby& lobby;
 	};
 
+	enum class PrebuiltMsgId
+	{
+		PREBUILT_MSG_VERSION_MISMATCH = 0,
+		PREBUILT_INVALID_NAME,
+		PREBUILT_ROOM_NOT_FOUND,
+		PREBUILT_ROOM_WRONG_PASS,
+		PREBUILT_INVALID_MSG,
+		PREBUILT_GENERIC_JOIN_ERROR,
+		PREBUILT_MSG_COUNT
+	};
+
 	RoomHosting(CreateInfo&& info);
 	void Stop();
+
+	const YGOPro::STOCMsg& GetPrebuiltMsg(PrebuiltMsgId id) const;
+	std::shared_ptr<Room::Instance> GetRoomById(uint32_t id) const;
+	Room::Instance::CreateInfo GetBaseRoomCreateInfo(uint32_t banlistHash) const;
 private:
-	const YGOPro::STOCMsg versionMismatch;
-	const YGOPro::STOCMsg roomNotFound1;
-	const YGOPro::STOCMsg roomNotFound2;
-	const YGOPro::STOCMsg wrongPass;
+	class Connection final : public std::enable_shared_from_this<Connection>
+	{
+	public:
+		Connection(const RoomHosting& roomHosting, asio::ip::tcp::socket socket);
+		void DoReadHeader();
+	private:
+		enum class Status
+		{
+			STATUS_CONTINUE,
+			STATUS_MOVED,
+			STATUS_ERROR,
+		};
+
+		const RoomHosting& roomHosting;
+		asio::ip::tcp::socket socket;
+		std::string name;
+		YGOPro::CTOSMsg incoming;
+		std::queue<YGOPro::STOCMsg> outgoing;
+
+		void DoReadBody();
+		void DoWrite();
+
+		Status HandleMsg();
+	};
+
+	const std::array<
+		YGOPro::STOCMsg,
+		static_cast<std::size_t>(PrebuiltMsgId::PREBUILT_MSG_COUNT)
+	> prebuiltMsgs;
 	asio::io_context& ioCtx;
 	asio::ip::tcp::acceptor acceptor;
 	BanlistProvider& banlistProvider;
@@ -56,17 +96,7 @@ private:
 	ScriptProvider& scriptProvider;
 	Lobby& lobby;
 
-	std::set<std::shared_ptr<TmpClient>> tmpClients;
-	std::mutex mTmpClients;
-
-	void Add(const std::shared_ptr<TmpClient>& tc);
-	void Remove(const std::shared_ptr<TmpClient>& tc);
-
 	void DoAccept();
-	void DoReadHeader(const std::shared_ptr<TmpClient>& tc);
-	void DoReadBody(const std::shared_ptr<TmpClient>& tc);
-
-	bool HandleMsg(const std::shared_ptr<TmpClient>& tc);
 };
 
 } // namespace Endpoint
