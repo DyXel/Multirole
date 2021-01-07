@@ -236,7 +236,7 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
 			return Status::STATUS_ERROR;
 		}
-		p->notes[199] = '\0'; // NOLINT: Guarantee null-terminated string
+		p->notes[199U] = '\0'; // NOLINT: Guarantee null-terminated string
 		// Get base room creation information.
 		auto info = roomHosting.GetBaseRoomCreateInfo(p->hostInfo.banlistHash);
 		// Set our custom info.
@@ -247,11 +247,15 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		info.pass = Utf16BufferToStr(p->pass);
 		// Fix some of the options back into expected values in case of
 		// exceptions.
+		auto& hi = info.hostInfo;
 		if(info.banlist == nullptr)
-			info.hostInfo.banlistHash = 0;
-		info.hostInfo.t0Count = std::clamp(info.hostInfo.t0Count, 1, 3);
-		info.hostInfo.t1Count = std::clamp(info.hostInfo.t1Count, 1, 3);
-		info.hostInfo.bestOf = std::max(info.hostInfo.bestOf, 1);
+			hi.banlistHash = 0U;
+		hi.t0Count = std::clamp(hi.t0Count, 1, 3);
+		hi.t1Count = std::clamp(hi.t1Count, 1, 3);
+		hi.bestOf = std::max(hi.bestOf, 1);
+		// Add flag that client should be setting.
+		// NOLINTNEXTLINE: DUEL_PSEUDO_SHUFFLE
+		hi.duelFlagsLow |= (!hi.dontShuffleDeck) ? 0x0 : 0x10;
 		// Make new room with the set parameters
 		auto room = std::make_shared<Room::Instance>(std::move(info));
 		room->RegisterToOwner();
