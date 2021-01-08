@@ -141,11 +141,12 @@ void RoomHosting::DoAccept()
 	{
 		if(!acceptor.is_open())
 			return;
+		if(!ec)
+		{
+			Workaround::SetCloseOnExec(socket.native_handle());
+			std::make_shared<Connection>(*this, std::move(socket))->DoReadHeader();
+		}
 		DoAccept();
-		if(ec)
-			return;
-		Workaround::SetCloseOnExec(socket.native_handle());
-		std::make_shared<Connection>(*this, std::move(socket))->DoReadHeader();
 	});
 }
 
