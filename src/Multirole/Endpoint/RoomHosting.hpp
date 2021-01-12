@@ -79,6 +79,7 @@ private:
 
 		void DoReadBody();
 		void DoWrite();
+		void DoReadEnd();
 
 		Status HandleMsg();
 	};

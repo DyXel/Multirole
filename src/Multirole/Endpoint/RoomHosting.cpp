@@ -167,7 +167,7 @@ void RoomHosting::Connection::DoReadHeader()
 	auto self(shared_from_this());
 	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
 	asio::async_read(socket, buffer,
-	[this, self](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self](std::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
 			DoReadBody();
@@ -179,15 +179,31 @@ void RoomHosting::Connection::DoReadBody()
 	auto self(shared_from_this());
 	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
 	asio::async_read(socket, buffer,
-	[this, self](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self](std::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
-		const auto status = HandleMsg();
-		if(status != Status::STATUS_MOVED)
+		if(const auto status = HandleMsg(); status == Status::STATUS_CONTINUE)
+		{
 			DoReadHeader();
-		if(status == Status::STATUS_ERROR)
+		}
+		else if(status == Status::STATUS_ERROR)
+		{
+			DoReadEnd();
 			DoWrite();
+		}
+	});
+}
+
+void RoomHosting::Connection::DoReadEnd()
+{
+	auto self(shared_from_this());
+	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::MSG_MAX_LENGTH);
+	socket.async_read_some(buffer,
+	[this, self](std::error_code ec, std::size_t /*unused*/)
+	{
+		if(!ec)
+			DoReadEnd();
 	});
 }
 

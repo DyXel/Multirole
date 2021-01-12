@@ -32,7 +32,7 @@ void Webhook::Callback([[maybe_unused]] std::string_view payload)
 void Webhook::DoAccept()
 {
 	acceptor.async_accept(
-	[this](const std::error_code& ec, asio::ip::tcp::socket soc)
+	[this](std::error_code ec, asio::ip::tcp::socket soc)
 	{
 		if(ec == asio::error::operation_aborted)
 			return;
@@ -50,7 +50,7 @@ void Webhook::DoReadHeader(asio::ip::tcp::socket soc)
 	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
 	auto payload = std::make_shared<std::string>(255, ' ');
 	socPtr->async_read_some(asio::buffer(*payload),
-	[this, socPtr, payload](const std::error_code& ec, std::size_t /*unused*/)
+	[this, socPtr, payload](std::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;

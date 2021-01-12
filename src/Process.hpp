@@ -104,7 +104,7 @@ std::pair<Data, bool> Launch(const char* program, Args&& ...args)
 	constexpr const char* NULL_CHAR_PTR = nullptr;
 	execlp(program, program, std::forward<Args>(args)..., NULL_CHAR_PTR);
 	// Immediately die if unable to change process image.
-	std::abort();
+	_exit(1);
 }
 
 bool IsRunning(const Data& data)

@@ -33,9 +33,9 @@ void Client::Start()
 {
 	auto self(shared_from_this());
 	asio::post(strand,
-	[this, self, r=room]()
+	[this, self]()
 	{
-		r->Dispatch(Event::Join{*this});
+		room->Dispatch(Event::Join{*this});
 	});
 	DoReadHeader();
 }
@@ -112,7 +112,7 @@ void Client::DoReadHeader()
 	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
 	auto self(shared_from_this());
 	asio::async_read(socket, buffer, asio::bind_executor(strand,
-	[this, self, r=room](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self](std::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
 		{
@@ -120,8 +120,8 @@ void Client::DoReadHeader()
 			return;
 		}
 		if(ec != asio::error::operation_aborted)
-			r->Dispatch(Event::ConnectionLost{*this});
-		r->Remove(self);
+			room->Dispatch(Event::ConnectionLost{*this});
+		room->Remove(self);
 	}));
 }
 
@@ -130,7 +130,7 @@ void Client::DoReadBody()
 	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
 	auto self(shared_from_this());
 	asio::async_read(socket, buffer, asio::bind_executor(strand,
-	[this, self, r=room](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self](std::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec)
 		{
@@ -141,8 +141,8 @@ void Client::DoReadBody()
 			return;
 		}
 		if(ec != asio::error::operation_aborted)
-			r->Dispatch(Event::ConnectionLost{*this});
-		r->Remove(self);
+			room->Dispatch(Event::ConnectionLost{*this});
+		room->Remove(self);
 	}));
 }
 
@@ -151,7 +151,7 @@ void Client::DoWrite()
 	auto self(shared_from_this());
 	const auto& front = outgoing.front();
 	asio::async_write(socket, asio::buffer(front.Data(), front.Length()),
-	[this, self](const std::error_code& ec, std::size_t /*unused*/)
+	[this, self](std::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
