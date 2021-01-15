@@ -286,7 +286,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 {
 	auto IsLocInfoPublic = [](const LocInfo& info)
 	{
-		if(info.loc & (LOCATION_GRAVE | LOCATION_OVERLAY) &
+		if(info.loc & (LOCATION_GRAVE | LOCATION_OVERLAY) &&
 		   !(info.loc & (LOCATION_DECK | LOCATION_HAND)))
 			return true;
 		else if(!(info.pos & POS_FACEDOWN))
