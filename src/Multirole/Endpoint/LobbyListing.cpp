@@ -12,6 +12,10 @@ namespace Ignis::Multirole::Endpoint
 
 // public
 
+//without this debug builds in visual studio crash without reason
+LobbyListing::~LobbyListing() {
+}
+
 LobbyListing::LobbyListing(
 	asio::io_context& ioCtx,
 	unsigned short port,
