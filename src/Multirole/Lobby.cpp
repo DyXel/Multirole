@@ -12,7 +12,7 @@ std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
 
 // public
 
-Lobby::Lobby() : rd(static_cast<std::mt19937::result_type>(TimeNowInt()))
+Lobby::Lobby() : rng(static_cast<std::mt19937::result_type>(TimeNowInt()))
 {}
 
 std::shared_ptr<Room::Instance> Lobby::GetRoomById(uint32_t id) const
@@ -51,15 +51,15 @@ void Lobby::CloseNonStartedRooms()
 
 // private
 
-uint32_t Lobby::Add(std::shared_ptr<Room::Instance> room)
+std::tuple<uint32_t, uint32_t> Lobby::Add(std::shared_ptr<Room::Instance> room)
 {
 	std::scoped_lock lock(mRooms);
-	for(uint32_t newId = rd(); true; newId = rd())
+	for(uint32_t newId = 1U; true; newId++)
 	{
-		if(newId == 0 || rooms.count(newId) > 0)
+		if(rooms.count(newId) > 0)
 			continue;
 		if(rooms.emplace(newId, room).second)
-			return newId;
+			return {newId, rng()};
 	}
 }
 

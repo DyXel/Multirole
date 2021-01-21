@@ -51,6 +51,11 @@ void Context::SetId(uint32_t newId)
 	id = newId;
 }
 
+void Context::SetRngSeed(uint32_t seed)
+{
+	rng.seed(seed);
+}
+
 // private
 
 uint8_t Context::GetSwappedTeam(uint8_t team)

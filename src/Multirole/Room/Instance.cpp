@@ -28,7 +28,10 @@ Instance::Instance(CreateInfo&& info)
 
 void Instance::RegisterToOwner()
 {
-	ctx.SetId(id = owner.Add(shared_from_this()));
+	uint32_t seed;
+	std::tie(id, seed) = owner.Add(shared_from_this());
+	ctx.SetId(id);
+	ctx.SetRngSeed(seed);
 }
 
 bool Instance::Started() const

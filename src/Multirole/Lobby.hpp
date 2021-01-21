@@ -22,12 +22,12 @@ public:
 
 	void CloseNonStartedRooms();
 private:
-	std::mt19937 rd;
+	std::mt19937 rng;
 	std::unordered_map<uint32_t, std::shared_ptr<Room::Instance>> rooms;
 	mutable std::shared_mutex mRooms;
 
 	// IRoomManager overrides
-	uint32_t Add(std::shared_ptr<Room::Instance> room) override;
+	std::tuple<uint32_t, uint32_t> Add(std::shared_ptr<Room::Instance> room) override;
 	void Remove(uint32_t roomId) override;
 };
 

@@ -66,7 +66,8 @@ public:
 	const YGOPro::HostInfo& HostInfo() const;
 	std::map<uint8_t, std::string> GetDuelistsNames() const;
 
-	void SetId(uint32_t newId);
+	void SetId(uint32_t id);
+	void SetRngSeed(uint32_t seed);
 
 	/*** STATE AND EVENT HANDLERS ***/
 	// State/ChoosingTurn.cpp
@@ -153,7 +154,7 @@ private:
 	// Additional data used by room states.
 	uint8_t isTeam1GoingFirst{};
 	uint32_t id{};
-	std::unique_ptr<std::mt19937> rng;
+	std::mt19937 rng{};
 	std::array<int32_t, 2U> wins{};
 
 	// Get correctly swapped teams based on team1 going first or not.

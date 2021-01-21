@@ -59,12 +59,7 @@ constexpr const char* CORE_EXC_CHAT_MSG =
 StateOpt Context::operator()(State::Dueling& s)
 {
 	using namespace YGOPro;
-	// The RNG is lazily initialized here because most rooms would have not
-	// reached this point and allocating it when the room is created
-	// would have been a waste.
-	if(!rng)
-		rng = std::make_unique<std::mt19937>(id);
-	const auto seed = static_cast<uint32_t>((*rng)());
+	const auto seed = static_cast<uint32_t>(rng());
 	// Enable extra rules for the duel.
 	// These are controlled simply by adding custom cards
 	// with the rulesets to the game as playable cards, they will
@@ -154,7 +149,7 @@ StateOpt Context::operator()(State::Dueling& s)
 		if(hostInfo.dontShuffleDeck != 0U)
 			std::reverse(deck.begin(), deck.end());
 		else
-			std::shuffle(deck.begin(), deck.end(), *rng);
+			std::shuffle(deck.begin(), deck.end(), rng);
 		return deck;
 	};
 	try
