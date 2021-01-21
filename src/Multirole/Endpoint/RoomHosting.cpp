@@ -253,8 +253,8 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
 			return Status::STATUS_ERROR;
 		}
-		p->notes[199U] = '\0'; // NOLINT: Guarantee null-terminated string
-		// Get base room creation information.
+		*std::rbegin(p->notes) = '\0'; // Guarantee null-terminated string.
+		// Get "template" information that will be modified and used.
 		auto info = roomHosting.GetBaseRoomCreateInfo(p->hostInfo.banlistHash);
 		// Set our custom info.
 		info.hostInfo = p->hostInfo;

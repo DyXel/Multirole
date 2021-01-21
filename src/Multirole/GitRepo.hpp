@@ -20,7 +20,7 @@ public:
 	GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts);
 	~GitRepo();
 
-	// Remove copy and move operations
+	// Remove copy and move operations.
 	GitRepo(const GitRepo&) = delete;
 	GitRepo(GitRepo&&) = delete;
 	GitRepo& operator=(const GitRepo&) = delete;
@@ -35,6 +35,7 @@ private:
 	git_repository* repo;
 	std::vector<IGitRepoObserver*> observers;
 
+	// Endpoint::Webhook override
 	void Callback(std::string_view payload) override;
 
 	bool CheckIfRepoExists() const;

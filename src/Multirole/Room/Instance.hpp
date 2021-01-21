@@ -53,7 +53,7 @@ public:
 	Instance(CreateInfo&& info);
 	void RegisterToOwner();
 
-	// Check if the room state is not Waiting
+	// Check if the room state is not Waiting.
 	bool Started() const;
 
 	// Check if the given string matches the set password,

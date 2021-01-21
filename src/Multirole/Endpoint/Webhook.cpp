@@ -1,7 +1,6 @@
 #include "Webhook.hpp"
 
 #include <thread>
-
 #include <asio/write.hpp>
 
 #include "../Workaround.hpp"
@@ -23,7 +22,6 @@ void Webhook::Stop()
 	acceptor.close();
 }
 
-// protected
 void Webhook::Callback([[maybe_unused]] std::string_view payload)
 {}
 
@@ -32,31 +30,69 @@ void Webhook::Callback([[maybe_unused]] std::string_view payload)
 void Webhook::DoAccept()
 {
 	acceptor.async_accept(
-	[this](std::error_code ec, asio::ip::tcp::socket soc)
+	[this](std::error_code ec, asio::ip::tcp::socket socket)
 	{
-		if(ec == asio::error::operation_aborted)
+		if(!acceptor.is_open())
 			return;
 		if(!ec)
 		{
-			Workaround::SetCloseOnExec(soc.native_handle());
-			DoReadHeader(std::move(soc));
+			Workaround::SetCloseOnExec(socket.native_handle());
+			std::make_shared<Connection>(*this, std::move(socket))->DoReadHeader();
 		}
 		DoAccept();
 	});
 }
 
-void Webhook::DoReadHeader(asio::ip::tcp::socket soc)
+static const auto HTTP_OK = asio::buffer(
+	"HTTP/1.0 200 OK\r\n"
+	"Content-Length: 17\r\n"
+	"Content-Type: text/plain\r\n\r\n"
+	"Payload received."
+);
+
+Webhook::Connection::Connection(Webhook& webhook, asio::ip::tcp::socket socket)
+	:
+	webhook(webhook),
+	socket(std::move(socket)),
+	incoming()
 {
-	auto socPtr = std::make_shared<asio::ip::tcp::socket>(std::move(soc));
-	auto payload = std::make_shared<std::string>(255, ' ');
-	socPtr->async_read_some(asio::buffer(*payload),
-	[this, socPtr, payload](std::error_code ec, std::size_t /*unused*/)
+	incoming.fill(' ');
+}
+
+void Webhook::Connection::DoReadHeader()
+{
+	auto self(shared_from_this());
+	socket.async_read_some(asio::buffer(incoming),
+	[this, self](std::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
-		asio::write(*socPtr, asio::buffer("HTTP/1.0 200 OK\r\n"));
-		*payload += '\0'; // Guarantee null-terminated string
-		Callback(*payload);
+		incoming.back() = '\0'; // Guarantee null-terminated string.
+		webhook.Callback(incoming.data());
+		DoReadEnd();
+		DoWrite();
+	});
+}
+
+void Webhook::Connection::DoReadEnd()
+{
+	auto self(shared_from_this());
+	socket.async_read_some(asio::buffer(incoming),
+	[this, self](std::error_code ec, std::size_t /*unused*/)
+	{
+		if(!ec)
+			DoReadEnd();
+	});
+}
+
+void Webhook::Connection::DoWrite()
+{
+	auto self(shared_from_this());
+	asio::async_write(socket, HTTP_OK,
+	[this, self](std::error_code ec, std::size_t /*unused*/)
+	{
+		if(!ec)
+			socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
 	});
 }
 
