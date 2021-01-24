@@ -77,10 +77,10 @@ RoomHosting::RoomHosting(CreateInfo&& info)
 	:
 	prebuiltMsgs({
 		STOCMsgFactory::MakeVersionError(YGOPro::SERVER_VERSION),
-		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_SYSTEM, INVALID_NAME),
-		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_SYSTEM, ROOM_404),
+		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, INVALID_NAME),
+		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, ROOM_404),
 		STOCMsgFactory::MakeJoinError(Error::JOIN_WRONG_PASS),
-		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_SYSTEM, INVALID_MSG),
+		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, INVALID_MSG),
 		STOCMsgFactory::MakeJoinError(Error::JOIN_NOT_FOUND),
 	}),
 	ioCtx(info.ioCtx),

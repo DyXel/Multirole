@@ -129,16 +129,16 @@ void Context::SetupAsSpectator(Client& client)
 
 void Context::MakeAndSendChat(Client& client, std::string_view msg)
 {
-	if(auto p = client.Position(); p != Client::POSITION_SPECTATOR)
+	if(auto p = client.Position(); p == Client::POSITION_SPECTATOR)
 	{
-		p.first = GetSwappedTeam(p.first);
-		SendToAll(MakeChat(p, msg));
+		SendToAll(MakeChat(client, false, msg));
 	}
 	else
 	{
-		const auto formatted =
-			fmt::format(FMT_STRING("{:s}: {:s}"), client.Name(), msg);
-		SendToAll(MakeChat(CHAT_MSG_TYPE_SPECTATOR, formatted));
+		SendToTeam(client.Position().first, MakeChat(client, true, msg));
+		const auto stocMsg = MakeChat(client, false, msg);
+		SendToTeam(1U - client.Position().first, stocMsg);
+		SendToSpectators(stocMsg);
 	}
 }
 

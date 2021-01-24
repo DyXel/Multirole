@@ -591,7 +591,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		s.replay->Serialize();
 		replayManager.Save(s.replayId, *s.replay);
 		if(s.replay->Bytes().size() > YGOPro::STOCMsg::MAX_PAYLOAD_SIZE)
-			SendToAll(MakeChat(CHAT_MSG_TYPE_SYSTEM, REPLAY_TOO_BIG_CHAT_MSG));
+			SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, REPLAY_TOO_BIG_CHAT_MSG));
 		else
 			SendToAll(MakeSendReplay(s.replay->Bytes()));
 		SendToAll(MakeOpenReplayPrompt());

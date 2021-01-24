@@ -36,7 +36,6 @@ public:
 		DUEL_END      = 0x16,
 		REPLAY        = 0x17,
 		TIME_LIMIT    = 0x18,
-		CHAT          = 0x19,
 		PLAYER_ENTER  = 0x20,
 		PLAYER_CHANGE = 0x21,
 		WATCH_CHANGE  = 0x22,
@@ -44,6 +43,7 @@ public:
 		CATCHUP       = 0xF0,
 		REMATCH       = 0xF1,
 		REMATCH_WAIT  = 0xF2,
+		CHAT_2        = 0xF3,
 	};
 	static constexpr std::size_t MAX_PAYLOAD_SIZE =
 		std::numeric_limits<LengthType>::max() -
@@ -112,13 +112,6 @@ public:
 		uint16_t timeLeft;
 	};
 
-	struct Chat
-	{
-		static constexpr auto MSG_TYPE = MsgType::CHAT;
-		uint16_t posOrType;
-		uint16_t msg[256U];
-	};
-
 	struct PlayerEnter
 	{
 		static constexpr auto MSG_TYPE = MsgType::PLAYER_ENTER;
@@ -142,6 +135,23 @@ public:
 	{
 		static constexpr auto MSG_TYPE = MsgType::CATCHUP;
 		uint8_t catchingUp;
+	};
+
+	struct Chat2
+	{
+		static constexpr auto MSG_TYPE = MsgType::CHAT_2;
+		enum PlayerType : uint8_t
+		{
+			PTYPE_DUELIST,
+			PTYPE_OBS,
+			PTYPE_SYSTEM,
+			PTYPE_SYSTEM_ERROR,
+			PTYPE_SYSTEM_SHOUT,
+		};
+		uint8_t type;
+		uint8_t isTeam;
+		uint16_t clientName[20U];
+		uint16_t msg[256U];
 	};
 
 	STOCMsg() = delete;

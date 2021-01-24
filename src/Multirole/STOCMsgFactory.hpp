@@ -35,9 +35,9 @@ enum DeckOrCard : uint8_t
 
 enum ChatMsgType : uint8_t
 {
-	CHAT_MSG_TYPE_SPECTATOR,
-	CHAT_MSG_TYPE_SYSTEM,
+	CHAT_MSG_TYPE_INFO,
 	CHAT_MSG_TYPE_ERROR,
+	CHAT_MSG_TYPE_SHOUT,
 };
 
 enum PChangeType : uint8_t
@@ -55,8 +55,8 @@ public:
 
 	YGOPro::STOCMsg MakeTypeChange(const Room::Client& c, bool isHost) const;
 
-	// Creates chat message from client position (client message)
-	YGOPro::STOCMsg MakeChat(const Room::Client::PosType& p, std::string_view str) const;
+	// Creates chat message from client (client message)
+	static YGOPro::STOCMsg MakeChat(const Room::Client& c, bool isTeam, std::string_view str);
 	// Creates chat message from specific type (system message)
 	static YGOPro::STOCMsg MakeChat(ChatMsgType type, std::string_view str);
 	// Creates a message used to inform players entering the room
@@ -115,8 +115,6 @@ protected:
 
 private:
 	const uint8_t t1max;
-
-	static YGOPro::STOCMsg MakeChat(uint16_t posOrType, std::u16string_view str16);
 };
 
 } // namespace Ignis::Multirole
