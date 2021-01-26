@@ -60,11 +60,17 @@ public:
 	// always return true if the password is empty.
 	bool CheckPassword(std::string_view str) const;
 
+	// Check whether or not the IP was kicked before from this room.
+	bool CheckKicked(const asio::ip::address& addr) const;
+
 	// Query properties of the room.
 	Properties GetProperties() const;
 
 	// Tries to remove the room if its not started.
 	void TryClose();
+
+	// Adds an IP to the kicked list, checked with CheckKicked.
+	void AddKicked(const asio::ip::address& addr);
 
 	void Add(std::shared_ptr<Client> client);
 	void Remove(std::shared_ptr<Client> client);
@@ -83,6 +89,9 @@ private:
 
 	std::set<std::shared_ptr<Client>> clients;
 	std::mutex mClients;
+
+	std::set<asio::ip::address> kicked;
+	mutable std::mutex mKicked;
 };
 
 } // namespace Room

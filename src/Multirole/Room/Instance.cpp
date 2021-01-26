@@ -44,6 +44,12 @@ bool Instance::CheckPassword(std::string_view str) const
 	return pass.empty() || pass == str;
 }
 
+bool Instance::CheckKicked(const asio::ip::address& addr) const
+{
+	std::scoped_lock lock(mKicked);
+	return kicked.count(addr) > 0U;
+}
+
 Instance::Properties Instance::GetProperties() const
 {
 	return Properties
@@ -65,6 +71,12 @@ void Instance::TryClose()
 	{
 		Dispatch(Event::Close{});
 	});
+}
+
+void Instance::AddKicked(const asio::ip::address& addr)
+{
+	std::scoped_lock lock(mKicked);
+	kicked.insert(addr);
 }
 
 void Instance::Add(std::shared_ptr<Client> client)

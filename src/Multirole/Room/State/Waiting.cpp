@@ -1,9 +1,14 @@
 #include "../Context.hpp"
 
+#include <fmt/format.h>
+
 #include "../../YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole::Room
 {
+
+constexpr const char* CLIENT_KICKED_MSG =
+"{} has been kicked.";
 
 StateOpt Context::operator()(State::Waiting&, const Event::Close&)
 {
@@ -135,12 +140,15 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	if(duelists.count(p) == 0U || duelists[p] == s.host)
 		return std::nullopt;
 	Client* kicked = duelists[p];
+	kicked->MarkKicked();
 	kicked->Disconnect();
 	{
 		std::scoped_lock lock(mDuelists);
 		duelists.erase(p);
 	}
 	SendToAll(MakePlayerChange(*kicked, PCHANGE_TYPE_LEAVE));
+	const auto kickedStr = fmt::format(CLIENT_KICKED_MSG, kicked->Name());
+	SendToAll(MakeChat(CHAT_MSG_TYPE_INFO, kickedStr));
 	return std::nullopt;
 }
 

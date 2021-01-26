@@ -20,6 +20,8 @@ constexpr const char* ROOM_404 = "Room not found. Try refreshing the list!";
 constexpr const char* INVALID_NAME = "Invalid name. Try filling in your name.";
 constexpr const char* INVALID_MSG =
 "Invalid message before connecting to room. Please report this error!";
+constexpr const char* KICKED_BEFORE =
+"Unable to join. You were kicked from this room before.";
 
 constexpr bool operator!=(
 	const YGOPro::ClientVersion& v1,
@@ -82,6 +84,7 @@ RoomHosting::RoomHosting(CreateInfo&& info)
 		STOCMsgFactory::MakeJoinError(Error::JOIN_WRONG_PASS),
 		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, INVALID_MSG),
 		STOCMsgFactory::MakeJoinError(Error::JOIN_NOT_FOUND),
+		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, KICKED_BEFORE),
 	}),
 	ioCtx(info.ioCtx),
 	acceptor(info.ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), info.port)),
@@ -302,6 +305,12 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		else if(!room->CheckPassword(Utf16BufferToStr(p->pass)))
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_WRONG_PASS);
+			return Status::STATUS_ERROR;
+		}
+		else if(room->CheckKicked(socket.remote_endpoint().address()))
+		{
+			PushToWriteQueue(PrebuiltMsgId::PREBUILT_KICKED_BEFORE);
+			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
 			return Status::STATUS_ERROR;
 		}
 		else

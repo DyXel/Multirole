@@ -67,6 +67,11 @@ const YGOPro::Deck* Client::CurrentDeck() const
 	return currentDeck.get();
 }
 
+void Client::MarkKicked() const
+{
+	room->AddKicked(socket.remote_endpoint().address());
+}
+
 void Client::SetPosition(const PosType& p)
 {
 	position = p;

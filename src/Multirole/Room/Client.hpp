@@ -37,6 +37,10 @@ public:
 	// Returns current deck or original (NOTE: this might still be nullptr)
 	const YGOPro::Deck* CurrentDeck() const;
 
+	// Set this client as kicked from the room its in, preventing its IP
+	// from joining in the future.
+	void MarkKicked() const;
+
 	// Setters
 	void SetPosition(const PosType& p);
 	void SetReady(bool r);
