@@ -1,11 +1,13 @@
-#ifndef COREPROVIDER_HPP
-#define COREPROVIDER_HPP
+#ifndef SERVICE_COREPROVIDER_HPP
+#define SERVICE_COREPROVIDER_HPP
+#include "../Service.hpp"
+
 #include <chrono>
 #include <regex>
 #include <memory>
 #include <shared_mutex>
 
-#include "IGitRepoObserver.hpp"
+#include "../IGitRepoObserver.hpp"
 
 namespace Ignis::Multirole
 {
@@ -17,7 +19,7 @@ class IWrapper;
 
 } // namespace Core
 
-class CoreProvider final : public IGitRepoObserver
+class Service::CoreProvider final : public IGitRepoObserver
 {
 public:
 	enum class CoreType
@@ -56,4 +58,4 @@ private:
 
 } // namespace Ignis::Multirole
 
-#endif // COREPROVIDER_HPP
+#endif // SERVICE_COREPROVIDER_HPP

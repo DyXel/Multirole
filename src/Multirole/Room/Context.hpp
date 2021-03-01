@@ -7,7 +7,7 @@
 
 #include "State.hpp"
 #include "Event.hpp"
-#include "../CoreProvider.hpp"
+#include "../Service.hpp"
 #include "../STOCMsgFactory.hpp"
 
 namespace YGOPro
@@ -15,16 +15,12 @@ namespace YGOPro
 
 class Banlist;
 using BanlistPtr = std::shared_ptr<Banlist>;
+class CardDatabase;
 
 } // namespace YGOPro
 
 namespace Ignis::Multirole
 {
-
-class CardDatabase;
-class CoreProvider;
-class ReplayManager;
-class ScriptProvider;
 
 namespace Room
 {
@@ -37,14 +33,11 @@ public:
 	// Data passed on the ctor.
 	struct CreateInfo
 	{
+		Service& svc;
 		TimerAggregator& tagg;
-		CoreProvider& coreProvider;
-		ReplayManager& replayManager;
-		ScriptProvider& scriptProvider;
-		std::shared_ptr<CardDatabase> cdb;
+		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
-		YGOPro::BanlistPtr banlist;
 	};
 
 	struct DuelFinishReason
@@ -134,17 +127,15 @@ public:
 	}
 private:
 	// Creation options and resources.
+	Service& svc;
 	TimerAggregator& tagg;
-	CoreProvider& coreProvider;
-	ReplayManager& replayManager;
-	ScriptProvider& scriptProvider;
-	std::shared_ptr<CardDatabase> cdb;
+	const std::shared_ptr<YGOPro::CardDatabase> cdb;
+	const YGOPro::BanlistPtr banlist;
 	const YGOPro::HostInfo hostInfo;
+	const YGOPro::DeckLimits limits;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
 	const YGOPro::STOCMsg retryErrorMsg;
-	const YGOPro::DeckLimits limits;
-	YGOPro::BanlistPtr banlist;
 
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;

@@ -5,16 +5,16 @@
 #include <spdlog/spdlog.h>
 
 #define YGOPRO_BANLIST_PARSER_IMPLEMENTATION
-#include "YGOPro/BanlistParser.hpp"
+#include "../YGOPro/BanlistParser.hpp"
 
 namespace Ignis::Multirole
 {
 
-BanlistProvider::BanlistProvider(std::string_view fnRegexStr) :
+Service::BanlistProvider::BanlistProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-YGOPro::BanlistPtr BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) const
+YGOPro::BanlistPtr Service::BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) const
 {
 	std::shared_lock lock(mBanlists);
 	if(auto search = banlists.find(hash); search != banlists.end())
@@ -22,19 +22,19 @@ YGOPro::BanlistPtr BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) c
 	return nullptr;
 }
 
-void BanlistProvider::OnAdd(std::string_view path, const PathVector& fileList)
+void Service::BanlistProvider::OnAdd(std::string_view path, const PathVector& fileList)
 {
 	LoadBanlists(path, fileList);
 }
 
-void BanlistProvider::OnDiff(std::string_view path, const GitDiff& diff)
+void Service::BanlistProvider::OnDiff(std::string_view path, const GitDiff& diff)
 {
 	LoadBanlists(path, diff.added);
 }
 
 // private
 
-void BanlistProvider::LoadBanlists(std::string_view path, const PathVector& fileList)
+void Service::BanlistProvider::LoadBanlists(std::string_view path, const PathVector& fileList)
 {
 	std::string fullPath(path);
 	YGOPro::BanlistMap tmp;

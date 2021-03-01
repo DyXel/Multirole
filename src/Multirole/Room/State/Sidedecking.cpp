@@ -1,6 +1,6 @@
 #include "../Context.hpp"
 
-#include <algorithm>
+#include <algorithm> // std::equal
 
 #include "../../YGOPro/Constants.hpp"
 

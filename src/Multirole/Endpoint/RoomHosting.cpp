@@ -3,13 +3,12 @@
 #include <asio/read.hpp>
 #include <asio/write.hpp>
 
-#include "../BanlistProvider.hpp"
-#include "../DataProvider.hpp"
 #include "../Lobby.hpp"
 #include "../STOCMsgFactory.hpp"
 #include "../Workaround.hpp"
 #include "../Room/Client.hpp"
 #include "../Room/Instance.hpp"
+#include "../Service/BanlistProvider.hpp"
 #include "../YGOPro/Config.hpp"
 #include "../YGOPro/StringUtils.hpp"
 
@@ -75,7 +74,7 @@ inline std::string Utf16BufferToStr(const Buffer& buffer)
 
 // public
 
-RoomHosting::RoomHosting(CreateInfo&& info)
+RoomHosting::RoomHosting(asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port)
 	:
 	prebuiltMsgs({
 		STOCMsgFactory::MakeVersionError(YGOPro::SERVER_VERSION),
@@ -86,14 +85,10 @@ RoomHosting::RoomHosting(CreateInfo&& info)
 		STOCMsgFactory::MakeJoinError(Error::JOIN_NOT_FOUND),
 		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, KICKED_BEFORE),
 	}),
-	ioCtx(info.ioCtx),
-	acceptor(info.ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), info.port)),
-	banlistProvider(info.banlistProvider),
-	coreProvider(info.coreProvider),
-	dataProvider(info.dataProvider),
-	replayManager(info.replayManager),
-	scriptProvider(info.scriptProvider),
-	lobby(info.lobby)
+	ioCtx(ioCtx),
+	svc(svc),
+	lobby(lobby),
+	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port))
 {
 	Workaround::SetCloseOnExec(acceptor.native_handle());
 	DoAccept();
@@ -120,18 +115,15 @@ Room::Instance::CreateInfo RoomHosting::GetBaseRoomCreateInfo(uint32_t banlistHa
 {
 	return Room::Instance::CreateInfo
 	{
-		lobby,
 		ioCtx,
-		coreProvider,
-		replayManager,
-		scriptProvider,
-		dataProvider.GetDatabase(),
-		{}, // hostInfo
-		{}, // limits
-		banlistProvider.GetBanlistByHash(banlistHash),
+		lobby,
+		svc,
 		{}, // name
 		{}, // notes
-		{}  // password
+		{},  // password
+		svc.banlistProvider.GetBanlistByHash(banlistHash),
+		{}, // hostInfo
+		{} // limits
 	};
 }
 

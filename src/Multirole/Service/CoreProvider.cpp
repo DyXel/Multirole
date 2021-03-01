@@ -3,9 +3,9 @@
 #include <fstream>
 #include <spdlog/spdlog.h>
 
-#include "../FileSystem.hpp"
-#include "Core/DLWrapper.hpp"
-#include "Core/HornetWrapper.hpp"
+#include "../../FileSystem.hpp"
+#include "../Core/DLWrapper.hpp"
+#include "../Core/HornetWrapper.hpp"
 
 namespace Ignis::Multirole
 {
@@ -17,7 +17,7 @@ inline std::string MakeDirAndString(std::string_view path)
 	return std::string(path);
 }
 
-CoreProvider::CoreProvider(std::string_view fnRegexStr, std::string_view tmpPath, CoreType type, bool loadPerCall)
+Service::CoreProvider::CoreProvider(std::string_view fnRegexStr, std::string_view tmpPath, CoreType type, bool loadPerCall)
 	:
 	fnRegex(fnRegexStr.data()),
 	tmpPath(MakeDirAndString(tmpPath)),
@@ -28,12 +28,12 @@ CoreProvider::CoreProvider(std::string_view fnRegexStr, std::string_view tmpPath
 	shouldTest(true)
 {}
 
-CoreProvider::~CoreProvider()
+Service::CoreProvider::~CoreProvider()
 {
 	// TODO: Delete shared library files created.
 }
 
-CoreProvider::CorePtr CoreProvider::GetCore() const
+Service::CoreProvider::CorePtr Service::CoreProvider::GetCore() const
 {
 	std::shared_lock lock(mCore);
 	if(loadPerCall)
@@ -41,19 +41,19 @@ CoreProvider::CorePtr CoreProvider::GetCore() const
 	return core;
 }
 
-void CoreProvider::OnAdd(std::string_view path, const PathVector& fileList)
+void Service::CoreProvider::OnAdd(std::string_view path, const PathVector& fileList)
 {
 	OnGitUpdate(path, fileList);
 }
 
-void CoreProvider::OnDiff(std::string_view path, const GitDiff& diff)
+void Service::CoreProvider::OnDiff(std::string_view path, const GitDiff& diff)
 {
 	OnGitUpdate(path, diff.added);
 }
 
 // private
 
-CoreProvider::CorePtr CoreProvider::LoadCore() const
+Service::CoreProvider::CorePtr Service::CoreProvider::LoadCore() const
 {
 	if(type == CoreType::SHARED)
 		return std::make_shared<Core::DLWrapper>(corePath);
@@ -62,7 +62,7 @@ CoreProvider::CorePtr CoreProvider::LoadCore() const
 	throw std::runtime_error("CoreProvider: No other core type is implemented.");
 }
 
-void CoreProvider::OnGitUpdate(std::string_view path, const PathVector& fl)
+void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector& fl)
 {
 	std::scoped_lock lock(mCore);
 	const std::string oldCorePath = corePath;

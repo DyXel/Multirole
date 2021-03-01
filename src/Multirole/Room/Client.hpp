@@ -22,10 +22,7 @@ public:
 	using PosType = std::pair<uint8_t, uint8_t>;
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
-	Client(
-		std::shared_ptr<Instance> room,
-		asio::ip::tcp::socket&& socket,
-		std::string&& name);
+	Client(std::shared_ptr<Instance> room, asio::ip::tcp::socket socket, std::string name);
 	void RegisterToOwner();
 	void Start();
 

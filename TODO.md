@@ -1,7 +1,4 @@
 # TODO
-* Implement STOC_CHAT_2
-* Implement anti-stalling measures
-  * Try to use TCP keep-alive (necessary when timers are unused)
 * Finish README
   * Remark that "Too Many Open Files" error not only affects the update mechanism and should be of high priority if dealing with a high server load, as each hornet and replay saving also consumes file descriptors
 * Overhaul error logging mechanism
@@ -14,8 +11,8 @@
 * Make `GitRepo` webhook update system optional upon construction via config file
   * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 * Make `GitRepo` able to use local repositories, either without cloning or cloning locally
-* Check used enums and try to use `enum class` where possible
-  * Also try to forward declare as many of them as possible
+* Implement anti-stalling measures
+  * Try to use TCP keep-alive (necessary when timers are unused)
 * Review places where file handles can be opened and check for their errors
   * An idea would be to artifically lower the limit in order to test places randomly
 * Limit number of messages/memory a particular room can have allocated

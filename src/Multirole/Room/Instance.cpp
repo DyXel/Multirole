@@ -10,20 +10,12 @@ Instance::Instance(CreateInfo&& info)
 	owner(info.owner),
 	strand(info.ioCtx),
 	tagg(*this),
-	ctx({
-		tagg,
-		info.coreProvider,
-		info.replayManager,
-		info.scriptProvider,
-		std::move(info.cdb),
-		std::move(info.hostInfo),
-		std::move(info.limits),
-		std::move(info.banlist)}),
-	state(State::Waiting{nullptr}),
 	name(std::move(info.name)),
 	notes(std::move(info.notes)),
 	pass(std::move(info.pass)),
-	id(0U)
+	id(0U),
+	ctx({info.svc, tagg, std::move(info.banlist), info.hostInfo, info.limits}),
+	state(State::Waiting{nullptr})
 {}
 
 void Instance::RegisterToOwner()

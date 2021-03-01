@@ -6,15 +6,16 @@
 #include <asio/signal_set.hpp>
 #include <nlohmann/json.hpp>
 
-#include "BanlistProvider.hpp"
-#include "CoreProvider.hpp"
-#include "DataProvider.hpp"
 #include "GitRepo.hpp"
 #include "Lobby.hpp"
-#include "ReplayManager.hpp"
-#include "ScriptProvider.hpp"
+#include "Service.hpp"
 #include "Endpoint/LobbyListing.hpp"
 #include "Endpoint/RoomHosting.hpp"
+#include "Service/BanlistProvider.hpp"
+#include "Service/CoreProvider.hpp"
+#include "Service/DataProvider.hpp"
+#include "Service/ReplayManager.hpp"
+#include "Service/ScriptProvider.hpp"
 
 namespace Ignis::Multirole
 {
@@ -29,11 +30,13 @@ private:
 	asio::io_context lIoCtx; // Lobby Io Context
 	asio::executor_work_guard<asio::io_context::executor_type> lIoCtxGuard;
 	unsigned int hostingConcurrency;
-	ReplayManager replayManager;
-	DataProvider dataProvider;
-	ScriptProvider scriptProvider;
-	CoreProvider coreProvider;
-	BanlistProvider banlistProvider;
+	Service::BanlistProvider banlistProvider;
+	Service::CoreProvider coreProvider;
+	Service::DataProvider dataProvider;
+// 	Service::LogHandler logHandler;
+	Service::ReplayManager replayManager;
+	Service::ScriptProvider scriptProvider;
+	Service service;
 	Lobby lobby;
 	Endpoint::LobbyListing lobbyListing;
 	Endpoint::RoomHosting roomHosting;

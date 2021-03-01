@@ -1,16 +1,18 @@
-#ifndef SCRIPTPROVIDER_HPP
-#define SCRIPTPROVIDER_HPP
+#ifndef SERVICE_SCRIPTPROVIDER_HPP
+#define SERVICE_SCRIPTPROVIDER_HPP
+#include "../Service.hpp"
+
 #include <regex>
 #include <unordered_map>
 #include <shared_mutex>
 
-#include "IGitRepoObserver.hpp"
-#include "Core/IScriptSupplier.hpp"
+#include "../IGitRepoObserver.hpp"
+#include "../Core/IScriptSupplier.hpp"
 
 namespace Ignis::Multirole
 {
 
-class ScriptProvider final : public IGitRepoObserver, public Core::IScriptSupplier
+class Service::ScriptProvider final : public IGitRepoObserver, public Core::IScriptSupplier
 {
 public:
 	ScriptProvider(std::string_view fnRegexStr);
@@ -31,4 +33,4 @@ private:
 
 } // namespace Ignis::Multirole
 
-#endif // SCRIPTPROVIDER_HPP
+#endif // SERVICE_SCRIPTPROVIDER_HPP

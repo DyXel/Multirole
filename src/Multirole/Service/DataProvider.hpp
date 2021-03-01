@@ -1,23 +1,30 @@
-#ifndef DATAPROVIDER_HPP
-#define DATAPROVIDER_HPP
+#ifndef SERVICE_DATAPROVIDER_HPP
+#define SERVICE_DATAPROVIDER_HPP
+#include "../Service.hpp"
+
 #include <regex>
 #include <memory>
 #include <shared_mutex>
 #include <set>
 
-#include "IGitRepoObserver.hpp"
+#include "../IGitRepoObserver.hpp"
 
-namespace Ignis::Multirole
+namespace YGOPro
 {
 
 class CardDatabase;
 
-class DataProvider final : public IGitRepoObserver
+} // namespace YGOPro
+
+namespace Ignis::Multirole
+{
+
+class Service::DataProvider final : public IGitRepoObserver
 {
 public:
 	DataProvider(std::string_view fnRegexStr);
 
-	std::shared_ptr<CardDatabase> GetDatabase() const;
+	std::shared_ptr<YGOPro::CardDatabase> GetDatabase() const;
 
 	// IGitRepoObserver overrides
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
@@ -25,7 +32,7 @@ public:
 private:
 	const std::regex fnRegex;
 	std::set<std::string> paths;
-	std::shared_ptr<CardDatabase> db;
+	std::shared_ptr<YGOPro::CardDatabase> db;
 	mutable std::shared_mutex mDb;
 
 	void ReloadDatabases();
@@ -33,4 +40,4 @@ private:
 
 } // namespace Ignis::Multirole
 
-#endif // DATAPROVIDER_HPP
+#endif // SERVICE_DATAPROVIDER_HPP

@@ -1,5 +1,7 @@
-#ifndef REPLAYMANAGER_HPP
-#define REPLAYMANAGER_HPP
+#ifndef SERVICE_REPLAYMANAGER_HPP
+#define SERVICE_REPLAYMANAGER_HPP
+#include "../Service.hpp"
+
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -16,7 +18,7 @@ class Replay;
 namespace Ignis::Multirole
 {
 
-class ReplayManager
+class Service::ReplayManager
 {
 public:
 	ReplayManager(std::string_view path);
@@ -34,4 +36,4 @@ private:
 
 } // namespace Ignis::Multirole
 
-#endif // REPLAYMANAGER_HPP
+#endif // SERVICE_REPLAYMANAGER_HPP

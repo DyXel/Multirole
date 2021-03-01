@@ -5,12 +5,12 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "Core/IDataSupplier.hpp"
+#include "../Core/IDataSupplier.hpp"
 
 struct sqlite3;
 struct sqlite3_stmt;
 
-namespace Ignis::Multirole
+namespace YGOPro
 {
 
 struct CardExtraData
@@ -19,7 +19,7 @@ struct CardExtraData
 	uint32_t category;
 };
 
-class CardDatabase final : public Core::IDataSupplier
+class CardDatabase final : public Ignis::Multirole::Core::IDataSupplier
 {
 public:
 	// Creates a in-memory database
@@ -40,9 +40,8 @@ public:
 
 	// Query extra data
 	const CardExtraData& ExtraFromCode(uint32_t code);
-protected:
-	sqlite3* db{};
 private:
+	sqlite3* db{};
 	sqlite3_stmt* aStmt{};
 	sqlite3_stmt* sStmt{};
 	sqlite3_stmt* s2Stmt{};
@@ -55,6 +54,6 @@ private:
 	mutable std::mutex mExtraCache;
 };
 
-} // namespace Ignis::Multirole
+} // namespace YGOPro
 
 #endif // CARDDATABASE_HPP

@@ -24,18 +24,15 @@ public:
 	// Data passed on the ctor.
 	struct CreateInfo
 	{
-		IRoomManager& owner;
 		asio::io_context& ioCtx;
-		CoreProvider& coreProvider;
-		ReplayManager& replayManager;
-		ScriptProvider& scriptProvider;
-		std::shared_ptr<CardDatabase> cdb;
-		YGOPro::HostInfo hostInfo;
-		YGOPro::DeckLimits limits;
-		YGOPro::BanlistPtr banlist;
+		IRoomManager& owner;
+		Service& svc;
 		std::string name;
 		std::string notes;
 		std::string pass;
+		YGOPro::BanlistPtr banlist;
+		YGOPro::HostInfo hostInfo;
+		YGOPro::DeckLimits limits;
 	};
 
 	// Properties are queried data about the room for listing.
@@ -80,12 +77,12 @@ private:
 	IRoomManager& owner;
 	asio::io_context::strand strand;
 	TimerAggregator tagg;
-	Context ctx;
-	StateVariant state;
 	const std::string name;
 	const std::string notes;
 	const std::string pass;
 	uint32_t id;
+	Context ctx;
+	StateVariant state;
 
 	std::set<std::shared_ptr<Client>> clients;
 	std::mutex mClients;

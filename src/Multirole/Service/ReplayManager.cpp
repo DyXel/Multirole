@@ -4,8 +4,8 @@
 #include <spdlog/spdlog.h>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
-#include "../FileSystem.hpp"
-#include "YGOPro/Replay.hpp"
+#include "../../FileSystem.hpp"
+#include "../YGOPro/Replay.hpp"
 
 namespace Ignis::Multirole
 {
@@ -21,7 +21,7 @@ inline std::string MakeDirAndString(std::string_view path)
 	return std::string(path);
 }
 
-ReplayManager::ReplayManager(std::string_view path) :
+Service::ReplayManager::ReplayManager(std::string_view path) :
 	folder(MakeDirAndString(path)),
 	lastIdPath(folder + "/lastId"),
 	mLastId(),
@@ -52,10 +52,10 @@ ReplayManager::ReplayManager(std::string_view path) :
 	spdlog::error("ReplayManager: Unable to write starting replay ID to file");
 }
 
-ReplayManager::~ReplayManager()
+Service::ReplayManager::~ReplayManager()
 {}
 
-void ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const
+void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const
 {
 	std::string finalPath(folder + "/" + std::to_string(id) + ".yrpX");
 	const auto& bytes = replay.Bytes();
@@ -69,7 +69,7 @@ constexpr const char* CORRUPTED_LASTID_FILE =
 "ReplayManager: lastId file byte size corrupted:"
 " It's {}. Should be {}";
 
-uint64_t ReplayManager::NewId()
+uint64_t Service::ReplayManager::NewId()
 {
 	uint64_t prevId, id;
 	std::scoped_lock tlock(mLastId);

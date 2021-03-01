@@ -18,11 +18,11 @@ constexpr unsigned int GetConcurrency(int hint)
 	return static_cast<unsigned int>(hint);
 }
 
-inline CoreProvider::CoreType GetCoreType(std::string_view str)
+inline Service::CoreProvider::CoreType GetCoreType(std::string_view str)
 {
-	CoreProvider::CoreType ret = CoreProvider::CoreType::SHARED;
+	auto ret = Service::CoreProvider::CoreType::SHARED;
 	if(str == "hornet")
-		ret = CoreProvider::CoreType::HORNET;
+		ret = Service::CoreProvider::CoreType::HORNET;
 	else if(str != "shared")
 		throw std::runtime_error("Incorrect type of core.");
 	return ret;
@@ -34,32 +34,29 @@ Instance::Instance(const nlohmann::json& cfg) :
 	whIoCtx(),
 	lIoCtx(),
 	lIoCtxGuard(asio::make_work_guard(lIoCtx)),
-	hostingConcurrency(
-		GetConcurrency(cfg.at("concurrencyHint").get<int>())),
-	replayManager(cfg.at("replaysPath").get<std::string>()),
-	dataProvider(
-		cfg.at("dataProvider").at("fileRegex").get<std::string>()),
-	scriptProvider(
-		cfg.at("scriptProvider").at("fileRegex").get<std::string>()),
+	hostingConcurrency(GetConcurrency(cfg.at("concurrencyHint").get<int>())),
+	banlistProvider(
+		cfg.at("banlistProvider").at("fileRegex").get<std::string>()),
 	coreProvider(
 		cfg.at("coreProvider").at("fileRegex").get<std::string>(),
 		cfg.at("coreProvider").at("tmpPath").get<std::string>(),
 		GetCoreType(cfg.at("coreProvider").at("coreType").get<std::string>()),
 		cfg.at("coreProvider").at("loadPerRoom").get<bool>()),
-	banlistProvider(
-		cfg.at("banlistProvider").at("fileRegex").get<std::string>()),
+	dataProvider(cfg.at("dataProvider").at("fileRegex").get<std::string>()),
+	replayManager(cfg.at("replaysPath").get<std::string>()),
+	scriptProvider(cfg.at("scriptProvider").at("fileRegex").get<std::string>()),
+	service({banlistProvider, coreProvider, dataProvider,
+		replayManager, scriptProvider}),
+	lobby(),
 	lobbyListing(
 		lIoCtx,
-		cfg.at("lobbyListingPort").get<unsigned short>(), lobby),
-	roomHosting({
+		cfg.at("lobbyListingPort").get<unsigned short>(),
+		lobby),
+	roomHosting(
 		lIoCtx,
-		cfg.at("roomHostingPort").get<unsigned short>(),
-		banlistProvider,
-		coreProvider,
-		dataProvider,
-		replayManager,
-		scriptProvider,
-		lobby}),
+		service,
+		lobby,
+		cfg.at("roomHostingPort").get<unsigned short>()),
 	signalSet(lIoCtx)
 {
 	// Load up and update repositories while also adding them to the std::map

@@ -1,5 +1,5 @@
-#ifndef ROOMHOSTINGENDPOINT_HPP
-#define ROOMHOSTINGENDPOINT_HPP
+#ifndef ENDPOINT_ROOMHOSTING_HPP
+#define ENDPOINT_ROOMHOSTING_HPP
 #include <mutex>
 #include <memory>
 #include <set>
@@ -7,6 +7,7 @@
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 
+#include "../Service.hpp"
 #include "../Room/Instance.hpp"
 #include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/STOCMsg.hpp"
@@ -14,11 +15,6 @@
 namespace Ignis::Multirole
 {
 
-class BanlistProvider;
-class CoreProvider;
-class DataProvider;
-class ReplayManager;
-class ScriptProvider;
 class Lobby;
 
 namespace Endpoint
@@ -27,19 +23,6 @@ namespace Endpoint
 class RoomHosting final
 {
 public:
-	// Data passed on the ctor.
-	struct CreateInfo
-	{
-		asio::io_context& ioCtx;
-		unsigned short port;
-		BanlistProvider& banlistProvider;
-		CoreProvider& coreProvider;
-		DataProvider& dataProvider;
-		ReplayManager& replayManager;
-		ScriptProvider& scriptProvider;
-		Lobby& lobby;
-	};
-
 	enum class PrebuiltMsgId
 	{
 		PREBUILT_MSG_VERSION_MISMATCH = 0,
@@ -52,7 +35,7 @@ public:
 		PREBUILT_MSG_COUNT
 	};
 
-	RoomHosting(CreateInfo&& info);
+	RoomHosting(asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port);
 	void Stop();
 
 	const YGOPro::STOCMsg& GetPrebuiltMsg(PrebuiltMsgId id) const;
@@ -90,13 +73,9 @@ private:
 		static_cast<std::size_t>(PrebuiltMsgId::PREBUILT_MSG_COUNT)
 	> prebuiltMsgs;
 	asio::io_context& ioCtx;
-	asio::ip::tcp::acceptor acceptor;
-	BanlistProvider& banlistProvider;
-	CoreProvider& coreProvider;
-	DataProvider& dataProvider;
-	ReplayManager& replayManager;
-	ScriptProvider& scriptProvider;
+	Service& svc;
 	Lobby& lobby;
+	asio::ip::tcp::acceptor acceptor;
 
 	void DoAccept();
 };
@@ -105,4 +84,4 @@ private:
 
 } // namespace Ignis::Multirole
 
-#endif // ROOMHOSTINGENDPOINT_HPP
+#endif // ENDPOINT_ROOMHOSTING_HPP

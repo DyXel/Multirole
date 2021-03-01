@@ -1,6 +1,6 @@
 #include "../Context.hpp"
 
-#include "../../CoreProvider.hpp"
+#include "../../Service/CoreProvider.hpp"
 #include "../../YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole::Room
@@ -35,7 +35,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	};
 	return State::Dueling
 	{
-		coreProvider.GetCore(),
+		svc.coreProvider.GetCore(),
 		nullptr,
 		0U,
 		nullptr,

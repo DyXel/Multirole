@@ -11,21 +11,21 @@ namespace Ignis::Multirole
 
 // public
 
-ScriptProvider::ScriptProvider(std::string_view fnRegexStr) :
+Service::ScriptProvider::ScriptProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-void ScriptProvider::OnAdd(std::string_view path, const PathVector& fileList)
+void Service::ScriptProvider::OnAdd(std::string_view path, const PathVector& fileList)
 {
 	LoadScripts(path, fileList);
 }
 
-void ScriptProvider::OnDiff(std::string_view path, const GitDiff& diff)
+void Service::ScriptProvider::OnDiff(std::string_view path, const GitDiff& diff)
 {
 	LoadScripts(path, diff.added);
 }
 
-std::string ScriptProvider::ScriptFromFilePath(std::string_view fp) const
+std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) const
 {
 	std::shared_lock lock(mScripts);
 	if(auto search = scripts.find(fp.data()); search != scripts.end())
@@ -35,7 +35,7 @@ std::string ScriptProvider::ScriptFromFilePath(std::string_view fp) const
 
 // private
 
-void ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileList)
+void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileList)
 {
 	int total = 0;
 	spdlog::info("ScriptProvider: Loading {:d} files...", fileList.size());

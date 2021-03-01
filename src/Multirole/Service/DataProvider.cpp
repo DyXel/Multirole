@@ -7,24 +7,24 @@
 #include <spdlog/spdlog.h>
 #include <fmt/format.h>
 
-#include "CardDatabase.hpp"
+#include "../YGOPro/CardDatabase.hpp"
 
 namespace Ignis::Multirole
 {
 
 // public
 
-DataProvider::DataProvider(std::string_view fnRegexStr) :
+Service::DataProvider::DataProvider(std::string_view fnRegexStr) :
 	fnRegex(fnRegexStr.data())
 {}
 
-std::shared_ptr<CardDatabase> DataProvider::GetDatabase() const
+std::shared_ptr<YGOPro::CardDatabase> Service::DataProvider::GetDatabase() const
 {
 	std::shared_lock lock(mDb);
 	return db;
 }
 
-void DataProvider::OnAdd(std::string_view path, const PathVector& fileList)
+void Service::DataProvider::OnAdd(std::string_view path, const PathVector& fileList)
 {
 	std::string fullPath(path);
 	// Filter and add to set of dbs
@@ -39,7 +39,7 @@ void DataProvider::OnAdd(std::string_view path, const PathVector& fileList)
 	ReloadDatabases();
 }
 
-void DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
+void Service::DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
 {
 	std::string fullPath(path);
 	// Filter and remove from sets of dbs
@@ -65,9 +65,9 @@ void DataProvider::OnDiff(std::string_view path, const GitDiff& diff)
 
 // private
 
-void DataProvider::ReloadDatabases()
+void Service::DataProvider::ReloadDatabases()
 {
-	auto newDb = std::make_shared<CardDatabase>();
+	auto newDb = std::make_shared<YGOPro::CardDatabase>();
 	for(const auto& path : paths)
 	{
 		spdlog::info("DataProvider: Loading up {:s}...", path);

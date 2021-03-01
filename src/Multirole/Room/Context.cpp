@@ -2,9 +2,10 @@
 
 #include <fmt/format.h>
 
-#include "../CardDatabase.hpp"
 #include "../STOCMsgFactory.hpp"
+#include "../Service/DataProvider.hpp"
 #include "../YGOPro/Banlist.hpp"
+#include "../YGOPro/CardDatabase.hpp"
 #include "../YGOPro/Constants.hpp"
 #include "../YGOPro/Deck.hpp"
 
@@ -17,17 +18,15 @@ constexpr const char* MSG_RETRY_ERROR_CHAT =
 Context::Context(CreateInfo&& info)
 	:
 	STOCMsgFactory(info.hostInfo.t0Count),
+	svc(info.svc),
 	tagg(info.tagg),
-	coreProvider(info.coreProvider),
-	replayManager(info.replayManager),
-	scriptProvider(info.scriptProvider),
-	cdb(std::move(info.cdb)),
-	hostInfo(std::move(info.hostInfo)),
+	cdb(svc.dataProvider.GetDatabase()),
+	banlist(std::move(info.banlist)),
+	hostInfo(info.hostInfo),
+	limits(info.limits),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
-	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, MSG_RETRY_ERROR_CHAT)),
-	limits(std::move(info.limits)),
-	banlist(std::move(info.banlist))
+	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, MSG_RETRY_ERROR_CHAT))
 {}
 
 const YGOPro::HostInfo& Context::HostInfo() const
