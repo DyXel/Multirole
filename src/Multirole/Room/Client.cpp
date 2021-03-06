@@ -11,11 +11,11 @@ namespace Ignis::Multirole::Room
 {
 
 Client::Client(
-	std::shared_ptr<Instance> room,
+	std::shared_ptr<Instance> r,
 	asio::ip::tcp::socket socket,
 	std::string name)
 	:
-	room(std::move(room)),
+	room(std::move(r)),
 	strand(room->Strand()),
 	socket(std::move(socket)),
 	name(std::move(name)),
