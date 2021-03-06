@@ -40,7 +40,7 @@ StateOpt Context::operator()(State::Rematching& s, const Event::Rematch& e)
 		SendToAll(MakeDuelEnd());
 		return State::Closing{};
 	}
-	else if(e.answer && s.answered.count(&e.client) == 0U)
+	if(e.answer && s.answered.count(&e.client) == 0U)
 	{
 		s.answered.insert(&e.client);
 		if(s.answered.size() == duelists.size())

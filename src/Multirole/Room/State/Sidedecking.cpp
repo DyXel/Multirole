@@ -46,7 +46,7 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e)
 	if(s.sidedecked.count(&e.client) == 0U)
 	{
 		// NOTE: assuming client original deck is always valid here
-		const auto ogDeck = e.client.OriginalDeck();
+		const auto* ogDeck = e.client.OriginalDeck();
 		auto sideDeck = LoadDeck(e.main, e.side);
 		const auto ogMap = ogDeck->GetCodeMap();
 		const auto sideMap = sideDeck->GetCodeMap();

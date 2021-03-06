@@ -57,7 +57,7 @@ Service::CoreProvider::CorePtr Service::CoreProvider::LoadCore() const
 {
 	if(type == CoreType::SHARED)
 		return std::make_shared<Core::DLWrapper>(corePath);
-	else if (type == CoreType::HORNET)
+	if (type == CoreType::HORNET)
 		return std::make_shared<Core::HornetWrapper>(corePath);
 	throw std::runtime_error("CoreProvider: No other core type is implemented.");
 }
@@ -66,7 +66,7 @@ void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector&
 {
 	std::scoped_lock lock(mCore);
 	const std::string oldCorePath = corePath;
-	PathVector::const_iterator it = fl.begin();
+	auto it = fl.begin();
 	for(; it != fl.end(); ++it)
 		if(std::regex_match(*it, fnRegex))
 			break;

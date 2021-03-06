@@ -42,7 +42,7 @@ std::map<uint8_t, std::string> Context::GetDuelistsNames() const
 	std::map<uint8_t, std::string> ret;
 	{
 		std::shared_lock lock(mDuelists);
-		for(auto& kv : duelists)
+		for(const auto& kv : duelists)
 			ret.emplace(EncodePosition(kv.first), kv.second->Name());
 	}
 	return ret;
@@ -50,7 +50,7 @@ std::map<uint8_t, std::string> Context::GetDuelistsNames() const
 
 // private
 
-uint8_t Context::GetSwappedTeam(uint8_t team)
+uint8_t Context::GetSwappedTeam(uint8_t team) const
 {
 	assert(team <= 1U);
 	return isTeam1GoingFirst ^ team;

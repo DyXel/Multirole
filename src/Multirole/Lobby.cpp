@@ -28,7 +28,7 @@ std::size_t Lobby::GetStartedRoomsCount() const
 {
 	std::size_t count = 0U;
 	std::shared_lock lock(mRooms);
-	for(auto& kv : rooms)
+	for(const auto& kv : rooms)
 		if(auto room = kv.second.lock(); room)
 			count += static_cast<std::size_t>(room->Started());
 	return count;
@@ -51,7 +51,7 @@ std::shared_ptr<Room::Instance> Lobby::MakeRoom(Room::Instance::CreateInfo& info
 	return room;
 }
 
-void Lobby::CollectRooms(std::function<void(const RoomProps&)> f)
+void Lobby::CollectRooms(const std::function<void(const RoomProps&)>& f)
 {
 	RoomProps props{};
 	std::shared_lock lock(mRooms);

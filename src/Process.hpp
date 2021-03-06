@@ -95,13 +95,13 @@ bool IsRunning(const Data& data);
 template<typename... Args>
 std::pair<Data, bool> Launch(const char* program, Args&& ...args)
 {
+	constexpr const char* NULL_CHAR_PTR = nullptr;
 	pid_t id = vfork();
 	if(id == -1)
 		return std::pair<Data, bool>(0, false);
 	else if(id > 0)
 		return std::pair<Data, bool>(id, IsRunning(id));
 	// Child continues execution...
-	constexpr const char* NULL_CHAR_PTR = nullptr;
 	execlp(program, program, std::forward<Args>(args)..., NULL_CHAR_PTR);
 	// Immediately die if unable to change process image.
 	_exit(1);

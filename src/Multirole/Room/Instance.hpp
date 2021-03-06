@@ -64,8 +64,8 @@ public:
 	// Adds an IP to the kicked list, checked with CheckKicked.
 	void AddKicked(const asio::ip::address& addr);
 
-	void Add(std::shared_ptr<Client> client);
-	void Remove(std::shared_ptr<Client> client);
+	void Add(const std::shared_ptr<Client>& client);
+	void Remove(const std::shared_ptr<Client>& client);
 	asio::io_context::strand& Strand();
 	void Dispatch(const EventVariant& e);
 private:

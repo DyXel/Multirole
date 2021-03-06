@@ -13,13 +13,13 @@ bool MakeDir(std::string_view path)
 }
 
 #else
-#include <errno.h>
+#include <cerrno>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 bool MakeDir(std::string_view path)
 {
-	return !mkdir(path.data(), 0777) || errno == EEXIST;
+	return mkdir(path.data(), 0777) == 0 || errno == EEXIST;
 }
 
 #endif

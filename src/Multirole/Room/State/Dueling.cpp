@@ -335,7 +335,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			if(s.retryCount[s.replier->Position().first]++ < 1)
 			{
 				s.replier->Send(retryErrorMsg);
-				if(s.lastHint.size() > 0U)
+				if(!s.lastHint.empty())
 					s.replier->Send(MakeGameMsg(s.lastHint));
 				s.replier->Send(MakeGameMsg(s.lastRequest));
 				s.replay->PopBackResponse();
@@ -420,10 +420,8 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 				const auto fullBuffer = s.core->QueryLocation(s.duelPtr, qInfo);
 				s.replay->RecordMsg(MakeUpdateDataMsg(req.con, req.loc, fullBuffer));
 				if(req.loc == LOCATION_DECK)
-				{
 					continue;
-				}
-				else if(req.loc == LOCATION_EXTRA)
+				if(req.loc == LOCATION_EXTRA)
 				{
 					SendToTeam(team, MakeMsg(fullBuffer));
 					continue;
@@ -503,12 +501,12 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 			uint8_t winner = 1U - s.replier->Position().first;
 			return DuelFinishReason{Reason::REASON_WRONG_RESPONSE, winner};
 		}
-		else if(msgType == MSG_WIN)
+		if(msgType == MSG_WIN)
 		{
 			uint8_t winner = (msg[1U] > 1U) ? 2U : GetSwappedTeam(msg[1U]);
 			return DuelFinishReason{Reason::REASON_DUEL_WON, winner};
 		}
-		else if(DoesMessageRequireAnswer(msgType))
+		if(DoesMessageRequireAnswer(msgType))
 		{
 			SendToAllExcept(*s.replier, MakeGameMsg({MSG_WAITING}));
 			if(hostInfo.timeLimitInSeconds != 0U)

@@ -82,7 +82,7 @@ void LobbyListing::DoSerialize()
 			room["banlist_hash"] = hi.banlistHash;
 			room["istart"] = rp.started ? "start" : "waiting";
 			auto& ac = room["users"];
-			for(auto& kv : rp.duelists)
+			for(const auto& kv : rp.duelists)
 			{
 				ac.emplace_back();
 				auto& client = ac.back();

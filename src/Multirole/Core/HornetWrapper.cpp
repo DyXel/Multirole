@@ -25,7 +25,7 @@ namespace Ignis::Multirole::Core
 
 inline std::string MakeHornetName(uintptr_t addr)
 {
-	std::array<char, 25U> buf;
+	std::array<char, 25U> buf{};
 	std::snprintf(buf.data(), buf.size(), "Hornet0x%lX", addr);
 	return std::string(buf.data());
 }

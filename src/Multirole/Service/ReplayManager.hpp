@@ -22,7 +22,6 @@ class Service::ReplayManager
 {
 public:
 	ReplayManager(std::string_view path);
-	~ReplayManager();
 
 	void Save(uint64_t id, const YGOPro::Replay& replay) const;
 

@@ -35,7 +35,7 @@ public:
 
 	// Removes dead rooms from the dictionary and calls function f for each
 	// non-dead room with its properties as argument.
-	void CollectRooms(std::function<void(const RoomProps&)> f);
+	void CollectRooms(const std::function<void(const RoomProps&)>& f);
 
 	// Attempts to close all rooms whose state is not Waiting.
 	void CloseNonStartedRooms();

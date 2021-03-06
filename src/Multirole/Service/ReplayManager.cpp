@@ -52,9 +52,6 @@ Service::ReplayManager::ReplayManager(std::string_view path) :
 	spdlog::error("ReplayManager: Unable to write starting replay ID to file");
 }
 
-Service::ReplayManager::~ReplayManager()
-{}
-
 void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const
 {
 	std::string finalPath(folder + "/" + std::to_string(id) + ".yrpX");
@@ -71,7 +68,8 @@ constexpr const char* CORRUPTED_LASTID_FILE =
 
 uint64_t Service::ReplayManager::NewId()
 {
-	uint64_t prevId, id;
+	uint64_t prevId = 0U;
+	uint64_t id = 0U;
 	std::scoped_lock tlock(mLastId);
 	boost::interprocess::scoped_lock<boost::interprocess::file_lock> plock(lLastId);
 	if(std::fstream f(lastIdPath, IOS_BINARY_IN); f.is_open())

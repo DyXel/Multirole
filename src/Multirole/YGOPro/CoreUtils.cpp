@@ -289,7 +289,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 		if(info.loc & (LOCATION_GRAVE | LOCATION_OVERLAY) &&
 		   !(info.loc & (LOCATION_DECK | LOCATION_HAND)))
 			return true;
-		else if(!(info.pos & POS_FACEDOWN))
+		if(!(info.pos & POS_FACEDOWN))
 			return true;
 		return false;
 	};
@@ -657,7 +657,7 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
 	{
 		if((q->flags & QUERY_IS_PUBLIC) && q->isPublic)
 			return true;
-		else if((q->flags & QUERY_POSITION) && (q->pos & POS_FACEUP))
+		if((q->flags & QUERY_POSITION) && (q->pos & POS_FACEUP))
 			return true;
 		switch(flag)
 		{
@@ -746,13 +746,13 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
 	{
 		if((q->flags & flag) != flag)
 			continue;
-		else if(flag == QUERY_REASON_CARD && q->reasonCard.loc == 0U)
+		if(flag == QUERY_REASON_CARD && q->reasonCard.loc == 0U)
 			continue;
-		else if(flag == QUERY_EQUIP_CARD && q->equipCard.loc == 0U)
+		if(flag == QUERY_EQUIP_CARD && q->equipCard.loc == 0U)
 			continue;
-		else if((q->flags & QUERY_IS_HIDDEN) && q->isHidden && !IsPublic(flag))
+		if((q->flags & QUERY_IS_HIDDEN) && q->isHidden && !IsPublic(flag))
 			continue;
-		else if(isPublic && !IsPublic(flag))
+		if(isPublic && !IsPublic(flag))
 			continue;
 		Insert(uint16_t(ComputeQuerySize(flag) + sizeof(uint32_t)));
 		Insert(uint32_t(flag));
@@ -800,6 +800,8 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
 				Insert(q->linkMarker);
 				break;
 			}
+			default:
+				break;
 		}
 	}
 	return qb;

@@ -150,10 +150,7 @@ RoomHosting::Connection::Connection(
 	asio::ip::tcp::socket socket)
 	:
 	roomHosting(roomHosting),
-	socket(std::move(socket)),
-	name(),
-	incoming(),
-	outgoing()
+	socket(std::move(socket))
 {}
 
 
@@ -272,7 +269,7 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		auto room = roomHosting.GetLobby().MakeRoom(info);
 		// Add the client to the newly created room.
 		auto client = std::make_shared<Room::Client>(
-			room,
+			std::move(room),
 			std::move(socket),
 			std::move(name));
 		client->RegisterToOwner();
@@ -287,33 +284,31 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
 			return Status::STATUS_ERROR;
 		}
-		if(auto room = roomHosting.GetLobby().GetRoomById(p->id); !room)
+		auto room = roomHosting.GetLobby().GetRoomById(p->id);
+		if(!room)
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_NOT_FOUND);
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
 			return Status::STATUS_ERROR;
 		}
-		else if(!room->CheckPassword(Utf16BufferToStr(p->pass)))
+		if(!room->CheckPassword(Utf16BufferToStr(p->pass)))
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_WRONG_PASS);
 			return Status::STATUS_ERROR;
 		}
-		else if(room->CheckKicked(socket.remote_endpoint().address()))
+		if(room->CheckKicked(socket.remote_endpoint().address()))
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_KICKED_BEFORE);
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
 			return Status::STATUS_ERROR;
 		}
-		else
-		{
-			auto client = std::make_shared<Room::Client>(
-				room,
-				std::move(socket),
-				std::move(name));
-			client->RegisterToOwner();
-			client->Start();
-			return Status::STATUS_MOVED;
-		}
+		auto client = std::make_shared<Room::Client>(
+			std::move(room),
+			std::move(socket),
+			std::move(name));
+		client->RegisterToOwner();
+		client->Start();
+		return Status::STATUS_MOVED;
 	}
 	default:
 	{

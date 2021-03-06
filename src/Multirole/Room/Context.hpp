@@ -148,7 +148,7 @@ private:
 	std::array<int32_t, 2U> wins{};
 
 	// Get correctly swapped teams based on team1 going first or not.
-	uint8_t GetSwappedTeam(uint8_t team);
+	uint8_t GetSwappedTeam(uint8_t team) const;
 
 	// Get the number of duelists on each team.
 	std::array<uint8_t, 2U> GetTeamCounts() const;
@@ -185,7 +185,7 @@ private:
 	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team);
 	std::optional<DuelFinishReason> Process(State::Dueling& s);
 	StateVariant Finish(State::Dueling& s, const DuelFinishReason& dfr);
-	const YGOPro::STOCMsg& SaveToSpectatorCache(
+	static const YGOPro::STOCMsg& SaveToSpectatorCache(
 		State::Dueling& s,
 		YGOPro::STOCMsg&& msg);
 	// State/RockPaperScissor.cpp
