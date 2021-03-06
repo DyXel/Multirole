@@ -20,14 +20,17 @@ Context::Context(CreateInfo&& info)
 	STOCMsgFactory(info.hostInfo.t0Count),
 	svc(info.svc),
 	tagg(info.tagg),
-	cdb(svc.dataProvider.GetDatabase()),
+	id(info.id),
 	banlist(std::move(info.banlist)),
 	hostInfo(info.hostInfo),
 	limits(info.limits),
+	cdb(svc.dataProvider.GetDatabase()),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
 	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, MSG_RETRY_ERROR_CHAT))
-{}
+{
+	rng.seed(info.seed);
+}
 
 const YGOPro::HostInfo& Context::HostInfo() const
 {
@@ -43,16 +46,6 @@ std::map<uint8_t, std::string> Context::GetDuelistsNames() const
 			ret.emplace(EncodePosition(kv.first), kv.second->Name());
 	}
 	return ret;
-}
-
-void Context::SetId(uint32_t newId)
-{
-	id = newId;
-}
-
-void Context::SetRngSeed(uint32_t seed)
-{
-	rng.seed(seed);
 }
 
 // private

@@ -1,34 +1,48 @@
 #ifndef LOBBY_HPP
 #define LOBBY_HPP
+#include <functional>
 #include <list>
 #include <shared_mutex>
 #include <random>
 #include <unordered_map>
 
-#include "IRoomManager.hpp"
 #include "Room/Instance.hpp"
 
 namespace Ignis::Multirole
 {
 
-class Lobby final : public IRoomManager
+class Lobby final
 {
 public:
+	// Queried data about the room used for listing.
+	struct RoomProps
+	{
+		uint32_t id;
+		const YGOPro::HostInfo* hostInfo;
+		const std::string* notes;
+		bool passworded : 1;
+		bool started : 1;
+		std::map<uint8_t, std::string> duelists;
+	};
+
 	Lobby();
 
 	std::shared_ptr<Room::Instance> GetRoomById(uint32_t id) const;
 	std::size_t GetStartedRoomsCount() const;
-	std::list<Room::Instance::Properties> GetAllRoomsProperties() const;
 
+	// Creates a single room and adds it to the dictionary.
+	std::shared_ptr<Room::Instance> MakeRoom(Room::Instance::CreateInfo& info);
+
+	// Removes dead rooms from the dictionary and calls function f for each
+	// non-dead room with its properties as argument.
+	void CollectRooms(std::function<void(const RoomProps&)> f);
+
+	// Attempts to close all rooms whose state is not Waiting.
 	void CloseNonStartedRooms();
 private:
 	std::mt19937 rng;
-	std::unordered_map<uint32_t, std::shared_ptr<Room::Instance>> rooms;
+	std::unordered_map<uint32_t, std::weak_ptr<Room::Instance>> rooms;
 	mutable std::shared_mutex mRooms;
-
-	// IRoomManager overrides
-	std::tuple<uint32_t, uint32_t> Add(std::shared_ptr<Room::Instance> room) override;
-	void Remove(uint32_t roomId) override;
 };
 
 } // namespace Ignis::Multirole

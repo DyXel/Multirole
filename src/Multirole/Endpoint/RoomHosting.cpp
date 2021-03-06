@@ -106,9 +106,9 @@ const YGOPro::STOCMsg& RoomHosting::GetPrebuiltMsg(PrebuiltMsgId id) const
 	return prebuiltMsgs[static_cast<std::size_t>(id)];
 }
 
-std::shared_ptr<Room::Instance> RoomHosting::GetRoomById(uint32_t id) const
+Lobby& RoomHosting::GetLobby() const
 {
-	return lobby.GetRoomById(id);
+	return lobby;
 }
 
 Room::Instance::CreateInfo RoomHosting::GetBaseRoomCreateInfo(uint32_t banlistHash) const
@@ -116,11 +116,11 @@ Room::Instance::CreateInfo RoomHosting::GetBaseRoomCreateInfo(uint32_t banlistHa
 	return Room::Instance::CreateInfo
 	{
 		ioCtx,
-		lobby,
-		svc,
-		{}, // name
 		{}, // notes
-		{},  // password
+		{}, // password
+		svc,
+		0U, // id
+		0U, // seed
 		svc.banlistProvider.GetBanlistByHash(banlistHash),
 		{}, // hostInfo
 		{} // limits
@@ -254,7 +254,6 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		// Set our custom info.
 		info.hostInfo = p->hostInfo;
 		info.limits = LimitsFromFlags(info.hostInfo.extraRules);
-		info.name = Utf16BufferToStr(p->name);
 		info.notes = std::string(p->notes);
 		info.pass = Utf16BufferToStr(p->pass);
 		// Fix some of the options back into expected values in case of
@@ -268,10 +267,10 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		// Add flag that client should be setting.
 		// NOLINTNEXTLINE: DUEL_PSEUDO_SHUFFLE
 		hi.duelFlagsLow |= (!hi.dontShuffleDeck) ? 0x0 : 0x10;
-		// Make new room with the set parameters
-		auto room = std::make_shared<Room::Instance>(std::move(info));
-		room->RegisterToOwner();
-		// Add the client to the newly created room
+		// Make new room with the set parameters, missing parameters will be
+		// filled by the lobby.
+		auto room = roomHosting.GetLobby().MakeRoom(info);
+		// Add the client to the newly created room.
 		auto client = std::make_shared<Room::Client>(
 			room,
 			std::move(socket),
@@ -288,7 +287,7 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
 			return Status::STATUS_ERROR;
 		}
-		if(auto room = roomHosting.GetRoomById(p->id); !room)
+		if(auto room = roomHosting.GetLobby().GetRoomById(p->id); !room)
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_NOT_FOUND);
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);

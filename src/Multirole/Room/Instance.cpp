@@ -1,29 +1,22 @@
 #include "Instance.hpp"
 
-#include "../IRoomManager.hpp"
-
 namespace Ignis::Multirole::Room
 {
 
-Instance::Instance(CreateInfo&& info)
+Instance::Instance(CreateInfo& info)
 	:
-	owner(info.owner),
 	strand(info.ioCtx),
 	tagg(*this),
-	name(std::move(info.name)),
 	notes(std::move(info.notes)),
 	pass(std::move(info.pass)),
-	id(0U),
-	ctx({info.svc, tagg, std::move(info.banlist), info.hostInfo, info.limits}),
+	isPrivate(!pass.empty()),
+	ctx({info.svc, tagg, info.id, info.seed, std::move(info.banlist), info.hostInfo, info.limits}),
 	state(State::Waiting{nullptr})
 {}
 
-void Instance::RegisterToOwner()
+bool Instance::IsPrivate() const
 {
-	uint32_t seed;
-	std::tie(id, seed) = owner.Add(shared_from_this());
-	ctx.SetId(id);
-	ctx.SetRngSeed(seed);
+	return isPrivate;
 }
 
 bool Instance::Started() const
@@ -31,28 +24,30 @@ bool Instance::Started() const
 	return !std::holds_alternative<State::Waiting>(state);
 }
 
+const std::string& Instance::Notes() const
+{
+	return notes;
+}
+
+const YGOPro::HostInfo& Instance::HostInfo() const
+{
+	return ctx.HostInfo();
+}
+
+std::map<uint8_t, std::string> Instance::DuelistNames() const
+{
+	return ctx.GetDuelistsNames();
+}
+
 bool Instance::CheckPassword(std::string_view str) const
 {
-	return pass.empty() || pass == str;
+	return !isPrivate || pass == str;
 }
 
 bool Instance::CheckKicked(const asio::ip::address& addr) const
 {
 	std::scoped_lock lock(mKicked);
 	return kicked.count(addr) > 0U;
-}
-
-Instance::Properties Instance::GetProperties() const
-{
-	return Properties
-	{
-		ctx.HostInfo(),
-		notes,
-		!pass.empty(),
-		Started(),
-		id,
-		ctx.GetDuelistsNames()
-	};
 }
 
 void Instance::TryClose()
@@ -81,8 +76,6 @@ void Instance::Remove(std::shared_ptr<Client> client)
 {
 	std::scoped_lock lock(mClients);
 	clients.erase(client);
-	if(clients.empty())
-		owner.Remove(id);
 }
 
 asio::io_context::strand& Instance::Strand()

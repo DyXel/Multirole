@@ -39,7 +39,7 @@ public:
 	void Stop();
 
 	const YGOPro::STOCMsg& GetPrebuiltMsg(PrebuiltMsgId id) const;
-	std::shared_ptr<Room::Instance> GetRoomById(uint32_t id) const;
+	Lobby& GetLobby() const;
 	Room::Instance::CreateInfo GetBaseRoomCreateInfo(uint32_t banlistHash) const;
 private:
 	class Connection final : public std::enable_shared_from_this<Connection>

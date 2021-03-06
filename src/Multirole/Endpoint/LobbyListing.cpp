@@ -56,14 +56,14 @@ void LobbyListing::DoSerialize()
 		};
 		nlohmann::json j{{"rooms", nlohmann::json::array()}};
 		nlohmann::json& ar = j["rooms"];
-		for(auto& rp : lobby.GetAllRoomsProperties())
+		lobby.CollectRooms([&](const Lobby::RoomProps& rp)
 		{
 			ar.emplace_back();
 			auto& room = ar.back();
-			const auto& hi = rp.hostInfo;
+			const auto& hi = *rp.hostInfo;
 			room["roomid"] = rp.id;
 			room["roomname"] = ""; // NOTE: UNUSED but expected atm
-			room["roomnotes"] = rp.notes;
+			room["roomnotes"] = *rp.notes;
 			room["roommode"] = 0; // NOTE: UNUSED but expected atm
 			room["needpass"] = rp.passworded;
 			room["team1"] = hi.t0Count;
@@ -89,7 +89,7 @@ void LobbyListing::DoSerialize()
 				client["name"] = kv.second;
 				client["pos"] = kv.first;
 			}
-		}
+		});
 		constexpr auto eHandler = nlohmann::json::error_handler_t::replace;
 		const std::string strJ = j.dump(-1, 0, false, eHandler); // DUMP EET
 		{

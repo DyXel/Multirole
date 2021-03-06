@@ -13,8 +13,6 @@
 namespace Ignis::Multirole
 {
 
-class IRoomManager;
-
 namespace Room
 {
 
@@ -25,33 +23,33 @@ public:
 	struct CreateInfo
 	{
 		asio::io_context& ioCtx;
-		IRoomManager& owner;
-		Service& svc;
-		std::string name;
 		std::string notes;
 		std::string pass;
+		Service& svc;
+		uint32_t id;
+		uint32_t seed;
 		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
 	};
 
-	// Properties are queried data about the room for listing.
-	struct Properties
-	{
-		YGOPro::HostInfo hostInfo;
-		std::string notes;
-		bool passworded;
-		bool started;
-		uint32_t id;
-		std::map<uint8_t, std::string> duelists;
-	};
-
 	// Ctor and registering.
-	Instance(CreateInfo&& info);
-	void RegisterToOwner();
+	Instance(CreateInfo& info);
+
+	// Get whether or not the room is private (has password set).
+	bool IsPrivate() const;
 
 	// Check if the room state is not Waiting.
 	bool Started() const;
+
+	// Get the notes of the room.
+	const std::string& Notes() const;
+
+	// Get the game options of the room.
+	const YGOPro::HostInfo& HostInfo() const;
+
+	// Get each duelist index along with their name.
+	std::map<uint8_t, std::string> DuelistNames() const;
 
 	// Check if the given string matches the set password,
 	// always return true if the password is empty.
@@ -59,9 +57,6 @@ public:
 
 	// Check whether or not the IP was kicked before from this room.
 	bool CheckKicked(const asio::ip::address& addr) const;
-
-	// Query properties of the room.
-	Properties GetProperties() const;
 
 	// Tries to remove the room if its not started.
 	void TryClose();
@@ -74,13 +69,11 @@ public:
 	asio::io_context::strand& Strand();
 	void Dispatch(const EventVariant& e);
 private:
-	IRoomManager& owner;
 	asio::io_context::strand strand;
 	TimerAggregator tagg;
-	const std::string name;
 	const std::string notes;
 	const std::string pass;
-	uint32_t id;
+	const bool isPrivate;
 	Context ctx;
 	StateVariant state;
 

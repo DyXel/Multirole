@@ -35,6 +35,8 @@ public:
 	{
 		Service& svc;
 		TimerAggregator& tagg;
+		uint32_t id;
+		uint32_t seed;
 		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
@@ -58,9 +60,6 @@ public:
 
 	const YGOPro::HostInfo& HostInfo() const;
 	std::map<uint8_t, std::string> GetDuelistsNames() const;
-
-	void SetId(uint32_t id);
-	void SetRngSeed(uint32_t seed);
 
 	/*** STATE AND EVENT HANDLERS ***/
 	// State/ChoosingTurn.cpp
@@ -129,10 +128,11 @@ private:
 	// Creation options and resources.
 	Service& svc;
 	TimerAggregator& tagg;
-	const std::shared_ptr<YGOPro::CardDatabase> cdb;
+	const uint32_t id;
 	const YGOPro::BanlistPtr banlist;
 	const YGOPro::HostInfo hostInfo;
 	const YGOPro::DeckLimits limits;
+	const std::shared_ptr<YGOPro::CardDatabase> cdb;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
 	const YGOPro::STOCMsg retryErrorMsg;
@@ -144,7 +144,6 @@ private:
 
 	// Additional data used by room states.
 	uint8_t isTeam1GoingFirst{};
-	uint32_t id{};
 	std::mt19937 rng{};
 	std::array<int32_t, 2U> wins{};
 

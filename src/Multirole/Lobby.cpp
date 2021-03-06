@@ -20,7 +20,7 @@ std::shared_ptr<Room::Instance> Lobby::GetRoomById(uint32_t id) const
 	std::shared_lock lock(mRooms);
 	auto search = rooms.find(id);
 	if(search != rooms.end())
-		return search->second;
+		return search->second.lock();
 	return nullptr;
 }
 
@@ -29,44 +29,57 @@ std::size_t Lobby::GetStartedRoomsCount() const
 	std::size_t count = 0U;
 	std::shared_lock lock(mRooms);
 	for(auto& kv : rooms)
-		count += static_cast<std::size_t>(kv.second->Started());
+		if(auto room = kv.second.lock(); room)
+			count += static_cast<std::size_t>(room->Started());
 	return count;
 }
 
-std::list<Room::Instance::Properties> Lobby::GetAllRoomsProperties() const
+std::shared_ptr<Room::Instance> Lobby::MakeRoom(Room::Instance::CreateInfo& info)
 {
-	std::list<Room::Instance::Properties> list;
+	std::scoped_lock lock(mRooms);
+	for(uint32_t newId = 1U; true; newId++)
+	{
+		if(rooms.count(newId) == 0U)
+		{
+			info.id = newId;
+			break;
+		}
+	}
+	info.seed = rng();
+	auto room = std::make_shared<Room::Instance>(info);
+	rooms.emplace(info.id, room);
+	return room;
+}
+
+void Lobby::CollectRooms(std::function<void(const RoomProps&)> f)
+{
+	RoomProps props{};
 	std::shared_lock lock(mRooms);
-	for(auto& kv : rooms)
-		list.emplace_back(kv.second->GetProperties());
-	return list;
+	for(auto it = rooms.begin(), last = rooms.end(); it != last;)
+	{
+		if(auto room = it->second.lock(); room)
+		{
+			props.id = it->first;
+			auto& r = *room;
+			props.hostInfo = &r.HostInfo();
+			props.notes = &r.Notes();
+			props.passworded = r.IsPrivate();
+			props.started = r.Started();
+			props.duelists = r.DuelistNames();
+			f(props);
+			++it;
+			continue;
+		}
+		it = rooms.erase(it);
+	}
 }
 
 void Lobby::CloseNonStartedRooms()
 {
 	std::scoped_lock lock(mRooms);
 	for(auto& kv : rooms)
-		kv.second->TryClose();
-}
-
-// private
-
-std::tuple<uint32_t, uint32_t> Lobby::Add(std::shared_ptr<Room::Instance> room)
-{
-	std::scoped_lock lock(mRooms);
-	for(uint32_t newId = 1U; true; newId++)
-	{
-		if(rooms.count(newId) > 0)
-			continue;
-		if(rooms.emplace(newId, room).second)
-			return {newId, rng()};
-	}
-}
-
-void Lobby::Remove(uint32_t roomId)
-{
-	std::scoped_lock lock(mRooms);
-	rooms.erase(roomId);
+		if(auto room = kv.second.lock(); room)
+			room->TryClose();
 }
 
 } // namespace Ignis::Multirole
