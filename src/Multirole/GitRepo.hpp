@@ -17,7 +17,7 @@ class GitRepo final : public Endpoint::Webhook
 public:
 	using Credentials = std::pair<std::string, std::string>;
 
-	GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts);
+	GitRepo(boost::asio::io_context& ioCtx, const nlohmann::json& opts);
 	~GitRepo();
 
 	// Remove copy and move operations.

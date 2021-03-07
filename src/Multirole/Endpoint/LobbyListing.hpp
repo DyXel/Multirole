@@ -3,8 +3,8 @@
 #include <memory>
 #include <mutex>
 
-#include <asio/ip/tcp.hpp>
-#include <asio/steady_timer.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 namespace Ignis::Multirole
 {
@@ -17,7 +17,7 @@ namespace Endpoint
 class LobbyListing final
 {
 public:
-	LobbyListing(asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
+	LobbyListing(boost::asio::io_context& ioCtx, unsigned short port, Lobby& lobby);
 	~LobbyListing();
 
 	void Stop();
@@ -25,10 +25,10 @@ private:
 	class Connection final : public std::enable_shared_from_this<Connection>
 	{
 	public:
-		Connection(asio::ip::tcp::socket socket, std::shared_ptr<std::string> data);
+		Connection(boost::asio::ip::tcp::socket socket, std::shared_ptr<std::string> data);
 		void DoRead();
 	private:
-		asio::ip::tcp::socket socket;
+		boost::asio::ip::tcp::socket socket;
 		std::shared_ptr<std::string> outgoing;
 		std::array<char, 256> incoming;
 		bool writeCalled;
@@ -36,8 +36,8 @@ private:
 		void DoWrite();
 	};
 
-	asio::ip::tcp::acceptor acceptor;
-	asio::steady_timer serializeTimer;
+	boost::asio::ip::tcp::acceptor acceptor;
+	boost::asio::steady_timer serializeTimer;
 	Lobby& lobby;
 	std::shared_ptr<std::string> serialized;
 	std::mutex mSerialized;

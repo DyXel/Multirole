@@ -1,7 +1,7 @@
 #include "RoomHosting.hpp"
 
-#include <asio/read.hpp>
-#include <asio/write.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 
 #include "../Lobby.hpp"
 #include "../STOCMsgFactory.hpp"
@@ -74,7 +74,7 @@ inline std::string Utf16BufferToStr(const Buffer& buffer)
 
 // public
 
-RoomHosting::RoomHosting(asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port)
+RoomHosting::RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port)
 	:
 	prebuiltMsgs({
 		STOCMsgFactory::MakeVersionError(YGOPro::SERVER_VERSION),
@@ -88,7 +88,7 @@ RoomHosting::RoomHosting(asio::io_context& ioCtx, Service& svc, Lobby& lobby, un
 	ioCtx(ioCtx),
 	svc(svc),
 	lobby(lobby),
-	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port))
+	acceptor(ioCtx, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v6(), port))
 {
 	Workaround::SetCloseOnExec(acceptor.native_handle());
 	DoAccept();
@@ -132,7 +132,7 @@ Room::Instance::CreateInfo RoomHosting::GetBaseRoomCreateInfo(uint32_t banlistHa
 void RoomHosting::DoAccept()
 {
 	acceptor.async_accept(
-	[this](const std::error_code& ec, asio::ip::tcp::socket socket)
+	[this](const boost::system::error_code& ec, boost::asio::ip::tcp::socket socket)
 	{
 		if(!acceptor.is_open())
 			return;
@@ -147,7 +147,7 @@ void RoomHosting::DoAccept()
 
 RoomHosting::Connection::Connection(
 	const RoomHosting& roomHosting,
-	asio::ip::tcp::socket socket)
+	boost::asio::ip::tcp::socket socket)
 	:
 	roomHosting(roomHosting),
 	socket(std::move(socket))
@@ -157,9 +157,9 @@ RoomHosting::Connection::Connection(
 void RoomHosting::Connection::DoReadHeader()
 {
 	auto self(shared_from_this());
-	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
-	asio::async_read(socket, buffer,
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
+	boost::asio::async_read(socket, buffer,
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
 			DoReadBody();
@@ -169,9 +169,9 @@ void RoomHosting::Connection::DoReadHeader()
 void RoomHosting::Connection::DoReadBody()
 {
 	auto self(shared_from_this());
-	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
-	asio::async_read(socket, buffer,
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	auto buffer = boost::asio::buffer(incoming.Body(), incoming.GetLength());
+	boost::asio::async_read(socket, buffer,
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
@@ -190,9 +190,9 @@ void RoomHosting::Connection::DoReadBody()
 void RoomHosting::Connection::DoReadEnd()
 {
 	auto self(shared_from_this());
-	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::MSG_MAX_LENGTH);
+	auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::MSG_MAX_LENGTH);
 	socket.async_read_some(buffer,
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec)
 			DoReadEnd();
@@ -204,8 +204,8 @@ void RoomHosting::Connection::DoWrite()
 	assert(!outgoing.empty());
 	auto self(shared_from_this());
 	const auto& front = outgoing.front();
-	asio::async_write(socket, asio::buffer(front.Data(), front.Length()),
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	boost::asio::async_write(socket, boost::asio::buffer(front.Data(), front.Length()),
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
@@ -213,7 +213,7 @@ void RoomHosting::Connection::DoWrite()
 		if(!outgoing.empty())
 			DoWrite();
 		else
-			socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+			socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	});
 }
 

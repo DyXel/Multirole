@@ -1,6 +1,6 @@
 #include "TimerAggregator.hpp"
 
-#include <asio/bind_executor.hpp>
+#include <boost/asio/bind_executor.hpp>
 
 #include "Instance.hpp"
 
@@ -23,8 +23,8 @@ void TimerAggregator::ExpiresAfter(uint8_t team, const AsioTimer::duration& expi
 {
 	assert(team <= 1U);
 	timers[team].expires_after(expiryTime);
-	timers[team].async_wait(asio::bind_executor(strand,
-	[this, team](const asio::error_code& ec)
+	timers[team].async_wait(boost::asio::bind_executor(strand,
+	[this, team](const boost::system::error_code& ec)
 	{
 		if(!ec)
 			room.Dispatch(Event::TimerExpired{team});

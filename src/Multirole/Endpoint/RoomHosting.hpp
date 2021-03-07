@@ -4,8 +4,8 @@
 #include <memory>
 #include <set>
 
-#include <asio/io_context.hpp>
-#include <asio/ip/tcp.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 #include "../Service.hpp"
 #include "../Room/Instance.hpp"
@@ -35,7 +35,7 @@ public:
 		PREBUILT_MSG_COUNT
 	};
 
-	RoomHosting(asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port);
+	RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port);
 	void Stop();
 
 	const YGOPro::STOCMsg& GetPrebuiltMsg(PrebuiltMsgId id) const;
@@ -45,7 +45,7 @@ private:
 	class Connection final : public std::enable_shared_from_this<Connection>
 	{
 	public:
-		Connection(const RoomHosting& roomHosting, asio::ip::tcp::socket socket);
+		Connection(const RoomHosting& roomHosting, boost::asio::ip::tcp::socket socket);
 		void DoReadHeader();
 	private:
 		enum class Status
@@ -56,7 +56,7 @@ private:
 		};
 
 		const RoomHosting& roomHosting;
-		asio::ip::tcp::socket socket;
+		boost::asio::ip::tcp::socket socket;
 		std::string name;
 		YGOPro::CTOSMsg incoming;
 		std::queue<YGOPro::STOCMsg> outgoing;
@@ -72,10 +72,10 @@ private:
 		YGOPro::STOCMsg,
 		static_cast<std::size_t>(PrebuiltMsgId::PREBUILT_MSG_COUNT)
 	> prebuiltMsgs;
-	asio::io_context& ioCtx;
+	boost::asio::io_context& ioCtx;
 	Service& svc;
 	Lobby& lobby;
-	asio::ip::tcp::acceptor acceptor;
+	boost::asio::ip::tcp::acceptor acceptor;
 
 	void DoAccept();
 };

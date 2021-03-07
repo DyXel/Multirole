@@ -21,6 +21,5 @@
 * Use boost througly rather than handrolled solutions
   * FileSystem.hpp == boost.FileSystem
   * Hornet core process launching mechanism == boost.Process
-  * asio == Boost.Asio
   * nlohmann.Json == Boost.Json?
   * spdlog == Boost.Log?

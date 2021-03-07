@@ -44,7 +44,7 @@ bool Instance::CheckPassword(std::string_view str) const
 	return !isPrivate || pass == str;
 }
 
-bool Instance::CheckKicked(const asio::ip::address& addr) const
+bool Instance::CheckKicked(const boost::asio::ip::address& addr) const
 {
 	std::scoped_lock lock(mKicked);
 	return kicked.count(addr) > 0U;
@@ -53,14 +53,14 @@ bool Instance::CheckKicked(const asio::ip::address& addr) const
 void Instance::TryClose()
 {
 	auto self(shared_from_this());
-	asio::post(strand,
+	boost::asio::post(strand,
 	[this, self]()
 	{
 		Dispatch(Event::Close{});
 	});
 }
 
-void Instance::AddKicked(const asio::ip::address& addr)
+void Instance::AddKicked(const boost::asio::ip::address& addr)
 {
 	std::scoped_lock lock(mKicked);
 	kicked.insert(addr);
@@ -78,7 +78,7 @@ void Instance::Remove(const std::shared_ptr<Client>& client)
 	clients.erase(client);
 }
 
-asio::io_context::strand& Instance::Strand()
+boost::asio::io_context::strand& Instance::Strand()
 {
 	return strand;
 }

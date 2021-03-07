@@ -2,8 +2,8 @@
 #define SERVERINSTANCE_HPP
 #include <map>
 
-#include <asio/io_context.hpp>
-#include <asio/signal_set.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <nlohmann/json.hpp>
 
 #include "GitRepo.hpp"
@@ -26,9 +26,9 @@ public:
 	Instance(const nlohmann::json& cfg);
 	int Run();
 private:
-	asio::io_context whIoCtx; // Webhooks Io Context
-	asio::io_context lIoCtx; // Lobby Io Context
-	asio::executor_work_guard<asio::io_context::executor_type> lIoCtxGuard;
+	boost::asio::io_context whIoCtx; // Webhooks Io Context
+	boost::asio::io_context lIoCtx; // Lobby Io Context
+	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> lIoCtxGuard;
 	unsigned int hostingConcurrency;
 	Service::BanlistProvider banlistProvider;
 	Service::CoreProvider coreProvider;
@@ -40,7 +40,7 @@ private:
 	Lobby lobby;
 	Endpoint::LobbyListing lobbyListing;
 	Endpoint::RoomHosting roomHosting;
-	asio::signal_set signalSet;
+	boost::asio::signal_set signalSet;
 	std::map<std::string, GitRepo> repos;
 
 	void DoWaitSignal();

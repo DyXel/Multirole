@@ -1,7 +1,7 @@
 #include "Webhook.hpp"
 
 #include <thread>
-#include <asio/write.hpp>
+#include <boost/asio/write.hpp>
 
 #include "../Workaround.hpp"
 
@@ -10,8 +10,8 @@ namespace Ignis::Multirole::Endpoint
 
 // public
 
-Webhook::Webhook(asio::io_context& ioCtx, unsigned short port) :
-	acceptor(ioCtx, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port))
+Webhook::Webhook(boost::asio::io_context& ioCtx, unsigned short port) :
+	acceptor(ioCtx, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v6(), port))
 {
 	Workaround::SetCloseOnExec(acceptor.native_handle());
 	DoAccept();
@@ -30,7 +30,7 @@ void Webhook::Callback([[maybe_unused]] std::string_view payload)
 void Webhook::DoAccept()
 {
 	acceptor.async_accept(
-	[this](std::error_code ec, asio::ip::tcp::socket socket)
+	[this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket)
 	{
 		if(!acceptor.is_open())
 			return;
@@ -43,14 +43,14 @@ void Webhook::DoAccept()
 	});
 }
 
-static const auto HTTP_OK = asio::buffer(
+static const auto HTTP_OK = boost::asio::buffer(
 	"HTTP/1.0 200 OK\r\n"
 	"Content-Length: 17\r\n"
 	"Content-Type: text/plain\r\n\r\n"
 	"Payload received."
 );
 
-Webhook::Connection::Connection(Webhook& webhook, asio::ip::tcp::socket socket)
+Webhook::Connection::Connection(Webhook& webhook, boost::asio::ip::tcp::socket socket)
 	:
 	webhook(webhook),
 	socket(std::move(socket)),
@@ -62,8 +62,8 @@ Webhook::Connection::Connection(Webhook& webhook, asio::ip::tcp::socket socket)
 void Webhook::Connection::DoReadHeader()
 {
 	auto self(shared_from_this());
-	socket.async_read_some(asio::buffer(incoming),
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	socket.async_read_some(boost::asio::buffer(incoming),
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
@@ -77,8 +77,8 @@ void Webhook::Connection::DoReadHeader()
 void Webhook::Connection::DoReadEnd()
 {
 	auto self(shared_from_this());
-	socket.async_read_some(asio::buffer(incoming),
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	socket.async_read_some(boost::asio::buffer(incoming),
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec)
 			DoReadEnd();
@@ -88,11 +88,11 @@ void Webhook::Connection::DoReadEnd()
 void Webhook::Connection::DoWrite()
 {
 	auto self(shared_from_this());
-	asio::async_write(socket, HTTP_OK,
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	boost::asio::async_write(socket, HTTP_OK,
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec)
-			socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+			socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	});
 }
 

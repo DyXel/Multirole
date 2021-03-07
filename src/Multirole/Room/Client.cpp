@@ -1,8 +1,8 @@
 #include "Client.hpp"
 
-#include <asio/bind_executor.hpp>
-#include <asio/read.hpp>
-#include <asio/write.hpp>
+#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 
 #include "Instance.hpp"
 #include "../YGOPro/StringUtils.hpp"
@@ -12,7 +12,7 @@ namespace Ignis::Multirole::Room
 
 Client::Client(
 	std::shared_ptr<Instance> r,
-	asio::ip::tcp::socket socket,
+	boost::asio::ip::tcp::socket socket,
 	std::string name)
 	:
 	room(std::move(r)),
@@ -32,7 +32,7 @@ void Client::RegisterToOwner()
 void Client::Start()
 {
 	auto self(shared_from_this());
-	asio::post(strand,
+	boost::asio::post(strand,
 	[this, self]()
 	{
 		room->Dispatch(Event::Join{*this});
@@ -114,17 +114,17 @@ void Client::Disconnect()
 
 void Client::DoReadHeader()
 {
-	auto buffer = asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
+	auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
 	auto self(shared_from_this());
-	asio::async_read(socket, buffer, asio::bind_executor(strand,
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec && incoming.IsHeaderValid())
 		{
 			DoReadBody();
 			return;
 		}
-		if(ec != asio::error::operation_aborted)
+		if(ec != boost::asio::error::operation_aborted)
 			room->Dispatch(Event::ConnectionLost{*this});
 		room->Remove(self);
 	}));
@@ -132,10 +132,10 @@ void Client::DoReadHeader()
 
 void Client::DoReadBody()
 {
-	auto buffer = asio::buffer(incoming.Body(), incoming.GetLength());
+	auto buffer = boost::asio::buffer(incoming.Body(), incoming.GetLength());
 	auto self(shared_from_this());
-	asio::async_read(socket, buffer, asio::bind_executor(strand,
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(!ec)
 		{
@@ -145,7 +145,7 @@ void Client::DoReadBody()
 			DoReadHeader();
 			return;
 		}
-		if(ec != asio::error::operation_aborted)
+		if(ec != boost::asio::error::operation_aborted)
 			room->Dispatch(Event::ConnectionLost{*this});
 		room->Remove(self);
 	}));
@@ -155,8 +155,8 @@ void Client::DoWrite()
 {
 	auto self(shared_from_this());
 	const auto& front = outgoing.front();
-	asio::async_write(socket, asio::buffer(front.Data(), front.Length()),
-	[this, self](std::error_code ec, std::size_t /*unused*/)
+	boost::asio::async_write(socket, boost::asio::buffer(front.Data(), front.Length()),
+	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
 		if(ec)
 			return;
@@ -171,8 +171,8 @@ void Client::DoWrite()
 
 void Client::Shutdown()
 {
-	std::error_code ignore;
-	socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignore);
+	boost::system::error_code ignore;
+	socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignore);
 }
 
 void Client::HandleMsg()

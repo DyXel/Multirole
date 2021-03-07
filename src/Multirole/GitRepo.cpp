@@ -25,7 +25,7 @@ std::string NormalizeDirPath(std::string_view str)
 
 // public
 
-GitRepo::GitRepo(asio::io_context& ioCtx, const nlohmann::json& opts) :
+GitRepo::GitRepo(boost::asio::io_context& ioCtx, const nlohmann::json& opts) :
 	Webhook(ioCtx, opts.at("webhookPort").get<unsigned short>()),
 	token(opts.at("webhookToken").get<std::string>()),
 	remote(opts.at("remote").get<std::string>()),

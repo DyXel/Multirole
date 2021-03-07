@@ -2,7 +2,6 @@ project('multirole', ['c', 'cpp'], default_options : 'cpp_std=c++17')
 
 is_window = host_machine.system() == 'windows'
 
-asio_dep    = dependency('asio', required : is_window)
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
 boost_dep   = dependency('boost')
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
@@ -67,12 +66,10 @@ executable('multirole', multirole_src_files,
 		'-DNOMINMAX'
 	],
 	cpp_args: [
-		'-DASIO_STANDALONE',
 		'-DSPDLOG_FMT_EXTERNAL',
 		'-DBOOST_DATE_TIME_NO_LIB'
 	],
 	dependencies: [
-		asio_dep,
 		atomic_dep,
 		boost_dep,
 		dl_dep,

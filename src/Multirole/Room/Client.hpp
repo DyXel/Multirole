@@ -4,8 +4,8 @@
 #include <queue>
 #include <mutex>
 
-#include <asio/io_context_strand.hpp>
-#include <asio/ip/tcp.hpp>
+#include <boost/asio/io_context_strand.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 #include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/Deck.hpp"
@@ -22,7 +22,7 @@ public:
 	using PosType = std::pair<uint8_t, uint8_t>;
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
-	Client(std::shared_ptr<Instance> r, asio::ip::tcp::socket socket, std::string name);
+	Client(std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string name);
 	void RegisterToOwner();
 	void Start();
 
@@ -53,8 +53,8 @@ public:
 	void Disconnect();
 private:
 	std::shared_ptr<Instance> room;
-	asio::io_context::strand& strand;
-	asio::ip::tcp::socket socket;
+	boost::asio::io_context::strand& strand;
+	boost::asio::ip::tcp::socket socket;
 	std::string name;
 	bool disconnecting;
 	PosType position;

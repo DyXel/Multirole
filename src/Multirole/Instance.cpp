@@ -4,8 +4,8 @@
 #include <cstdlib> // Exit flags
 #include <thread>
 
-#include <asio/dispatch.hpp>
-#include <asio/thread_pool.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/thread_pool.hpp>
 #include <spdlog/spdlog.h>
 
 namespace Ignis::Multirole
@@ -33,7 +33,7 @@ inline Service::CoreProvider::CoreType GetCoreType(std::string_view str)
 Instance::Instance(const nlohmann::json& cfg) :
 	whIoCtx(),
 	lIoCtx(),
-	lIoCtxGuard(asio::make_work_guard(lIoCtx)),
+	lIoCtxGuard(boost::asio::make_work_guard(lIoCtx)),
 	hostingConcurrency(GetConcurrency(cfg.at("concurrencyHint").get<int>())),
 	banlistProvider(
 		cfg.at("banlistProvider").at("fileRegex").get<std::string>()),
@@ -93,13 +93,10 @@ Instance::Instance(const nlohmann::json& cfg) :
 
 int Instance::Run()
 {
-	// NOTE: Needed for overload resolution.
-	using RunType = asio::io_context::count_type(asio::io_context::*)();
-	constexpr auto run = static_cast<RunType>(&asio::io_context::run);
-	std::thread webhooks(std::bind(run, &whIoCtx));
-	asio::thread_pool threads(hostingConcurrency);
+	std::thread webhooks([&]{whIoCtx.run();});
+	boost::asio::thread_pool threads(hostingConcurrency);
 	for(unsigned int i = 0U; i < hostingConcurrency; i++)
-		asio::dispatch(threads, std::bind(run, &lIoCtx));
+		boost::asio::dispatch(threads, [&]{lIoCtx.run();});
 	webhooks.join();
 	threads.join();
 	return EXIT_SUCCESS;

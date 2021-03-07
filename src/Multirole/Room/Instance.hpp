@@ -4,8 +4,8 @@
 #include <string>
 #include <string_view>
 
-#include <asio/io_context.hpp>
-#include <asio/io_context_strand.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/io_context_strand.hpp>
 
 #include "Context.hpp"
 #include "TimerAggregator.hpp"
@@ -22,7 +22,7 @@ public:
 	// Data passed on the ctor.
 	struct CreateInfo
 	{
-		asio::io_context& ioCtx;
+		boost::asio::io_context& ioCtx;
 		std::string notes;
 		std::string pass;
 		Service& svc;
@@ -56,20 +56,20 @@ public:
 	bool CheckPassword(std::string_view str) const;
 
 	// Check whether or not the IP was kicked before from this room.
-	bool CheckKicked(const asio::ip::address& addr) const;
+	bool CheckKicked(const boost::asio::ip::address& addr) const;
 
 	// Tries to remove the room if its not started.
 	void TryClose();
 
 	// Adds an IP to the kicked list, checked with CheckKicked.
-	void AddKicked(const asio::ip::address& addr);
+	void AddKicked(const boost::asio::ip::address& addr);
 
 	void Add(const std::shared_ptr<Client>& client);
 	void Remove(const std::shared_ptr<Client>& client);
-	asio::io_context::strand& Strand();
+	boost::asio::io_context::strand& Strand();
 	void Dispatch(const EventVariant& e);
 private:
-	asio::io_context::strand strand;
+	boost::asio::io_context::strand strand;
 	TimerAggregator tagg;
 	const std::string notes;
 	const std::string pass;
@@ -80,7 +80,7 @@ private:
 	std::set<std::shared_ptr<Client>> clients;
 	std::mutex mClients;
 
-	std::set<asio::ip::address> kicked;
+	std::set<boost::asio::ip::address> kicked;
 	mutable std::mutex mKicked;
 };
 

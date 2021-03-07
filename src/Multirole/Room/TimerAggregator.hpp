@@ -2,15 +2,15 @@
 #define ROOM_TIMER_AGGREGATOR_HPP
 #include <array>
 
-#include <asio/io_context_strand.hpp>
-#include <asio/system_timer.hpp>
+#include <boost/asio/io_context_strand.hpp>
+#include <boost/asio/system_timer.hpp>
 
 namespace Ignis::Multirole::Room
 {
 
 class Instance;
 
-using AsioTimer = asio::system_timer;
+using AsioTimer = boost::asio::system_timer;
 
 class TimerAggregator final
 {
@@ -29,7 +29,7 @@ public:
 	AsioTimer::time_point Expiry(uint8_t team) const;
 private:
 	Instance& room;
-	asio::io_context::strand& strand;
+	boost::asio::io_context::strand& strand;
 	std::array<AsioTimer, 2U> timers;
 };
 
