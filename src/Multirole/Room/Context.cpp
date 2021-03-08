@@ -1,7 +1,5 @@
 #include "Context.hpp"
 
-#include <fmt/format.h>
-
 #include "../STOCMsgFactory.hpp"
 #include "../Service/DataProvider.hpp"
 #include "../YGOPro/Banlist.hpp"

@@ -5,7 +5,6 @@
 
 #include <sqlite3.h>
 #include <spdlog/spdlog.h>
-#include <fmt/format.h>
 
 #include "../YGOPro/CardDatabase.hpp"
 
