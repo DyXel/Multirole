@@ -16,8 +16,8 @@ jobs:
         fetch-depth: 1
     - name: Install dependencies
       run: |
-        sudo apt-get --no-install-recommends --yes install libasio-dev libboost-date-time-dev libboost-dev libfmt-dev libgit2-dev \
-          libspdlog-dev libsqlite3-dev meson ninja-build nlohmann-json3-dev
+        sudo apt-get --no-install-recommends --yes install libasio-dev libboost-date-time-dev libboost-filesystem-dev \
+        libboost-dev libfmt-dev libgit2-dev libspdlog-dev libsqlite3-dev meson ninja-build nlohmann-json3-dev
     - name: Meson build
       run: |
         CC=clang CXX=clang++ meson setup build
