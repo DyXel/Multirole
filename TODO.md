@@ -19,7 +19,6 @@
   * Use all collected replays to calculate a suitable default max
 * CoreProvider: Load and cache core version and remove compile-time version
 * Use boost througly rather than handrolled solutions
-  * FileSystem.hpp == boost.FileSystem
   * Hornet core process launching mechanism == boost.Process
   * nlohmann.Json == Boost.Json?
   * spdlog == Boost.Log?

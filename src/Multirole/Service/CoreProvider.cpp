@@ -1,36 +1,38 @@
 #include "CoreProvider.hpp"
 
 #include <fstream>
+
+#include <boost/filesystem.hpp>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
-#include "../../FileSystem.hpp"
 #include "../Core/DLWrapper.hpp"
 #include "../Core/HornetWrapper.hpp"
 
 namespace Ignis::Multirole
 {
 
-inline std::string MakeDirAndString(std::string_view path)
-{
-	if(!FileSystem::MakeDir(path))
-		throw std::runtime_error("CoreProvider: Could not make temporal folder");
-	return std::string(path);
-}
-
-Service::CoreProvider::CoreProvider(std::string_view fnRegexStr, std::string_view tmpPath, CoreType type, bool loadPerCall)
+Service::CoreProvider::CoreProvider(std::string_view fnRegexStr, std::string_view tmpDirStr, CoreType type, bool loadPerCall)
 	:
 	fnRegex(fnRegexStr.data()),
-	tmpPath(MakeDirAndString(tmpPath)),
+	tmpDir(tmpDirStr.data()),
 	type(type),
 	loadPerCall(loadPerCall),
 	uniqueId(std::chrono::system_clock::now().time_since_epoch().count()),
 	loadCount(0U),
 	shouldTest(true)
-{}
+{
+	using namespace boost::filesystem;
+	if(!exists(tmpDir) && !create_directory(tmpDir))
+		throw std::runtime_error("CoreProvider: Could not create temporal directory");
+	if(!is_directory(tmpDir))
+		throw std::runtime_error("CoreProvider: Temporal directory path points to a file");
+}
 
 Service::CoreProvider::~CoreProvider()
 {
-	// TODO: Delete shared library files created.
+	for(const auto& fn : pLocs)
+		boost::filesystem::remove(fn);
 }
 
 Service::CoreProvider::CorePtr Service::CoreProvider::GetCore() const
@@ -56,16 +58,14 @@ void Service::CoreProvider::OnDiff(std::string_view path, const GitDiff& diff)
 Service::CoreProvider::CorePtr Service::CoreProvider::LoadCore() const
 {
 	if(type == CoreType::SHARED)
-		return std::make_shared<Core::DLWrapper>(corePath);
+		return std::make_shared<Core::DLWrapper>(coreLoc.string());
 	if (type == CoreType::HORNET)
-		return std::make_shared<Core::HornetWrapper>(corePath);
-	throw std::runtime_error("CoreProvider: No other core type is implemented.");
+		return std::make_shared<Core::HornetWrapper>(coreLoc.string());
+	throw std::runtime_error("CoreProvider: No other core type is implemented");
 }
 
 void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector& fl)
 {
-	std::scoped_lock lock(mCore);
-	const std::string oldCorePath = corePath;
 	auto it = fl.begin();
 	for(; it != fl.end(); ++it)
 		if(std::regex_match(*it, fnRegex))
@@ -76,40 +76,22 @@ void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector&
 			throw std::runtime_error("CoreProvider: Core not found in repository!");
 		return;
 	}
-	const auto gitFnPath = [&]() -> std::string
+	std::scoped_lock lock(mCore);
+	const boost::filesystem::path oldCoreLoc = coreLoc;
+	const boost::filesystem::path repoCore = [&]()
 	{
-		std::string str(path);
-		str += *it;
-		return str;
+		boost::filesystem::path fullFn(path.data());
+		fullFn /= *it;
+		return fullFn;
 	}();
-	// Lambda to remove all subdirectories of a given filename
-	auto FilenameFromPath = [](std::string_view str) -> std::string
+	coreLoc = tmpDir / fmt::format("{}-{}-{}", uniqueId, loadCount++, repoCore.filename().string());
+	spdlog::info("CoreProvider: Copying core from '{}' to '{}'...", repoCore.string(), coreLoc.string());
+	pLocs.emplace_back(coreLoc);
+	boost::filesystem::copy_file(repoCore, coreLoc);
+	if(!boost::filesystem::exists(coreLoc))
 	{
-		static const auto npos = std::string::npos;
-		std::size_t pos = str.rfind('/');
-		if(pos != npos || (pos = str.rfind('\\')) != npos)
-			return std::string(str.substr(pos + 1U));
-		return std::string(str);
-	};
-	corePath = tmpPath;
-	corePath += '/';
-	corePath += std::to_string(uniqueId);
-	corePath += '-';
-	corePath += std::to_string(loadCount);
-	corePath += '-';
-	corePath += FilenameFromPath(gitFnPath);
-	loadCount++;
-	spdlog::info("CoreProvider: Copying core from '{}' to '{}'...", gitFnPath, corePath);
-	{
-		std::ifstream src(gitFnPath, std::ios::binary);
-		std::ofstream dst(corePath, std::ios::binary);
-		dst << src.rdbuf();
-		if(!dst.good())
-		{
-			spdlog::error("CoreProvider: Unable to copy file, reverting to old core.");
-			corePath = oldCorePath;
-			return;
-		}
+		spdlog::error("CoreProvider: Failed to copy core file! Re-testing old one");
+		coreLoc = oldCoreLoc;
 	}
 	try
 	{
@@ -121,9 +103,9 @@ void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector&
 	{
 		if(shouldTest)
 			throw;
-		spdlog::error("CoreProvider: Error while testing core '{}': {}", corePath, e.what());
-		spdlog::info("CoreProvider: Reverting to old core: '{}'", oldCorePath);
-		corePath = oldCorePath;
+		spdlog::error("CoreProvider: Error while testing core '{}': {}", coreLoc.string(), e.what());
+		spdlog::info("CoreProvider: Reverting to old core: '{}'", oldCoreLoc.string());
+		coreLoc = oldCoreLoc;
 		return;
 	}
 	shouldTest = false;
