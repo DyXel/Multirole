@@ -4,7 +4,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
-#include <nlohmann/json.hpp>
+#include <boost/json/fwd.hpp>
 
 #include "GitRepo.hpp"
 #include "Lobby.hpp"
@@ -23,7 +23,7 @@ namespace Ignis::Multirole
 class Instance final
 {
 public:
-	Instance(const nlohmann::json& cfg);
+	Instance(const boost::json::value& cfg);
 	int Run();
 private:
 	boost::asio::io_context whIoCtx; // Webhooks Io Context

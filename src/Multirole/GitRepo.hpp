@@ -2,7 +2,8 @@
 #define GITREPO_HPP
 #include <string>
 #include <vector>
-#include <nlohmann/json.hpp>
+
+#include <boost/json/fwd.hpp>
 
 #include "IGitRepoObserver.hpp"
 #include "Endpoint/Webhook.hpp"
@@ -17,7 +18,7 @@ class GitRepo final : public Endpoint::Webhook
 public:
 	using Credentials = std::pair<std::string, std::string>;
 
-	GitRepo(boost::asio::io_context& ioCtx, const nlohmann::json& opts);
+	GitRepo(boost::asio::io_context& ioCtx, const boost::json::value& opts);
 	~GitRepo();
 
 	// Remove copy and move operations.

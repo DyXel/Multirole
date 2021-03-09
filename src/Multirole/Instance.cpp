@@ -6,6 +6,7 @@
 
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/thread_pool.hpp>
+#include <boost/json/value.hpp>
 #include <spdlog/spdlog.h>
 
 namespace Ignis::Multirole
@@ -30,39 +31,38 @@ inline Service::CoreProvider::CoreType GetCoreType(std::string_view str)
 
 // public
 
-Instance::Instance(const nlohmann::json& cfg) :
+Instance::Instance(const boost::json::value& cfg) :
 	whIoCtx(),
 	lIoCtx(),
 	lIoCtxGuard(boost::asio::make_work_guard(lIoCtx)),
-	hostingConcurrency(GetConcurrency(cfg.at("concurrencyHint").get<int>())),
-	banlistProvider(
-		cfg.at("banlistProvider").at("fileRegex").get<std::string>()),
+	hostingConcurrency(GetConcurrency(cfg.at("concurrencyHint").to_number<int>())),
+	banlistProvider(cfg.at("banlistProvider").at("fileRegex").as_string()),
 	coreProvider(
-		cfg.at("coreProvider").at("fileRegex").get<std::string>(),
-		cfg.at("coreProvider").at("tmpPath").get<std::string>(),
-		GetCoreType(cfg.at("coreProvider").at("coreType").get<std::string>()),
-		cfg.at("coreProvider").at("loadPerRoom").get<bool>()),
-	dataProvider(cfg.at("dataProvider").at("fileRegex").get<std::string>()),
-	replayManager(cfg.at("replaysPath").get<std::string>()),
-	scriptProvider(cfg.at("scriptProvider").at("fileRegex").get<std::string>()),
+		cfg.at("coreProvider").at("fileRegex").as_string(),
+		cfg.at("coreProvider").at("tmpPath").as_string(),
+		GetCoreType(cfg.at("coreProvider").at("coreType").as_string()),
+		cfg.at("coreProvider").at("loadPerRoom").as_bool()),
+	dataProvider(cfg.at("dataProvider").at("fileRegex").as_string()),
+	replayManager(cfg.at("replaysPath").as_string()),
+	scriptProvider(cfg.at("scriptProvider").at("fileRegex").as_string()),
 	service({banlistProvider, coreProvider, dataProvider,
 		replayManager, scriptProvider}),
 	lobby(),
 	lobbyListing(
 		lIoCtx,
-		cfg.at("lobbyListingPort").get<unsigned short>(),
+		cfg.at("lobbyListingPort").to_number<unsigned short>(),
 		lobby),
 	roomHosting(
 		lIoCtx,
 		service,
 		lobby,
-		cfg.at("roomHostingPort").get<unsigned short>()),
+		cfg.at("roomHostingPort").to_number<unsigned short>()),
 	signalSet(lIoCtx)
 {
 	// Load up and update repositories while also adding them to the std::map
-	for(const auto& opts : cfg.at("repos").get<std::vector<nlohmann::json>>())
+	for(const auto& opts : cfg.at("repos").as_array())
 	{
-		auto name = opts.at("name").get<std::string>();
+		auto name = opts.at("name").as_string().data();
 		spdlog::info("Adding repository '{:s}'...", name);
 		repos.emplace(
 			std::piecewise_construct,
@@ -70,15 +70,15 @@ Instance::Instance(const nlohmann::json& cfg) :
 			std::forward_as_tuple(whIoCtx, opts));
 	}
 	// Register respective providers on their observed repositories
-	auto RegRepos = [&](IGitRepoObserver& obs, const nlohmann::json& a)
+	auto RegRepos = [&](IGitRepoObserver& obs, const boost::json::value& v)
 	{
-		for(const auto& observed : a.get<std::vector<std::string>>())
-			repos.at(observed).AddObserver(obs);
+		for(const auto& observed : v.at("observedRepos").as_array())
+			repos.at(observed.as_string().data()).AddObserver(obs);
 	};
-	RegRepos(dataProvider, cfg.at("dataProvider").at("observedRepos"));
-	RegRepos(scriptProvider, cfg.at("scriptProvider").at("observedRepos"));
-	RegRepos(banlistProvider, cfg.at("banlistProvider").at("observedRepos"));
-	RegRepos(coreProvider, cfg.at("coreProvider").at("observedRepos"));
+	RegRepos(dataProvider, cfg.at("dataProvider"));
+	RegRepos(scriptProvider, cfg.at("scriptProvider"));
+	RegRepos(banlistProvider, cfg.at("banlistProvider"));
+	RegRepos(coreProvider, cfg.at("coreProvider"));
 	// Register signal
 	spdlog::info("Setting up signal handling...");
 	signalSet.add(SIGTERM);

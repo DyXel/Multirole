@@ -1,8 +1,8 @@
 #include "LobbyListing.hpp"
 
 #include <boost/asio/write.hpp>
+#include <boost/json.hpp>
 #include <fmt/format.h> // fmt::to_string
-#include <nlohmann/json.hpp>
 
 #include "../Lobby.hpp"
 #include "../Workaround.hpp"
@@ -54,44 +54,44 @@ void LobbyListing::DoSerialize()
 			"Content-Type: {:s}\r\n\r\n";
 			return fmt::format(HTTP_HEADER_FORMAT_STRING, length, mime);
 		};
-		nlohmann::json j{{"rooms", nlohmann::json::array()}};
-		nlohmann::json& ar = j["rooms"];
+		boost::json::monotonic_resource mr;
+		boost::json::object j(&mr);
+		auto& ar = *j.emplace("rooms", boost::json::array(&mr)).first->value().if_array();
 		lobby.CollectRooms([&](const Lobby::RoomProps& rp)
 		{
-			ar.emplace_back();
-			auto& room = ar.back();
 			const auto& hi = *rp.hostInfo;
-			room["roomid"] = rp.id;
-			room["roomname"] = ""; // NOTE: UNUSED but expected atm
-			room["roomnotes"] = *rp.notes;
-			room["roommode"] = 0; // NOTE: UNUSED but expected atm
-			room["needpass"] = rp.passworded;
-			room["team1"] = hi.t0Count;
-			room["team2"] = hi.t1Count;
-			room["best_of"] = hi.bestOf;
-			room["duel_flag"] = YGOPro::HostInfo::OrDuelFlags(hi.duelFlagsHigh, hi.duelFlagsLow);
-			room["forbidden_types"] = hi.forb;
-			room["extra_rules"] = hi.extraRules;
-			room["start_lp"] = hi.startingLP;
-			room["start_hand"] = hi.startingDrawCount;
-			room["draw_count"] = hi.drawCountPerTurn;
-			room["time_limit"] = hi.timeLimitInSeconds;
-			room["rule"] = hi.allowed;
-			room["no_check"] = static_cast<bool>(hi.dontCheckDeck);
-			room["no_shuffle"] = static_cast<bool>(hi.dontShuffleDeck);
-			room["banlist_hash"] = hi.banlistHash;
-			room["istart"] = rp.started ? "start" : "waiting";
-			auto& ac = room["users"];
+			auto& room = *ar.emplace_back(boost::json::object(21U, &mr)).if_object();
+			room.emplace("roomid", rp.id);
+			room.emplace("roomname", ""); // NOTE: UNUSED but expected atm
+			room.emplace("roomnotes", *rp.notes);
+			room.emplace("roommode", 0); // NOTE: UNUSED but expected atm
+			room.emplace("needpass", rp.passworded);
+			room.emplace("team1", hi.t0Count);
+			room.emplace("team2", hi.t1Count);
+			room.emplace("best_of", hi.bestOf);
+			room.emplace("duel_flag", YGOPro::HostInfo::OrDuelFlags(hi.duelFlagsHigh, hi.duelFlagsLow));
+			room.emplace("forbidden_types", hi.forb);
+			room.emplace("extra_rules", hi.extraRules);
+			room.emplace("start_lp", hi.startingLP);
+			room.emplace("start_hand", hi.startingDrawCount);
+			room.emplace("draw_count", hi.drawCountPerTurn);
+			room.emplace("time_limit", hi.timeLimitInSeconds);
+			room.emplace("rule", hi.allowed);
+			room.emplace("no_check", static_cast<bool>(hi.dontCheckDeck));
+			room.emplace("no_shuffle", static_cast<bool>(hi.dontShuffleDeck));
+			room.emplace("banlist_hash", hi.banlistHash);
+			room.emplace("istart", rp.started ? "start" : "waiting");
+			auto& ac = *room.emplace("users", boost::json::array(rp.duelists.size(), &mr)).first->value().if_array();
+			std::size_t i = 0U;
 			for(const auto& kv : rp.duelists)
 			{
-				ac.emplace_back();
-				auto& client = ac.back();
-				client["name"] = kv.second;
-				client["pos"] = kv.first;
+				auto& client = ac[i].emplace_object();
+				client.emplace("name", kv.second);
+				client.emplace("pos", kv.first);
+				i++;
 			}
 		});
-		constexpr auto eHandler = nlohmann::json::error_handler_t::replace;
-		const std::string strJ = j.dump(-1, 0, false, eHandler); // DUMP EET
+		const std::string strJ = boost::json::serialize(j); // DUMP EET
 		{
 			std::scoped_lock lock(mSerialized);
 			serialized = std::make_shared<std::string>(

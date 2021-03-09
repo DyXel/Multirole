@@ -7,6 +7,7 @@
 #include <fstream> // std::ifstream
 #include <optional> // std::optional
 
+#include <boost/json/src.hpp>
 #include <spdlog/spdlog.h>
 #include <git2.h>
 
@@ -18,8 +19,12 @@ inline int CreateAndRunServerInstance()
 	try
 	{
 		std::ifstream f("config.json");
-		const auto cfg = nlohmann::json::parse(f);
-		server.emplace(cfg);
+		boost::json::monotonic_resource mr;
+		boost::json::stream_parser p(&mr);
+		for(std::string l; std::getline(f, l);)
+			p.write(l);
+		p.finish();
+		server.emplace(p.release());
 	}
 	catch(const std::exception& e)
 	{

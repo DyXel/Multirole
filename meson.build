@@ -1,13 +1,10 @@
 project('multirole', ['c', 'cpp'], default_options : 'cpp_std=c++17')
 
-is_window = host_machine.system() == 'windows'
-
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
 boost_dep   = dependency('boost', modules : ['filesystem', 'system'])
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 fmt_dep     = dependency('fmt')
 libgit2_dep = dependency('libgit2')
-njson_dep   = dependency('nlohmann_json', required : is_window)
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 spdlog_dep  = dependency('spdlog')
 sqlite3_dep = dependency('sqlite3')
@@ -66,7 +63,8 @@ executable('multirole', multirole_src_files,
 	],
 	cpp_args: [
 		'-DSPDLOG_FMT_EXTERNAL',
-		'-DBOOST_DATE_TIME_NO_LIB'
+		'-DBOOST_DATE_TIME_NO_LIB',
+		'-DBOOST_JSON_STANDALONE'
 	],
 	dependencies: [
 		atomic_dep,
@@ -74,7 +72,6 @@ executable('multirole', multirole_src_files,
 		dl_dep,
 		fmt_dep,
 		libgit2_dep,
-		njson_dep,
 		rt_dep,
 		spdlog_dep,
 		sqlite3_dep,

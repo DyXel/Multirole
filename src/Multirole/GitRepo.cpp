@@ -1,5 +1,7 @@
 #include "GitRepo.hpp"
 
+#include <boost/filesystem.hpp>
+#include <boost/json/value.hpp>
 #include <spdlog/spdlog.h>
 
 #include "libgit2.hpp"
@@ -25,20 +27,21 @@ std::string NormalizeDirPath(std::string_view str)
 
 // public
 
-GitRepo::GitRepo(boost::asio::io_context& ioCtx, const nlohmann::json& opts) :
-	Webhook(ioCtx, opts.at("webhookPort").get<unsigned short>()),
-	token(opts.at("webhookToken").get<std::string>()),
-	remote(opts.at("remote").get<std::string>()),
-	path(NormalizeDirPath(opts.at("path").get<std::string>())),
+GitRepo::GitRepo(boost::asio::io_context& ioCtx, const boost::json::value& opts) :
+	Webhook(ioCtx, opts.at("webhookPort").to_number<unsigned short>()),
+	token(opts.at("webhookToken").as_string().data()),
+	remote(opts.at("remote").as_string().data()),
+	path(NormalizeDirPath(opts.at("path").as_string().data())),
 	repo(nullptr)
 {
-	if(opts.count("credentials") != 0U)
+	if(const auto* const cred = opts.as_object().if_contains("credentials"); cred)
 	{
-		const auto& credJson = opts["credentials"];
-		auto user = credJson.at("username").get<std::string>();
-		auto pass = credJson.at("password").get<std::string>();
-		credPtr = std::make_unique<Credentials>(std::move(user), std::move(pass));
+		credPtr = std::make_unique<Credentials>(
+			cred->at("username").as_string().data(),
+			cred->at("password").as_string().data());
 	}
+	if(!boost::filesystem::is_directory(path))
+		throw std::runtime_error("Repository path is not a directory.");
 	if(!CheckIfRepoExists())
 	{
 		spdlog::info("Repository doesnt exist, Cloning...");
@@ -46,7 +49,7 @@ GitRepo::GitRepo(boost::asio::io_context& ioCtx, const nlohmann::json& opts) :
 		return;
 	}
 	spdlog::info("Repository exist! Opening...");
-	Git::Check(git_repository_open(&repo, path.c_str()));
+	Git::Check(git_repository_open(&repo, path.data()));
 	spdlog::info("Checking for updates...");
 	try
 	{
@@ -77,7 +80,7 @@ void GitRepo::AddObserver(IGitRepoObserver& obs)
 
 void GitRepo::Callback(std::string_view payload)
 {
-	spdlog::info("Webhook triggered for repository on '{:s}'", path);
+	spdlog::info("Webhook triggered for repository on '{}'", path);
 	if(payload.find(token) == std::string_view::npos)
 	{
 		spdlog::error("Trigger doesn't have the token");
@@ -95,7 +98,7 @@ void GitRepo::Callback(std::string_view payload)
 	}
 	catch(const std::exception& e)
 	{
-		spdlog::error("Exception ocurred while updating repo: {:s}", e.what());
+		spdlog::error("Exception ocurred while updating repo: {}", e.what());
 	}
 }
 
