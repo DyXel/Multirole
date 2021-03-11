@@ -2,7 +2,6 @@
 	"concurrencyHint": -1,
 	"lobbyListingPort": 7922,
 	"roomHostingPort": 7911,
-	"replaysPath": "./replays",
 	"repos": [
 		{
 			"name": "scripts",
@@ -33,13 +32,9 @@
 			"webhookToken": "<change_this>"
 		}
 	],
-	"dataProvider": {
-		"observedRepos" : ["databases"],
-		"fileRegex": ".*\\.cdb"
-	},
-	"scriptProvider": {
-		"observedRepos" : ["scripts"],
-		"fileRegex": ".*\\.lua"
+	"banlistProvider": {
+		"observedRepos" : ["banlists"],
+		"fileRegex": ".*\\.lflist\\.conf"
 	},
 	"coreProvider": {
 		"observedRepos" : ["bin"],
@@ -48,8 +43,16 @@
 		"coreType": "hornet",
 		"loadPerRoom": true
 	},
-	"banlistProvider": {
-		"observedRepos" : ["banlists"],
-		"fileRegex": ".*\\.lflist\\.conf"
+	"dataProvider": {
+		"observedRepos" : ["databases"],
+		"fileRegex": ".*\\.cdb"
+	},
+	"replayManager": {
+		"save": true,
+		"path": "./replays",
+	},
+	"scriptProvider": {
+		"observedRepos" : ["scripts"],
+		"fileRegex": ".*\\.lua"
 	}
 }

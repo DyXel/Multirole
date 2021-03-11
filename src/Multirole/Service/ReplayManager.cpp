@@ -14,11 +14,17 @@ constexpr auto IOS_BINARY = std::ios_base::binary;
 constexpr auto IOS_BINARY_IN = IOS_BINARY | std::ios_base::in;
 constexpr auto IOS_BINARY_OUT = IOS_BINARY | std::ios_base::out;
 
-Service::ReplayManager::ReplayManager(std::string_view dirStr) :
+Service::ReplayManager::ReplayManager(bool save, std::string_view dirStr) :
+	save(save),
 	dir(dirStr.data()),
 	lastId(dir / "lastId"),
 	mLastId()
 {
+	if(!save)
+	{
+		spdlog::info("ReplayManager: Not saving replays, replays ID will always be 0");
+		return;
+	}
 	using namespace boost::filesystem;
 	if(!exists(dir) && !create_directory(dir))
 		throw std::runtime_error("ReplayManager: Could not create replay directory");
@@ -52,6 +58,8 @@ Service::ReplayManager::ReplayManager(std::string_view dirStr) :
 
 void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const
 {
+	if(!save)
+		return;
 	const auto fn = dir / (std::to_string(id) + ".yrpX");
 	const auto& bytes = replay.Bytes();
 	if(std::fstream f(fn, IOS_BINARY_OUT); f.is_open())
@@ -66,6 +74,8 @@ constexpr const char* CORRUPTED_LASTID_FILE =
 
 uint64_t Service::ReplayManager::NewId()
 {
+	if(!save)
+		return 0U;
 	uint64_t prevId = 0U;
 	uint64_t id = 0U;
 	std::scoped_lock tlock(mLastId);

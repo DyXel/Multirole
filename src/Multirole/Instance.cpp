@@ -43,7 +43,9 @@ Instance::Instance(const boost::json::value& cfg) :
 		GetCoreType(cfg.at("coreProvider").at("coreType").as_string()),
 		cfg.at("coreProvider").at("loadPerRoom").as_bool()),
 	dataProvider(cfg.at("dataProvider").at("fileRegex").as_string()),
-	replayManager(cfg.at("replaysPath").as_string()),
+	replayManager(
+		cfg.at("replayManager").at("save").as_bool(),
+		cfg.at("replayManager").at("path").as_string()),
 	scriptProvider(cfg.at("scriptProvider").at("fileRegex").as_string()),
 	service({banlistProvider, coreProvider, dataProvider,
 		replayManager, scriptProvider}),
