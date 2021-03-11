@@ -1,5 +1,5 @@
 #ifndef _WIN32
-#include <signal.h>
+#include <csignal>
 #endif // _WIN32
 
 #include <boost/interprocess/shared_memory_object.hpp>
@@ -125,7 +125,8 @@ void MainLoop()
 		}
 		case Action::OCG_GET_VERSION:
 		{
-			int major, minor;
+			int major = 0;
+			int minor = 0;
 			OCG_GetVersion(&major, &minor);
 			auto* wptr = hss->bytes.data();
 			Write<int>(wptr, major);
@@ -140,7 +141,7 @@ void MainLoop()
 			opts.scriptReader = &ScriptReader;
 			opts.logHandler = &LogHandler;
 			opts.cardReaderDone = &DataReaderDone;
-			OCG_Duel duel;
+			OCG_Duel duel = nullptr;
 			int r = OCG_CreateDuel(&duel, opts);
 			auto* wptr = hss->bytes.data();
 			Write<int>(wptr, r);
@@ -275,7 +276,7 @@ int main(int argc, char* argv[])
 	if(int r = LoadSO(argv[1]); r != 0)
 		return 2;
 #ifndef _WIN32
-	if(signal(SIGINT, [](int){}) == SIG_ERR)
+	if(signal(SIGINT, [](int /*unused*/){}) == SIG_ERR)
 		return 3;
 #endif // _WIN32
 	try
