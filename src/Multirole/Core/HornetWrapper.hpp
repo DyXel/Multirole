@@ -5,7 +5,8 @@
 #include <mutex>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/process/child.hpp>
+
+#include "../../Process.hpp"
 
 namespace Ignis::Hornet
 {
@@ -45,8 +46,8 @@ private:
 	boost::interprocess::shared_memory_object shm;
 	boost::interprocess::mapped_region region;
 	Hornet::SharedSegment* hss;
+	Process::Data proc;
 	bool hanged;
-	boost::process::child proc;
 	std::mutex mtx;
 
 	void DestroySharedSegment();

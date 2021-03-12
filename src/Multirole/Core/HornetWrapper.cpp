@@ -6,6 +6,8 @@
 #include "IScriptSupplier.hpp"
 #include "ILogger.hpp"
 #include "../../HornetCommon.hpp"
+#define PROCESS_IMPLEMENTATION
+#include "../../Process.hpp"
 
 #ifndef MULTIROLE_HORNET_MAX_LOOP_COUNT
 #define MULTIROLE_HORNET_MAX_LOOP_COUNT 512U
@@ -49,21 +51,22 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 {
 	void* addr = region.get_address();
 	hss = new (addr) Hornet::SharedSegment();
-	proc = boost::process::child("./hornet", absFilePath.data(), shmName.data());
-	if(!proc.running())
+	const auto p = Process::Launch("./hornet", absFilePath.data(), shmName.data());
+	if(!p.second)
 	{
 		DestroySharedSegment();
 		throw std::runtime_error("Unable to launch child");
 	}
+	proc = p.first;
 	try
 	{
 		NotifyAndWait(Hornet::Action::HEARTBEAT);
 	}
 	catch(Core::Exception& e)
 	{
-		std::error_code ec;
-		proc.terminate(ec);
-		proc.wait(ec);
+		// NOTE: Not necessary to check hanged or kill as HEARTBEAT is
+		// under our control.
+		Process::CleanUp(proc);
 		DestroySharedSegment();
 		throw std::runtime_error("Heartbeat failed");
 	}
@@ -81,10 +84,9 @@ HornetWrapper::~HornetWrapper()
 	}
 	// If process is hanged we can't guarantee it'll handle our notification.
 	// Kill anyways.
-	std::error_code ec;
-	if(hanged && proc.running(ec))
-		proc.terminate(ec);
-	proc.wait(ec);
+	if(hanged && Process::IsRunning(proc))
+		Process::Kill(proc);
+	Process::CleanUp(proc);
 	DestroySharedSegment();
 }
 
@@ -290,7 +292,7 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 			hss->cv.notify_one();
 			while(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != act;}))
 			{
-				if(std::error_code ec; !proc.running(ec))
+				if(!Process::IsRunning(proc))
 					throw Core::Exception("Process is not running");
 				if(waitCount++ <= MULTIROLE_HORNET_MAX_WAIT_COUNT)
 					continue;
