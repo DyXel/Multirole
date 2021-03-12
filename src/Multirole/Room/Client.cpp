@@ -19,6 +19,7 @@ Client::Client(
 	strand(room->Strand()),
 	socket(std::move(socket)),
 	name(std::move(name)),
+	connectionLost(false),
 	disconnecting(false),
 	position(POSITION_SPECTATOR),
 	ready(false)
@@ -94,7 +95,7 @@ void Client::SetCurrentDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
 
 void Client::Send(const YGOPro::STOCMsg& msg)
 {
-	if(!socket.is_open())
+	if(connectionLost || !socket.is_open())
 		return;
 	std::scoped_lock lock(mOutgoing);
 	const bool writeInProgress = !outgoing.empty();
@@ -122,10 +123,12 @@ void Client::DoReadHeader()
 		if(!ec && incoming.IsHeaderValid())
 		{
 			DoReadBody();
-			return;
 		}
-		if(ec != boost::asio::error::operation_aborted)
+		else if(ec != boost::asio::error::operation_aborted)
+		{
+			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
+		}
 		room->Remove(self);
 	}));
 }
@@ -143,10 +146,12 @@ void Client::DoReadBody()
 			// if the message is not properly handled. Just ignore it.
 			HandleMsg();
 			DoReadHeader();
-			return;
 		}
-		if(ec != boost::asio::error::operation_aborted)
+		else if(ec != boost::asio::error::operation_aborted)
+		{
+			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
+		}
 		room->Remove(self);
 	}));
 }

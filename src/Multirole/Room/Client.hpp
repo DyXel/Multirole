@@ -56,6 +56,7 @@ private:
 	boost::asio::io_context::strand& strand;
 	boost::asio::ip::tcp::socket socket;
 	std::string name;
+	bool connectionLost;
 	bool disconnecting;
 	PosType position;
 	bool ready;
