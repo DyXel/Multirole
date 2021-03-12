@@ -49,7 +49,7 @@
 	},
 	"replayManager": {
 		"save": true,
-		"path": "./replays",
+		"path": "./replays"
 	},
 	"scriptProvider": {
 		"observedRepos" : ["scripts"],
