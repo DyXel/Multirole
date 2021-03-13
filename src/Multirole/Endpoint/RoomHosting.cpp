@@ -3,6 +3,7 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 
+#include "../I18N.hpp"
 #include "../Lobby.hpp"
 #include "../STOCMsgFactory.hpp"
 #include "../Workaround.hpp"
@@ -14,13 +15,6 @@
 
 namespace Ignis::Multirole::Endpoint
 {
-
-constexpr const char* ROOM_404 = "Room not found. Try refreshing the list!";
-constexpr const char* INVALID_NAME = "Invalid name. Try filling in your name.";
-constexpr const char* INVALID_MSG =
-"Invalid message before connecting to room. Please report this error!";
-constexpr const char* KICKED_BEFORE =
-"Unable to join. You were kicked from this room before.";
 
 constexpr bool operator!=(
 	const YGOPro::ClientVersion& v1,
@@ -72,18 +66,23 @@ inline std::string Utf16BufferToStr(const Buffer& buffer)
 	return UTF16ToUTF8(BufferToUTF16(buffer, sizeof(Buffer)));
 }
 
+inline YGOPro::STOCMsg SrvMsg(const char* const str)
+{
+	return STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, str);
+}
+
 // public
 
 RoomHosting::RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port)
 	:
 	prebuiltMsgs({
 		STOCMsgFactory::MakeVersionError(YGOPro::SERVER_VERSION),
-		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, INVALID_NAME),
-		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, ROOM_404),
+		SrvMsg(I18N::CLIENT_ROOM_HOSTING_INVALID_NAME),
+		SrvMsg(I18N::CLIENT_ROOM_HOSTING_NOT_FOUND),
 		STOCMsgFactory::MakeJoinError(Error::JOIN_WRONG_PASS),
-		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, INVALID_MSG),
+		SrvMsg(I18N::CLIENT_ROOM_HOSTING_INVALID_MSG),
 		STOCMsgFactory::MakeJoinError(Error::JOIN_NOT_FOUND),
-		STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, KICKED_BEFORE),
+		SrvMsg(I18N::CLIENT_ROOM_HOSTING_KICKED_BEFORE),
 	}),
 	ioCtx(ioCtx),
 	svc(svc),

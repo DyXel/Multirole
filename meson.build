@@ -13,6 +13,7 @@ thread_dep  = dependency('threads')
 multirole_src_files = files([
 	'src/DLOpen.cpp',
 	'src/Multirole/GitRepo.cpp',
+	'src/Multirole/I18N.cpp',
 	'src/Multirole/Instance.cpp',
 	'src/Multirole/Lobby.cpp',
 	'src/Multirole/main.cpp',

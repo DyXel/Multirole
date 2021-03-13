@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "../TimerAggregator.hpp"
+#include "../../I18N.hpp"
 #include "../../Core/IWrapper.hpp"
 #include "../../Service/ReplayManager.hpp"
 #include "../../Service/ScriptProvider.hpp"
@@ -28,33 +29,6 @@ constexpr auto CORE_EXC_REASON = Context::DuelFinishReason
 	Context::DuelFinishReason::Reason::REASON_CORE_CRASHED,
 	2U // NOLINT: Draw.
 };
-
-constexpr const char* CORE_EXC_CREATION_LOG =
-"Core exception at creation (Replay ID: {}): {}";
-
-constexpr const char* CORE_EXC_EXTRA_CARDS_LOG =
-"Core exception at extra cards addition (Replay ID: {}): {}";
-
-constexpr const char* CORE_EXC_STARTING_LOG =
-"Core exception at starting (Replay ID: {}): {}";
-
-constexpr const char* CORE_EXC_RESPONSE_LOG =
-"Core exception at response setting (Replay ID: {}): {}";
-
-constexpr const char* CORE_EXC_PROCESSING_LOG =
-"Core exception at processing (Replay ID: {}): {}";
-
-constexpr const char* CORE_EXC_DESTRUCTOR_LOG =
-"Core exception at destruction (Replay ID: {}): {}";
-
-constexpr const char* MSG_RETRY_CHAT_MSG =
-"MSG_RETRY received from core (Replay ID: {})";
-
-constexpr const char* REPLAY_TOO_BIG_CHAT_MSG =
-"Unable to send replay, its size exceeds the maximum capacity.";
-
-constexpr const char* CORE_EXC_CHAT_MSG =
-"Internal scripting engine error! This incident has been reported.";
 
 StateOpt Context::operator()(State::Dueling& s)
 {
@@ -125,7 +99,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error(CORE_EXC_CREATION_LOG, s.replayId, e.what());
+		spdlog::error(I18N::ROOM_DUELING_CORE_EXCEPT_CREATION, s.replayId, e.what());
 		return Finish(s, CORE_EXC_REASON);
 	}
 	OCG_NewCardInfo nci{};
@@ -140,7 +114,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error(CORE_EXC_EXTRA_CARDS_LOG, s.replayId, e.what());
+		spdlog::error(I18N::ROOM_DUELING_CORE_EXCEPT_EXTRA_CARDS, s.replayId, e.what());
 		return Finish(s, CORE_EXC_REASON);
 	}
 	// Add main and extra deck cards for all players.
@@ -236,7 +210,7 @@ StateOpt Context::operator()(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error(CORE_EXC_STARTING_LOG, s.replayId, e.what());
+		spdlog::error(I18N::ROOM_DUELING_CORE_EXCEPT_STARTING, s.replayId, e.what());
 		return Finish(s, CORE_EXC_REASON);
 	}
 	// Start processing the duel.
@@ -289,7 +263,7 @@ StateOpt Context::operator()(State::Dueling& s, const Event::Response& e)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error(CORE_EXC_RESPONSE_LOG, s.replayId, e.what());
+		spdlog::error(I18N::ROOM_DUELING_CORE_EXCEPT_RESPONSE, s.replayId, e.what());
 		return Finish(s, CORE_EXC_REASON);
 	}
 	if(const auto dfrOpt = Process(s); dfrOpt)
@@ -497,7 +471,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 		uint8_t msgType = GetMessageType(msg);
 		if(msgType == MSG_RETRY)
 		{
-			spdlog::error(MSG_RETRY_CHAT_MSG, s.replayId);
+			spdlog::error(I18N::ROOM_DUELING_MSG_RETRY_RECEIVED, s.replayId);
 			uint8_t winner = 1U - s.replier->Position().first;
 			return DuelFinishReason{Reason::REASON_WRONG_RESPONSE, winner};
 		}
@@ -548,7 +522,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s)
 	}
 	catch(Core::Exception& e)
 	{
-		spdlog::error(CORE_EXC_PROCESSING_LOG, s.replayId, e.what());
+		spdlog::error(I18N::ROOM_DUELING_CORE_EXCEPT_PROCESSING, s.replayId, e.what());
 		return CORE_EXC_REASON;
 	}
 	return std::nullopt;
@@ -568,7 +542,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		}
 		catch(Core::Exception& e)
 		{
-			spdlog::info(CORE_EXC_DESTRUCTOR_LOG, s.replayId, e.what());
+			spdlog::info(I18N::ROOM_DUELING_CORE_EXCEPT_DESTRUCTOR, s.replayId, e.what());
 		}
 	}
 	tagg.Cancel(0U);
@@ -589,7 +563,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		s.replay->Serialize();
 		svc.replayManager.Save(s.replayId, *s.replay);
 		if(s.replay->Bytes().size() > YGOPro::STOCMsg::MAX_PAYLOAD_SIZE)
-			SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, REPLAY_TOO_BIG_CHAT_MSG));
+			SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_REPLAY_TOO_BIG));
 		else
 			SendToAll(MakeSendReplay(s.replay->Bytes()));
 		SendToAll(MakeOpenReplayPrompt());
@@ -634,7 +608,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 	}
 	case Reason::REASON_CORE_CRASHED:
 	{
-		SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, CORE_EXC_CHAT_MSG));
+		SendToAll(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_CORE_EXCEPT));
 		SendWinMsg(WIN_REASON_INTERNAL_ERROR);
 		SendReplay();
 		if(hostInfo.bestOf <= 1)

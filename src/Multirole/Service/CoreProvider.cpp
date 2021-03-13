@@ -6,6 +6,7 @@
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
+#include "../I18N.hpp"
 #include "../Core/DLWrapper.hpp"
 #include "../Core/HornetWrapper.hpp"
 
@@ -24,9 +25,9 @@ Service::CoreProvider::CoreProvider(std::string_view fnRegexStr, std::string_vie
 {
 	using namespace boost::filesystem;
 	if(!exists(tmpDir) && !create_directory(tmpDir))
-		throw std::runtime_error("CoreProvider: Could not create temporal directory");
+		throw std::runtime_error(I18N::CORE_PROVIDER_COULD_NOT_CREATE_TMP_DIR);
 	if(!is_directory(tmpDir))
-		throw std::runtime_error("CoreProvider: Temporal directory path points to a file");
+		throw std::runtime_error(I18N::CORE_PROVIDER_PATH_IS_FILE_NOT_DIR);
 }
 
 Service::CoreProvider::~CoreProvider()
@@ -61,7 +62,7 @@ Service::CoreProvider::CorePtr Service::CoreProvider::LoadCore() const
 		return std::make_shared<Core::DLWrapper>(coreLoc.string());
 	if (type == CoreType::HORNET)
 		return std::make_shared<Core::HornetWrapper>(coreLoc.string());
-	throw std::runtime_error("CoreProvider: No other core type is implemented");
+	throw std::runtime_error(I18N::CORE_PROVIDER_WRONG_CORE_TYPE);
 }
 
 void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector& fl)
@@ -73,7 +74,7 @@ void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector&
 	if(it == fl.end())
 	{
 		if(shouldTest)
-			throw std::runtime_error("CoreProvider: Core not found in repository!");
+			throw std::runtime_error(I18N::CORE_PROVIDER_CORE_NOT_FOUND_IN_REPO);
 		return;
 	}
 	std::scoped_lock lock(mCore);
@@ -85,26 +86,25 @@ void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector&
 		return fullFn;
 	}();
 	coreLoc = tmpDir / fmt::format("{}-{}-{}", uniqueId, loadCount++, repoCore.filename().string());
-	spdlog::info("CoreProvider: Copying core from '{}' to '{}'...", repoCore.string(), coreLoc.string());
+	spdlog::info(I18N::CORE_PROVIDER_COPYING_CORE_FILE, repoCore.string(), coreLoc.string());
 	pLocs.emplace_back(coreLoc);
 	boost::filesystem::copy_file(repoCore, coreLoc);
 	if(!boost::filesystem::exists(coreLoc))
 	{
-		spdlog::error("CoreProvider: Failed to copy core file! Re-testing old one");
+		spdlog::error(I18N::CORE_PROVIDER_FAILED_TO_COPY_CORE_FILE);
 		coreLoc = oldCoreLoc;
 	}
 	try
 	{
 		auto core = LoadCore();
 		const auto ver = core->Version();
-		spdlog::info("CoreProvider: Version reported by core: {}.{}", ver.first, ver.second);
+		spdlog::info(I18N::CORE_PROVIDER_VERSION_REPORTED, ver.first, ver.second);
 	}
 	catch(Core::Exception& e)
 	{
 		if(shouldTest)
 			throw;
-		spdlog::error("CoreProvider: Error while testing core '{}': {}", coreLoc.string(), e.what());
-		spdlog::info("CoreProvider: Reverting to old core: '{}'", oldCoreLoc.string());
+		spdlog::error(I18N::CORE_PROVIDER_ERROR_WHILE_TESTING, coreLoc.string(), e.what());
 		coreLoc = oldCoreLoc;
 		return;
 	}

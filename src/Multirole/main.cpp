@@ -8,14 +8,17 @@
 #include <optional> // std::optional
 
 #include <boost/json/src.hpp>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <git2.h>
 
 #include "Instance.hpp"
+#include "I18N.hpp"
 
 inline int CreateAndRunServerInstance()
 {
-	std::optional<Ignis::Multirole::Instance> server;
+	using namespace Ignis::Multirole;
+	std::optional<Instance> server;
 	try
 	{
 		std::ifstream f("config.json");
@@ -28,7 +31,7 @@ inline int CreateAndRunServerInstance()
 	}
 	catch(const std::exception& e)
 	{
-		spdlog::critical("Could not initialize server: {:s}\n", e.what());
+		fmt::print(I18N::MAIN_SERVER_INIT_FAILURE, e.what());
 		return EXIT_FAILURE;
 	}
 	return server->Run();

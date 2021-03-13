@@ -1,5 +1,6 @@
 #include "Context.hpp"
 
+#include "../I18N.hpp"
 #include "../STOCMsgFactory.hpp"
 #include "../Service/DataProvider.hpp"
 #include "../YGOPro/Banlist.hpp"
@@ -9,9 +10,6 @@
 
 namespace Ignis::Multirole::Room
 {
-
-constexpr const char* MSG_RETRY_ERROR_CHAT =
-"Error while processing your response. Make sure you have the lastest client.";
 
 Context::Context(CreateInfo&& info)
 	:
@@ -25,7 +23,7 @@ Context::Context(CreateInfo&& info)
 	cdb(svc.dataProvider.GetDatabase()),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
-	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, MSG_RETRY_ERROR_CHAT))
+	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR))
 {
 	rng.seed(info.seed);
 }

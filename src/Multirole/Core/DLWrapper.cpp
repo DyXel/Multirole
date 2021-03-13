@@ -5,6 +5,7 @@
 #include "IDataSupplier.hpp"
 #include "IScriptSupplier.hpp"
 #include "ILogger.hpp"
+#include "../I18N.hpp"
 #include "../../DLOpen.hpp"
 
 namespace Ignis::Multirole::Core
@@ -92,7 +93,7 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 	if(OCG_CreateDuel(&duel, options) != OCG_DUEL_CREATION_SUCCESS)
 	{
 		ssdList.erase(ssdIter);
-		throw Core::Exception("OCG_CreateDuel failed!");
+		throw Core::Exception(I18N::DLWRAPPER_EXCEPT_CREATE_DUEL);
 	}
 	ssdMap.insert({duel, ssdIter});
 	return duel;

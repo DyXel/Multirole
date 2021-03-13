@@ -6,6 +6,7 @@
 #include <sqlite3.h>
 #include <spdlog/spdlog.h>
 
+#include "../I18N.hpp"
 #include "../YGOPro/CardDatabase.hpp"
 
 namespace Ignis::Multirole
@@ -69,9 +70,9 @@ void Service::DataProvider::ReloadDatabases()
 	auto newDb = std::make_shared<YGOPro::CardDatabase>();
 	for(const auto& path : paths)
 	{
-		spdlog::info("DataProvider: Loading up {:s}...", path);
+		spdlog::info(I18N::DATA_PROVIDER_LOADING_ONE, path);
 		if(!newDb->Merge(path))
-			spdlog::error("DataProvider: Couldn't merge database");
+			spdlog::error(I18N::DATA_PROVIDER_COULD_NOT_MERGE);
 	}
 	std::scoped_lock lock(mDb);
 	db = newDb;

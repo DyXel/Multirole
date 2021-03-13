@@ -6,6 +6,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include "../I18N.hpp"
+
 namespace Ignis::Multirole
 {
 
@@ -38,7 +40,7 @@ std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) con
 void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileList)
 {
 	int total = 0;
-	spdlog::info("ScriptProvider: Loading {:d} files...", fileList.size());
+	spdlog::info(I18N::SCRIPT_PROVIDER_LOADING_FILES, fileList.size());
 	std::string fullPath(path);
 	std::scoped_lock lock(mScripts);
 	for(const auto& fn : fileList)
@@ -51,7 +53,7 @@ void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVecto
 		std::ifstream file(fullPath, std::ifstream::binary);
 		if(!file.is_open())
 		{
-			spdlog::error("ScriptProvider: Couldnt open file {:s}", fullPath);
+			spdlog::error(I18N::SCRIPT_PROVIDER_COULD_NOT_OPEN, fullPath);
 			continue;
 		}
 		// Lambda to remove all subdirectories of a given filename
@@ -69,7 +71,7 @@ void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVecto
 		scripts.insert_or_assign(FilenameFromPath(fn), buffer.str());
 		total++;
 	}
-	spdlog::info("ScriptProvider: Loaded {:d} files", total);
+	spdlog::info(I18N::SCRIPT_PROVIDER_TOTAL_FILES_LOADED, total);
 }
 
 } // namespace Ignis::Multirole

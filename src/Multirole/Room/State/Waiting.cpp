@@ -2,13 +2,11 @@
 
 #include <fmt/format.h>
 
+#include "../../I18N.hpp"
 #include "../../YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole::Room
 {
-
-constexpr const char* CLIENT_KICKED_MSG =
-"{} has been kicked.";
 
 StateOpt Context::operator()(State::Waiting&, const Event::Close&)
 {
@@ -148,7 +146,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 		duelists.erase(p);
 	}
 	SendToAll(MakePlayerChange(*kicked, PCHANGE_TYPE_LEAVE));
-	const auto kickedStr = fmt::format(CLIENT_KICKED_MSG, kicked->Name());
+	const auto kickedStr = fmt::format(I18N::CLIENT_ROOM_KICKED, kicked->Name());
 	SendToAll(MakeChat(CHAT_MSG_TYPE_INFO, kickedStr));
 	return std::nullopt;
 }

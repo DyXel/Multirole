@@ -9,6 +9,8 @@
 #include <boost/json/value.hpp>
 #include <spdlog/spdlog.h>
 
+#include "I18N.hpp"
+
 namespace Ignis::Multirole
 {
 
@@ -25,7 +27,7 @@ inline Service::CoreProvider::CoreType GetCoreType(std::string_view str)
 	if(str == "hornet")
 		ret = Service::CoreProvider::CoreType::HORNET;
 	else if(str != "shared")
-		throw std::runtime_error("Incorrect type of core.");
+		throw std::runtime_error(I18N::MULTIROLE_INCORRECT_CORE_TYPE);
 	return ret;
 }
 
@@ -65,7 +67,7 @@ Instance::Instance(const boost::json::value& cfg) :
 	for(const auto& opts : cfg.at("repos").as_array())
 	{
 		auto name = opts.at("name").as_string().data();
-		spdlog::info("Adding repository '{:s}'...", name);
+		spdlog::info(I18N::MULTIROLE_ADDING_REPO, name);
 		repos.emplace(
 			std::piecewise_construct,
 			std::forward_as_tuple(name),
@@ -82,15 +84,15 @@ Instance::Instance(const boost::json::value& cfg) :
 	RegRepos(banlistProvider, cfg.at("banlistProvider"));
 	RegRepos(coreProvider, cfg.at("coreProvider"));
 	// Register signal
-	spdlog::info("Setting up signal handling...");
+	spdlog::info(I18N::MULTIROLE_SETUP_SIGNAL);
 	signalSet.add(SIGTERM);
 	signalSet.async_wait([this](std::error_code /*unused*/, int /*unused*/)
 	{
-		spdlog::info("SIGTERM received.");
+		spdlog::info(I18N::MULTIROLE_SIGNAL_RECEIVED);
 		Stop();
 	});
-	spdlog::info("Hosting will use {:d} threads", hostingConcurrency);
-	spdlog::info("Initialization finished successfully!");
+	spdlog::info(I18N::MULTIROLE_HOSTING_THREADS_NUM, hostingConcurrency);
+	spdlog::info(I18N::MULTIROLE_INIT_SUCCESS);
 }
 
 int Instance::Run()
@@ -106,14 +108,9 @@ int Instance::Run()
 
 // private
 
-constexpr const char* UNFINISHED_DUELS_STRING =
-"All done, server will gracefully finish execution"
-" after all duels finish. If you wish to forcefully end"
-" you can terminate the process safely now (SIGTERM/SIGKILL)";
-
 void Instance::Stop()
 {
-	spdlog::info("Closing all acceptors and finishing IO operations...");
+	spdlog::info(I18N::MULTIROLE_CLEANING_UP);
 	whIoCtx.stop(); // Finishes execution of thread created in Instance::Run
 	lIoCtxGuard.reset(); // Allows hosting threads to finish execution
 	repos.clear(); // Closes repositories (so other process can acquire locks)
@@ -122,10 +119,7 @@ void Instance::Stop()
 	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
 	lobby.CloseNonStartedRooms();
 	if(startedRoomsCount > 0U)
-	{
-		spdlog::info(UNFINISHED_DUELS_STRING);
-		spdlog::info("Remaining rooms: {:d}", startedRoomsCount);
-	}
+		spdlog::info(I18N::MULTIROLE_UNFINISHED_DUELS, startedRoomsCount);
 }
 
 } // namespace Ignis::Multirole

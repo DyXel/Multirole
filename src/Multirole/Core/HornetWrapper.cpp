@@ -5,6 +5,7 @@
 #include "IDataSupplier.hpp"
 #include "IScriptSupplier.hpp"
 #include "ILogger.hpp"
+#include "../I18N.hpp"
 #include "../../HornetCommon.hpp"
 #define PROCESS_IMPLEMENTATION
 #include "../../Process.hpp"
@@ -55,7 +56,7 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 	if(!p.second)
 	{
 		DestroySharedSegment();
-		throw std::runtime_error("Unable to launch child");
+		throw std::runtime_error(I18N::HWRAPPER_UNABLE_TO_LAUNCH);
 	}
 	proc = p.first;
 	try
@@ -68,7 +69,7 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 		// under our control.
 		Process::CleanUp(proc);
 		DestroySharedSegment();
-		throw std::runtime_error("Heartbeat failed");
+		throw std::runtime_error(I18N::HWRAPPER_HEARTBEAT_FAILURE);
 	}
 }
 
@@ -124,7 +125,7 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 	NotifyAndWait(Hornet::Action::OCG_CREATE_DUEL);
 	const auto* rptr = hss->bytes.data();
 	if(Read<int>(rptr) != OCG_DUEL_CREATION_SUCCESS)
-		throw Core::Exception("OCG_CreateDuel failed!");
+		throw Core::Exception(I18N::HWRAPPER_EXCEPT_CREATE_DUEL);
 	return Read<OCG_Duel>(rptr);
 }
 
@@ -282,7 +283,7 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 		if(loopCount++ > MULTIROLE_HORNET_MAX_LOOP_COUNT)
 		{
 			hanged = true;
-			throw Core::Exception("Max loop count reached");
+			throw Core::Exception(I18N::HWRAPPER_EXCEPT_MAX_LOOP_COUNT);
 		}
 		// Atomically fetch next action, if any.
 		{
@@ -293,11 +294,11 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 			while(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != act;}))
 			{
 				if(!Process::IsRunning(proc))
-					throw Core::Exception("Process is not running");
+					throw Core::Exception(I18N::HWRAPPER_EXCEPT_PROC_CRASHED);
 				if(waitCount++ <= MULTIROLE_HORNET_MAX_WAIT_COUNT)
 					continue;
 				hanged = true;
-				throw Core::Exception("Process is unresponsive");
+				throw Core::Exception(I18N::HWRAPPER_EXCEPT_PROC_UNRESPONSIVE);
 			}
 			recvAct = hss->act;
 		}

@@ -4,6 +4,7 @@
 #include <boost/json/value.hpp>
 #include <spdlog/spdlog.h>
 
+#include "I18N.hpp"
 #include "libgit2.hpp"
 
 namespace Ignis::Multirole
@@ -41,16 +42,16 @@ GitRepo::GitRepo(boost::asio::io_context& ioCtx, const boost::json::value& opts)
 			cred->at("password").as_string().data());
 	}
 	if(!boost::filesystem::is_directory(path))
-		throw std::runtime_error("Repository path is not a directory.");
+		throw std::runtime_error(I18N::GIT_REPO_PATH_IS_NOT_DIR);
 	if(!CheckIfRepoExists())
 	{
-		spdlog::info("Repository doesnt exist, Cloning...");
+		spdlog::info(I18N::GIT_REPO_DOES_NOT_EXIST);
 		Clone();
 		return;
 	}
-	spdlog::info("Repository exist! Opening...");
+	spdlog::info(I18N::GIT_REPO_EXISTS);
 	Git::Check(git_repository_open(&repo, path.data()));
-	spdlog::info("Checking for updates...");
+	spdlog::info(I18N::GIT_REPO_CHECKING_UPDATES);
 	try
 	{
 		Fetch();
@@ -61,7 +62,7 @@ GitRepo::GitRepo(boost::asio::io_context& ioCtx, const boost::json::value& opts)
 		git_repository_free(repo);
 		throw;
 	}
-	spdlog::info("Updating completed!");
+	spdlog::info(I18N::GIT_REPO_UPDATE_COMPLETED);
 }
 
 GitRepo::~GitRepo()
@@ -80,10 +81,10 @@ void GitRepo::AddObserver(IGitRepoObserver& obs)
 
 void GitRepo::Callback(std::string_view payload)
 {
-	spdlog::info("Webhook triggered for repository on '{}'", path);
+	spdlog::info(I18N::GIT_REPO_WEBHOOK_TRIGGERED, path);
 	if(payload.find(token) == std::string_view::npos)
 	{
-		spdlog::error("Trigger doesn't have the token");
+		spdlog::error(I18N::GIT_REPO_WEBHOOK_NO_TOKEN);
 		return;
 	}
 	try
@@ -91,14 +92,14 @@ void GitRepo::Callback(std::string_view payload)
 		Fetch();
 		const GitDiff diff = GetFilesDiff();
 		ResetToFetchHead();
-		spdlog::info("Finished updating");
+		spdlog::info(I18N::GIT_REPO_FINISHED_UPDATING);
 		if(!diff.removed.empty() || !diff.added.empty())
 			for(auto& obs : observers)
 				obs->OnDiff(path, diff);
 	}
 	catch(const std::exception& e)
 	{
-		spdlog::error("Exception ocurred while updating repo: {}", e.what());
+		spdlog::error(I18N::GIT_REPO_UPDATE_EXCEPT, e.what());
 	}
 }
 
@@ -121,7 +122,7 @@ void GitRepo::Clone()
 		cloneOpts.fetch_opts.callbacks.payload = credPtr.get();
 	}
 	Git::Check(git_clone(&repo, remote.c_str(), path.c_str(), &cloneOpts));
-	spdlog::info("Cloning completed!");
+	spdlog::info(I18N::GIT_REPO_CLONING_COMPLETED);
 }
 
 void GitRepo::Fetch()

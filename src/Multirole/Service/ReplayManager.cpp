@@ -5,6 +5,7 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <spdlog/spdlog.h>
 
+#include "../I18N.hpp"
 #include "../YGOPro/Replay.hpp"
 
 namespace Ignis::Multirole
@@ -22,20 +23,20 @@ Service::ReplayManager::ReplayManager(bool save, std::string_view dirStr) :
 {
 	if(!save)
 	{
-		spdlog::info("ReplayManager: Not saving replays, replays ID will always be 0");
+		spdlog::info(I18N::REPLAY_MANAGER_NOT_SAVING_REPLAYS);
 		return;
 	}
 	using namespace boost::filesystem;
 	if(!exists(dir) && !create_directory(dir))
-		throw std::runtime_error("ReplayManager: Could not create replay directory");
+		throw std::runtime_error(I18N::REPLAY_MANAGER_COULD_NOT_CREATE_DIR);
 	if(!is_directory(dir))
-		throw std::runtime_error("ReplayManager: Replay directory path points to a file");
+		throw std::runtime_error(I18N::REPLAY_MANAGER_PATH_IS_FILE_NOT_DIR);
 	uint64_t id = 1U;
 	if(!exists(lastId))
 	{
 		std::fstream f(lastId, IOS_BINARY_OUT);
 		if(!f.is_open())
-			throw std::runtime_error("ReplayManager: Unable to write initial id!");
+			throw std::runtime_error(I18N::REPLAY_MANAGER_ERROR_WRITING_INITIAL_ID);
 		f.write(reinterpret_cast<char*>(&id), sizeof(id));
 	}
 	lLastId = boost::interprocess::file_lock(lastId.string().data());
@@ -49,10 +50,10 @@ Service::ReplayManager::ReplayManager(bool save, std::string_view dirStr) :
 		{
 			f.seekg(0, std::ios_base::beg);
 			f.read(reinterpret_cast<char*>(&id), sizeof(id));
-			spdlog::info("ReplayManager: Current ID is {}", id);
+			spdlog::info(I18N::REPLAY_MANAGER_CURRENT_ID, id);
 			return;
 		}
-		spdlog::warn("ReplayManager: lastId size is not {}", sizeof(id));
+		spdlog::warn(I18N::REPLAY_MANAGER_LASTID_SIZE_CORRUPTED, fsize, sizeof(id));
 	}
 }
 
@@ -65,12 +66,8 @@ void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) con
 	if(std::fstream f(fn, IOS_BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 	else
-		spdlog::error("ReplayManager: Unable to save replay {}", fn.string());
+		spdlog::error(I18N::REPLAY_MANAGER_UNABLE_TO_SAVE, fn.string());
 }
-
-constexpr const char* CORRUPTED_LASTID_FILE =
-"ReplayManager: lastId file byte size corrupted:"
-" It's {}. Should be {}";
 
 uint64_t Service::ReplayManager::NewId()
 {
@@ -87,7 +84,7 @@ uint64_t Service::ReplayManager::NewId()
 		f.clear();
 		if(fsize != sizeof(id))
 		{
-			spdlog::error(CORRUPTED_LASTID_FILE, fsize, sizeof(id));
+			spdlog::error(I18N::REPLAY_MANAGER_LASTID_SIZE_CORRUPTED, fsize, sizeof(id));
 			return 0U;
 		}
 		f.seekg(0, std::ios_base::beg);
@@ -95,7 +92,7 @@ uint64_t Service::ReplayManager::NewId()
 	}
 	else
 	{
-		spdlog::error("ReplayManager: lastId cannot be opened for reading");
+		spdlog::error(I18N::REPLAY_MANAGER_CANNOT_OPEN_LASTID);
 		return 0U;
 	}
 	prevId = id++;
@@ -104,7 +101,7 @@ uint64_t Service::ReplayManager::NewId()
 		f.write(reinterpret_cast<char*>(&id), sizeof(id));
 		return prevId;
 	}
-	spdlog::error("ReplayManager: Unable to write next replay ID to file");
+	spdlog::error(I18N::REPLAY_MANAGER_CANNOT_WRITE_ID);
 	return 0U;
 }
 

@@ -4,6 +4,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include "../I18N.hpp"
 #define YGOPRO_BANLIST_PARSER_IMPLEMENTATION
 #include "../YGOPro/BanlistParser.hpp"
 
@@ -44,7 +45,7 @@ void Service::BanlistProvider::LoadBanlists(std::string_view path, const PathVec
 			continue;
 		fullPath.resize(path.size());
 		fullPath += fn;
-		spdlog::info("BanlistProvider: Loading up {:s}...", fullPath);
+		spdlog::info(I18N::BANLIST_PROVIDER_LOADING_ONE, fullPath);
 		try
 		{
 			std::ifstream f(fullPath);
@@ -52,7 +53,7 @@ void Service::BanlistProvider::LoadBanlists(std::string_view path, const PathVec
 		}
 		catch(const std::exception& e)
 		{
-			spdlog::error("BanlistProvider: Couldn't load banlist: {:s}", e.what());
+			spdlog::error(I18N::BANLIST_PROVIDER_COULD_NOT_LOAD_ONE, e.what());
 		}
 	}
 	std::scoped_lock lock(mBanlists);
