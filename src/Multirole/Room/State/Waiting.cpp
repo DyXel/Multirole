@@ -105,6 +105,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
 	spectators.insert(&e.client);
 	SendToAll(MakePlayerChange(e.client, PCHANGE_TYPE_SPECTATE));
 	e.client.SetPosition(Client::POSITION_SPECTATOR);
+	e.client.SetReady(false);
 	e.client.Send(MakeTypeChange(e.client, s.host == &e.client));
 	return std::nullopt;
 }
