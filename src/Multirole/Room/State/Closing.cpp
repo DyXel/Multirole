@@ -7,7 +7,10 @@ StateOpt Context::operator()(State::Closing& /*unused*/)
 {
 	for(const auto& kv : duelists)
 		kv.second->Disconnect();
-	duelists.clear();
+	{
+		std::scoped_lock lock(mDuelists);
+		duelists.clear();
+	}
 	for(const auto& c : spectators)
 		c->Disconnect();
 	spectators.clear();
