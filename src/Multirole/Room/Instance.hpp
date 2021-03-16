@@ -64,8 +64,6 @@ public:
 	// Adds an IP to the kicked list, checked with CheckKicked.
 	void AddKicked(const boost::asio::ip::address& addr);
 
-	void Add(const std::shared_ptr<Client>& client);
-	void Remove(const std::shared_ptr<Client>& client);
 	boost::asio::io_context::strand& Strand();
 	void Dispatch(const EventVariant& e);
 private:
@@ -76,9 +74,6 @@ private:
 	const bool isPrivate;
 	Context ctx;
 	StateVariant state;
-
-	std::set<std::shared_ptr<Client>> clients;
-	std::mutex mClients;
 
 	std::set<boost::asio::ip::address> kicked;
 	mutable std::mutex mKicked;

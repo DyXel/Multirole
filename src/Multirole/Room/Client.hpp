@@ -23,7 +23,6 @@ public:
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
 	Client(std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string name);
-	void RegisterToOwner();
 	void Start();
 
 	// Getters

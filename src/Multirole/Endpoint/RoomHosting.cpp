@@ -267,12 +267,10 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		// filled by the lobby.
 		auto room = roomHosting.GetLobby().MakeRoom(info);
 		// Add the client to the newly created room.
-		auto client = std::make_shared<Room::Client>(
+		std::make_shared<Room::Client>(
 			std::move(room),
 			std::move(socket),
-			std::move(name));
-		client->RegisterToOwner();
-		client->Start();
+			std::move(name))->Start();
 		return Status::STATUS_MOVED;
 	}
 	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
@@ -301,12 +299,10 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
 			return Status::STATUS_ERROR;
 		}
-		auto client = std::make_shared<Room::Client>(
+		std::make_shared<Room::Client>(
 			std::move(room),
 			std::move(socket),
-			std::move(name));
-		client->RegisterToOwner();
-		client->Start();
+			std::move(name))->Start();
 		return Status::STATUS_MOVED;
 	}
 	default:

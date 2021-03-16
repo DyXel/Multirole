@@ -25,11 +25,6 @@ Client::Client(
 	ready(false)
 {}
 
-void Client::RegisterToOwner()
-{
-	room->Add(shared_from_this());
-}
-
 void Client::Start()
 {
 	auto self(shared_from_this());
@@ -129,7 +124,6 @@ void Client::DoReadHeader()
 			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
 		}
-		room->Remove(self);
 	}));
 }
 
@@ -152,7 +146,6 @@ void Client::DoReadBody()
 			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
 		}
-		room->Remove(self);
 	}));
 }
 

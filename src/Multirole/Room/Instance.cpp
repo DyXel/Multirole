@@ -66,18 +66,6 @@ void Instance::AddKicked(const boost::asio::ip::address& addr)
 	kicked.insert(addr);
 }
 
-void Instance::Add(const std::shared_ptr<Client>& client)
-{
-	std::scoped_lock lock(mClients);
-	clients.insert(client);
-}
-
-void Instance::Remove(const std::shared_ptr<Client>& client)
-{
-	std::scoped_lock lock(mClients);
-	clients.erase(client);
-}
-
 boost::asio::io_context::strand& Instance::Strand()
 {
 	return strand;
