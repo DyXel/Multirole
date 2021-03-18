@@ -77,13 +77,13 @@ struct Waiting
 } // namespace State
 
 using StateVariant = std::variant<
-	State::ChoosingTurn,
-	State::Closing,
-	State::Dueling,
-	State::Rematching,
-	State::RockPaperScissor,
-	State::Sidedecking,
-	State::Waiting>;
+	State::ChoosingTurn,     // 0
+	State::Closing,          // 1
+	State::Dueling,          // 2
+	State::Rematching,       // 3
+	State::RockPaperScissor, // 4
+	State::Sidedecking,      // 5
+	State::Waiting>;         // 6
 
 using StateOpt = std::optional<StateVariant>;
 

@@ -1,5 +1,6 @@
 #ifndef _WIN32
 #include <csignal>
+#include <cstdlib>
 #endif // _WIN32
 
 #include <boost/interprocess/shared_memory_object.hpp>
@@ -276,8 +277,14 @@ int main(int argc, char* argv[])
 	if(int r = LoadSO(argv[1]); r != 0)
 		return 2;
 #ifndef _WIN32
-	if(signal(SIGINT, [](int /*unused*/){}) == SIG_ERR)
+	if(fclose(stdin) != 0)
 		return 3;
+	if(fclose(stdout) != 0)
+		return 4;
+	if(fclose(stderr) != 0)
+		return 5;
+	if(signal(SIGINT, [](int /*unused*/){}) == SIG_ERR)
+		return 6;
 #endif // _WIN32
 	try
 	{
@@ -289,7 +296,7 @@ int main(int argc, char* argv[])
 	catch(const ipc::interprocess_exception& e)
 	{
 		DLOpen::UnloadObject(handle);
-		return 4;
+		return 7;
 	}
 	DLOpen::UnloadObject(handle);
 	return 0;
