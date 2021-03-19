@@ -65,7 +65,9 @@ const YGOPro::Deck* Client::CurrentDeck() const
 
 void Client::MarkKicked() const
 {
-	room->AddKicked(socket.remote_endpoint().address());
+	boost::system::error_code ec;
+	if(const auto endpoint = socket.remote_endpoint(ec); !ec)
+		room->AddKicked(endpoint.address());
 }
 
 void Client::SetPosition(const PosType& p)

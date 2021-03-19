@@ -293,7 +293,13 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_WRONG_PASS);
 			return Status::STATUS_ERROR;
 		}
-		if(room->CheckKicked(socket.remote_endpoint().address()))
+		boost::system::error_code ec;
+		if(const auto endpoint = socket.remote_endpoint(ec); ec)
+		{
+			// Connection finished before we could check it.
+			return Status::STATUS_ERROR;
+		}
+		else if(room->CheckKicked(endpoint.address()))
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_KICKED_BEFORE);
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
