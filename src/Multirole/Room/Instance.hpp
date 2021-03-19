@@ -10,10 +10,7 @@
 #include "Context.hpp"
 #include "TimerAggregator.hpp"
 
-namespace Ignis::Multirole
-{
-
-namespace Room
+namespace Ignis::Multirole::Room
 {
 
 class Instance final : public std::enable_shared_from_this<Instance>
@@ -79,8 +76,6 @@ private:
 	mutable std::mutex mKicked;
 };
 
-} // namespace Room
-
-} // namespace Ignis::Multirole
+} // namespace Ignis::Multirole::Room
 
 #endif // ROOM_INSTANCE_HPP

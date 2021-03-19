@@ -23,7 +23,8 @@ Context::Context(CreateInfo&& info)
 	cdb(svc.dataProvider.GetDatabase()),
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
-	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR))
+	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR)),
+	scriptLogger(svc.logHandler, hostInfo)
 {
 	rng.seed(info.seed);
 }

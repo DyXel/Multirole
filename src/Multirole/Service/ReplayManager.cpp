@@ -3,8 +3,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
-#include <spdlog/spdlog.h>
 
+#include "LogHandler.hpp"
+#define LOG_INFO(...) lh.Log(ServiceType::REPLAY_MANAGER, Level::INFO, __VA_ARGS__)
+#define LOG_WARN(...) lh.Log(ServiceType::REPLAY_MANAGER, Level::WARN, __VA_ARGS__)
+#define LOG_ERROR(...) lh.Log(ServiceType::REPLAY_MANAGER, Level::ERROR, __VA_ARGS__)
 #include "../I18N.hpp"
 #include "../YGOPro/Replay.hpp"
 
@@ -15,7 +18,8 @@ constexpr auto IOS_BINARY = std::ios_base::binary;
 constexpr auto IOS_BINARY_IN = IOS_BINARY | std::ios_base::in;
 constexpr auto IOS_BINARY_OUT = IOS_BINARY | std::ios_base::out;
 
-Service::ReplayManager::ReplayManager(bool save, std::string_view dirStr) :
+Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, std::string_view dirStr) :
+	lh(lh),
 	save(save),
 	dir(dirStr.data()),
 	lastId(dir / "lastId"),
@@ -23,7 +27,7 @@ Service::ReplayManager::ReplayManager(bool save, std::string_view dirStr) :
 {
 	if(!save)
 	{
-		spdlog::info(I18N::REPLAY_MANAGER_NOT_SAVING_REPLAYS);
+		LOG_INFO(I18N::REPLAY_MANAGER_NOT_SAVING_REPLAYS);
 		return;
 	}
 	using namespace boost::filesystem;
@@ -50,10 +54,10 @@ Service::ReplayManager::ReplayManager(bool save, std::string_view dirStr) :
 		{
 			f.seekg(0, std::ios_base::beg);
 			f.read(reinterpret_cast<char*>(&id), sizeof(id));
-			spdlog::info(I18N::REPLAY_MANAGER_CURRENT_ID, id);
+			LOG_INFO(I18N::REPLAY_MANAGER_CURRENT_ID, id);
 			return;
 		}
-		spdlog::warn(I18N::REPLAY_MANAGER_LASTID_SIZE_CORRUPTED, fsize, sizeof(id));
+		LOG_WARN(I18N::REPLAY_MANAGER_LASTID_SIZE_CORRUPTED, fsize, sizeof(id));
 	}
 }
 
@@ -66,7 +70,7 @@ void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) con
 	if(std::fstream f(fn, IOS_BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 	else
-		spdlog::error(I18N::REPLAY_MANAGER_UNABLE_TO_SAVE, fn.string());
+		LOG_ERROR(I18N::REPLAY_MANAGER_UNABLE_TO_SAVE, fn.string());
 }
 
 uint64_t Service::ReplayManager::NewId()
@@ -84,7 +88,7 @@ uint64_t Service::ReplayManager::NewId()
 		f.clear();
 		if(fsize != sizeof(id))
 		{
-			spdlog::error(I18N::REPLAY_MANAGER_LASTID_SIZE_CORRUPTED, fsize, sizeof(id));
+			LOG_ERROR(I18N::REPLAY_MANAGER_LASTID_SIZE_CORRUPTED, fsize, sizeof(id));
 			return 0U;
 		}
 		f.seekg(0, std::ios_base::beg);
@@ -92,7 +96,7 @@ uint64_t Service::ReplayManager::NewId()
 	}
 	else
 	{
-		spdlog::error(I18N::REPLAY_MANAGER_CANNOT_OPEN_LASTID);
+		LOG_ERROR(I18N::REPLAY_MANAGER_CANNOT_OPEN_LASTID);
 		return 0U;
 	}
 	prevId = id++;
@@ -101,7 +105,7 @@ uint64_t Service::ReplayManager::NewId()
 		f.write(reinterpret_cast<char*>(&id), sizeof(id));
 		return prevId;
 	}
-	spdlog::error(I18N::REPLAY_MANAGER_CANNOT_WRITE_ID);
+	LOG_ERROR(I18N::REPLAY_MANAGER_CANNOT_WRITE_ID);
 	return 0U;
 }
 

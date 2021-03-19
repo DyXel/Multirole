@@ -6,7 +6,6 @@ dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 fmt_dep     = dependency('fmt')
 libgit2_dep = dependency('libgit2')
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
-spdlog_dep  = dependency('spdlog')
 sqlite3_dep = dependency('sqlite3')
 thread_dep  = dependency('threads')
 
@@ -26,6 +25,7 @@ multirole_src_files = files([
 	'src/Multirole/Room/Client.cpp',
 	'src/Multirole/Room/Context.cpp',
 	'src/Multirole/Room/Instance.cpp',
+	'src/Multirole/Room/ScriptLogger.cpp',
 	'src/Multirole/Room/TimerAggregator.cpp',
 	'src/Multirole/Room/State/ChoosingTurn.cpp',
 	'src/Multirole/Room/State/Closing.cpp',
@@ -37,8 +37,14 @@ multirole_src_files = files([
 	'src/Multirole/Service/BanlistProvider.cpp',
 	'src/Multirole/Service/CoreProvider.cpp',
 	'src/Multirole/Service/DataProvider.cpp',
+	'src/Multirole/Service/LogHandler.cpp',
 	'src/Multirole/Service/ReplayManager.cpp',
 	'src/Multirole/Service/ScriptProvider.cpp',
+	'src/Multirole/Service/LogHandler/FileSink.cpp',
+	'src/Multirole/Service/LogHandler/StderrSink.cpp',
+	'src/Multirole/Service/LogHandler/StdoutSink.cpp',
+	'src/Multirole/Service/LogHandler/StreamFormat.cpp',
+	'src/Multirole/Service/LogHandler/Timestamp.cpp',
 	'src/Multirole/YGOPro/Banlist.cpp',
 	'src/Multirole/YGOPro/CardDatabase.cpp',
 	'src/Multirole/YGOPro/CoreUtils.cpp',
@@ -63,7 +69,6 @@ executable('multirole', multirole_src_files,
 		'-DNOMINMAX'
 	],
 	cpp_args: [
-		'-DSPDLOG_FMT_EXTERNAL',
 		'-DBOOST_DATE_TIME_NO_LIB',
 		'-DBOOST_JSON_STANDALONE'
 	],
@@ -74,7 +79,6 @@ executable('multirole', multirole_src_files,
 		fmt_dep,
 		libgit2_dep,
 		rt_dep,
-		spdlog_dep,
 		sqlite3_dep,
 		thread_dep
 	])

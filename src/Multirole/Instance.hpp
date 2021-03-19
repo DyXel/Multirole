@@ -14,6 +14,7 @@
 #include "Service/BanlistProvider.hpp"
 #include "Service/CoreProvider.hpp"
 #include "Service/DataProvider.hpp"
+#include "Service/LogHandler.hpp"
 #include "Service/ReplayManager.hpp"
 #include "Service/ScriptProvider.hpp"
 
@@ -26,14 +27,14 @@ public:
 	Instance(const boost::json::value& cfg);
 	int Run();
 private:
-	boost::asio::io_context whIoCtx; // Webhooks Io Context
+	boost::asio::io_context auxIoCtx; // Auxiliary Io Context
 	boost::asio::io_context lIoCtx; // Lobby Io Context
 	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> lIoCtxGuard;
 	unsigned int hostingConcurrency;
+	Service::LogHandler logHandler;
 	Service::BanlistProvider banlistProvider;
 	Service::CoreProvider coreProvider;
 	Service::DataProvider dataProvider;
-// 	Service::LogHandler logHandler;
 	Service::ReplayManager replayManager;
 	Service::ScriptProvider scriptProvider;
 	Service service;

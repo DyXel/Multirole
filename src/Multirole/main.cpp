@@ -9,7 +9,6 @@
 
 #include <boost/json/src.hpp>
 #include <fmt/format.h>
-#include <spdlog/spdlog.h>
 #include <git2.h>
 
 #include "Instance.hpp"
@@ -41,7 +40,6 @@ int main()
 {
 	git_libgit2_init();
 	int exitFlag = CreateAndRunServerInstance();
-	spdlog::shutdown();
 	git_libgit2_shutdown();
 	return exitFlag;
 }

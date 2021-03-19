@@ -22,12 +22,13 @@ namespace Ignis::Multirole
 class Service::ReplayManager
 {
 public:
-	ReplayManager(bool save, std::string_view dirStr);
+	ReplayManager(Service::LogHandler& lh, bool save, std::string_view dirStr);
 
 	void Save(uint64_t id, const YGOPro::Replay& replay) const;
 
 	uint64_t NewId();
 private:
+	Service::LogHandler& lh;
 	const bool save;
 	const boost::filesystem::path dir;
 	const boost::filesystem::path lastId;

@@ -15,7 +15,7 @@ namespace Ignis::Multirole
 class Service::ScriptProvider final : public IGitRepoObserver, public Core::IScriptSupplier
 {
 public:
-	ScriptProvider(std::string_view fnRegexStr);
+	ScriptProvider(Service::LogHandler& lh, std::string_view fnRegexStr);
 
 	// IGitRepoObserver overrides
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
@@ -24,6 +24,7 @@ public:
 	// Core::IScriptSupplier overrides
 	std::string ScriptFromFilePath(std::string_view fp) const override;
 private:
+	Service::LogHandler& lh;
 	const std::regex fnRegex;
 	std::unordered_map<std::string, std::string> scripts;
 	mutable std::shared_mutex mScripts;

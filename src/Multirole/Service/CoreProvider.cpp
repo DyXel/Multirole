@@ -3,9 +3,10 @@
 #include <fstream>
 
 #include <boost/filesystem.hpp>
-#include <fmt/format.h>
-#include <spdlog/spdlog.h>
 
+#include "LogHandler.hpp"
+#define LOG_INFO(...) lh.Log(ServiceType::CORE_PROVIDER, Level::INFO, __VA_ARGS__)
+#define LOG_ERROR(...) lh.Log(ServiceType::CORE_PROVIDER, Level::ERROR, __VA_ARGS__)
 #include "../I18N.hpp"
 #include "../Core/DLWrapper.hpp"
 #include "../Core/HornetWrapper.hpp"
@@ -13,8 +14,9 @@
 namespace Ignis::Multirole
 {
 
-Service::CoreProvider::CoreProvider(std::string_view fnRegexStr, std::string_view tmpDirStr, CoreType type, bool loadPerCall)
+Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, std::string_view tmpDirStr, CoreType type, bool loadPerCall)
 	:
+	lh(lh),
 	fnRegex(fnRegexStr.data()),
 	tmpDir(tmpDirStr.data()),
 	type(type),
@@ -86,25 +88,25 @@ void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector&
 		return fullFn;
 	}();
 	coreLoc = tmpDir / fmt::format("{}-{}-{}", uniqueId, loadCount++, repoCore.filename().string());
-	spdlog::info(I18N::CORE_PROVIDER_COPYING_CORE_FILE, repoCore.string(), coreLoc.string());
+	LOG_INFO(I18N::CORE_PROVIDER_COPYING_CORE_FILE, repoCore.string(), coreLoc.string());
 	pLocs.emplace_back(coreLoc);
 	boost::filesystem::copy_file(repoCore, coreLoc);
 	if(!boost::filesystem::exists(coreLoc))
 	{
-		spdlog::error(I18N::CORE_PROVIDER_FAILED_TO_COPY_CORE_FILE);
+		LOG_ERROR(I18N::CORE_PROVIDER_FAILED_TO_COPY_CORE_FILE);
 		coreLoc = oldCoreLoc;
 	}
 	try
 	{
 		auto core = LoadCore();
 		const auto ver = core->Version();
-		spdlog::info(I18N::CORE_PROVIDER_VERSION_REPORTED, ver.first, ver.second);
+		LOG_INFO(I18N::CORE_PROVIDER_VERSION_REPORTED, ver.first, ver.second);
 	}
 	catch(Core::Exception& e)
 	{
 		if(shouldTest)
 			throw;
-		spdlog::error(I18N::CORE_PROVIDER_ERROR_WHILE_TESTING, coreLoc.string(), e.what());
+		LOG_ERROR(I18N::CORE_PROVIDER_ERROR_WHILE_TESTING, coreLoc.string(), e.what());
 		coreLoc = oldCoreLoc;
 		return;
 	}

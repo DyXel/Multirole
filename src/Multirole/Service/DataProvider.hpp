@@ -22,7 +22,7 @@ namespace Ignis::Multirole
 class Service::DataProvider final : public IGitRepoObserver
 {
 public:
-	DataProvider(std::string_view fnRegexStr);
+	DataProvider(Service::LogHandler& lh, std::string_view fnRegexStr);
 
 	std::shared_ptr<YGOPro::CardDatabase> GetDatabase() const;
 
@@ -30,6 +30,7 @@ public:
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
 	void OnDiff(std::string_view path, const GitDiff& diff) override;
 private:
+	Service::LogHandler& lh;
 	const std::regex fnRegex;
 	std::set<std::string> paths;
 	std::shared_ptr<YGOPro::CardDatabase> db;

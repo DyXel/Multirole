@@ -69,34 +69,37 @@ Str CLIENT_ROOM_CORE_EXCEPT =
 
 Str CLIENT_ROOM_KICKED = "{0} has been kicked.";
 
-Str BANLIST_PROVIDER_LOADING_ONE = "BanlistProvider: Loading up {0}...";
-Str BANLIST_PROVIDER_COULD_NOT_LOAD_ONE = "BanlistProvider: Could not load banlist: {0}";
+Str BANLIST_PROVIDER_LOADING_ONE = "Loading up {0}...";
+Str BANLIST_PROVIDER_COULD_NOT_LOAD_ONE = "Could not load banlist: {0}";
 
 Str CORE_PROVIDER_COULD_NOT_CREATE_TMP_DIR = "CoreProvider: Could not create temporary directory.";
 Str CORE_PROVIDER_PATH_IS_FILE_NOT_DIR = "CoreProvider: Temporary directory path points to a file.";
 Str CORE_PROVIDER_WRONG_CORE_TYPE = "CoreProvider: No other core type is implemented.";
 Str CORE_PROVIDER_CORE_NOT_FOUND_IN_REPO = "CoreProvider: Core not found in repository!";
-Str CORE_PROVIDER_COPYING_CORE_FILE = "CoreProvider: Copying core from '{0}' to '{1}'...";
-Str CORE_PROVIDER_FAILED_TO_COPY_CORE_FILE = "CoreProvider: Failed to copy core file! Re-testing old one.";
-Str CORE_PROVIDER_VERSION_REPORTED = "CoreProvider: Version reported by core: {0}.{1}";
-Str CORE_PROVIDER_ERROR_WHILE_TESTING = "CoreProvider: Error while testing core '{0}': {1}";
+Str CORE_PROVIDER_COPYING_CORE_FILE = "Copying core from '{0}' to '{1}'...";
+Str CORE_PROVIDER_FAILED_TO_COPY_CORE_FILE = "Failed to copy core file! Re-testing old one.";
+Str CORE_PROVIDER_VERSION_REPORTED = "Version reported by core: {0}.{1}";
+Str CORE_PROVIDER_ERROR_WHILE_TESTING = "Error while testing core '{0}': {1}";
 
-Str DATA_PROVIDER_LOADING_ONE = "DataProvider: Loading up {0}...";
-Str DATA_PROVIDER_COULD_NOT_MERGE = "DataProvider: Could not merge database.";
+Str DATA_PROVIDER_LOADING_ONE = "Loading up {0}...";
+Str DATA_PROVIDER_COULD_NOT_MERGE = "Could not merge database.";
 
-Str REPLAY_MANAGER_NOT_SAVING_REPLAYS = "ReplayManager: Not saving replays, replay IDs will always be 0";
+Str LOG_HANDLER_COULD_NOT_CREATE_DIR = "LogHandler: Could not create room logging directory.";
+Str LOG_HANDLER_PATH_IS_FILE_NOT_DIR = "LogHandler: Room logging directory path points to a file.";
+
+Str REPLAY_MANAGER_NOT_SAVING_REPLAYS = "Not saving replays, replay IDs will always be 0";
 Str REPLAY_MANAGER_COULD_NOT_CREATE_DIR = "ReplayManager: Could not create replay directory.";
 Str REPLAY_MANAGER_PATH_IS_FILE_NOT_DIR = "ReplayManager: Replay directory path points to a file.";
 Str REPLAY_MANAGER_ERROR_WRITING_INITIAL_ID = "ReplayManager: Unable to write initial ID!";
-Str REPLAY_MANAGER_CURRENT_ID = "ReplayManager: Current ID is {0}.";
+Str REPLAY_MANAGER_CURRENT_ID = "Current ID is {0}.";
 Str REPLAY_MANAGER_LASTID_SIZE_CORRUPTED =
-"ReplayManager: lastId file byte size corrupted: It's {0}. Should be {1}.";
-Str REPLAY_MANAGER_UNABLE_TO_SAVE = "ReplayManager: Unable to save replay {0}.";
-Str REPLAY_MANAGER_CANNOT_OPEN_LASTID = "ReplayManager: lastId cannot be opened for reading.";
-Str REPLAY_MANAGER_CANNOT_WRITE_ID = "ReplayManager: Unable to write next replay ID to file.";
+"lastId file byte size corrupted: It's {0}. Should be {1}.";
+Str REPLAY_MANAGER_UNABLE_TO_SAVE = "Unable to save replay {0}.";
+Str REPLAY_MANAGER_CANNOT_OPEN_LASTID = "lastId cannot be opened for reading.";
+Str REPLAY_MANAGER_CANNOT_WRITE_ID = "Unable to write next replay ID to file.";
 
-Str SCRIPT_PROVIDER_LOADING_FILES = "ScriptProvider: Loading {0} files...";
-Str SCRIPT_PROVIDER_COULD_NOT_OPEN = "ScriptProvider: Could not open file {0}.";
-Str SCRIPT_PROVIDER_TOTAL_FILES_LOADED = "ScriptProvider: Loaded {0} files.";
+Str SCRIPT_PROVIDER_LOADING_FILES = "Loading {0} files...";
+Str SCRIPT_PROVIDER_COULD_NOT_OPEN = "Could not open file {0}.";
+Str SCRIPT_PROVIDER_TOTAL_FILES_LOADED = "Loaded {0} files.";
 
 } // namespace Ignis::Multirole::I18N

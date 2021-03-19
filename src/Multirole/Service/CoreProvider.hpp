@@ -33,7 +33,7 @@ public:
 
 	using CorePtr = std::shared_ptr<Core::IWrapper>;
 
-	CoreProvider(std::string_view fnRegexStr, std::string_view tmpDirStr, CoreType type, bool loadPerCall);
+	CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, std::string_view tmpDirStr, CoreType type, bool loadPerCall);
 	~CoreProvider();
 
 	// Will return a core instance based on the options set.
@@ -43,6 +43,7 @@ public:
 	void OnAdd(std::string_view path, const PathVector& fileList) override;
 	void OnDiff(std::string_view path, const GitDiff& diff) override;
 private:
+	Service::LogHandler& lh;
 	const std::regex fnRegex;
 	const boost::filesystem::path tmpDir;
 	const CoreType type;

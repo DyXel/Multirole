@@ -4,8 +4,9 @@
 #include <fstream>
 #include <sstream>
 
-#include <spdlog/spdlog.h>
-
+#include "LogHandler.hpp"
+#define LOG_INFO(...) lh.Log(ServiceType::SCRIPT_PROVIDER, Level::INFO, __VA_ARGS__)
+#define LOG_ERROR(...) lh.Log(ServiceType::SCRIPT_PROVIDER, Level::ERROR, __VA_ARGS__)
 #include "../I18N.hpp"
 
 namespace Ignis::Multirole
@@ -13,7 +14,8 @@ namespace Ignis::Multirole
 
 // public
 
-Service::ScriptProvider::ScriptProvider(std::string_view fnRegexStr) :
+Service::ScriptProvider::ScriptProvider(Service::LogHandler& lh, std::string_view fnRegexStr) :
+	lh(lh),
 	fnRegex(fnRegexStr.data())
 {}
 
@@ -40,7 +42,7 @@ std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) con
 void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileList)
 {
 	int total = 0;
-	spdlog::info(I18N::SCRIPT_PROVIDER_LOADING_FILES, fileList.size());
+	LOG_INFO(I18N::SCRIPT_PROVIDER_LOADING_FILES, fileList.size());
 	std::string fullPath(path);
 	std::scoped_lock lock(mScripts);
 	for(const auto& fn : fileList)
@@ -53,7 +55,7 @@ void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVecto
 		std::ifstream file(fullPath, std::ifstream::binary);
 		if(!file.is_open())
 		{
-			spdlog::error(I18N::SCRIPT_PROVIDER_COULD_NOT_OPEN, fullPath);
+			LOG_ERROR(I18N::SCRIPT_PROVIDER_COULD_NOT_OPEN, fullPath);
 			continue;
 		}
 		// Lambda to remove all subdirectories of a given filename
@@ -71,7 +73,7 @@ void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVecto
 		scripts.insert_or_assign(FilenameFromPath(fn), buffer.str());
 		total++;
 	}
-	spdlog::info(I18N::SCRIPT_PROVIDER_TOTAL_FILES_LOADED, total);
+	LOG_INFO(I18N::SCRIPT_PROVIDER_TOTAL_FILES_LOADED, total);
 }
 
 } // namespace Ignis::Multirole

@@ -10,7 +10,7 @@ struct Service final
 	SERVICE(BanlistProvider, banlistProvider)
 	SERVICE(CoreProvider, coreProvider)
 	SERVICE(DataProvider, dataProvider)
-// 	SERVICE(LogHandler, logHandler)
+	SERVICE(LogHandler, logHandler)
 	SERVICE(ReplayManager, replayManager)
 	SERVICE(ScriptProvider, scriptProvider)
 #undef SERVICE

@@ -2,8 +2,9 @@
 
 #include <fstream>
 
-#include <spdlog/spdlog.h>
-
+#include "LogHandler.hpp"
+#define LOG_INFO(...) lh.Log(ServiceType::BANLIST_PROVIDER, Level::INFO, __VA_ARGS__)
+#define LOG_ERROR(...) lh.Log(ServiceType::BANLIST_PROVIDER, Level::ERROR, __VA_ARGS__)
 #include "../I18N.hpp"
 #define YGOPRO_BANLIST_PARSER_IMPLEMENTATION
 #include "../YGOPro/BanlistParser.hpp"
@@ -11,7 +12,8 @@
 namespace Ignis::Multirole
 {
 
-Service::BanlistProvider::BanlistProvider(std::string_view fnRegexStr) :
+Service::BanlistProvider::BanlistProvider(Service::LogHandler& lh, std::string_view fnRegexStr) :
+	lh(lh),
 	fnRegex(fnRegexStr.data())
 {}
 
@@ -45,7 +47,7 @@ void Service::BanlistProvider::LoadBanlists(std::string_view path, const PathVec
 			continue;
 		fullPath.resize(path.size());
 		fullPath += fn;
-		spdlog::info(I18N::BANLIST_PROVIDER_LOADING_ONE, fullPath);
+		LOG_INFO(I18N::BANLIST_PROVIDER_LOADING_ONE, fullPath);
 		try
 		{
 			std::ifstream f(fullPath);
@@ -53,7 +55,7 @@ void Service::BanlistProvider::LoadBanlists(std::string_view path, const PathVec
 		}
 		catch(const std::exception& e)
 		{
-			spdlog::error(I18N::BANLIST_PROVIDER_COULD_NOT_LOAD_ONE, e.what());
+			LOG_ERROR(I18N::BANLIST_PROVIDER_COULD_NOT_LOAD_ONE, e.what());
 		}
 	}
 	std::scoped_lock lock(mBanlists);

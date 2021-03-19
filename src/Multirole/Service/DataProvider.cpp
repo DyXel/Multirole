@@ -4,8 +4,10 @@
 #include <stdexcept> // std::runtime_error
 
 #include <sqlite3.h>
-#include <spdlog/spdlog.h>
 
+#include "LogHandler.hpp"
+#define LOG_INFO(...) lh.Log(ServiceType::DATA_PROVIDER, Level::INFO, __VA_ARGS__)
+#define LOG_ERROR(...) lh.Log(ServiceType::DATA_PROVIDER, Level::ERROR, __VA_ARGS__)
 #include "../I18N.hpp"
 #include "../YGOPro/CardDatabase.hpp"
 
@@ -14,7 +16,8 @@ namespace Ignis::Multirole
 
 // public
 
-Service::DataProvider::DataProvider(std::string_view fnRegexStr) :
+Service::DataProvider::DataProvider(Service::LogHandler& lh, std::string_view fnRegexStr) :
+	lh(lh),
 	fnRegex(fnRegexStr.data())
 {}
 
@@ -70,9 +73,9 @@ void Service::DataProvider::ReloadDatabases()
 	auto newDb = std::make_shared<YGOPro::CardDatabase>();
 	for(const auto& path : paths)
 	{
-		spdlog::info(I18N::DATA_PROVIDER_LOADING_ONE, path);
+		LOG_INFO(I18N::DATA_PROVIDER_LOADING_ONE, path);
 		if(!newDb->Merge(path))
-			spdlog::error(I18N::DATA_PROVIDER_COULD_NOT_MERGE);
+			LOG_ERROR(I18N::DATA_PROVIDER_COULD_NOT_MERGE);
 	}
 	std::scoped_lock lock(mDb);
 	db = newDb;

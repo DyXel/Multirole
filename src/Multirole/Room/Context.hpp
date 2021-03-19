@@ -5,8 +5,9 @@
 #include <shared_mutex>
 #include <random>
 
-#include "State.hpp"
 #include "Event.hpp"
+#include "ScriptLogger.hpp"
+#include "State.hpp"
 #include "../Service.hpp"
 #include "../STOCMsgFactory.hpp"
 
@@ -136,6 +137,7 @@ private:
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
 	const YGOPro::STOCMsg retryErrorMsg;
+	ScriptLogger scriptLogger;
 
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;

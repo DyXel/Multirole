@@ -6,28 +6,28 @@
 		{
 			"name": "scripts",
 			"remote": "https://github.com/ProjectIgnis/CardScripts",
-			"path": "./sync/scripts",
+			"path": "./sync/scripts/",
 			"webhookPort": 34343,
 			"webhookToken": "<change_this>"
 		},
 		{
 			"name": "databases",
 			"remote": "https://github.com/ProjectIgnis/BabelCDB",
-			"path": "./sync/databases",
+			"path": "./sync/databases/",
 			"webhookPort": 62672,
 			"webhookToken": "<change_this>"
 		},
 		{
 			"name": "banlists",
 			"remote": "https://github.com/ProjectIgnis/LFLists",
-			"path": "./sync/banlists",
+			"path": "./sync/banlists/",
 			"webhookPort": 49382,
 			"webhookToken": "<change_this>"
 		},
 		{
 			"name": "bin",
 			"remote": "https://github.com/ProjectIgnis/bin",
-			"path": "./sync/bin",
+			"path": "./sync/bin/",
 			"webhookPort": 43632,
 			"webhookToken": "<change_this>"
 		}
@@ -38,7 +38,7 @@
 	},
 	"coreProvider": {
 		"observedRepos" : ["bin"],
-		"tmpPath" : "./tmp",
+		"tmpPath" : "./tmp/",
 		"fileRegex": ".*libocgcore\\.so",
 		"coreType": "hornet",
 		"loadPerRoom": true
@@ -47,9 +47,71 @@
 		"observedRepos" : ["databases"],
 		"fileRegex": ".*\\.cdb"
 	},
+	"logHandler": {
+		"serviceSinks" : {
+			"multirole" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
+			"gitRepo" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
+			"banlistProvider" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
+			"coreProvider" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
+			"dataProvider" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
+			"replayManager" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
+			"scriptProvider" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
+			"other" : {
+				"type" : "stdout",
+				"properties" : {}
+			}
+		},
+		"ecSinks" : {
+			"core" : {
+				"type" : "stderr",
+				"properties" : {}
+			},
+			"official" : {
+				"type" : "stderr",
+				"properties" : {}
+			},
+			"speed" : {
+				"type" : "stderr",
+				"properties" : {}
+			},
+			"rush" : {
+				"type" : "stderr",
+				"properties" : {}
+			},
+			"other" : {
+				"type" : "stderr",
+				"properties" : {}
+			}
+		},
+		"roomLogging" : {
+			"enabled" : false,
+			"path" : "./log/"
+		}
+	},
 	"replayManager": {
 		"save": true,
-		"path": "./replays"
+		"path": "./replays/"
 	},
 	"scriptProvider": {
 		"observedRepos" : ["scripts"],
