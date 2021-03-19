@@ -41,7 +41,7 @@ GitRepo::GitRepo(boost::asio::io_context& ioCtx, const boost::json::value& opts)
 			cred->at("username").as_string().data(),
 			cred->at("password").as_string().data());
 	}
-	if(!boost::filesystem::is_directory(path))
+	if(boost::filesystem::exists(path) && !boost::filesystem::is_directory(path))
 		throw std::runtime_error(I18N::GIT_REPO_PATH_IS_NOT_DIR);
 	if(!CheckIfRepoExists())
 	{
