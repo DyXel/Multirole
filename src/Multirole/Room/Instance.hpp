@@ -56,7 +56,8 @@ public:
 	bool CheckKicked(const boost::asio::ip::address& addr) const;
 
 	// Tries to remove the room if its not started.
-	void TryClose();
+	// Returns true if room was signaled, false otherwise.
+	bool TryClose();
 
 	// Adds an IP to the kicked list, checked with CheckKicked.
 	void AddKicked(const boost::asio::ip::address& addr);

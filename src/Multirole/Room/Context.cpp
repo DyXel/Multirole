@@ -197,8 +197,8 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 			MakeDeckError(type, got, lim.min, lim.max));
 	};
 	// Check if the deck had any error while loading.
-	if(deck.Error() != 0U)
-		return MakeErrorPtr(CARD_UNKNOWN, deck.Error());
+	if(const auto error = deck.Error(); error != 0U)
+		return MakeErrorPtr(CARD_UNKNOWN, error);
 	// Check if the deck obeys the limits.
 	auto OutOfBound = [](const auto& lim, const CodeVector& vector) -> auto
 	{

@@ -50,14 +50,17 @@ bool Instance::CheckKicked(const boost::asio::ip::address& addr) const
 	return kicked.count(addr) > 0U;
 }
 
-void Instance::TryClose()
+bool Instance::TryClose()
 {
+	if(Started())
+		return false;
 	auto self(shared_from_this());
 	boost::asio::post(strand,
 	[this, self]()
 	{
 		Dispatch(Event::Close{});
 	});
+	return true;
 }
 
 void Instance::AddKicked(const boost::asio::ip::address& addr)

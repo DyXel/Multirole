@@ -119,10 +119,8 @@ void Instance::Stop()
 	repos.clear(); // Closes repositories (so other process can acquire locks)
 	lobbyListing.Stop();
 	roomHosting.Stop();
-	const auto startedRoomsCount = lobby.GetStartedRoomsCount();
-	lobby.CloseNonStartedRooms();
-	if(startedRoomsCount > 0U)
-		LOG_INFO(I18N::MULTIROLE_UNFINISHED_DUELS, startedRoomsCount);
+	if(const std::size_t remainingRooms = lobby.Close(); remainingRooms > 0U)
+		LOG_INFO(I18N::MULTIROLE_UNFINISHED_DUELS, remainingRooms);
 }
 
 } // namespace Ignis::Multirole
