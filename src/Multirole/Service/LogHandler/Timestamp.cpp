@@ -10,11 +10,15 @@ Timestamp TimestampNow() noexcept
 
 void FmtTimestamp(std::ostream& os, const Timestamp& timestamp) noexcept
 {
-	const auto t = std::chrono::system_clock::to_time_t(timestamp);
-	const auto gmtime = std::gmtime(&t);
+	using namespace std::chrono;
+	const auto tt = system_clock::to_time_t(timestamp);
+	const auto lt = std::localtime(&tt);
 	char buffer[32];
-	strftime(buffer, 32, "%Y-%m-%d %T", gmtime);
-	os << '[' << buffer << ']';
+	strftime(buffer, 32, "%Y-%m-%d %T", lt);
+	char ms_buffer[4];
+	const auto ms = static_cast<unsigned>(duration_cast<milliseconds>(timestamp.time_since_epoch()).count() % 1000U);
+	sprintf(ms_buffer, "%03u", ms);
+	os << '[' << buffer << '.' << ms_buffer << ']';
 }
 
 } // namespace Ignis::Multirole::LogHandlerDetail

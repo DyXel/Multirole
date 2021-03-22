@@ -48,20 +48,13 @@ Str CLIENT_ROOM_HOSTING_KICKED_BEFORE =
 Str CLIENT_ROOM_MSG_RETRY_ERROR =
 "Error while processing your response. Make sure you have the lastest client.";
 
-Str ROOM_DUELING_CORE_EXCEPT_CREATION =
-"Core exception at creation (Replay ID: {0}): {1}";
-Str ROOM_DUELING_CORE_EXCEPT_EXTRA_CARDS =
-"Core exception at extra cards addition (Replay ID: {0}): {1}";
-Str ROOM_DUELING_CORE_EXCEPT_STARTING =
-"Core exception at starting (Replay ID: {0}): {1}";
-Str ROOM_DUELING_CORE_EXCEPT_RESPONSE =
-"Core exception at response setting (Replay ID: {0}): {1}";
-Str ROOM_DUELING_CORE_EXCEPT_PROCESSING =
-"Core exception at processing (Replay ID: {0}): {1}";
-Str ROOM_DUELING_CORE_EXCEPT_DESTRUCTOR =
-"Core exception at destruction (Replay ID: {0}): {1}";
-Str ROOM_DUELING_MSG_RETRY_RECEIVED =
-"MSG_RETRY received from core (Replay ID: {0}).";
+Str ROOM_DUELING_CORE_EXCEPT_CREATION = "Core exception at creation: {0}";
+Str ROOM_DUELING_CORE_EXCEPT_EXTRA_CARDS = "Core exception at extra cards addition: {0}";
+Str ROOM_DUELING_CORE_EXCEPT_STARTING = "Core exception at starting: {0}";
+Str ROOM_DUELING_CORE_EXCEPT_RESPONSE = "Core exception at response setting: {0}";
+Str ROOM_DUELING_CORE_EXCEPT_PROCESSING = "Core exception at processing: {0}";
+Str ROOM_DUELING_CORE_EXCEPT_DESTRUCTOR = "Core exception at destruction: {0}";
+Str ROOM_DUELING_MSG_RETRY_RECEIVED = "MSG_RETRY received from core.";
 Str CLIENT_ROOM_REPLAY_TOO_BIG =
 "Unable to send replay, its size exceeds the maximum capacity.";
 Str CLIENT_ROOM_CORE_EXCEPT =
@@ -81,7 +74,7 @@ Str CORE_PROVIDER_FAILED_TO_COPY_CORE_FILE = "Failed to copy core file! Re-testi
 Str CORE_PROVIDER_VERSION_REPORTED = "Version reported by core: {0}.{1}";
 Str CORE_PROVIDER_ERROR_WHILE_TESTING = "Error while testing core '{0}': {1}";
 
-Str DATA_PROVIDER_LOADING_ONE = "Loading up {0}...";
+Str DATA_PROVIDER_LOADING_ONE = BANLIST_PROVIDER_LOADING_ONE;
 Str DATA_PROVIDER_COULD_NOT_MERGE = "Could not merge database.";
 
 Str LOG_HANDLER_COULD_NOT_CREATE_DIR = "LogHandler: Could not create room logging directory.";
