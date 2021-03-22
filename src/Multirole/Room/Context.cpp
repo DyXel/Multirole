@@ -3,6 +3,7 @@
 #include "../I18N.hpp"
 #include "../STOCMsgFactory.hpp"
 #include "../Service/DataProvider.hpp"
+#include "../Service/LogHandler.hpp"
 #include "../YGOPro/Banlist.hpp"
 #include "../YGOPro/CardDatabase.hpp"
 #include "../YGOPro/Constants.hpp"
@@ -24,14 +25,25 @@ Context::Context(CreateInfo&& info)
 	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
 	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR)),
+	isPrivate(info.isPrivate),
+	rl(svc.logHandler.MakeRoomLogger(id)),
 	scriptLogger(svc.logHandler, hostInfo)
 {
 	rng.seed(info.seed);
+	if(rl)
+		rl->Log(I18N::ROOM_LOGGER_ROOM_NOTES, info.notes);
 }
+
+Context::~Context() = default;
 
 const YGOPro::HostInfo& Context::HostInfo() const
 {
 	return hostInfo;
+}
+
+bool Context::IsPrivate() const
+{
+	return isPrivate;
 }
 
 std::map<uint8_t, std::string> Context::GetDuelistsNames() const
@@ -129,6 +141,8 @@ void Context::MakeAndSendChat(Client& client, std::string_view msg)
 		SendToTeam(1U - client.Position().first, stocMsg);
 		SendToSpectators(stocMsg);
 	}
+	if(!isPrivate && rl)
+		rl->Log(I18N::ROOM_LOGGER_CHAT, client.Name(), client.Ip(), msg);
 }
 
 std::unique_ptr<YGOPro::Deck> Context::LoadDeck(

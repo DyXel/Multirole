@@ -69,7 +69,6 @@ private:
 	TimerAggregator tagg;
 	const std::string notes;
 	const std::string pass;
-	const bool isPrivate;
 	Context ctx;
 	StateVariant state;
 

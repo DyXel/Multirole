@@ -3,6 +3,7 @@
 #include <fmt/format.h>
 
 #include "../../I18N.hpp"
+#include "../../Service/LogHandler.hpp"
 #include "../../YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole::Room
@@ -40,6 +41,16 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 		using namespace YGOPro;
 		e.client.Send(STOCMsg(STOCMsg::CreateGame{id}));
 		s.host = &e.client;
+		if(rl)
+		{
+			using namespace I18N;
+			rl->Log(ROOM_LOGGER_ROOM_HOST, s.host->Name(), s.host->Ip());
+			if(isPrivate)
+			{
+				rl->Log(ROOM_LOGGER_IS_PRIVATE);
+				rl.reset(); // Done logging, relinquish memory to system...
+			}
+		}
 	}
 	e.client.Send(joinMsg);
 	std::scoped_lock lock(mDuelists);

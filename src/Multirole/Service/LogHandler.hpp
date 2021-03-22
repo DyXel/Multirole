@@ -37,7 +37,7 @@ public:
 	void Log(ServiceType svc, Level lvl, std::string_view str) const noexcept;
 	void Log(ErrorCategory cat, uint64_t replayId, std::string_view str) const noexcept;
 
-	// Helper overloads that format stuff nicely.
+	// Helper overloads used to format stuff nicely.
 	template<typename... Args>
 	inline void Log(ServiceType svc, Level lvl, std::string_view str, Args&& ...args) const noexcept
 	{
@@ -71,6 +71,13 @@ public:
 	RoomLogger(const boost::filesystem::path& path);
 
 	void Log(std::string_view str) noexcept;
+
+	// Helper overload used to format stuff nicely.
+	template<typename... Args>
+	inline void Log(std::string_view str, Args&& ...args) noexcept
+	{
+		Log(fmt::format(str, std::forward<Args&&>(args)...));
+	}
 private:
 	std::ofstream f;
 };

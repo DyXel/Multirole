@@ -77,6 +77,11 @@ Str CORE_PROVIDER_ERROR_WHILE_TESTING = "Error while testing core '{0}': {1}";
 Str DATA_PROVIDER_LOADING_ONE = BANLIST_PROVIDER_LOADING_ONE;
 Str DATA_PROVIDER_COULD_NOT_MERGE = "Could not merge database.";
 
+Str ROOM_LOGGER_ROOM_NOTES = "Room Notes = \"{0}\"";
+Str ROOM_LOGGER_ROOM_HOST = "Room Host = {0}({1})";
+Str ROOM_LOGGER_IS_PRIVATE = "Room is private, not logging anything else.";
+Str ROOM_LOGGER_CHAT = "{0}({1}): {2}";
+
 Str LOG_HANDLER_COULD_NOT_CREATE_DIR = "LogHandler: Could not create room logging directory.";
 Str LOG_HANDLER_PATH_IS_FILE_NOT_DIR = "LogHandler: Room logging directory path points to a file.";
 
