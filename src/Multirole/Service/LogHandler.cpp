@@ -55,6 +55,8 @@ Service::LogHandler::LogHandler(boost::asio::io_context& ioCtx, const boost::jso
 		MakeOneSink(EC_SINKS, "rush"),
 		MakeOneSink(EC_SINKS, "other"),
 	};
+	if(!logRooms)
+		return;
 	using namespace boost::filesystem;
 	if(!exists(roomLogsDir) && !create_directory(roomLogsDir))
 		throw std::runtime_error(I18N::LOG_HANDLER_COULD_NOT_CREATE_DIR);
