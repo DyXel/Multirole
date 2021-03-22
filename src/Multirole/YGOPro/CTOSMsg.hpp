@@ -153,7 +153,7 @@ public:
 		{
 			const uint8_t* s1 = ptr + sizeof(T);
 			const uint8_t* s2 = Body() + GetLength();
-			if(s1 > s2) throw uintptr_t(s1 - s2);
+			if(s1 > s2) throw std::out_of_range("buffer too small");
 		}
 		T val;
 		std::memcpy(&val, ptr, sizeof(T));
