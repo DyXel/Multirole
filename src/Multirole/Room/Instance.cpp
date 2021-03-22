@@ -44,10 +44,10 @@ bool Instance::CheckPassword(std::string_view str) const
 	return !isPrivate || pass == str;
 }
 
-bool Instance::CheckKicked(const boost::asio::ip::address& addr) const
+bool Instance::CheckKicked(std::string_view ip) const
 {
 	std::scoped_lock lock(mKicked);
-	return kicked.count(addr) > 0U;
+	return kicked.count(ip.data()) > 0U;
 }
 
 bool Instance::TryClose()
@@ -63,10 +63,10 @@ bool Instance::TryClose()
 	return true;
 }
 
-void Instance::AddKicked(const boost::asio::ip::address& addr)
+void Instance::AddKicked(std::string_view ip)
 {
 	std::scoped_lock lock(mKicked);
-	kicked.insert(addr);
+	kicked.insert(ip.data());
 }
 
 boost::asio::io_context::strand& Instance::Strand()

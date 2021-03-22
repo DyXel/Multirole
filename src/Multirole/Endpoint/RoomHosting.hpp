@@ -57,6 +57,7 @@ private:
 
 		const RoomHosting& roomHosting;
 		boost::asio::ip::tcp::socket socket;
+		std::string ip;
 		std::string name;
 		YGOPro::CTOSMsg incoming;
 		std::queue<YGOPro::STOCMsg> outgoing;

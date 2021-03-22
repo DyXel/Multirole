@@ -53,14 +53,14 @@ public:
 	bool CheckPassword(std::string_view str) const;
 
 	// Check whether or not the IP was kicked before from this room.
-	bool CheckKicked(const boost::asio::ip::address& addr) const;
+	bool CheckKicked(std::string_view ip) const;
 
 	// Tries to remove the room if its not started.
 	// Returns true if room was signaled, false otherwise.
 	bool TryClose();
 
 	// Adds an IP to the kicked list, checked with CheckKicked.
-	void AddKicked(const boost::asio::ip::address& addr);
+	void AddKicked(std::string_view ip);
 
 	boost::asio::io_context::strand& Strand();
 	void Dispatch(const EventVariant& e);
@@ -73,7 +73,7 @@ private:
 	Context ctx;
 	StateVariant state;
 
-	std::set<boost::asio::ip::address> kicked;
+	std::set<std::string> kicked;
 	mutable std::mutex mKicked;
 };
 

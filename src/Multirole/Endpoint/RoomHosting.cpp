@@ -226,7 +226,12 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 	{
 	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
 	{
-		auto p = incoming.GetPlayerInfo();
+		boost::system::error_code ec;
+		const auto endpoint = socket.remote_endpoint(ec);
+		if(ec) // Connection finished before we could retrieve its IP.
+			return Status::STATUS_ERROR;
+		ip = endpoint.address().to_string();
+		const auto p = incoming.GetPlayerInfo();
 		if(!p || (name = Utf16BufferToStr(p->name)).empty())
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_INVALID_NAME);
@@ -270,6 +275,7 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		std::make_shared<Room::Client>(
 			std::move(room),
 			std::move(socket),
+			std::move(ip),
 			std::move(name))->Start();
 		return Status::STATUS_MOVED;
 	}
@@ -293,13 +299,7 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_WRONG_PASS);
 			return Status::STATUS_ERROR;
 		}
-		boost::system::error_code ec;
-		if(const auto endpoint = socket.remote_endpoint(ec); ec)
-		{
-			// Connection finished before we could check it.
-			return Status::STATUS_ERROR;
-		}
-		else if(room->CheckKicked(endpoint.address()))
+		if(room->CheckKicked(ip))
 		{
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_KICKED_BEFORE);
 			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
@@ -308,6 +308,7 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 		std::make_shared<Room::Client>(
 			std::move(room),
 			std::move(socket),
+			std::move(ip),
 			std::move(name))->Start();
 		return Status::STATUS_MOVED;
 	}

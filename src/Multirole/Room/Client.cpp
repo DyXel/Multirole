@@ -13,11 +13,13 @@ namespace Ignis::Multirole::Room
 Client::Client(
 	std::shared_ptr<Instance> r,
 	boost::asio::ip::tcp::socket socket,
+	std::string ip,
 	std::string name)
 	:
 	room(std::move(r)),
 	strand(room->Strand()),
 	socket(std::move(socket)),
+	ip(std::move(ip)),
 	name(std::move(name)),
 	connectionLost(false),
 	disconnecting(false),
@@ -36,7 +38,12 @@ void Client::Start()
 	DoReadHeader();
 }
 
-std::string Client::Name() const
+const std::string& Client::Ip() const
+{
+	return ip;
+}
+
+const std::string& Client::Name() const
 {
 	return name;
 }
@@ -65,9 +72,7 @@ const YGOPro::Deck* Client::CurrentDeck() const
 
 void Client::MarkKicked() const
 {
-	boost::system::error_code ec;
-	if(const auto endpoint = socket.remote_endpoint(ec); !ec)
-		room->AddKicked(endpoint.address());
+	room->AddKicked(ip);
 }
 
 void Client::SetPosition(const PosType& p)

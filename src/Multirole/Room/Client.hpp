@@ -22,11 +22,12 @@ public:
 	using PosType = std::pair<uint8_t, uint8_t>;
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
-	Client(std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string name);
+	Client(std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string ip, std::string name);
 	void Start();
 
 	// Getters
-	std::string Name() const;
+	const std::string& Ip() const;
+	const std::string& Name() const;
 	PosType Position() const;
 	bool Ready() const;
 	const YGOPro::Deck* OriginalDeck() const;
@@ -54,7 +55,8 @@ private:
 	std::shared_ptr<Instance> room;
 	boost::asio::io_context::strand& strand;
 	boost::asio::ip::tcp::socket socket;
-	std::string name;
+	const std::string ip;
+	const std::string name;
 	bool connectionLost;
 	bool disconnecting;
 	PosType position;
