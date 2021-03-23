@@ -1,3 +1,7 @@
+#ifdef __linux__
+#include <sys/prctl.h> // prctl(), PR_SET_PDEATHSIG
+#endif // __linux__
+
 #ifndef _WIN32
 #include <csignal>
 #include <cstdlib>
@@ -276,13 +280,19 @@ int main(int argc, char* argv[])
 		return 1;
 	if(int r = LoadSO(argv[1]); r != 0)
 		return 2;
+#ifdef __linux__
+	// Let the kernel kill us if our parent dies.
+	prctl(PR_SET_PDEATHSIG, SIGKILL);
+#endif // __linux__
 #ifndef _WIN32
+	// Close standard pipes (they are unused).
 	if(fclose(stdin) != 0)
 		return 3;
 	if(fclose(stdout) != 0)
 		return 4;
 	if(fclose(stderr) != 0)
 		return 5;
+	// Catch interrupt signal and do nothing with it (helps with terminals).
 	if(signal(SIGINT, [](int /*unused*/){}) == SIG_ERR)
 		return 6;
 #endif // _WIN32
