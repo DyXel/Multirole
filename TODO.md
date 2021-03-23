@@ -1,18 +1,21 @@
 # TODO
 * fix file_lock file descriptor from replay lastId not being set to FD_CLOEXEC
+* Use per-socket TCP keep-alive (apparently only necessary to put on acceptors (test this))
 * Update README
   * Update dependency list
   * Remark that "Too Many Open Files" error not only affects the update mechanism and should be of high priority if dealing with a high server load, as each hornet and replay saving also consumes file descriptors
+  * Write configuration section (config.json structure), explaining every setting.
+* Update dockerfile
 * Update workflows
   * Fix x64-linux (ubuntu) workflow not having lastest boost libraries, therefore unable to use Boost.Json
   * Prepare windows workflow build
 
 # Wishlist
+* Make logging mechanism entirely disableable as compile configuration
 * Make `GitRepo` webhook update system optional upon construction via config file
   * Move `webhookPort` and `webhookToken` to `webhook` field and rename them `port` and `token` in the config
 * Make `GitRepo` able to use local repositories, either without cloning or cloning locally
 * Implement anti-stalling measures
-  * Try to use TCP keep-alive (necessary when timers are unused)
 * Review places where file handles can be opened and check for their errors
   * An idea would be to artifically lower the limit in order to test places randomly
 * Limit number of messages/memory a particular room can have allocated

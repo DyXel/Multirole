@@ -69,6 +69,10 @@
 				"type" : "stdout",
 				"properties" : {}
 			},
+			"logHandler" : {
+				"type" : "stdout",
+				"properties" : {}
+			},
 			"replayManager" : {
 				"type" : "stdout",
 				"properties" : {}

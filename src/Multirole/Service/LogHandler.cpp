@@ -44,6 +44,7 @@ Service::LogHandler::LogHandler(boost::asio::io_context& ioCtx, const boost::jso
 		MakeOneSink(SERVICE_SINKS, "banlistProvider"),
 		MakeOneSink(SERVICE_SINKS, "coreProvider"),
 		MakeOneSink(SERVICE_SINKS, "dataProvider"),
+		MakeOneSink(SERVICE_SINKS, "logHandler"),
 		MakeOneSink(SERVICE_SINKS, "replayManager"),
 		MakeOneSink(SERVICE_SINKS, "scriptProvider"),
 	};
@@ -92,6 +93,7 @@ std::unique_ptr<RoomLogger> Service::LogHandler::MakeRoomLogger(uint32_t roomId)
 	}
 	catch(const std::exception& e)
 	{
+		Log(ServiceType::LOG_HANDLER, Level::ERROR, I18N::LOG_HANDLER_CANNOT_CREATE_ROOM_LOGGER, e.what());
 		return nullptr;
 	}
 }
@@ -102,7 +104,7 @@ RoomLogger::RoomLogger(const boost::filesystem::path& path) :
 	f(path)
 {
 	if(!f.is_open())
-		std::exception();
+		std::runtime_error(I18N::ROOM_LOGGER_FILE_IS_NOT_OPEN);
 }
 
 void RoomLogger::Log(std::string_view str) noexcept

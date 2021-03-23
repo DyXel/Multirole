@@ -84,6 +84,9 @@ Str ROOM_LOGGER_CHAT = "{0}({1}): {2}";
 
 Str LOG_HANDLER_COULD_NOT_CREATE_DIR = "LogHandler: Could not create room logging directory.";
 Str LOG_HANDLER_PATH_IS_FILE_NOT_DIR = "LogHandler: Room logging directory path points to a file.";
+Str LOG_HANDLER_CANNOT_CREATE_ROOM_LOGGER = "Unable to create RoomLogger: {0}";
+
+Str ROOM_LOGGER_FILE_IS_NOT_OPEN = "File is not open.";
 
 Str REPLAY_MANAGER_NOT_SAVING_REPLAYS = "Not saving replays, replay IDs will always be 0";
 Str REPLAY_MANAGER_COULD_NOT_CREATE_DIR = "ReplayManager: Could not create replay directory.";

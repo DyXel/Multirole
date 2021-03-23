@@ -15,6 +15,7 @@ constexpr std::array<
 	"BanlistProvider",
 	"CoreProvider",
 	"DataProvider",
+	"LogHandler",
 	"ReplayManager",
 	"ScriptProvider",
 };
