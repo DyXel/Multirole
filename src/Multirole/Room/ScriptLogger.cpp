@@ -1,5 +1,6 @@
 #include "ScriptLogger.hpp"
 
+#include "../I18N.hpp"
 #include "../Service/LogHandler.hpp"
 #include "../YGOPro/MsgCommon.hpp"
 
@@ -39,16 +40,24 @@ void ScriptLogger::SetReplayID(uint64_t rid)
 
 void ScriptLogger::Log(LogType type, std::string_view str)
 {
-	if(str.find("stack traceback") != std::string_view::npos)
+	if(type == LogType::LOG_TYPE_ERROR)
+	{
+		currMsg += str;
+	}
+	else if(type == LogType::LOG_TYPE_FROM_SCRIPT)
+	{
+		currMsg += "User debug message: ";
+		currMsg += str;
+	}
+	else if(type == LogType::LOG_TYPE_FOR_DEBUG)
 	{
 		currMsg = str;
 		currMsg += '\n';
-		return;
+		return; // Do not log just yet.
 	}
-	if((currMsg += str) == prevMsg)
-		return;
-	prevMsg = currMsg;
-	lh.Log(ec, replayId, currMsg);
+	if(currMsg != prevMsg)
+		lh.Log(ec, replayId, (prevMsg = currMsg));
+	currMsg.clear();
 }
 
 } // namespace Ignis::Multirole::Room

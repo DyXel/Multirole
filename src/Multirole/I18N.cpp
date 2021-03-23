@@ -21,11 +21,7 @@ Str MULTIROLE_SIGNAL_RECEIVED = "SIGTERM received.";
 Str MULTIROLE_HOSTING_THREADS_NUM = "Hosting will use {0} threads.";
 Str MULTIROLE_INIT_SUCCESS = "Initialization finished successfully!";
 Str MULTIROLE_CLEANING_UP = "Closing acceptors and repositories...";
-Str MULTIROLE_UNFINISHED_DUELS =
-"All done, server will gracefully finish execution "
-"after all duels finish. If you wish to forcefully end "
-"you can terminate the process safely now (SIGTERM/SIGKILL). "
-"Remaining duels: {0}";
+Str MULTIROLE_REMAINING_ROOMS = "Rooms that were not closed: {0}";
 
 Str MAIN_SERVER_INIT_FAILURE = "Could not initialize server: {0}\n";
 
@@ -61,6 +57,8 @@ Str CLIENT_ROOM_REPLAY_TOO_BIG =
 "Unable to send replay, its size exceeds the maximum capacity.";
 Str CLIENT_ROOM_CORE_EXCEPT =
 "Internal scripting engine error! This incident has been reported.";
+
+Str SCRIPT_LOGGER_USER_MSG = "User debug message: ";
 
 Str CLIENT_ROOM_KICKED = "{0} has been kicked.";
 

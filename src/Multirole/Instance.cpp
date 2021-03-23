@@ -120,7 +120,7 @@ void Instance::Stop()
 	lobbyListing.Stop();
 	roomHosting.Stop();
 	if(const std::size_t remainingRooms = lobby.Close(); remainingRooms > 0U)
-		LOG_INFO(I18N::MULTIROLE_UNFINISHED_DUELS, remainingRooms);
+		LOG_INFO(I18N::MULTIROLE_REMAINING_ROOMS, remainingRooms);
 }
 
 } // namespace Ignis::Multirole
