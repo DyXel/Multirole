@@ -8,7 +8,7 @@ namespace Ignis::Multirole::LogHandlerDetail
 {
 
 FileSink::FileSink(const boost::filesystem::path& p) :
-	f(p)
+	f(p, std::ios_base::out | std::ios_base::app)
 {}
 
 FileSink::~FileSink() = default;
