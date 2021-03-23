@@ -83,6 +83,7 @@ RoomHosting::RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lo
 		SrvMsg(I18N::CLIENT_ROOM_HOSTING_INVALID_MSG),
 		STOCMsgFactory::MakeJoinError(Error::JOIN_NOT_FOUND),
 		SrvMsg(I18N::CLIENT_ROOM_HOSTING_KICKED_BEFORE),
+		SrvMsg(I18N::CLIENT_ROOM_HOSTING_CANNOT_RESOLVE_IP),
 	}),
 	ioCtx(ioCtx),
 	svc(svc),
@@ -228,8 +229,12 @@ RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
 	{
 		boost::system::error_code ec;
 		const auto endpoint = socket.remote_endpoint(ec);
-		if(ec) // Connection finished before we could retrieve its IP.
+		if(ec) // Cant figure out the address, drop connection.
+		{
+			PushToWriteQueue(PrebuiltMsgId::PREBUILT_CANNOT_RESOLVE_IP);
+			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
 			return Status::STATUS_ERROR;
+		}
 		ip = endpoint.address().to_string();
 		const auto p = incoming.GetPlayerInfo();
 		if(!p || (name = Utf16BufferToStr(p->name)).empty())

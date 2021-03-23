@@ -38,12 +38,14 @@ Str HWRAPPER_EXCEPT_MAX_LOOP_COUNT = "Max loop count reached.";
 Str HWRAPPER_EXCEPT_PROC_CRASHED = "Process is not running.";
 Str HWRAPPER_EXCEPT_PROC_UNRESPONSIVE = "Process is unresponsive.";
 
-Str CLIENT_ROOM_HOSTING_INVALID_NAME = "Invalid name. Try filling in your name.";
+Str CLIENT_ROOM_HOSTING_INVALID_NAME = "Invalid name. Try filling in your name!";
 Str CLIENT_ROOM_HOSTING_NOT_FOUND = "Room not found. Try refreshing the list!";
 Str CLIENT_ROOM_HOSTING_INVALID_MSG =
 "Invalid message before connecting to a room. Please report this error!";
 Str CLIENT_ROOM_HOSTING_KICKED_BEFORE =
 "Unable to join. You were kicked from this room before.";
+Str CLIENT_ROOM_HOSTING_CANNOT_RESOLVE_IP =
+"Error resolving your IP address. Try again later.";
 
 Str CLIENT_ROOM_MSG_RETRY_ERROR =
 "Error while processing your response. Make sure you have the lastest client.";
