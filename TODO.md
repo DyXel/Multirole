@@ -1,6 +1,5 @@
 # TODO
 * fix file_lock file descriptor from replay lastId not being set to FD_CLOEXEC
-* Use per-socket TCP keep-alive (apparently only necessary to put on acceptors (test this))
 * Update README
   * Update dependency list
   * Remark that "Too Many Open Files" error not only affects the update mechanism and should be of high priority if dealing with a high server load, as each hornet and replay saving also consumes file descriptors

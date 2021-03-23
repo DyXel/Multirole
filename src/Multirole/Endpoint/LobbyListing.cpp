@@ -23,6 +23,7 @@ LobbyListing::LobbyListing(
 	serialized(std::make_shared<std::string>())
 {
 	Workaround::SetCloseOnExec(acceptor.native_handle());
+	acceptor.set_option(boost::asio::socket_base::keep_alive(true));
 	DoAccept();
 	DoSerialize();
 }

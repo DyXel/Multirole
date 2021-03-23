@@ -14,6 +14,7 @@ Webhook::Webhook(boost::asio::io_context& ioCtx, unsigned short port) :
 	acceptor(ioCtx, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v6(), port))
 {
 	Workaround::SetCloseOnExec(acceptor.native_handle());
+	acceptor.set_option(boost::asio::socket_base::keep_alive(true));
 	DoAccept();
 }
 
