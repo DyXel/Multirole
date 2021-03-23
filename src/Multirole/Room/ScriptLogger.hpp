@@ -1,5 +1,6 @@
 #ifndef ROOM_SCRIPTLOGGER_HPP
 #define ROOM_SCRIPTLOGGER_HPP
+#include <string>
 #include "../Core/ILogger.hpp"
 #include "../Service.hpp"
 #include "../Service/LogHandler/Constants.hpp"
@@ -25,6 +26,8 @@ public:
 private:
 	Service::LogHandler& lh;
 	const ErrorCategory ec;
+	std::string prevMsg;
+	std::string currMsg;
 	uint64_t replayId;
 };
 

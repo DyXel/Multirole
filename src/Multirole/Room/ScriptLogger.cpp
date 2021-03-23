@@ -26,7 +26,10 @@ ScriptLogger::ScriptLogger(Service::LogHandler& lh, const YGOPro::HostInfo& host
 			return ErrorCategory::RUSH;
 		else
 			return ErrorCategory::UNOFFICIAL;
-	}(hostInfo))
+	}(hostInfo)),
+	prevMsg(),
+	currMsg(),
+	replayId(0U)
 {}
 
 void ScriptLogger::SetReplayID(uint64_t rid)
@@ -36,7 +39,16 @@ void ScriptLogger::SetReplayID(uint64_t rid)
 
 void ScriptLogger::Log(LogType type, std::string_view str)
 {
-	lh.Log(ec, replayId, str);
+	if(str.find("stack traceback") != std::string_view::npos)
+	{
+		currMsg = str;
+		currMsg += '\n';
+		return;
+	}
+	if((currMsg += str) == prevMsg)
+		return;
+	prevMsg = currMsg;
+	lh.Log(ec, replayId, currMsg);
 }
 
 } // namespace Ignis::Multirole::Room
