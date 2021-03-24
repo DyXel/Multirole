@@ -10,6 +10,53 @@
 namespace Ignis::Multirole::Endpoint
 {
 
+class LobbyListing::Connection final : public std::enable_shared_from_this<Connection>
+{
+public:
+	Connection(
+		boost::asio::ip::tcp::socket socket,
+		std::shared_ptr<const std::string> data) noexcept
+		:
+		socket(std::move(socket)),
+		outgoing(std::move(data)),
+		incoming(),
+		writeCalled(false)
+	{}
+
+	void DoRead() noexcept
+	{
+		auto self(shared_from_this());
+		socket.async_read_some(boost::asio::buffer(incoming),
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(ec)
+				return;
+			if(!writeCalled)
+			{
+				writeCalled = true;
+				DoWrite();
+			}
+			DoRead();
+		});
+	}
+private:
+	boost::asio::ip::tcp::socket socket;
+	std::shared_ptr<const std::string> outgoing;
+	std::array<char, 256U> incoming;
+	bool writeCalled;
+
+	void DoWrite() noexcept
+	{
+		auto self(shared_from_this());
+		boost::asio::async_write(socket, boost::asio::buffer(*outgoing),
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(!ec)
+				socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+		});
+	}
+};
+
 // public
 
 LobbyListing::LobbyListing(
@@ -47,14 +94,6 @@ void LobbyListing::DoSerialize()
 	{
 		if(ec)
 			return;
-		auto ComposeHeader = [](std::size_t length, std::string_view mime)
-		{
-			constexpr const char* HTTP_HEADER_FORMAT_STRING =
-			"HTTP/1.0 200 OK\r\n"
-			"Content-Length: {:d}\r\n"
-			"Content-Type: {:s}\r\n\r\n";
-			return fmt::format(HTTP_HEADER_FORMAT_STRING, length, mime);
-		};
 		boost::json::monotonic_resource mr;
 		boost::json::object j(&mr);
 		auto& ar = *j.emplace("rooms", boost::json::array(&mr)).first->value().if_array();
@@ -92,12 +131,16 @@ void LobbyListing::DoSerialize()
 				i++;
 			}
 		});
-		const std::string strJ = boost::json::serialize(j); // DUMP EET
 		{
+			constexpr const char* const HTTP_HEADER_FORMAT_STRING =
+			"HTTP/1.0 200 OK\r\n"
+			"Content-Length: {:d}\r\n"
+			"Content-Type: application/json\r\n\r\n";
+			const auto strJ = boost::json::serialize(j); // DUMP EET
+			auto full = fmt::format(HTTP_HEADER_FORMAT_STRING, strJ.size());
+			full += strJ;
 			std::scoped_lock lock(mSerialized);
-			serialized = std::make_shared<std::string>(
-				ComposeHeader(strJ.size(), "application/json") + strJ
-			);
+			serialized = std::make_shared<const std::string>(std::move(full));
 		}
 		DoSerialize();
 	});
@@ -117,44 +160,6 @@ void LobbyListing::DoAccept()
 			std::make_shared<Connection>(std::move(socket), serialized)->DoRead();
 		}
 		DoAccept();
-	});
-}
-
-LobbyListing::Connection::Connection(
-	boost::asio::ip::tcp::socket socket,
-	std::shared_ptr<std::string> data)
-	:
-	socket(std::move(socket)),
-	outgoing(std::move(data)),
-	incoming(),
-	writeCalled(false)
-{}
-
-void LobbyListing::Connection::DoRead()
-{
-	auto self(shared_from_this());
-	socket.async_read_some(boost::asio::buffer(incoming),
-	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
-	{
-		if(ec)
-			return;
-		if(!writeCalled)
-		{
-			writeCalled = true;
-			DoWrite();
-		}
-		DoRead();
-	});
-}
-
-void LobbyListing::Connection::DoWrite()
-{
-	auto self(shared_from_this());
-	boost::asio::async_write(socket, boost::asio::buffer(*outgoing),
-	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
-	{
-		if(!ec)
-			socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	});
 }
 

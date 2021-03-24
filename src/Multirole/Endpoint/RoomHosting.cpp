@@ -11,6 +11,7 @@
 #include "../Room/Instance.hpp"
 #include "../Service/BanlistProvider.hpp"
 #include "../YGOPro/Config.hpp"
+#include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/StringUtils.hpp"
 
 namespace Ignis::Multirole::Endpoint
@@ -66,6 +67,210 @@ inline std::string Utf16BufferToStr(const Buffer& buffer)
 	return UTF16ToUTF8(BufferToUTF16(buffer, sizeof(Buffer)));
 }
 
+class RoomHosting::Connection final : public std::enable_shared_from_this<Connection>
+{
+public:
+	Connection(const RoomHosting& roomHosting,
+		boost::asio::ip::tcp::socket socket) noexcept
+		:
+		roomHosting(roomHosting),
+		socket(std::move(socket))
+	{}
+
+	void DoReadHeader() noexcept
+	{
+		auto self(shared_from_this());
+		auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
+		boost::asio::async_read(socket, buffer,
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(!ec && incoming.IsHeaderValid())
+				DoReadBody();
+		});
+	}
+private:
+	enum class Status
+	{
+		STATUS_CONTINUE,
+		STATUS_MOVED,
+		STATUS_ERROR,
+	};
+
+	const RoomHosting& roomHosting;
+	boost::asio::ip::tcp::socket socket;
+	std::string ip;
+	std::string name;
+	YGOPro::CTOSMsg incoming;
+	std::queue<YGOPro::STOCMsg> outgoing;
+
+	void DoReadBody() noexcept
+	{
+		auto self(shared_from_this());
+		auto buffer = boost::asio::buffer(incoming.Body(), incoming.GetLength());
+		boost::asio::async_read(socket, buffer,
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(ec)
+				return;
+			if(const auto status = HandleMsg(); status == Status::STATUS_CONTINUE)
+			{
+				DoReadHeader();
+			}
+			else if(status == Status::STATUS_ERROR)
+			{
+				DoReadEnd();
+				DoWrite();
+			}
+		});
+	}
+
+	void DoWrite() noexcept
+	{
+		assert(!outgoing.empty());
+		auto self(shared_from_this());
+		const auto& front = outgoing.front();
+		boost::asio::async_write(socket, boost::asio::buffer(front.Data(), front.Length()),
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(ec)
+				return;
+			outgoing.pop();
+			if(!outgoing.empty())
+				DoWrite();
+			else
+				socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+		});
+	}
+
+	void DoReadEnd() noexcept
+	{
+		auto self(shared_from_this());
+		auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::MSG_MAX_LENGTH);
+		socket.async_read_some(buffer,
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(!ec)
+				DoReadEnd();
+		});
+	}
+
+	Status HandleMsg() noexcept
+	{
+		auto PushToWriteQueue = [&](PrebuiltMsgId id)
+		{
+			assert(id >= PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
+			assert(id < PrebuiltMsgId::PREBUILT_MSG_COUNT);
+			outgoing.push(roomHosting.prebuiltMsgs[static_cast<std::size_t>(id)]);
+		};
+		switch(incoming.GetType())
+		{
+		case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
+		{
+			boost::system::error_code ec;
+			const auto endpoint = socket.remote_endpoint(ec);
+			if(ec) // Cant figure out the address, drop connection.
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_CANNOT_RESOLVE_IP);
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+				return Status::STATUS_ERROR;
+			}
+			ip = endpoint.address().to_string();
+			const auto p = incoming.GetPlayerInfo();
+			if(!p || (name = Utf16BufferToStr(p->name)).empty())
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_INVALID_NAME);
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+				return Status::STATUS_ERROR;
+			}
+			return Status::STATUS_CONTINUE;
+		}
+		case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
+		{
+			auto p = incoming.GetCreateGame();
+			if(!p || p->hostInfo.handshake != YGOPro::SERVER_HANDSHAKE ||
+			    p->hostInfo.version != YGOPro::SERVER_VERSION)
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
+				return Status::STATUS_ERROR;
+			}
+			*std::rbegin(p->notes) = '\0'; // Guarantee null-terminated string.
+			// All the info required to construct a working room is set here.
+			Room::Instance::CreateInfo info
+			{
+				roomHosting.ioCtx,
+				std::string(p->notes),
+				Utf16BufferToStr(p->pass),
+				roomHosting.svc,
+				0U, // NOTE: id, set by lobby.
+				0U, // NOTE: seed, set by lobby.
+				roomHosting.svc.banlistProvider.GetBanlistByHash(p->hostInfo.banlistHash),
+				p->hostInfo,
+				LimitsFromFlags(info.hostInfo.extraRules)
+			};
+			// Fix some of the options back into expected values in case of
+			// exceptions.
+			auto& hi = info.hostInfo;
+			if(info.banlist == nullptr)
+				hi.banlistHash = 0U;
+			hi.t0Count = std::clamp(hi.t0Count, 1, 3);
+			hi.t1Count = std::clamp(hi.t1Count, 1, 3);
+			hi.bestOf = std::max(hi.bestOf, 1);
+			// Add flag that client should be setting.
+			// NOLINTNEXTLINE: DUEL_PSEUDO_SHUFFLE
+			hi.duelFlagsLow |= (!hi.dontShuffleDeck) ? 0x0 : 0x10;
+			// Let the lobby make the room so we can list it later.
+			auto room = roomHosting.lobby.MakeRoom(info);
+			// Add the client to the newly created room.
+			std::make_shared<Room::Client>(
+				std::move(room),
+				std::move(socket),
+				std::move(ip),
+				std::move(name))->Start();
+			return Status::STATUS_MOVED;
+		}
+		case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
+		{
+			auto p = incoming.GetJoinGame();
+			if(!p || p->version != YGOPro::SERVER_VERSION)
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
+				return Status::STATUS_ERROR;
+			}
+			auto room = roomHosting.lobby.GetRoomById(p->id);
+			if(!room)
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_NOT_FOUND);
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+				return Status::STATUS_ERROR;
+			}
+			if(!room->CheckPassword(Utf16BufferToStr(p->pass)))
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_WRONG_PASS);
+				return Status::STATUS_ERROR;
+			}
+			if(room->CheckKicked(ip))
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_KICKED_BEFORE);
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+				return Status::STATUS_ERROR;
+			}
+			std::make_shared<Room::Client>(
+				std::move(room),
+				std::move(socket),
+				std::move(ip),
+				std::move(name))->Start();
+			return Status::STATUS_MOVED;
+		}
+		default:
+		{
+			PushToWriteQueue(PrebuiltMsgId::PREBUILT_INVALID_MSG);
+			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+			return Status::STATUS_ERROR;
+		}
+		}
+	}
+};
+
 inline YGOPro::STOCMsg SrvMsg(const char* const str)
 {
 	return STOCMsgFactory::MakeChat(CHAT_MSG_TYPE_ERROR, str);
@@ -100,34 +305,6 @@ void RoomHosting::Stop()
 	acceptor.close();
 }
 
-const YGOPro::STOCMsg& RoomHosting::GetPrebuiltMsg(PrebuiltMsgId id) const
-{
-	assert(id >= PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
-	assert(id < PrebuiltMsgId::PREBUILT_MSG_COUNT);
-	return prebuiltMsgs[static_cast<std::size_t>(id)];
-}
-
-Lobby& RoomHosting::GetLobby() const
-{
-	return lobby;
-}
-
-Room::Instance::CreateInfo RoomHosting::GetBaseRoomCreateInfo(uint32_t banlistHash) const
-{
-	return Room::Instance::CreateInfo
-	{
-		ioCtx,
-		{}, // notes
-		{}, // password
-		svc,
-		0U, // id
-		0U, // seed
-		svc.banlistProvider.GetBanlistByHash(banlistHash),
-		{}, // hostInfo
-		{} // limits
-	};
-}
-
 // private
 
 void RoomHosting::DoAccept()
@@ -144,187 +321,6 @@ void RoomHosting::DoAccept()
 		}
 		DoAccept();
 	});
-}
-
-RoomHosting::Connection::Connection(
-	const RoomHosting& roomHosting,
-	boost::asio::ip::tcp::socket socket)
-	:
-	roomHosting(roomHosting),
-	socket(std::move(socket))
-{}
-
-
-void RoomHosting::Connection::DoReadHeader()
-{
-	auto self(shared_from_this());
-	auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
-	boost::asio::async_read(socket, buffer,
-	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
-	{
-		if(!ec && incoming.IsHeaderValid())
-			DoReadBody();
-	});
-}
-
-void RoomHosting::Connection::DoReadBody()
-{
-	auto self(shared_from_this());
-	auto buffer = boost::asio::buffer(incoming.Body(), incoming.GetLength());
-	boost::asio::async_read(socket, buffer,
-	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
-	{
-		if(ec)
-			return;
-		if(const auto status = HandleMsg(); status == Status::STATUS_CONTINUE)
-		{
-			DoReadHeader();
-		}
-		else if(status == Status::STATUS_ERROR)
-		{
-			DoReadEnd();
-			DoWrite();
-		}
-	});
-}
-
-void RoomHosting::Connection::DoReadEnd()
-{
-	auto self(shared_from_this());
-	auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::MSG_MAX_LENGTH);
-	socket.async_read_some(buffer,
-	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
-	{
-		if(!ec)
-			DoReadEnd();
-	});
-}
-
-void RoomHosting::Connection::DoWrite()
-{
-	assert(!outgoing.empty());
-	auto self(shared_from_this());
-	const auto& front = outgoing.front();
-	boost::asio::async_write(socket, boost::asio::buffer(front.Data(), front.Length()),
-	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
-	{
-		if(ec)
-			return;
-		outgoing.pop();
-		if(!outgoing.empty())
-			DoWrite();
-		else
-			socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-	});
-}
-
-RoomHosting::Connection::Status RoomHosting::Connection::HandleMsg()
-{
-	auto PushToWriteQueue = [this](RoomHosting::PrebuiltMsgId id)
-	{
-		outgoing.push(roomHosting.GetPrebuiltMsg(id));
-	};
-	switch(incoming.GetType())
-	{
-	case YGOPro::CTOSMsg::MsgType::PLAYER_INFO:
-	{
-		boost::system::error_code ec;
-		const auto endpoint = socket.remote_endpoint(ec);
-		if(ec) // Cant figure out the address, drop connection.
-		{
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_CANNOT_RESOLVE_IP);
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
-			return Status::STATUS_ERROR;
-		}
-		ip = endpoint.address().to_string();
-		const auto p = incoming.GetPlayerInfo();
-		if(!p || (name = Utf16BufferToStr(p->name)).empty())
-		{
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_INVALID_NAME);
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
-			return Status::STATUS_ERROR;
-		}
-		return Status::STATUS_CONTINUE;
-	}
-	case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
-	{
-		auto p = incoming.GetCreateGame();
-		if(!p || p->hostInfo.handshake != YGOPro::SERVER_HANDSHAKE ||
-		   p->hostInfo.version != YGOPro::SERVER_VERSION)
-		{
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
-			return Status::STATUS_ERROR;
-		}
-		*std::rbegin(p->notes) = '\0'; // Guarantee null-terminated string.
-		// Get "template" information that will be modified and used.
-		auto info = roomHosting.GetBaseRoomCreateInfo(p->hostInfo.banlistHash);
-		// Set our custom info.
-		info.hostInfo = p->hostInfo;
-		info.limits = LimitsFromFlags(info.hostInfo.extraRules);
-		info.notes = std::string(p->notes);
-		info.pass = Utf16BufferToStr(p->pass);
-		// Fix some of the options back into expected values in case of
-		// exceptions.
-		auto& hi = info.hostInfo;
-		if(info.banlist == nullptr)
-			hi.banlistHash = 0U;
-		hi.t0Count = std::clamp(hi.t0Count, 1, 3);
-		hi.t1Count = std::clamp(hi.t1Count, 1, 3);
-		hi.bestOf = std::max(hi.bestOf, 1);
-		// Add flag that client should be setting.
-		// NOLINTNEXTLINE: DUEL_PSEUDO_SHUFFLE
-		hi.duelFlagsLow |= (!hi.dontShuffleDeck) ? 0x0 : 0x10;
-		// Make new room with the set parameters, missing parameters will be
-		// filled by the lobby.
-		auto room = roomHosting.GetLobby().MakeRoom(info);
-		// Add the client to the newly created room.
-		std::make_shared<Room::Client>(
-			std::move(room),
-			std::move(socket),
-			std::move(ip),
-			std::move(name))->Start();
-		return Status::STATUS_MOVED;
-	}
-	case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
-	{
-		auto p = incoming.GetJoinGame();
-		if(!p || p->version != YGOPro::SERVER_VERSION)
-		{
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
-			return Status::STATUS_ERROR;
-		}
-		auto room = roomHosting.GetLobby().GetRoomById(p->id);
-		if(!room)
-		{
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_NOT_FOUND);
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
-			return Status::STATUS_ERROR;
-		}
-		if(!room->CheckPassword(Utf16BufferToStr(p->pass)))
-		{
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_ROOM_WRONG_PASS);
-			return Status::STATUS_ERROR;
-		}
-		if(room->CheckKicked(ip))
-		{
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_KICKED_BEFORE);
-			PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
-			return Status::STATUS_ERROR;
-		}
-		std::make_shared<Room::Client>(
-			std::move(room),
-			std::move(socket),
-			std::move(ip),
-			std::move(name))->Start();
-		return Status::STATUS_MOVED;
-	}
-	default:
-	{
-		PushToWriteQueue(PrebuiltMsgId::PREBUILT_INVALID_MSG);
-		PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
-		return Status::STATUS_ERROR;
-	}
-	}
 }
 
 } // namespace Ignis::Multirole::Endpoint

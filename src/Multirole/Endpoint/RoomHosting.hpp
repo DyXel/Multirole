@@ -8,8 +8,6 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include "../Service.hpp"
-#include "../Room/Instance.hpp"
-#include "../YGOPro/CTOSMsg.hpp"
 #include "../YGOPro/STOCMsg.hpp"
 
 namespace Ignis::Multirole
@@ -23,6 +21,9 @@ namespace Endpoint
 class RoomHosting final
 {
 public:
+	RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port);
+	void Stop();
+private:
 	enum class PrebuiltMsgId
 	{
 		PREBUILT_MSG_VERSION_MISMATCH = 0,
@@ -36,39 +37,8 @@ public:
 		PREBUILT_MSG_COUNT
 	};
 
-	RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port);
-	void Stop();
-
-	const YGOPro::STOCMsg& GetPrebuiltMsg(PrebuiltMsgId id) const;
-	Lobby& GetLobby() const;
-	Room::Instance::CreateInfo GetBaseRoomCreateInfo(uint32_t banlistHash) const;
-private:
-	class Connection final : public std::enable_shared_from_this<Connection>
-	{
-	public:
-		Connection(const RoomHosting& roomHosting, boost::asio::ip::tcp::socket socket);
-		void DoReadHeader();
-	private:
-		enum class Status
-		{
-			STATUS_CONTINUE,
-			STATUS_MOVED,
-			STATUS_ERROR,
-		};
-
-		const RoomHosting& roomHosting;
-		boost::asio::ip::tcp::socket socket;
-		std::string ip;
-		std::string name;
-		YGOPro::CTOSMsg incoming;
-		std::queue<YGOPro::STOCMsg> outgoing;
-
-		void DoReadBody();
-		void DoWrite();
-		void DoReadEnd();
-
-		Status HandleMsg();
-	};
+	class Connection;
+	friend class Connection;
 
 	const std::array<
 		YGOPro::STOCMsg,

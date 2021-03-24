@@ -22,24 +22,12 @@ public:
 
 	void Stop();
 private:
-	class Connection final : public std::enable_shared_from_this<Connection>
-	{
-	public:
-		Connection(boost::asio::ip::tcp::socket socket, std::shared_ptr<std::string> data);
-		void DoRead();
-	private:
-		boost::asio::ip::tcp::socket socket;
-		std::shared_ptr<std::string> outgoing;
-		std::array<char, 256> incoming;
-		bool writeCalled;
-
-		void DoWrite();
-	};
+	class Connection;
 
 	boost::asio::ip::tcp::acceptor acceptor;
 	boost::asio::steady_timer serializeTimer;
 	Lobby& lobby;
-	std::shared_ptr<std::string> serialized;
+	std::shared_ptr<const std::string> serialized;
 	std::mutex mSerialized;
 
 	void DoAccept();

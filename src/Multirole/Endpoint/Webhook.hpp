@@ -16,19 +16,7 @@ public:
 protected:
 	inline ~Webhook() = default;
 private:
-	class Connection final : public std::enable_shared_from_this<Connection>
-	{
-	public:
-		Connection(Webhook& webhook, boost::asio::ip::tcp::socket socket);
-		void DoReadHeader();
-	private:
-		Webhook& webhook;
-		boost::asio::ip::tcp::socket socket;
-		std::array<char, 1U << 8U> incoming;
-
-		void DoWrite();
-		void DoReadEnd();
-	};
+	class Connection;
 
 	boost::asio::ip::tcp::acceptor acceptor;
 
