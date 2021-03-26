@@ -5,20 +5,7 @@
 namespace Ignis::Multirole::LogHandlerDetail
 {
 
-constexpr std::array<
-	const char* const,
-	static_cast<std::size_t>(ServiceType::SERVICE_TYPE_COUNT)
-> SVC_NAMES =
-{
-	"GitRepository",
-	"Multirole",
-	"BanlistProvider",
-	"CoreProvider",
-	"DataProvider",
-	"LogHandler",
-	"ReplayManager",
-	"ScriptProvider",
-};
+#include "SvcNames.inl"
 
 constexpr std::array<
 	const char* const,

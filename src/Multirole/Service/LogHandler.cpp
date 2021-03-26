@@ -4,6 +4,7 @@
 
 #include "../I18N.hpp"
 #include "LogHandler/ISink.hpp"
+#include "LogHandler/DiscordWebhookSink.hpp"
 #include "LogHandler/FileSink.hpp"
 #include "LogHandler/StderrSink.hpp"
 #include "LogHandler/StdoutSink.hpp"
@@ -27,6 +28,8 @@ Service::LogHandler::LogHandler(boost::asio::io_context& ioCtx, const boost::jso
 		const auto& obj = cfg.at(cat).at(name);
 		const auto& type = obj.at("type").as_string();
 		const auto& props = obj.at("properties");
+		if(type == "discordWebhook")
+			return std::make_unique<DiscordWebhookSink>(ioCtx, props.at("uri").as_string().data());
 		if(type == "file")
 			return std::make_unique<FileSink>(props.at("path").as_string().data());
 		if(type == "stderr")

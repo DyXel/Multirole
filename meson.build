@@ -5,6 +5,7 @@ boost_dep   = dependency('boost', modules : ['filesystem', 'system'])
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 fmt_dep     = dependency('fmt')
 libgit2_dep = dependency('libgit2')
+openssl_dep = dependency('openssl')
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 sqlite3_dep = dependency('sqlite3')
 thread_dep  = dependency('threads')
@@ -40,6 +41,7 @@ multirole_src_files = files([
 	'src/Multirole/Service/LogHandler.cpp',
 	'src/Multirole/Service/ReplayManager.cpp',
 	'src/Multirole/Service/ScriptProvider.cpp',
+	'src/Multirole/Service/LogHandler/DiscordWebhookSink.cpp',
 	'src/Multirole/Service/LogHandler/FileSink.cpp',
 	'src/Multirole/Service/LogHandler/StderrSink.cpp',
 	'src/Multirole/Service/LogHandler/StdoutSink.cpp',
@@ -78,6 +80,7 @@ executable('multirole', multirole_src_files,
 		dl_dep,
 		fmt_dep,
 		libgit2_dep,
+		openssl_dep,
 		rt_dep,
 		sqlite3_dep,
 		thread_dep

@@ -88,6 +88,12 @@ Str LOG_HANDLER_CANNOT_CREATE_ROOM_LOGGER = "Unable to create RoomLogger: {0}";
 
 Str ROOM_LOGGER_FILE_IS_NOT_OPEN = "File is not open.";
 
+Str DWH_URI_COLON_NOT_FOUND = "URI scheme colon separator not found.";
+Str DWH_URI_TOO_SHORT = "URI length unexpectedly short.";
+Str DWH_URI_NO_PATH = "URI has no path.";
+Str DWH_ERROR_RESOLVING_HOST = "Resolving host yielded no endpoints.";
+Str DWH_SERVICE_MESSAGE_TITLE = "Service Message";
+
 Str REPLAY_MANAGER_NOT_SAVING_REPLAYS = "Not saving replays, replay IDs will always be 0";
 Str REPLAY_MANAGER_COULD_NOT_CREATE_DIR = "ReplayManager: Could not create replay directory.";
 Str REPLAY_MANAGER_PATH_IS_FILE_NOT_DIR = "ReplayManager: Replay directory path points to a file.";
