@@ -39,8 +39,8 @@ Service::LogHandler::LogHandler(boost::asio::io_context& ioCtx, const boost::jso
 	};
 	serviceSinks =
 	{
-		MakeOneSink(SERVICE_SINKS, "multirole"),
 		MakeOneSink(SERVICE_SINKS, "gitRepo"),
+		MakeOneSink(SERVICE_SINKS, "multirole"),
 		MakeOneSink(SERVICE_SINKS, "banlistProvider"),
 		MakeOneSink(SERVICE_SINKS, "coreProvider"),
 		MakeOneSink(SERVICE_SINKS, "dataProvider"),

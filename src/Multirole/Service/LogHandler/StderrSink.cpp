@@ -11,7 +11,7 @@ StderrSink::StderrSink(std::mutex& mtx) :
 	mtx(mtx)
 {}
 
-StderrSink::~StderrSink() = default;
+StderrSink::~StderrSink() noexcept = default;
 
 void StderrSink::Log(const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept
 {

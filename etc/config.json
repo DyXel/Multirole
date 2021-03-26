@@ -49,11 +49,11 @@
 	},
 	"logHandler": {
 		"serviceSinks" : {
-			"multirole" : {
+			"gitRepo" : {
 				"type" : "stdout",
 				"properties" : {}
 			},
-			"gitRepo" : {
+			"multirole" : {
 				"type" : "stdout",
 				"properties" : {}
 			},
