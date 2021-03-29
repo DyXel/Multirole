@@ -88,7 +88,7 @@ DiscordWebhookSink::DiscordWebhookSink(boost::asio::io_context& ioCtx, std::stri
 	host   = std::string(uri.substr(tspos, pspos - tspos));
 	path   = std::string(uri.substr(pspos));
 	endpoints = boost::asio::ip::tcp::resolver(ioCtx).resolve(host, scheme);
-	if(endpoints.size() == 0U)
+	if(endpoints.empty())
 		throw std::runtime_error(I18N::DWH_ERROR_RESOLVING_HOST);
 }
 
@@ -131,7 +131,7 @@ constexpr const char* const HTTP_HEADER_FORMAT_STRING =
 "Content-Length: {:d}\r\n"
 "Content-Type: application/json\r\n\r\n";
 
-void DiscordWebhookSink::Log(const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept
+void DiscordWebhookSink::Log(const Timestamp& /*ts*/, const SinkLogProps& props, std::string_view str) noexcept
 {
 	boost::json::monotonic_resource mr;
 	boost::json::object j(&mr);

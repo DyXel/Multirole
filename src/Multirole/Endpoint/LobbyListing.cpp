@@ -75,9 +75,7 @@ LobbyListing::LobbyListing(
 	DoSerialize();
 }
 
-// NOTE: Without this debug builds in visual studio crash without reason.
-LobbyListing::~LobbyListing()
-{}
+LobbyListing::~LobbyListing() = default;
 
 void LobbyListing::Stop()
 {

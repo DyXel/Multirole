@@ -73,14 +73,14 @@ Service::LogHandler::~LogHandler() = default;
 void Service::LogHandler::Log(ServiceType svc, Level lvl, std::string_view str) const noexcept
 {
 	using namespace LogHandlerDetail;
-	auto& sink = serviceSinks[static_cast<std::size_t>(svc)];
+	const auto& sink = serviceSinks[static_cast<std::size_t>(svc)];
 	sink->Log(TimestampNow(), SvcLogProps{svc, lvl}, str);
 }
 
 void Service::LogHandler::Log(ErrorCategory cat, uint64_t replayId, std::string_view str) const noexcept
 {
 	using namespace LogHandlerDetail;
-	auto& sink = ecSinks[static_cast<std::size_t>(cat)];
+	const auto& sink = ecSinks[static_cast<std::size_t>(cat)];
 	sink->Log(TimestampNow(), ECLogProps{cat, replayId}, str);
 }
 

@@ -12,7 +12,7 @@ class StdoutSink final : public ISink
 public:
 	StdoutSink(std::mutex& mtx);
 	~StdoutSink() noexcept;
-	void Log(const Timestamp& ts, const SinkLogProps& c, std::string_view str) noexcept override;
+	void Log(const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept override;
 private:
 	std::mutex& mtx;
 };

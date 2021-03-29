@@ -205,7 +205,7 @@ private:
 				0U, // NOTE: seed, set by lobby.
 				roomHosting.svc.banlistProvider.GetBanlistByHash(p->hostInfo.banlistHash),
 				p->hostInfo,
-				LimitsFromFlags(info.hostInfo.extraRules)
+				LimitsFromFlags(p->hostInfo.extraRules)
 			};
 			// Fix some of the options back into expected values in case of
 			// exceptions.

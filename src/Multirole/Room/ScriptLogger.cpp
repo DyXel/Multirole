@@ -9,24 +9,24 @@ namespace Ignis::Multirole::Room
 
 ScriptLogger::ScriptLogger(Service::LogHandler& lh, const YGOPro::HostInfo& hostInfo) :
 	lh(lh),
-	ec([](const YGOPro::HostInfo& hi) constexpr -> decltype(ec)
+	ec([](const YGOPro::HostInfo& hi) constexpr -> ErrorCategory
 	{
 		// NOTE: This check is heuristic at best.
 		const auto flags = YGOPro::HostInfo::OrDuelFlags(hi.duelFlagsHigh, hi.duelFlagsLow);
+		auto Check = [f=flags](uint64_t c) constexpr -> bool
+		{
+			// NOLINTNEXTLINE: DUEL_TCG_SEGOC_NONPUBLIC
+			return (f == c) || (f == (c | 0x100000000U));
+		};
 		if(hi.banlistHash == 0U || hi.dontCheckDeck != 0U || hi.extraRules != 0U)
 			return ErrorCategory::UNOFFICIAL;
-		else if(flags == 0x2E800U) // NOLINT: DUEL_MODE_MR5
+		if(Check(0x2E800U)) // NOLINT: DUEL_MODE_MR5
 			return ErrorCategory::OFFICIAL;
-		else if(flags == 0x10002E800U) // NOLINT: DUEL_MODE_MR5 + TCG SEGOC
-			return ErrorCategory::OFFICIAL;
-		else if(flags == 0x628000U) // NOLINT: DUEL_MODE_SPEED
+		if(Check(0x628000U)) // NOLINT: DUEL_MODE_SPEED
 			return ErrorCategory::SPEED;
-		else if(flags == 0x100628000U) // NOLINT: DUEL_MODE_SPEED + TCG SEGOC
-			return ErrorCategory::SPEED;
-		else if(flags == 0x7F28200U) // NOLINT: DUEL_MODE_RUSH
+		if(Check(0x7F28200U)) // NOLINT: DUEL_MODE_RUSH
 			return ErrorCategory::RUSH;
-		else
-			return ErrorCategory::UNOFFICIAL;
+		return ErrorCategory::UNOFFICIAL;
 	}(hostInfo)),
 	prevMsg(),
 	currMsg(),

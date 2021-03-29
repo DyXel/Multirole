@@ -15,7 +15,7 @@ public:
 	DiscordWebhookSink(boost::asio::io_context& ioCtx, std::string_view uri);
 	~DiscordWebhookSink() noexcept;
 
-	void Log(const Timestamp& ts, const SinkLogProps& c, std::string_view str) noexcept override;
+	void Log(const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept override;
 private:
 	class Connection;
 

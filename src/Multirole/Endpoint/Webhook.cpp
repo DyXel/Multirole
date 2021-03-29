@@ -44,7 +44,7 @@ public:
 private:
 	Webhook& webhook;
 	boost::asio::ip::tcp::socket socket;
-	std::array<char, 256> incoming;
+	std::array<char, 256U> incoming;
 
 	void DoReadEnd() noexcept
 	{

@@ -13,7 +13,7 @@ class FileSink final : public ISink
 public:
 	FileSink(const boost::filesystem::path& p);
 	~FileSink() noexcept;
-	void Log(const Timestamp& ts, const SinkLogProps& c, std::string_view str) noexcept override;
+	void Log(const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept override;
 private:
 	std::ofstream f;
 };
