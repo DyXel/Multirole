@@ -110,7 +110,7 @@
 		},
 		"roomLogging" : {
 			"enabled" : false,
-			"path" : "./log/"
+			"path" : "./room-logs/"
 		}
 	},
 	"replayManager": {
