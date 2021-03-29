@@ -106,6 +106,7 @@ int Instance::Run()
 		boost::asio::dispatch(threads, [&]{lIoCtx.run();});
 	webhooks.join();
 	threads.join();
+	LOG_INFO(I18N::MULTIROLE_GOODBYE);
 	return EXIT_SUCCESS;
 }
 

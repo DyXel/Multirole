@@ -20,6 +20,7 @@ Str MULTIROLE_SETUP_SIGNAL = "Setting up signal handling...";
 Str MULTIROLE_SIGNAL_RECEIVED = "SIGTERM received.";
 Str MULTIROLE_HOSTING_THREADS_NUM = "Hosting will use {0} threads.";
 Str MULTIROLE_INIT_SUCCESS = "Initialization finished successfully!";
+Str MULTIROLE_GOODBYE = "Good bye!";
 Str MULTIROLE_CLEANING_UP = "Closing acceptors and repositories...";
 Str MULTIROLE_REMAINING_ROOMS = "Rooms that were not closed: {0}";
 
