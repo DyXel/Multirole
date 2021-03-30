@@ -1,12 +1,8 @@
 # TODO
 * Update README
-  * Update dependency list
   * Remark that "Too Many Open Files" error not only affects the update mechanism and should be of high priority if dealing with a high server load, as each hornet and replay saving also consumes file descriptors
   * Write configuration section (config.json structure), explaining every setting.
-* Update dockerfile
-* Update workflows
-  * Fix x64-linux (ubuntu) workflow not having lastest boost libraries, therefore unable to use Boost.Json
-  * Prepare windows workflow build
+* Prepare windows workflow build
 
 # Wishlist
 * Make logging mechanism entirely disableable as compile configuration
