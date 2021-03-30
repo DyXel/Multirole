@@ -50,7 +50,6 @@ public:
 		Log(cat, replayId, fmt::format(str, std::forward<Args&&>(args)...));
 	}
 private:
-	boost::asio::io_context& ioCtx;
 	const bool logRooms;
 	const boost::filesystem::path roomLogsDir;
 	std::mutex mStderr;

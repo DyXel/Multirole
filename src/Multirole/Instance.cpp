@@ -10,7 +10,6 @@
 
 #define LOG_INFO(...) logHandler.Log(ServiceType::MULTIROLE, Level::INFO, __VA_ARGS__)
 #include "I18N.hpp"
-#include "Utility.hpp"
 
 namespace Ignis::Multirole
 {
@@ -44,14 +43,14 @@ Instance::Instance(const boost::json::value& cfg) :
 	coreProvider(
 		logHandler,
 		cfg.at("coreProvider").at("fileRegex").as_string(),
-		Utility::JStrToPath(cfg.at("coreProvider").at("tmpPath").as_string()),
+		cfg.at("coreProvider").at("tmpPath").as_string().data(),
 		GetCoreType(cfg.at("coreProvider").at("coreType").as_string()),
 		cfg.at("coreProvider").at("loadPerRoom").as_bool()),
 	dataProvider(logHandler, cfg.at("dataProvider").at("fileRegex").as_string()),
 	replayManager(
 		logHandler,
 		cfg.at("replayManager").at("save").as_bool(),
-		Utility::JStrToPath(cfg.at("replayManager").at("path").as_string())),
+		cfg.at("replayManager").at("path").as_string().data()),
 	scriptProvider(logHandler, cfg.at("scriptProvider").at("fileRegex").as_string()),
 	service({banlistProvider, coreProvider, dataProvider, logHandler,
 		replayManager, scriptProvider}),

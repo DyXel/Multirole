@@ -6,7 +6,6 @@
 #include "I18N.hpp"
 #include "IGitRepoObserver.hpp"
 #include "libgit2.hpp"
-#include "Utility.hpp"
 #include "Service/LogHandler.hpp"
 #define LOG_INFO(...) lh.Log(ServiceType::GIT_REPO, Level::INFO, __VA_ARGS__)
 #define LOG_ERROR(...) lh.Log(ServiceType::GIT_REPO, Level::ERROR, __VA_ARGS__)
@@ -29,7 +28,7 @@ GitRepo::GitRepo(Service::LogHandler& lh, boost::asio::io_context& ioCtx, const 
 	lh(lh),
 	token(opts.at("webhookToken").as_string().data()),
 	remote(opts.at("remote").as_string().data()),
-	path(Utility::JStrToPath(opts.at("path").as_string())),
+	path(opts.at("path").as_string().data()),
 	repo(nullptr)
 {
 	if(const auto* const cred = opts.as_object().if_contains("credentials"); cred)

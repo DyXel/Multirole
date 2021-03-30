@@ -3,7 +3,6 @@
 #include <boost/filesystem.hpp>
 
 #include "../I18N.hpp"
-#include "../Utility.hpp"
 #include "LogHandler/ISink.hpp"
 #include "LogHandler/DiscordWebhookSink.hpp"
 #include "LogHandler/FileSink.hpp"
@@ -14,9 +13,8 @@ namespace Ignis::Multirole
 {
 
 Service::LogHandler::LogHandler(boost::asio::io_context& ioCtx, const boost::json::object& cfg) :
-	ioCtx(ioCtx),
 	logRooms(cfg.at("roomLogging").at("enabled").as_bool()),
-	roomLogsDir(Utility::JStrToPath(cfg.at("roomLogging").at("path").as_string())),
+	roomLogsDir(cfg.at("roomLogging").at("path").as_string().data()),
 	mStderr(),
 	mStdout()
 {
