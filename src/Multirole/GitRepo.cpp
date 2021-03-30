@@ -4,7 +4,9 @@
 #include <boost/json/value.hpp>
 
 #include "I18N.hpp"
+#include "IGitRepoObserver.hpp"
 #include "libgit2.hpp"
+#include "Utility.hpp"
 #include "Service/LogHandler.hpp"
 #define LOG_INFO(...) lh.Log(ServiceType::GIT_REPO, Level::INFO, __VA_ARGS__)
 #define LOG_ERROR(...) lh.Log(ServiceType::GIT_REPO, Level::ERROR, __VA_ARGS__)
@@ -20,14 +22,6 @@ int CredCb(git_cred** out, const char* /*unused*/, const char* /*unused*/, unsig
 	return git_cred_userpass_plaintext_new(out, cred.first.c_str(), cred.second.c_str());
 }
 
-std::string NormalizeDirPath(std::string_view str)
-{
-	std::string tmp(str);
-	if(tmp.back() != '/' || tmp.back() != '\\')
-		tmp.push_back('/');
-	return tmp;
-}
-
 // public
 
 GitRepo::GitRepo(Service::LogHandler& lh, boost::asio::io_context& ioCtx, const boost::json::value& opts) :
@@ -35,7 +29,7 @@ GitRepo::GitRepo(Service::LogHandler& lh, boost::asio::io_context& ioCtx, const 
 	lh(lh),
 	token(opts.at("webhookToken").as_string().data()),
 	remote(opts.at("remote").as_string().data()),
-	path(NormalizeDirPath(opts.at("path").as_string().data())),
+	path(Utility::JStrToPath(opts.at("path").as_string())),
 	repo(nullptr)
 {
 	if(const auto* const cred = opts.as_object().if_contains("credentials"); cred)
@@ -53,7 +47,7 @@ GitRepo::GitRepo(Service::LogHandler& lh, boost::asio::io_context& ioCtx, const 
 		return;
 	}
 	LOG_INFO(I18N::GIT_REPO_EXISTS);
-	Git::Check(git_repository_open(&repo, path.data()));
+	Git::Check(git_repository_open(&repo, path.string().data()));
 	LOG_INFO(I18N::GIT_REPO_CHECKING_UPDATES);
 	try
 	{
@@ -84,7 +78,7 @@ void GitRepo::AddObserver(IGitRepoObserver& obs)
 
 void GitRepo::Callback(std::string_view payload)
 {
-	LOG_INFO(I18N::GIT_REPO_WEBHOOK_TRIGGERED, path);
+	LOG_INFO(I18N::GIT_REPO_WEBHOOK_TRIGGERED, path.string());
 	if(payload.find(token) == std::string_view::npos)
 	{
 		LOG_ERROR(I18N::GIT_REPO_WEBHOOK_NO_TOKEN);
@@ -110,7 +104,7 @@ bool GitRepo::CheckIfRepoExists() const
 {
 	return git_repository_open_ext(
 		nullptr,
-		path.c_str(),
+		path.string().data(),
 		GIT_REPOSITORY_OPEN_NO_SEARCH,
 		nullptr) == 0;
 }
@@ -124,7 +118,7 @@ void GitRepo::Clone()
 		cloneOpts.fetch_opts.callbacks.credentials = &CredCb;
 		cloneOpts.fetch_opts.callbacks.payload = credPtr.get();
 	}
-	Git::Check(git_clone(&repo, remote.c_str(), path.c_str(), &cloneOpts));
+	Git::Check(git_clone(&repo, remote.c_str(), path.string().data(), &cloneOpts));
 	LOG_INFO(I18N::GIT_REPO_CLONING_COMPLETED);
 }
 

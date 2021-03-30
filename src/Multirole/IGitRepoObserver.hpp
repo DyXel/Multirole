@@ -1,13 +1,13 @@
 #ifndef IGITREPOOBSERVER_HPP
 #define IGITREPOOBSERVER_HPP
-#include <string>
-#include <string_view>
 #include <vector>
+
+#include <boost/filesystem/path.hpp>
 
 namespace Ignis::Multirole
 {
 
-using PathVector = std::vector<std::string>;
+using PathVector = std::vector<boost::filesystem::path>;
 
 struct GitDiff
 {
@@ -19,8 +19,8 @@ struct GitDiff
 class IGitRepoObserver
 {
 public:
-	virtual void OnAdd(std::string_view path, const PathVector& fileList) = 0;
-	virtual void OnDiff(std::string_view path, const GitDiff& diff) = 0;
+	virtual void OnAdd(const boost::filesystem::path& path, const PathVector& fileList) = 0;
+	virtual void OnDiff(const boost::filesystem::path& path, const GitDiff& diff) = 0;
 protected:
 	inline ~IGitRepoObserver() = default;
 };

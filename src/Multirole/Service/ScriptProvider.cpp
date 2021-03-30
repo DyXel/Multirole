@@ -19,12 +19,12 @@ Service::ScriptProvider::ScriptProvider(Service::LogHandler& lh, std::string_vie
 	fnRegex(fnRegexStr.data())
 {}
 
-void Service::ScriptProvider::OnAdd(std::string_view path, const PathVector& fileList)
+void Service::ScriptProvider::OnAdd(const boost::filesystem::path& path, const PathVector& fileList)
 {
 	LoadScripts(path, fileList);
 }
 
-void Service::ScriptProvider::OnDiff(std::string_view path, const GitDiff& diff)
+void Service::ScriptProvider::OnDiff(const boost::filesystem::path& path, const GitDiff& diff)
 {
 	LoadScripts(path, diff.added);
 }
@@ -39,38 +39,27 @@ std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) con
 
 // private
 
-void Service::ScriptProvider::LoadScripts(std::string_view path, const PathVector& fileList)
+void Service::ScriptProvider::LoadScripts(const boost::filesystem::path& path, const PathVector& fileList)
 {
 	int total = 0;
 	LOG_INFO(I18N::SCRIPT_PROVIDER_LOADING_FILES, fileList.size());
-	std::string fullPath(path);
 	std::scoped_lock lock(mScripts);
 	for(const auto& fn : fileList)
 	{
-		if(!std::regex_match(fn, fnRegex))
+		if(!std::regex_match(fn.string(), fnRegex))
 			continue;
-		fullPath.resize(path.size());
-		fullPath += fn;
+		const auto fullPath = (path / fn).lexically_normal();
 		// Open file, checking if it exists
 		std::ifstream file(fullPath, std::ifstream::binary);
 		if(!file.is_open())
 		{
-			LOG_ERROR(I18N::SCRIPT_PROVIDER_COULD_NOT_OPEN, fullPath);
+			LOG_ERROR(I18N::SCRIPT_PROVIDER_COULD_NOT_OPEN, fullPath.string());
 			continue;
 		}
-		// Lambda to remove all subdirectories of a given filename
-		auto FilenameFromPath = [](std::string_view str) -> std::string
-		{
-			static const auto npos = std::string::npos;
-			std::size_t pos = str.rfind('/');
-			if(pos != npos || (pos = str.rfind('\\')) != npos)
-				return std::string(str.substr(pos + 1U));
-			return std::string(str);
-		};
 		// Read actual file into memory and place into script map
 		std::stringstream buffer;
 		buffer << file.rdbuf();
-		scripts.insert_or_assign(FilenameFromPath(fn), buffer.str());
+		scripts.insert_or_assign(fn.filename().string(), buffer.str());
 		total++;
 	}
 	LOG_INFO(I18N::SCRIPT_PROVIDER_TOTAL_FILES_LOADED, total);

@@ -8,8 +8,6 @@
 #include <memory>
 #include <shared_mutex>
 
-#include <boost/filesystem/path.hpp>
-
 #include "../IGitRepoObserver.hpp"
 
 namespace Ignis::Multirole
@@ -33,15 +31,15 @@ public:
 
 	using CorePtr = std::shared_ptr<Core::IWrapper>;
 
-	CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, std::string_view tmpDirStr, CoreType type, bool loadPerCall);
+	CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, const boost::filesystem::path& tmpDir, CoreType type, bool loadPerCall);
 	~CoreProvider();
 
 	// Will return a core instance based on the options set.
 	CorePtr GetCore() const;
 
 	// IGitRepoObserver overrides
-	void OnAdd(std::string_view path, const PathVector& fileList) override;
-	void OnDiff(std::string_view path, const GitDiff& diff) override;
+	void OnAdd(const boost::filesystem::path& path, const PathVector& fileList) override;
+	void OnDiff(const boost::filesystem::path& path, const GitDiff& diff) override;
 private:
 	Service::LogHandler& lh;
 	const std::regex fnRegex;
@@ -58,7 +56,7 @@ private:
 
 	CorePtr LoadCore() const;
 
-	void OnGitUpdate(std::string_view path, const PathVector& fl);
+	void OnGitUpdate(const boost::filesystem::path& path, const PathVector& fileList);
 };
 
 } // namespace Ignis::Multirole

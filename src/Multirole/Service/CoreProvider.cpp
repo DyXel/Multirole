@@ -14,11 +14,11 @@
 namespace Ignis::Multirole
 {
 
-Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, std::string_view tmpDirStr, CoreType type, bool loadPerCall)
+Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, const boost::filesystem::path& tmpDir, CoreType type, bool loadPerCall)
 	:
 	lh(lh),
 	fnRegex(fnRegexStr.data()),
-	tmpDir(tmpDirStr.data()),
+	tmpDir(tmpDir),
 	type(type),
 	loadPerCall(loadPerCall),
 	uniqueId(std::chrono::system_clock::now().time_since_epoch().count()),
@@ -46,12 +46,12 @@ Service::CoreProvider::CorePtr Service::CoreProvider::GetCore() const
 	return core;
 }
 
-void Service::CoreProvider::OnAdd(std::string_view path, const PathVector& fileList)
+void Service::CoreProvider::OnAdd(const boost::filesystem::path& path, const PathVector& fileList)
 {
 	OnGitUpdate(path, fileList);
 }
 
-void Service::CoreProvider::OnDiff(std::string_view path, const GitDiff& diff)
+void Service::CoreProvider::OnDiff(const boost::filesystem::path& path, const GitDiff& diff)
 {
 	OnGitUpdate(path, diff.added);
 }
@@ -67,13 +67,13 @@ Service::CoreProvider::CorePtr Service::CoreProvider::LoadCore() const
 	throw std::runtime_error(I18N::CORE_PROVIDER_WRONG_CORE_TYPE);
 }
 
-void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector& fl)
+void Service::CoreProvider::OnGitUpdate(const boost::filesystem::path& path, const PathVector& fileList)
 {
-	auto it = fl.begin();
-	for(; it != fl.end(); ++it)
-		if(std::regex_match(*it, fnRegex))
+	auto it = fileList.begin();
+	for(; it != fileList.end(); ++it)
+		if(std::regex_match(it->string(), fnRegex))
 			break;
-	if(it == fl.end())
+	if(it == fileList.end())
 	{
 		if(shouldTest)
 			throw std::runtime_error(I18N::CORE_PROVIDER_CORE_NOT_FOUND_IN_REPO);
@@ -81,13 +81,8 @@ void Service::CoreProvider::OnGitUpdate(std::string_view path, const PathVector&
 	}
 	std::scoped_lock lock(mCore);
 	const boost::filesystem::path oldCoreLoc = coreLoc;
-	const boost::filesystem::path repoCore = [&]()
-	{
-		boost::filesystem::path fullFn(path.data());
-		fullFn /= *it;
-		return fullFn;
-	}();
-	coreLoc = tmpDir / fmt::format("{}-{}-{}", uniqueId, loadCount++, repoCore.filename().string());
+	const boost::filesystem::path repoCore = (path / *it).lexically_normal();
+	coreLoc = (tmpDir / fmt::format("{}-{}-{}", uniqueId, loadCount++, repoCore.filename().string())).lexically_normal();
 	LOG_INFO(I18N::CORE_PROVIDER_COPYING_CORE_FILE, repoCore.string(), coreLoc.string());
 	pLocs.emplace_back(coreLoc);
 	boost::filesystem::copy_file(repoCore, coreLoc);

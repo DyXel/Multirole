@@ -33,7 +33,7 @@ private:
 	Service::LogHandler& lh;
 	const std::string token;
 	const std::string remote;
-	const std::string path;
+	const boost::filesystem::path path;
 	std::unique_ptr<Credentials> credPtr;
 	git_repository* repo;
 	std::vector<IGitRepoObserver*> observers;
@@ -47,7 +47,7 @@ private:
 	void ResetToFetchHead();
 
 	GitDiff GetFilesDiff() const;
-	std::vector<std::string> GetTrackedFiles() const;
+	std::vector<boost::filesystem::path> GetTrackedFiles() const;
 };
 
 } // namespace Ignis::Multirole

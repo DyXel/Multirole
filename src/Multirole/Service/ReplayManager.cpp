@@ -18,10 +18,10 @@ constexpr auto IOS_BINARY = std::ios_base::binary;
 constexpr auto IOS_BINARY_IN = IOS_BINARY | std::ios_base::in;
 constexpr auto IOS_BINARY_OUT = IOS_BINARY | std::ios_base::out;
 
-Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, std::string_view dirStr) :
+Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const boost::filesystem::path& dir) :
 	lh(lh),
 	save(save),
-	dir(dirStr.data()),
+	dir(dir),
 	lastId(dir / "lastId"),
 	mLastId()
 {
