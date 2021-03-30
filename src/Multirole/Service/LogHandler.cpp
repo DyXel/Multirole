@@ -107,7 +107,7 @@ RoomLogger::RoomLogger(const boost::filesystem::path& path) :
 	f(path)
 {
 	if(!f.is_open())
-		std::runtime_error(I18N::ROOM_LOGGER_FILE_IS_NOT_OPEN);
+		throw std::runtime_error(I18N::ROOM_LOGGER_FILE_IS_NOT_OPEN);
 }
 
 void RoomLogger::Log(std::string_view str) noexcept
