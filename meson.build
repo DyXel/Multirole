@@ -1,7 +1,7 @@
 project('multirole', ['c', 'cpp'], default_options : 'cpp_std=c++17')
 
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
-boost_dep   = dependency('boost', modules : ['filesystem', 'system'])
+boost_dep   = dependency('boost', modules : ['filesystem'])
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 fmt_dep     = dependency('fmt')
 libgit2_dep = dependency('libgit2')
