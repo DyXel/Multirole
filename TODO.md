@@ -1,7 +1,4 @@
 # TODO
-* Update README
-  * Remark that "Too Many Open Files" error not only affects the update mechanism and should be of high priority if dealing with a high server load, as each hornet and replay saving also consumes file descriptors
-  * Write configuration section (config.json structure), explaining every setting.
 * Prepare windows workflow build
 
 # Wishlist
