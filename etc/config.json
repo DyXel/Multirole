@@ -33,84 +33,90 @@
 		}
 	],
 	"banlistProvider": {
-		"observedRepos" : ["banlists"],
+		"observedRepos": [
+			"banlists"
+		],
 		"fileRegex": ".*\\.lflist\\.conf"
 	},
 	"coreProvider": {
-		"observedRepos" : ["bin"],
-		"tmpPath" : "./tmp/",
+		"observedRepos": [
+			"bin"
+		],
 		"fileRegex": ".*libocgcore\\.so",
+		"tmpPath": "./tmp/",
 		"coreType": "hornet",
 		"loadPerRoom": true
 	},
 	"dataProvider": {
-		"observedRepos" : ["databases"],
+		"observedRepos": [
+			"databases"
+		],
 		"fileRegex": ".*\\.cdb"
 	},
 	"logHandler": {
-		"serviceSinks" : {
-			"gitRepo" : {
-				"type" : "stdout",
-				"properties" : {}
+		"serviceSinks": {
+			"gitRepo": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"multirole" : {
-				"type" : "stdout",
-				"properties" : {}
+			"multirole": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"banlistProvider" : {
-				"type" : "stdout",
-				"properties" : {}
+			"banlistProvider": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"coreProvider" : {
-				"type" : "stdout",
-				"properties" : {}
+			"coreProvider": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"dataProvider" : {
-				"type" : "stdout",
-				"properties" : {}
+			"dataProvider": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"logHandler" : {
-				"type" : "stdout",
-				"properties" : {}
+			"logHandler": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"replayManager" : {
-				"type" : "stdout",
-				"properties" : {}
+			"replayManager": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"scriptProvider" : {
-				"type" : "stdout",
-				"properties" : {}
+			"scriptProvider": {
+				"type": "stdout",
+				"properties": {}
 			},
-			"other" : {
-				"type" : "stdout",
-				"properties" : {}
+			"other": {
+				"type": "stdout",
+				"properties": {}
 			}
 		},
-		"ecSinks" : {
-			"core" : {
-				"type" : "stderr",
-				"properties" : {}
+		"ecSinks": {
+			"core": {
+				"type": "stderr",
+				"properties": {}
 			},
-			"official" : {
-				"type" : "stderr",
-				"properties" : {}
+			"official": {
+				"type": "stderr",
+				"properties": {}
 			},
-			"speed" : {
-				"type" : "stderr",
-				"properties" : {}
+			"speed": {
+				"type": "stderr",
+				"properties": {}
 			},
-			"rush" : {
-				"type" : "stderr",
-				"properties" : {}
+			"rush": {
+				"type": "stderr",
+				"properties": {}
 			},
-			"other" : {
-				"type" : "stderr",
-				"properties" : {}
+			"other": {
+				"type": "stderr",
+				"properties": {}
 			}
 		},
-		"roomLogging" : {
-			"enabled" : false,
-			"path" : "./room-logs/"
+		"roomLogging": {
+			"enabled": false,
+			"path": "./room-logs/"
 		}
 	},
 	"replayManager": {
@@ -118,7 +124,9 @@
 		"path": "./replays/"
 	},
 	"scriptProvider": {
-		"observedRepos" : ["scripts"],
+		"observedRepos": [
+			"scripts"
+		],
 		"fileRegex": ".*\\.lua"
 	}
 }
