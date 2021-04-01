@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        vcpkg install boost fmt libgit2 sqlite3 openssl
+        vcpkg install boost-asio boost-filesystem boost-interprocess boost-json fmt libgit2 sqlite3 openssl
     - name: Install Meson & Ninja
       shell: bash
       run: pip install meson ninja
