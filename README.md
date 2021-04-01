@@ -40,7 +40,7 @@ Once you have all necessary tools and dependencies, compiling should be as simpl
     cd build
     ninja
 
-You can (and should) take a look at the github workflow file(s) to ease this process. You can also use the Dockerfile, which should handle everything related to building for you.
+You can (and should) take a look at the github workflow file to ease this process. You can also use the Dockerfile, which should handle everything related to building for you.
 
 ## Configuring and Running
 
