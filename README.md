@@ -58,7 +58,7 @@ The configuration file must be placed in the same working directory as Multirole
 
     * `name`: Unique identifier, used by the services to know from which repo to pull files from.
 
-    * `remote`: Where from synchronize this repository from as if by doing `git fetch && git reset --hard FETCH_HEAD`.
+    * `remote`: Where from synchronize this repository as if by doing `git fetch && git reset --hard FETCH_HEAD`.
 
     * `path`: Where to save the repository in the local filesystem.
 
