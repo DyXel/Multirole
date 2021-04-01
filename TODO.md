@@ -1,6 +1,3 @@
-# TODO
-* Prepare windows workflow build
-
 # Wishlist
 * Make logging mechanism entirely disableable as compile configuration
 * Make `GitRepo` webhook update system optional upon construction via config file
