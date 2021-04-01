@@ -66,13 +66,13 @@ The configuration file must be placed in the same working directory as Multirole
 
   * `banlistProvider`: `Service::BanlistProvider` settings, the service that provides banlists objects to each room:
 
-    * `observedRepos`: Array of repositories' name where banlist files will be fetched from.
+    * `observedRepos`: Array of repositories' names where banlist files will be fetched from.
 
     * `fileRegex`: Regular expression that will match or discard files to load.
 
   * `coreProvider`: `Service::CoreProvider` settings, the service that provides a working core interface object to each room:
 
-    * `observedRepos`: Array of repositories' name where shared object files or DLL files will be fetched from.
+    * `observedRepos`: Array of repositories' names where shared object files or DLL files will be fetched from.
 
     * `fileRegex`: Regular expression that will match or discard files to load.
 
@@ -84,7 +84,7 @@ The configuration file must be placed in the same working directory as Multirole
 
   * `dataProvider`: `Service::DataProvider` settings, the service that provides card databases and information to each room:
 
-    * `observedRepos`: Array of repositories' name where database files will be fetched from.
+    * `observedRepos`: Array of repositories' names where database files will be fetched from.
 
     * `fileRegex`: Regular expression that will match or discard files to load.
 
@@ -116,7 +116,7 @@ The configuration file must be placed in the same working directory as Multirole
 
   * `scriptProvider`: `Service::ScriptProvider` settings, the service that loads and provides card scripts to each room:
 
-    * `observedRepos`: Array of repositories' name where script files will be fetched from.
+    * `observedRepos`: Array of repositories' names where script files will be fetched from.
 
     * `fileRegex`: Regular expression that will match or discard files to load.
 
