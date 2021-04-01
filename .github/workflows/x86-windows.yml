@@ -1,0 +1,30 @@
+name: x86-windows
+on: push
+jobs:
+  build:
+    runs-on: windows-latest
+    if: >-
+      !(
+        contains(github.event.head_commit.message, '[ci skip]') ||
+        contains(github.event.head_commit.message, '[skip ci]') ||
+        contains(github.event.head_commit.message, '[actions skip]') ||
+        contains(github.event.head_commit.message, '[skip actions]')
+      )
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      shell: bash
+      run: |
+        vcpkg --help
+        vcpkg install boost fmt libgit2 sqlite3 openssl
+    - name: Install Meson & Ninja
+      shell: bash
+      run: pip install meson ninja
+    - name: Meson build
+      shell: bash
+      run: |
+        meson setup build
+        cd build
+        ninja
