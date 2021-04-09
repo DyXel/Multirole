@@ -43,13 +43,13 @@ enum ReplayFlags
 
 struct ReplayHeader
 {
-	uint32_t type; // See ReplayTypes
-	uint32_t version; // Unused atm, should be set to YGOPro::ClientVersion
-	uint32_t flags; // See ReplayFlags
-	uint32_t seed; // Unix timestamp for YRPX. Core duel seed for YRP
-	uint32_t size; // Uncompressed size of whatever is after this header
-	uint32_t hash; // Unused
-	uint8_t props[8]; // Used for LZMA compression (check their apis)
+	uint32_t type; // See ReplayTypes.
+	uint32_t version; // Unused atm, should be set to YGOPro::ClientVersion.
+	uint32_t flags; // See ReplayFlags.
+	uint32_t seed; // Unix timestamp for YRPX. Core duel seed for YRP.
+	uint32_t size; // Uncompressed size of whatever is after this header.
+	uint32_t hash; // Unused.
+	uint8_t props[8]; // Used for LZMA compression (check their apis).
 };
 
 // ***** YRPX Binary format *****
@@ -172,12 +172,12 @@ void Replay::Serialize()
 			8U;  // duelFlags<8>
 		// Size occupied by each duelist
 		size += 40U * (duelists[0U].size() + duelists[1U].size());
-		// Size occupied by all core messages
+		// Size occupied by all core messages.
 		size += [&]() -> std::size_t
 		{
 			std::size_t v{};
 			for(const auto& msg : messages)
-				v += msg.size() + 4U; // length
+				v += msg.size() + 4U; // length.
 			return v;
 		}();
 		return size;
@@ -187,8 +187,8 @@ void Replay::Serialize()
 		std::size_t size =
 			8U + // team0Count<4> + team1Count<4>
 			8U + // startingLP<4> + startingDrawCount<4>
-			12U;  // drawCountPerTurn<4> + duelFlags<8>
-		// Size occupied by each duelist and their decks
+			12U; // drawCountPerTurn<4> + duelFlags<8>
+		// Size occupied by each duelist and their decks.
 		for(const auto& m : duelists)
 		{
 			for(const auto& d : m)
@@ -200,14 +200,14 @@ void Replay::Serialize()
 				size += d.second.extra.size() * 4U;
 			}
 		}
-		// Size occupied by extra cards
+		// Size occupied by extra cards.
 		size += 4U + extraCards.size() * 4U;
 		// Size occupied by all player responses
 		for(const auto& r : responses)
 			size += r.size() + 1U; // length
 		return size;
 	};
-	// Write duelists count and their names
+	// Write duelists count and their names.
 	auto WriteDuelists = [&](uint8_t*& ptr)
 	{
 		for(std::size_t team = 0U; team < duelists.size(); team++)
@@ -234,9 +234,9 @@ void Replay::Serialize()
 			for(const auto& code : vec)
 				Write<uint32_t>(ptr, code);
 		};
-		// NOLINTNEXTLINE: Message type, Called OLD_REPLAY_FORMAT in common.h
+		// NOLINTNEXTLINE: Message type, Called OLD_REPLAY_FORMAT in common.h.
 		Write<uint8_t>(ptr, 231U);
-		// Replay header for YRP replay format
+		// Replay header for YRP replay format.
 		Write(ptr, ReplayHeader
 		{
 			REPLAY_YRP1,
@@ -247,14 +247,14 @@ void Replay::Serialize()
 			0U,
 			{}
 		});
-		// Duelists count and their names
+		// Duelists count and their names.
 		WriteDuelists(ptr);
-		// Core flags
+		// Core flags.
 		Write<uint32_t>(ptr, startingLP);
 		Write<uint32_t>(ptr, startingDrawCount);
 		Write<uint32_t>(ptr, drawCountPerTurn);
 		Write<uint64_t>(ptr, duelFlags);
-		// Decks & Extra Decks
+		// Decks & Extra Decks.
 		for(const auto& m : duelists)
 		{
 			for(const auto& d : m)
@@ -263,27 +263,27 @@ void Replay::Serialize()
 				WriteCodeVector(d.second.extra);
 			}
 		}
-		// Extra Cards
+		// Extra Cards.
 		WriteCodeVector(extraCards);
-		// Core responses
+		// Core responses.
 		for(const auto& r : responses)
 		{
 			Write(ptr, static_cast<uint8_t>(r.size()));
 			std::memcpy(ptr, r.data(), r.size());
 			ptr += r.size();
 		}
-		// Number of bytes written shall equal vec.size()
+		// Number of bytes written shall equal vec.size().
 		assert(static_cast<std::size_t>(ptr - vec.data()) == vec.size());
 	}(messages.emplace_back());
-	// Write past-the-header data for YRPX replay format
+	// Write past-the-header data for YRPX replay format.
 	auto pthData = [&]() -> std::vector<uint8_t>
 	{
 		std::vector<uint8_t> vec(YRPXPastHeaderSize());
 		uint8_t* ptr = vec.data();
 		WriteDuelists(ptr);
-		// Duel flags
+		// Duel flags.
 		Write<uint64_t>(ptr, duelFlags);
-		// Core messages
+		// Core messages.
 		for(const auto& msg : messages)
 		{
 			const std::size_t bodyLength = msg.size() - 1U;
@@ -292,11 +292,11 @@ void Replay::Serialize()
 			std::memcpy(ptr, msg.data() + 1U, bodyLength);
 			ptr += bodyLength;
 		}
-		// Number of bytes written shall equal vec.size()
+		// Number of bytes written shall equal vec.size().
 		assert(static_cast<std::size_t>(ptr - vec.data()) == vec.size());
 		return vec;
 	}();
-	// Replay header for YRPX replay format
+	// Replay header for YRPX replay format.
 	ReplayHeader header
 	{
 		REPLAY_YRPX,
@@ -307,13 +307,13 @@ void Replay::Serialize()
 		0U,
 		{}
 	};
-	// Compress past-the-header data
+	// Compress past-the-header data.
 	std::vector<uint8_t> compData(pthData.size() * 2U);
 	CLzmaEncProps props;
 	LzmaEncProps_Init(&props);
-	props.numThreads = 1; // NOLINT: no multithreading
+	props.numThreads = 1; // NOLINT: No multithreading.
 	SizeT destLen = compData.size();
-	SizeT outPropSize = 5U; // NOLINT: must be 5 according to lzma SDK
+	SizeT outPropSize = LZMA_PROPS_SIZE;
 	LzmaEncode
 	(
 		compData.data(),
@@ -331,7 +331,7 @@ void Replay::Serialize()
 	compData.resize(destLen);
 	header.flags |= REPLAY_COMPRESSED;
 	pthData = std::move(compData);
-	// Write final binary replay
+	// Write final binary replay.
 	bytes.resize(sizeof(ReplayHeader) + pthData.size());
 	uint8_t* ptr = bytes.data();
 	Write<ReplayHeader>(ptr, header);
