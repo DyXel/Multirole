@@ -21,7 +21,7 @@
 #define MSG_WIN                  5
 #define MSG_UPDATE_DATA          6
 #define MSG_UPDATE_CARD          7
-#define MSG_REQUEST_DECK         8
+// #define MSG_REQUEST_DECK         8
 #define MSG_SELECT_BATTLECMD     10
 #define MSG_SELECT_IDLECMD       11
 #define MSG_SELECT_EFFECTYN      12
@@ -42,7 +42,7 @@
 #define MSG_CONFIRM_CARDS        31
 #define MSG_SHUFFLE_DECK         32
 #define MSG_SHUFFLE_HAND         33
-#define MSG_REFRESH_DECK         34
+// #define MSG_REFRESH_DECK         34
 #define MSG_SWAP_GRAVE_DECK      35
 #define MSG_SHUFFLE_SET_CARD     36
 #define MSG_REVERSE_DECK         37
@@ -104,8 +104,8 @@
 #define MSG_CARD_HINT            160
 #define MSG_TAG_SWAP             161
 #define MSG_RELOAD_FIELD         162
-#define MSG_AI_NAME              163
-#define MSG_SHOW_HINT            164
+// #define MSG_AI_NAME              163
+// #define MSG_SHOW_HINT            164
 #define MSG_PLAYER_HINT          165
 #define MSG_MATCH_KILL           170
 // #define MSG_CUSTOM_MSG   180
