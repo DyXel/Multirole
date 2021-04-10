@@ -8,12 +8,17 @@
 namespace Ignis::Multirole::Endpoint
 {
 
-static const auto HTTP_OK = boost::asio::buffer(
+namespace
+{
+
+const auto HTTP_OK = boost::asio::buffer(
 	"HTTP/1.0 200 OK\r\n"
 	"Content-Length: 17\r\n"
 	"Content-Type: text/plain\r\n\r\n"
 	"Payload received."
 );
+
+} // namespace
 
 class Webhook::Connection final : public std::enable_shared_from_this<Connection>
 {

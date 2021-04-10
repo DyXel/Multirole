@@ -5,6 +5,9 @@
 namespace Ignis::Multirole::LogHandlerDetail
 {
 
+namespace
+{
+
 #include "SvcNames.inl"
 
 constexpr std::array<
@@ -34,6 +37,8 @@ constexpr std::size_t AsSizeT(T v)
 {
 	return static_cast<std::size_t>(v);
 }
+
+} // namespace
 
 void StreamFormat(std::ostream& os, const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept
 {

@@ -15,6 +15,9 @@
 namespace Ignis::Multirole::Room
 {
 
+namespace
+{
+
 constexpr auto GRACE_PERIOD = std::chrono::seconds(5);
 
 inline void ResetTimers(State::Dueling& s, uint32_t limitInSeconds)
@@ -30,6 +33,8 @@ constexpr auto CORE_EXC_REASON = Context::DuelFinishReason
 	Context::DuelFinishReason::Reason::REASON_CORE_CRASHED,
 	2U // NOLINT: Draw.
 };
+
+} // namespace
 
 StateOpt Context::operator()(State::Dueling& s)
 {

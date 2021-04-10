@@ -14,6 +14,9 @@
 #include "Instance.hpp"
 #include "I18N.hpp"
 
+namespace
+{
+
 inline int CreateAndRunServerInstance()
 {
 	using namespace Ignis::Multirole;
@@ -35,6 +38,8 @@ inline int CreateAndRunServerInstance()
 	}
 	return server->Run();
 }
+
+} // namespace
 
 int main()
 {

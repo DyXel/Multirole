@@ -13,6 +13,9 @@
 namespace Ignis::Multirole
 {
 
+namespace
+{
+
 int CredCb(git_cred** out, const char* /*unused*/, const char* /*unused*/, unsigned int aTypes, void* pl)
 {
 	if((GIT_CREDTYPE_USERPASS_PLAINTEXT & aTypes) == 0U)
@@ -20,6 +23,8 @@ int CredCb(git_cred** out, const char* /*unused*/, const char* /*unused*/, unsig
 	const auto& cred = *static_cast<GitRepo::Credentials*>(pl);
 	return git_cred_userpass_plaintext_new(out, cred.first.c_str(), cred.second.c_str());
 }
+
+} // namespace
 
 // public
 

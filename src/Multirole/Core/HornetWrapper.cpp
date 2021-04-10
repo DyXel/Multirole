@@ -21,6 +21,9 @@
 namespace Ignis::Multirole::Core
 {
 
+namespace
+{
+
 #include "../../Read.inl"
 #include "../../Write.inl"
 
@@ -40,6 +43,8 @@ inline ipc::shared_memory_object MakeShm(const std::string& str)
 	shm.truncate(sizeof(Hornet::SharedSegment));
 	return shm;
 }
+
+} // namespace
 
 // public
 

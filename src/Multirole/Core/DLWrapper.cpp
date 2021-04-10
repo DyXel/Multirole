@@ -11,6 +11,9 @@
 namespace Ignis::Multirole::Core
 {
 
+namespace
+{
+
 // Core callbacks
 static void DataReader(void* payload, uint32_t code, OCG_CardData* data)
 {
@@ -36,6 +39,8 @@ static void DataReaderDone(void* payload, OCG_CardData* data)
 {
 	static_cast<IDataSupplier*>(payload)->DataUsageDone(*data);
 }
+
+} // namespace
 
 // public
 

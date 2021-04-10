@@ -5,10 +5,15 @@
 namespace Ignis::Multirole
 {
 
-std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
+namespace
+{
+
+inline std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
 {
 	return std::chrono::system_clock::now().time_since_epoch().count();
 }
+
+} // namespace
 
 // public
 
