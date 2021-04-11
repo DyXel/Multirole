@@ -17,7 +17,8 @@ inline std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
 
 // public
 
-Lobby::Lobby() :
+Lobby::Lobby(int maxConnections) :
+	maxConnections(maxConnections),
 	rng(static_cast<std::mt19937::result_type>(TimeNowInt())),
 	closed(false)
 {}
@@ -29,6 +30,16 @@ std::shared_ptr<Room::Instance> Lobby::GetRoomById(uint32_t id) const
 	if(search != rooms.end())
 		return search->second.lock();
 	return nullptr;
+}
+
+bool Lobby::HasMaxConnections(const std::string& ip) const
+{
+	if(maxConnections < 0)
+		return false;
+	std::shared_lock lock(mConnections);
+	if(const auto search = connections.find(ip); search != connections.end())
+		return search->second >= maxConnections;
+	return false;
 }
 
 std::size_t Lobby::Close()
@@ -82,6 +93,26 @@ void Lobby::CollectRooms(const std::function<void(const RoomProps&)>& f)
 		}
 		it = rooms.erase(it);
 	}
+}
+
+void Lobby::IncrementConnectionCount(const std::string& ip)
+{
+	if(maxConnections < 0)
+		return;
+	std::scoped_lock lock(mConnections);
+	connections[ip]++;
+}
+
+void Lobby::DecrementConnectionCount(const std::string& ip)
+{
+	if(maxConnections < 0)
+		return;
+	std::scoped_lock lock(mConnections);
+	auto search = connections.find(ip);
+	assert(search != connections.end());
+	search->second--;
+	if(search->second == 0)
+		connections.erase(search);
 }
 
 } // namespace Ignis::Multirole

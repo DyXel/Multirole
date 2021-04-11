@@ -52,6 +52,8 @@ The configuration file must be placed in the same working directory as Multirole
 
   * `lobbyListingPort`: Port that will be used by the client to fetch the server's room list.
 
+  * `lobbyMaxConnections`: Maximum number of connections a single IP can have to the lobby. Any negative value disables this check.
+
   * `roomHostingPort`: Port that will be used by the client to host new rooms, or to join rooms that were previously fetched.
 
   * `repos`: An array of repositories settings that will be cloned and synchronized for usage by Multirole's services, each repository object must have the following fields:

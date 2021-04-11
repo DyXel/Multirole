@@ -54,7 +54,7 @@ Instance::Instance(const boost::json::value& cfg) :
 	scriptProvider(logHandler, cfg.at("scriptProvider").at("fileRegex").as_string()),
 	service({banlistProvider, coreProvider, dataProvider, logHandler,
 		replayManager, scriptProvider}),
-	lobby(),
+	lobby(cfg.at("lobbyMaxConnections").to_number<int>()),
 	lobbyListing(
 		lIoCtx,
 		cfg.at("lobbyListingPort").to_number<unsigned short>(),

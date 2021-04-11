@@ -11,7 +11,12 @@
 #include "../YGOPro/Deck.hpp"
 #include "../YGOPro/STOCMsg.hpp"
 
-namespace Ignis::Multirole::Room
+namespace Ignis::Multirole
+{
+
+class Lobby;
+
+namespace Room
 {
 
 class Instance;
@@ -22,7 +27,8 @@ public:
 	using PosType = std::pair<uint8_t, uint8_t>;
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
-	Client(std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string ip, std::string name);
+	Client(Lobby& lobby, std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string ip, std::string name);
+	~Client();
 	void Start();
 
 	// Getters
@@ -52,6 +58,7 @@ public:
 	// upon finishing writes.
 	void Disconnect();
 private:
+	Lobby& lobby;
 	std::shared_ptr<Instance> room;
 	boost::asio::io_context::strand& strand;
 	boost::asio::ip::tcp::socket socket;
@@ -82,6 +89,8 @@ private:
 	void HandleMsg();
 };
 
-} // namespace Ignis::Multirole::Room
+} // namespace Room
+
+} // namespace Ignis::Multirole
 
 #endif // ROOM_CLIENT_HPP

@@ -1,6 +1,7 @@
 {
 	"concurrencyHint": -1,
 	"lobbyListingPort": 7922,
+	"lobbyMaxConnections": 4,
 	"roomHostingPort": 7911,
 	"repos": [
 		{

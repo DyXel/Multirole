@@ -43,6 +43,8 @@ Str CLIENT_ROOM_HOSTING_KICKED_BEFORE =
 "Unable to join. You were kicked from this room before.";
 Str CLIENT_ROOM_HOSTING_CANNOT_RESOLVE_IP =
 "Error resolving your IP address. Try again later.";
+Str CLIENT_ROOM_HOSTING_MAX_CONNECTION_REACHED =
+"You have too many connections open. Close some of them.";
 
 Str CLIENT_ROOM_MSG_RETRY_ERROR =
 "Error while processing your response. Make sure you have the lastest client.";

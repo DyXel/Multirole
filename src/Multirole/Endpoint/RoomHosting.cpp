@@ -175,6 +175,12 @@ private:
 				return Status::STATUS_ERROR;
 			}
 			ip = endpoint.address().to_string();
+			if(roomHosting.lobby.HasMaxConnections(ip))
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_MAX_CONNECTION_REACHED);
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+				return Status::STATUS_ERROR;
+			}
 			const auto p = incoming.GetPlayerInfo();
 			if(!p || (name = Utf16BufferToStr(p->name)).empty())
 			{
@@ -222,6 +228,7 @@ private:
 			auto room = roomHosting.lobby.MakeRoom(info);
 			// Add the client to the newly created room.
 			std::make_shared<Room::Client>(
+				roomHosting.lobby,
 				std::move(room),
 				std::move(socket),
 				std::move(ip),
@@ -255,6 +262,7 @@ private:
 				return Status::STATUS_ERROR;
 			}
 			std::make_shared<Room::Client>(
+				roomHosting.lobby,
 				std::move(room),
 				std::move(socket),
 				std::move(ip),
@@ -289,6 +297,7 @@ RoomHosting::RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lo
 		STOCMsgFactory::MakeJoinError(Error::JOIN_NOT_FOUND),
 		SrvMsg(I18N::CLIENT_ROOM_HOSTING_KICKED_BEFORE),
 		SrvMsg(I18N::CLIENT_ROOM_HOSTING_CANNOT_RESOLVE_IP),
+		SrvMsg(I18N::CLIENT_ROOM_HOSTING_MAX_CONNECTION_REACHED),
 	}),
 	ioCtx(ioCtx),
 	svc(svc),

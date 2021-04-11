@@ -5,17 +5,20 @@
 #include <boost/asio/write.hpp>
 
 #include "Instance.hpp"
+#include "../Lobby.hpp"
 #include "../YGOPro/StringUtils.hpp"
 
 namespace Ignis::Multirole::Room
 {
 
 Client::Client(
+	Lobby& lobby,
 	std::shared_ptr<Instance> r,
 	boost::asio::ip::tcp::socket socket,
 	std::string ip,
 	std::string name)
 	:
+	lobby(lobby),
 	room(std::move(r)),
 	strand(room->Strand()),
 	socket(std::move(socket)),
@@ -25,7 +28,14 @@ Client::Client(
 	disconnecting(false),
 	position(POSITION_SPECTATOR),
 	ready(false)
-{}
+{
+	lobby.IncrementConnectionCount(this->ip);
+}
+
+Client::~Client()
+{
+	lobby.DecrementConnectionCount(ip);
+}
 
 void Client::Start()
 {
