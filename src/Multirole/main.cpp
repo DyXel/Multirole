@@ -10,6 +10,7 @@
 #include <boost/json/src.hpp>
 #include <fmt/format.h>
 #include <git2.h>
+#include <sqlite3.h>
 
 #include "Instance.hpp"
 #include "I18N.hpp"
@@ -44,7 +45,10 @@ inline int CreateAndRunServerInstance()
 int main()
 {
 	git_libgit2_init();
+	sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
+	sqlite3_initialize();
 	int exitFlag = CreateAndRunServerInstance();
+	sqlite3_shutdown();
 	git_libgit2_shutdown();
 	return exitFlag;
 }
