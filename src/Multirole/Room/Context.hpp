@@ -153,9 +153,13 @@ private:
 	std::set<Client*> spectators;
 
 	// Additional data used by room states.
+	int duelsHad{};
 	uint8_t isTeam1GoingFirst{};
 	std::mt19937 rng{};
 	std::array<int32_t, 2U> wins{};
+
+	// Get if tiebreaker mode is enabled (match last until there is a winner).
+	bool IsTiebreaking() const;
 
 	// Get correctly swapped teams based on team1 going first or not.
 	uint8_t GetSwappedTeam(uint8_t team) const;

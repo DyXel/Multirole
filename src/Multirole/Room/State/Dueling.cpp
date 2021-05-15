@@ -595,22 +595,25 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		else if(dfr.reason == Reason::REASON_WRONG_RESPONSE)
 			SendWinMsg(WIN_REASON_WRONG_RESPONSE);
 		SendReplay();
-		if(hostInfo.bestOf <= 1 || dfr.winner == 2U)
+		if(hostInfo.bestOf <= 1) // Single.
 			return State::Rematching{turnDecider, {}};
-		wins[dfr.winner] += (s.matchKillReason) ? hostInfo.bestOf : 1U;
-		if(wins[dfr.winner] >= neededWins)
+		// Match.
+		duelsHad++;
+		if(dfr.winner != 2U)
+		{
+			wins[dfr.winner] += (s.matchKillReason != 0U) ? neededWins : 1U;
+			if(wins[dfr.winner] >= neededWins)
+			{
+				SendToAll(MakeDuelEnd());
+				return State::Closing{};
+			}
+		}
+		else if(!IsTiebreaking() && duelsHad >= hostInfo.bestOf)
 		{
 			SendToAll(MakeDuelEnd());
 			return State::Closing{};
 		}
 		return State::Sidedecking{turnDecider, {}};
-	}
-	case Reason::REASON_CONNECTION_LOST:
-	{
-		SendWinMsg(WIN_REASON_CONNECTION_LOST);
-		SendReplay();
-		SendToAll(MakeDuelEnd());
-		return State::Closing{};
 	}
 	case Reason::REASON_CORE_CRASHED:
 	{
@@ -621,7 +624,12 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 			return State::Rematching{turnDecider, {}};
 		return State::Sidedecking{turnDecider, {}};
 	}
-	default: // So compiler doesn't complain
+	case Reason::REASON_CONNECTION_LOST:
+	{
+		SendWinMsg(WIN_REASON_CONNECTION_LOST);
+		[[fallthrough]];
+	}
+	default:
 	{
 		SendReplay();
 		SendToAll(MakeDuelEnd());

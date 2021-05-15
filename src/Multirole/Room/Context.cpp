@@ -59,6 +59,12 @@ std::map<uint8_t, std::string> Context::GetDuelistsNames() const
 
 // private
 
+bool Context::IsTiebreaking() const
+{
+	// FIXME: Actually read hostInfo when client is updated to handle it.
+	return true;
+}
+
 uint8_t Context::GetSwappedTeam(uint8_t team) const
 {
 	assert(team <= 1U);
