@@ -601,7 +601,7 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr)
 		duelsHad++;
 		if(dfr.winner != 2U)
 		{
-			wins[dfr.winner] += (s.matchKillReason != 0U) ? neededWins : 1U;
+			wins[dfr.winner] += (s.matchKillReason.has_value()) ? neededWins : 1U;
 			if(wins[dfr.winner] >= neededWins)
 			{
 				SendToAll(MakeDuelEnd());
