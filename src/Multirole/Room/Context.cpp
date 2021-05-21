@@ -22,7 +22,7 @@ Context::Context(CreateInfo&& info)
 	hostInfo(info.hostInfo),
 	limits(info.limits),
 	cdb(svc.dataProvider.GetDatabase()),
-	neededWins(static_cast<int32_t>(std::ceil(hostInfo.bestOf / 2.0F))),
+	neededWins((hostInfo.bestOf / 2) + (hostInfo.bestOf & 1)),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
 	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR)),
 	isPrivate(info.isPrivate),
