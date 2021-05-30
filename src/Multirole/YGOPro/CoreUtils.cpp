@@ -12,7 +12,7 @@ namespace YGOPro::CoreUtils
 #include "../../Write.inl"
 
 template<>
-constexpr LocInfo Read(const uint8_t*& ptr)
+constexpr LocInfo Read(const uint8_t*& ptr) noexcept
 {
 	return LocInfo
 	{
@@ -25,33 +25,32 @@ constexpr LocInfo Read(const uint8_t*& ptr)
 
 /*** Query utility functions ***/
 
-inline void AddRefreshAllDecks(std::vector<QueryRequest>& qreqs)
+inline void AddRefreshAllDecks(std::vector<QueryRequest>& qreqs) noexcept
 {
 	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_DECK, 0x1181FFF});
 	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_DECK, 0x1181FFF});
 }
 
-inline void AddRefreshAllHands(std::vector<QueryRequest>& qreqs)
+inline void AddRefreshAllHands(std::vector<QueryRequest>& qreqs) noexcept
 {
 	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_HAND, 0x3781FFF});
 	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_HAND, 0x3781FFF});
 }
 
-inline void AddRefreshAllMZones(std::vector<QueryRequest>& qreqs)
+inline void AddRefreshAllMZones(std::vector<QueryRequest>& qreqs) noexcept
 {
 	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3881FFF});
 	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3881FFF});
 }
 
-inline void AddRefreshAllSZones(std::vector<QueryRequest>& qreqs)
+inline void AddRefreshAllSZones(std::vector<QueryRequest>& qreqs) noexcept
 {
 	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x3E81FFF});
 	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x3E81FFF});
 }
 
-inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr)
+inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr) noexcept
 {
-
 	if(Read<uint16_t>(ptr) == 0U)
 		return std::nullopt;
 	ptr -= sizeof(uint16_t);
@@ -119,7 +118,7 @@ inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr)
 
 /*** Header implementations ***/
 
-std::vector<Msg> SplitToMsgs(const Buffer& buffer)
+std::vector<Msg> SplitToMsgs(const Buffer& buffer) noexcept
 {
 	using length_t = uint32_t;
 	static constexpr std::size_t sizeOfLength = sizeof(length_t);
@@ -142,12 +141,12 @@ std::vector<Msg> SplitToMsgs(const Buffer& buffer)
 	return msgs;
 }
 
-uint8_t GetMessageType(const Msg& msg)
+uint8_t GetMessageType(const Msg& msg) noexcept
 {
 	return msg[0U];
 }
 
-bool DoesMessageRequireAnswer(uint8_t msgType)
+bool DoesMessageRequireAnswer(uint8_t msgType) noexcept
 {
 	switch(msgType)
 	{
@@ -183,7 +182,7 @@ bool DoesMessageRequireAnswer(uint8_t msgType)
 	}
 }
 
-MsgDistType GetMessageDistributionType(const Msg& msg)
+MsgDistType GetMessageDistributionType(const Msg& msg) noexcept
 {
 	switch(GetMessageType(msg))
 	{
@@ -267,7 +266,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg)
 	}
 }
 
-uint8_t GetMessageReceivingTeam(const Msg& msg)
+uint8_t GetMessageReceivingTeam(const Msg& msg) noexcept
 {
 	switch(GetMessageType(msg))
 	{
@@ -282,7 +281,7 @@ uint8_t GetMessageReceivingTeam(const Msg& msg)
 	}
 }
 
-Msg StripMessageForTeam(uint8_t team, Msg msg)
+Msg StripMessageForTeam(uint8_t team, Msg msg) noexcept
 {
 	auto IsLocInfoPublic = [](const LocInfo& info)
 	{
@@ -409,7 +408,7 @@ Msg StripMessageForTeam(uint8_t team, Msg msg)
 	return msg;
 }
 
-Msg MakeStartMsg(const MsgStartCreateInfo& info)
+Msg MakeStartMsg(const MsgStartCreateInfo& info) noexcept
 {
 	Msg msg(18U);
 	auto* ptr = msg.data();
@@ -424,7 +423,7 @@ Msg MakeStartMsg(const MsgStartCreateInfo& info)
 	return msg;
 }
 
-std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
+std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg) noexcept
 {
 	std::vector<QueryRequest> qreqs;
 	switch(GetMessageType(msg))
@@ -457,7 +456,7 @@ std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg)
 	return qreqs;
 }
 
-std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
+std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg) noexcept
 {
 	const auto* ptr = msg.data();
 	ptr++; // type ignored
@@ -566,10 +565,10 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	case MSG_TAG_SWAP:
 	{
 		auto player = Read<uint8_t>(ptr);
-		qreqs.reserve(8U);
+		qreqs.reserve(7U);
 		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_DECK, 0x1181FFF});
 		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381FFF});
-		AddRefreshAllHands(qreqs);
+		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_HAND, 0x3781FFF});
 		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3081FFF});
 		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3081FFF});
 		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x30681FFF});
@@ -586,7 +585,7 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg)
 	return qreqs;
 }
 
-Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer& qb)
+Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer& qb) noexcept
 {
 	Msg msg(1U + 1U + 1U + 1U + qb.size());
 	auto* ptr = msg.data();
@@ -598,7 +597,7 @@ Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer
 	return msg;
 }
 
-Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const QueryBuffer& qb)
+Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const QueryBuffer& qb) noexcept
 {
 	Msg msg(1U + 1U + 1U + qb.size());
 	auto* ptr = msg.data();
@@ -609,13 +608,13 @@ Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const QueryBuffer& qb)
 	return msg;
 }
 
-QueryOpt DeserializeSingleQueryBuffer(const QueryBuffer& qb)
+QueryOpt DeserializeSingleQueryBuffer(const QueryBuffer& qb) noexcept
 {
 	const auto* ptr = qb.data();
 	return DeserializeOneQuery(ptr);
 }
 
-QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb)
+QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb) noexcept
 {
 	const auto* ptr = qb.data();
 	const auto* const ptrMax = ptr + Read<uint32_t>(ptr);
@@ -625,7 +624,7 @@ QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb)
 	return ret;
 }
 
-QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
+QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic) noexcept
 {
 	QueryBuffer qb;
 	auto Insert = [&qb](auto&& v)
@@ -807,7 +806,7 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic)
 	return qb;
 }
 
-QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic)
+QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic) noexcept
 {
 	uint32_t totalSize = 0U;
 	QueryBuffer qb(sizeof(decltype(totalSize)));

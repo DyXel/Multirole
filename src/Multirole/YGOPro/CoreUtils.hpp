@@ -94,59 +94,59 @@ using QueryOptVector = std::vector<QueryOpt>;
 // into individual core messages (which are still just buffers).
 // This operation also removes the length bytes (first 2 bytes) as that
 // can be retrieved back from Msg's size() method.
-std::vector<Msg> SplitToMsgs(const Buffer& buffer);
+std::vector<Msg> SplitToMsgs(const Buffer& buffer) noexcept;
 
 // Takes any core message, reads and returns its type (1st byte)
-uint8_t GetMessageType(const Msg& msg);
+uint8_t GetMessageType(const Msg& msg) noexcept;
 
 // Tells if the message requires an answer (setting a response)
 // from a user/duelist before processing can continue.
-bool DoesMessageRequireAnswer(uint8_t msgType);
+bool DoesMessageRequireAnswer(uint8_t msgType) noexcept;
 
 // Takes any core message and determines how the message should be
 // distributed to clients and if it should have knowledge stripped.
-MsgDistType GetMessageDistributionType(const Msg& msg);
+MsgDistType GetMessageDistributionType(const Msg& msg) noexcept;
 
 // Tells which team should receive this message.
 // The behavior is undefined if the message is not for a specific team.
-uint8_t GetMessageReceivingTeam(const Msg& msg);
+uint8_t GetMessageReceivingTeam(const Msg& msg) noexcept;
 
 // Removes knowledge from a message if it shouldn't be known
 // by the argument `team`, returns a new copy of the message, modified.
-Msg StripMessageForTeam(uint8_t team, Msg msg);
+Msg StripMessageForTeam(uint8_t team, Msg msg) noexcept;
 
 // Creates MSG_START, which is the first message recorded onto the replay
 // and the first one sent to clients, it setups the piles with the correct
 // amount of cards and sets the LP to the correct amount.
-Msg MakeStartMsg(const MsgStartCreateInfo& info);
+Msg MakeStartMsg(const MsgStartCreateInfo& info) noexcept;
 
 // The following functions process the message and acquires the query requests
 // that are necessary either before distribution or after, respectively.
-std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg);
-std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg);
+std::vector<QueryRequest> GetPreDistQueryRequests(const Msg& msg) noexcept;
+std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg) noexcept;
 
 // Creates MSG_UPDATE_CARD, which is a message that wraps around a single card
 // query from a duel.
-Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer& qb);
+Msg MakeUpdateCardMsg(uint8_t con, uint32_t loc, uint32_t seq, const QueryBuffer& qb) noexcept;
 
 // Creates MSG_UPDATE_DATA, which is a message that wraps around queries
 // from a duel.
-Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const QueryBuffer& qb);
+Msg MakeUpdateDataMsg(uint8_t con, uint32_t loc, const QueryBuffer& qb) noexcept;
 
 // Creates a query object which is populated with the information from the
 // passed QueryBuffer.
-QueryOpt DeserializeSingleQueryBuffer(const QueryBuffer& qb);
+QueryOpt DeserializeSingleQueryBuffer(const QueryBuffer& qb) noexcept;
 
 // Creates a vector with multiple query objects which are populated with
 // the information from the passed QueryBuffer.
-QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb);
+QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb) noexcept;
 
 // Creates a QueryBuffer which might have information stripped if it had the
 // hidden flag set, aditionally, that flag can be overriden with isPublic.
-QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic);
+QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic) noexcept;
 
 // Same as the above function, but for all the queries in the vector.
-QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic);
+QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic) noexcept;
 
 } // namespace YGOPro::CoreUtils
 
