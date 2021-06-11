@@ -179,7 +179,7 @@ private:
 
 	// Adds given client to the spectators set, sends the join message as
 	// well as duelists information.
-	void SetupAsSpectator(Client& client);
+	void SetupAsSpectator(Client& client, bool sendJoin = true);
 
 	// Creates and sends to all a chat message from a client.
 	void MakeAndSendChat(Client& client, std::string_view msg);

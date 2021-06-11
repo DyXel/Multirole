@@ -64,7 +64,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 	}
 	else
 	{
-		SetupAsSpectator(e.client);
+		SetupAsSpectator(e.client, false);
 		SendToAll(MakeWatchChange(spectators.size()));
 	}
 	return std::nullopt;

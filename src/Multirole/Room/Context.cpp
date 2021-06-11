@@ -125,11 +125,12 @@ void Context::SendDuelistsInfo(Client& client)
 	}
 }
 
-void Context::SetupAsSpectator(Client& client)
+void Context::SetupAsSpectator(Client& client, bool sendJoin)
 {
 	spectators.insert(&client);
 	client.SetPosition(Client::POSITION_SPECTATOR);
-	client.Send(joinMsg);
+	if(sendJoin)
+		client.Send(joinMsg);
 	client.Send(MakeTypeChange(client, false));
 	SendDuelistsInfo(client);
 }
