@@ -27,7 +27,8 @@ Client::Client(
 	connectionLost(false),
 	disconnecting(false),
 	position(POSITION_SPECTATOR),
-	ready(false)
+	ready(false),
+	originalDeck(std::make_unique<YGOPro::Deck>())
 {
 	lobby.IncrementConnectionCount(this->ip);
 }

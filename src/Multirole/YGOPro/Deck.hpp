@@ -21,15 +21,16 @@ struct DeckLimits
 class Deck final
 {
 public:
-	Deck(CodeVector&& m, CodeVector&& e, CodeVector&& s, uint32_t err);
+	Deck() noexcept; // Empty deck, valid when dontCheckDeck is true.
+	Deck(CodeVector&& m, CodeVector&& e, CodeVector&& s, uint32_t err) noexcept;
 
-	const CodeVector& Main() const;
-	const CodeVector& Extra() const;
-	const CodeVector& Side() const;
-	uint32_t Error() const;
+	const CodeVector& Main() const noexcept;
+	const CodeVector& Extra() const noexcept;
+	const CodeVector& Side() const noexcept;
+	uint32_t Error() const noexcept;
 
 	// Amalgamate all card codes into a single map.
-	CodeMap GetCodeMap() const;
+	CodeMap GetCodeMap() const noexcept;
 private:
 	CodeVector main;
 	CodeVector extra;
