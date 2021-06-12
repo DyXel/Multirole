@@ -59,7 +59,8 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 		SendToAll(MakePlayerEnter(e.client));
 		SendToAll(MakePlayerChange(e.client));
 		e.client.Send(MakeTypeChange(e.client, s.host == &e.client));
-		e.client.Send(MakeWatchChange(spectators.size()));
+		if(const auto specSize = spectators.size(); specSize > 0U)
+			e.client.Send(MakeWatchChange(specSize));
 		SendDuelistsInfo(e.client);
 	}
 	else
