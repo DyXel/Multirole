@@ -8,6 +8,7 @@ libgit2_dep = dependency('libgit2')
 openssl_dep = dependency('openssl')
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 sqlite3_dep = dependency('sqlite3')
+tcm_dep     = dependency('libtcmalloc', required : get_option('use_tcmalloc'))
 thread_dep  = dependency('threads')
 
 multirole_src_files = files([
@@ -83,6 +84,7 @@ executable('multirole', multirole_src_files,
 		openssl_dep,
 		rt_dep,
 		sqlite3_dep,
+		tcm_dep,
 		thread_dep
 	])
 

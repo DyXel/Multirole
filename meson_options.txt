@@ -1,0 +1,1 @@
+option('use_tcmalloc', type : 'feature', value : 'auto', description : 'Use Google\'s TCMalloc for memory allocation instead of default allocator')
