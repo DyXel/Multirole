@@ -25,7 +25,7 @@ class Instance final
 {
 public:
 	Instance(const boost::json::value& cfg);
-	int Run();
+	int Run() noexcept;
 private:
 	boost::asio::io_context auxIoCtx; // Auxiliary Io Context
 	boost::asio::io_context lIoCtx; // Lobby Io Context
@@ -44,8 +44,7 @@ private:
 	boost::asio::signal_set signalSet;
 	std::map<std::string, GitRepo> repos;
 
-	void DoWaitSignal();
-	void Stop();
+	void Stop() noexcept;
 };
 
 } // namespace Ignis::Multirole

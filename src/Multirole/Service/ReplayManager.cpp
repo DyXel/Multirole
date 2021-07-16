@@ -66,7 +66,7 @@ Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const 
 	}
 }
 
-void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const
+void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) const noexcept
 {
 	if(!save)
 		return;
@@ -78,7 +78,7 @@ void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) con
 		LOG_ERROR(I18N::REPLAY_MANAGER_UNABLE_TO_SAVE, fn.string());
 }
 
-uint64_t Service::ReplayManager::NewId()
+uint64_t Service::ReplayManager::NewId() noexcept
 {
 	if(!save)
 		return 0U;

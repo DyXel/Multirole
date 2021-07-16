@@ -21,7 +21,7 @@ Service::DataProvider::DataProvider(Service::LogHandler& lh, std::string_view fn
 	fnRegex(fnRegexStr.data())
 {}
 
-std::shared_ptr<YGOPro::CardDatabase> Service::DataProvider::GetDatabase() const
+std::shared_ptr<YGOPro::CardDatabase> Service::DataProvider::GetDatabase() const noexcept
 {
 	std::shared_lock lock(mDb);
 	return db;
@@ -60,7 +60,7 @@ void Service::DataProvider::OnDiff(const boost::filesystem::path& path, const Gi
 
 // private
 
-void Service::DataProvider::ReloadDatabases()
+void Service::DataProvider::ReloadDatabases() noexcept
 {
 	auto newDb = std::make_shared<YGOPro::CardDatabase>();
 	for(const auto& path : paths)

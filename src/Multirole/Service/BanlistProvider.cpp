@@ -17,7 +17,7 @@ Service::BanlistProvider::BanlistProvider(Service::LogHandler& lh, std::string_v
 	fnRegex(fnRegexStr.data())
 {}
 
-YGOPro::BanlistPtr Service::BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) const
+YGOPro::BanlistPtr Service::BanlistProvider::GetBanlistByHash(YGOPro::BanlistHash hash) const noexcept
 {
 	std::shared_lock lock(mBanlists);
 	if(auto search = banlists.find(hash); search != banlists.end())
@@ -37,7 +37,7 @@ void Service::BanlistProvider::OnDiff(const boost::filesystem::path& path, const
 
 // private
 
-void Service::BanlistProvider::LoadBanlists(const boost::filesystem::path& path, const PathVector& fileList)
+void Service::BanlistProvider::LoadBanlists(const boost::filesystem::path& path, const PathVector& fileList) noexcept
 {
 	YGOPro::BanlistMap tmp;
 	for(const auto& fn : fileList)

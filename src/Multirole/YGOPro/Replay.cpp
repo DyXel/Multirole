@@ -90,7 +90,7 @@ Replay::Replay(
 	uint32_t unixTimestamp,
 	uint32_t seed,
 	const HostInfo& info,
-	const CodeVector& extraCards)
+	const CodeVector& extraCards) noexcept
 	:
 	unixTimestamp(unixTimestamp),
 	seed(seed),
@@ -101,17 +101,17 @@ Replay::Replay(
 	extraCards(extraCards)
 {}
 
-const std::vector<uint8_t>& Replay::Bytes() const
+const std::vector<uint8_t>& Replay::Bytes() const noexcept
 {
 	return bytes;
 }
 
-void Replay::AddDuelist(uint8_t team, uint8_t pos, Duelist&& duelist)
+void Replay::AddDuelist(uint8_t team, uint8_t pos, Duelist&& duelist) noexcept
 {
 	duelists[team].insert_or_assign(pos, duelist);
 }
 
-void Replay::RecordMsg(const std::vector<uint8_t>& msg)
+void Replay::RecordMsg(const std::vector<uint8_t>& msg) noexcept
 {
 	// Filter out some useless messages.
 	switch(msg[0U])
@@ -153,17 +153,17 @@ void Replay::RecordMsg(const std::vector<uint8_t>& msg)
 	messages.emplace_back(msg);
 }
 
-void Replay::RecordResponse(const std::vector<uint8_t>& response)
+void Replay::RecordResponse(const std::vector<uint8_t>& response) noexcept
 {
 	responses.emplace_back(response);
 }
 
-void Replay::PopBackResponse()
+void Replay::PopBackResponse() noexcept
 {
 	responses.pop_back();
 }
 
-void Replay::Serialize()
+void Replay::Serialize() noexcept
 {
 	auto YRPXPastHeaderSize = [&]() -> std::size_t
 	{

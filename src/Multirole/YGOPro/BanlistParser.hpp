@@ -27,7 +27,7 @@ namespace Detail
 
 constexpr const BanlistHash BANLIST_HASH_MAGIC = 0x7DFCEE6A;
 
-constexpr BanlistHash Salt(BanlistHash hash, uint32_t code, int32_t count)
+constexpr BanlistHash Salt(BanlistHash hash, uint32_t code, int32_t count) noexcept
 {
 	constexpr uint32_t HASH_MAGIC_1 = 18U;
 	constexpr uint32_t HASH_MAGIC_2 = 14U;

@@ -32,7 +32,7 @@ public:
 	using CorePtr = std::shared_ptr<Core::IWrapper>;
 
 	CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, const boost::filesystem::path& tmpDir, CoreType type, bool loadPerCall);
-	~CoreProvider();
+	~CoreProvider() noexcept;
 
 	// Will return a core instance based on the options set.
 	CorePtr GetCore() const;

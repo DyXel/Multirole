@@ -18,7 +18,7 @@
 namespace
 {
 
-inline int CreateAndRunServerInstance()
+inline int CreateAndRunServerInstance() noexcept
 {
 	using namespace Ignis::Multirole;
 	std::optional<Instance> server;

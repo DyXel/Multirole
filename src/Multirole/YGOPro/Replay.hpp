@@ -27,18 +27,18 @@ public:
 		uint32_t unixTimestamp,
 		uint32_t seed,
 		const HostInfo& info,
-		const CodeVector& extraCards);
+		const CodeVector& extraCards) noexcept;
 
-	const std::vector<uint8_t>& Bytes() const;
+	const std::vector<uint8_t>& Bytes() const noexcept;
 
-	void AddDuelist(uint8_t team, uint8_t pos, Duelist&& duelist);
+	void AddDuelist(uint8_t team, uint8_t pos, Duelist&& duelist) noexcept;
 
-	void RecordMsg(const std::vector<uint8_t>& msg);
-	void RecordResponse(const std::vector<uint8_t>& response);
+	void RecordMsg(const std::vector<uint8_t>& msg) noexcept;
+	void RecordResponse(const std::vector<uint8_t>& response) noexcept;
 
-	void PopBackResponse();
+	void PopBackResponse() noexcept;
 
-	void Serialize();
+	void Serialize() noexcept;
 private:
 	const uint32_t unixTimestamp;
 	const uint32_t seed;

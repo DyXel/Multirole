@@ -22,7 +22,7 @@ public:
 	virtual void OnAdd(const boost::filesystem::path& path, const PathVector& fileList) = 0;
 	virtual void OnDiff(const boost::filesystem::path& path, const GitDiff& diff) = 0;
 protected:
-	inline ~IGitRepoObserver() = default;
+	inline ~IGitRepoObserver() noexcept = default;
 };
 
 } // namespace Ignis::Multirole

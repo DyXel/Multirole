@@ -16,7 +16,7 @@ class Service::BanlistProvider final : public IGitRepoObserver
 public:
 	BanlistProvider(Service::LogHandler& lh, std::string_view fnRegexStr);
 
-	YGOPro::BanlistPtr GetBanlistByHash(YGOPro::BanlistHash hash) const;
+	YGOPro::BanlistPtr GetBanlistByHash(YGOPro::BanlistHash hash) const noexcept;
 
 	// IGitRepoObserver overrides
 	void OnAdd(const boost::filesystem::path& path, const PathVector& fileList) override;
@@ -27,7 +27,7 @@ private:
 	YGOPro::BanlistMap banlists;
 	mutable std::shared_mutex mBanlists;
 
-	void LoadBanlists(const boost::filesystem::path& path, const PathVector& fileList);
+	void LoadBanlists(const boost::filesystem::path& path, const PathVector& fileList) noexcept;
 };
 
 } // namespace Ignis::Multirole

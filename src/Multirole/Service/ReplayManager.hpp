@@ -24,9 +24,9 @@ class Service::ReplayManager
 public:
 	ReplayManager(Service::LogHandler& lh, bool save, const boost::filesystem::path& dir);
 
-	void Save(uint64_t id, const YGOPro::Replay& replay) const;
+	void Save(uint64_t id, const YGOPro::Replay& replay) const noexcept;
 
-	uint64_t NewId();
+	uint64_t NewId() noexcept;
 private:
 	Service::LogHandler& lh;
 	const bool save;

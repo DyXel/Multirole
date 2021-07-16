@@ -79,21 +79,21 @@ public:
 		uint8_t answer;
 	};
 
-	inline LengthType GetLength() const
+	inline LengthType GetLength() const noexcept
 	{
 		LengthType v{};
 		std::memcpy(&v, bytes.data(), sizeof(LengthType));
 		return v - 1U;
 	}
 
-	inline MsgType GetType() const
+	inline MsgType GetType() const noexcept
 	{
 		MsgType v{};
 		std::memcpy(&v, bytes.data() + sizeof(LengthType), sizeof(MsgType));
 		return v;
 	}
 
-	inline bool IsHeaderValid() const
+	inline bool IsHeaderValid() const noexcept
 	{
 		if(GetLength() > MSG_MAX_LENGTH)
 			return false;
@@ -124,7 +124,7 @@ public:
 	}
 
 #define X(s) \
-	inline std::optional<s> Get##s() const \
+	inline std::optional<s> Get##s() const noexcept \
 	{ \
 		std::optional<s> p; \
 		if(GetLength() != sizeof(s)) \
@@ -142,7 +142,7 @@ public:
 	X(Rematch)
 #undef X
 
-	constexpr const uint8_t* Body() const
+	constexpr const uint8_t* Body() const noexcept
 	{
 		return bytes.data() + HEADER_LENGTH;
 	}
@@ -161,12 +161,12 @@ public:
 		return val;
 	}
 
-	constexpr uint8_t* Data()
+	constexpr uint8_t* Data() noexcept
 	{
 		return bytes.data();
 	}
 
-	constexpr uint8_t* Body()
+	constexpr uint8_t* Body() noexcept
 	{
 		return bytes.data() + HEADER_LENGTH;;
 	}

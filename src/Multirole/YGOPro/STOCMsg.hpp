@@ -156,13 +156,13 @@ public:
 
 	STOCMsg() = delete;
 
-	~STOCMsg()
+	~STOCMsg() noexcept
 	{
 		DestroyUnion();
 	}
 
 	template<typename T>
-	STOCMsg(const T& msg)
+	STOCMsg(const T& msg) noexcept
 	{
 		const std::size_t msgSize = sizeof(MsgType) + sizeof(T);
 		uint8_t* ptr = ConstructUnionAndGetPtr(sizeof(LengthType) + msgSize);
@@ -171,7 +171,7 @@ public:
 		Write(ptr, msg);
 	}
 
-	STOCMsg(MsgType type)
+	STOCMsg(MsgType type) noexcept
 	{
 		const std::size_t msgSize = sizeof(MsgType);
 		uint8_t* ptr = ConstructUnionAndGetPtr(sizeof(LengthType) + msgSize);
@@ -179,7 +179,7 @@ public:
 		Write<MsgType>(ptr, type);
 	}
 
-	STOCMsg(MsgType type, const uint8_t* data, std::size_t size)
+	STOCMsg(MsgType type, const uint8_t* data, std::size_t size) noexcept
 	{
 		const std::size_t msgSize = sizeof(MsgType) + size;
 		uint8_t* ptr = ConstructUnionAndGetPtr(sizeof(LengthType) + msgSize);
@@ -189,11 +189,11 @@ public:
 	}
 
 	template<typename ContiguousContainer>
-	STOCMsg(MsgType type, const ContiguousContainer& msg) :
+	STOCMsg(MsgType type, const ContiguousContainer& msg) noexcept :
 		STOCMsg(type, msg.data(), msg.size())
 	{}
 
-	STOCMsg(const STOCMsg& other) // Copy constructor
+	STOCMsg(const STOCMsg& other) noexcept // Copy constructor
 	{
 		assert(this != &other);
 		if(IsStackArray(this->length = other.length))
@@ -202,7 +202,7 @@ public:
 			new (&this->refCntA) RefCntArray(other.refCntA);
 	}
 
-	STOCMsg& operator=(const STOCMsg& other) // Copy assignment
+	STOCMsg& operator=(const STOCMsg& other) noexcept // Copy assignment
 	{
 		assert(this != &other);
 		DestroyUnion();
@@ -213,7 +213,7 @@ public:
 		return *this;
 	}
 
-	STOCMsg(STOCMsg&& other) // Move constructor
+	STOCMsg(STOCMsg&& other) noexcept // Move constructor
 	{
 		assert(this != &other);
 		if(IsStackArray(this->length = other.length))
@@ -222,7 +222,7 @@ public:
 			new (&this->refCntA) RefCntArray(std::move(other.refCntA));
 	}
 
-	STOCMsg& operator=(STOCMsg&& other) // Move assignment
+	STOCMsg& operator=(STOCMsg&& other) noexcept // Move assignment
 	{
 		assert(this != &other);
 		DestroyUnion();
@@ -233,12 +233,12 @@ public:
 		return *this;
 	}
 
-	std::size_t Length() const
+	std::size_t Length() const noexcept
 	{
 		return length;
 	}
 
-	const uint8_t* Data() const
+	const uint8_t* Data() const noexcept
 	{
 		if(IsStackArray(length))
 			return stackA.data();
@@ -263,12 +263,12 @@ private:
 		RefCntArray refCntA;
 	};
 
-	constexpr bool IsStackArray(std::size_t size) const
+	constexpr bool IsStackArray(std::size_t size) const noexcept
 	{
 		return size <= std::tuple_size<StackArray>::value;
 	}
 
-	inline uint8_t* ConstructUnionAndGetPtr(std::size_t size)
+	inline uint8_t* ConstructUnionAndGetPtr(std::size_t size) noexcept
 	{
 		if(IsStackArray(length = size))
 		{
@@ -282,7 +282,7 @@ private:
 		}
 	}
 
-	inline void DestroyUnion()
+	inline void DestroyUnion() noexcept
 	{
 		if(length <= std::tuple_size<StackArray>::value)
 			stackA.~StackArray();

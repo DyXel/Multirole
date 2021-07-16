@@ -9,9 +9,9 @@ namespace Ignis::Multirole::Core
 class IScriptSupplier
 {
 public:
-	virtual std::string ScriptFromFilePath(std::string_view fp) const = 0;
+	virtual std::string ScriptFromFilePath(std::string_view fp) const noexcept = 0;
 protected:
-	inline ~IScriptSupplier() = default;
+	inline ~IScriptSupplier() noexcept = default;
 };
 
 } // namespace Ignis::Multirole::Core

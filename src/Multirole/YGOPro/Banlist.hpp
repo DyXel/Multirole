@@ -12,10 +12,10 @@ class Banlist final
 public:
 	using DictType = std::unordered_map<uint32_t /*code*/, int32_t /*count*/>;
 
-	Banlist(bool whitelist, DictType dict);
+	Banlist(bool whitelist, DictType dict) noexcept;
 
-	bool IsWhitelist() const;
-	const DictType& Dict() const;
+	bool IsWhitelist() const noexcept;
+	const DictType& Dict() const noexcept;
 private:
 	const bool whitelist;
 	DictType dict;

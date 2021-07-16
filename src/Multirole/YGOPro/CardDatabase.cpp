@@ -126,7 +126,7 @@ CardDatabase::CardDatabase(std::string_view absFilePath)
 	}
 }
 
-CardDatabase::~CardDatabase()
+CardDatabase::~CardDatabase() noexcept
 {
 	sqlite3_finalize(s2Stmt);
 	sqlite3_finalize(sStmt);
@@ -134,7 +134,7 @@ CardDatabase::~CardDatabase()
 	sqlite3_close(db);
 }
 
-bool CardDatabase::Merge(std::string_view absFilePath)
+bool CardDatabase::Merge(std::string_view absFilePath) noexcept
 {
 	sqlite3_reset(aStmt);
 	sqlite3_bind_text(aStmt, 1, absFilePath.data(), -1, SQLITE_TRANSIENT);
@@ -190,7 +190,7 @@ void CardDatabase::DataUsageDone([[maybe_unused]] const OCG_CardData& data) cons
 	// the point of the cache?
 }
 
-const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code)
+const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code) noexcept
 {
 	std::scoped_lock lock(mExtraCache);
 	if(auto search = extraCache.find(code); search != extraCache.end())

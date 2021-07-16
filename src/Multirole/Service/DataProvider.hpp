@@ -24,7 +24,7 @@ class Service::DataProvider final : public IGitRepoObserver
 public:
 	DataProvider(Service::LogHandler& lh, std::string_view fnRegexStr);
 
-	std::shared_ptr<YGOPro::CardDatabase> GetDatabase() const;
+	std::shared_ptr<YGOPro::CardDatabase> GetDatabase() const noexcept;
 
 	// IGitRepoObserver overrides
 	void OnAdd(const boost::filesystem::path& path, const PathVector& fileList) override;
@@ -36,7 +36,7 @@ private:
 	std::shared_ptr<YGOPro::CardDatabase> db;
 	mutable std::shared_mutex mDb;
 
-	void ReloadDatabases();
+	void ReloadDatabases() noexcept;
 };
 
 } // namespace Ignis::Multirole

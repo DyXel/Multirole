@@ -3,17 +3,17 @@
 namespace YGOPro
 {
 
-Banlist::Banlist(bool whitelist, DictType dict) :
+Banlist::Banlist(bool whitelist, DictType dict) noexcept :
 	whitelist(whitelist),
 	dict(std::move(dict))
 {}
 
-bool Banlist::IsWhitelist() const
+bool Banlist::IsWhitelist() const noexcept
 {
 	return whitelist;
 }
 
-const Banlist::DictType& Banlist::Dict() const
+const Banlist::DictType& Banlist::Dict() const noexcept
 {
 	return dict;
 }

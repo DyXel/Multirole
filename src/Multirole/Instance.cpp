@@ -14,7 +14,10 @@
 namespace Ignis::Multirole
 {
 
-constexpr unsigned int GetConcurrency(int hint)
+namespace
+{
+
+constexpr unsigned int GetConcurrency(int hint) noexcept
 {
 	if(hint <= 0)
 		return std::max(1U, std::thread::hardware_concurrency() * 2U);
@@ -30,6 +33,8 @@ inline Service::CoreProvider::CoreType GetCoreType(std::string_view str)
 		throw std::runtime_error(I18N::MULTIROLE_INCORRECT_CORE_TYPE);
 	return ret;
 }
+
+} // namespace
 
 // public
 
@@ -98,7 +103,7 @@ Instance::Instance(const boost::json::value& cfg) :
 	LOG_INFO(I18N::MULTIROLE_INIT_SUCCESS);
 }
 
-int Instance::Run()
+int Instance::Run() noexcept
 {
 	std::thread webhooks([&]{auxIoCtx.run();});
 	boost::asio::thread_pool threads(hostingConcurrency);
@@ -112,7 +117,7 @@ int Instance::Run()
 
 // private
 
-void Instance::Stop()
+void Instance::Stop() noexcept
 {
 	LOG_INFO(I18N::MULTIROLE_CLEANING_UP);
 	auxIoCtx.stop(); // Finishes execution of thread created in Instance::Run

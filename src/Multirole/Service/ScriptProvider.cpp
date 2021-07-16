@@ -29,7 +29,7 @@ void Service::ScriptProvider::OnDiff(const boost::filesystem::path& path, const 
 	LoadScripts(path, diff.added);
 }
 
-std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) const
+std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) const noexcept
 {
 	std::shared_lock lock(mScripts);
 	if(auto search = scripts.find(fp.data()); search != scripts.end())
@@ -39,7 +39,7 @@ std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) con
 
 // private
 
-void Service::ScriptProvider::LoadScripts(const boost::filesystem::path& path, const PathVector& fileList)
+void Service::ScriptProvider::LoadScripts(const boost::filesystem::path& path, const PathVector& fileList) noexcept
 {
 	int total = 0;
 	LOG_INFO(I18N::SCRIPT_PROVIDER_LOADING_FILES, fileList.size());

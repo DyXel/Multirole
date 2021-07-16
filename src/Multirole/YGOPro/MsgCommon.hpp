@@ -63,7 +63,7 @@ struct HostInfo
 	int32_t forb; // Forbidden types
 	uint16_t extraRules; // Double deck, Speed duel, etc
 
-	static constexpr uint64_t OrDuelFlags(uint32_t high, uint32_t low)
+	static constexpr uint64_t OrDuelFlags(uint32_t high, uint32_t low) noexcept
 	{
 		return low | (static_cast<uint64_t>(high) << 32U);
 	}
