@@ -1,6 +1,7 @@
 [Bb]uild*/
 bin/
 obj/
+.cache/
 .vscode/
 .vs/
 .idea/

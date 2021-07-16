@@ -280,6 +280,8 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		case ALLOWED_CARDS_TCG_ONLY:
 		case ALLOWED_CARDS_OCG_TCG:
 			return scope > SCOPE_OCG_TCG;
+		case ALLOWED_CARDS_WITH_PRERELEASE:
+			return (scope & (~SCOPE_OFFICIAL)) != 0U;
 		default:
 			return false;
 		}
