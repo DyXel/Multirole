@@ -9,12 +9,12 @@
 namespace Ignis::Multirole::Room
 {
 
-StateOpt Context::operator()(State::Waiting&, const Event::Close&)
+StateOpt Context::operator()(State::Waiting&, const Event::Close&) noexcept
 {
 	return State::Closing{};
 }
 
-StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e) noexcept
 {
 	if(s.host == &e.client)
 		return State::Closing{};
@@ -34,7 +34,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ConnectionLost& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::Join& e) noexcept
 {
 	if(s.host == nullptr)
 	{
@@ -71,7 +71,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::Join& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e) noexcept
 {
 	const auto p = e.client.Position();
 	std::scoped_lock lock(mDuelists);
@@ -103,7 +103,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToDuelist& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e) noexcept
 {
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
@@ -120,7 +120,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::ToObserver& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::Ready& e)
+StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::Ready& e) noexcept
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR ||
 	   e.client.Ready() == e.value)
@@ -141,7 +141,7 @@ StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::Ready& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e) noexcept
 {
 	if(s.host != &e.client)
 		return std::nullopt;
@@ -163,7 +163,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
+StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e) noexcept
 {
 	auto ValidateDuelistsSetup = [&]() -> bool
 	{
@@ -230,7 +230,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e)
 	return State::RockPaperScissor{};
 }
 
-StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::UpdateDeck& e)
+StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::UpdateDeck& e) noexcept
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;
@@ -240,7 +240,7 @@ StateOpt Context::operator()(State::Waiting& /*unused*/, const Event::UpdateDeck
 
 // private
 
-bool Context::TryEmplaceDuelist(Client& client, Client::PosType hint)
+bool Context::TryEmplaceDuelist(Client& client, Client::PosType hint) noexcept
 {
 	auto EmplaceLoop = [&](Client::PosType p, uint8_t max) -> bool
 	{

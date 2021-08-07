@@ -3,7 +3,7 @@
 namespace Ignis::Multirole::Room
 {
 
-StateOpt Context::operator()(State::Closing& /*unused*/)
+StateOpt Context::operator()(State::Closing& /*unused*/) noexcept
 {
 	for(const auto& kv : duelists)
 		kv.second->Disconnect();
@@ -17,7 +17,7 @@ StateOpt Context::operator()(State::Closing& /*unused*/)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Closing& /*unused*/, const Event::Join& e)
+StateOpt Context::operator()(State::Closing& /*unused*/, const Event::Join& e) noexcept
 {
 	e.client.Disconnect();
 	return std::nullopt;

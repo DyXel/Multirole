@@ -70,49 +70,49 @@ public:
 
 	/*** STATE AND EVENT HANDLERS ***/
 	// State/ChoosingTurn.cpp
-	StateOpt operator()(State::ChoosingTurn& s);
-	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e);
-	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e);
-	StateOpt operator()(State::ChoosingTurn&, const Event::Join& e);
+	StateOpt operator()(State::ChoosingTurn& s) noexcept;
+	StateOpt operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e) noexcept;
+	StateOpt operator()(State::ChoosingTurn&, const Event::ConnectionLost& e) noexcept;
+	StateOpt operator()(State::ChoosingTurn&, const Event::Join& e) noexcept;
 	// State/Closing.cpp
-	StateOpt operator()(State::Closing&);
-	StateOpt operator()(State::Closing&, const Event::Join& e);
+	StateOpt operator()(State::Closing&) noexcept;
+	StateOpt operator()(State::Closing&, const Event::Join& e) noexcept;
 	// State/Dueling.cpp
-	StateOpt operator()(State::Dueling& s);
-	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e);
-	StateOpt operator()(State::Dueling& s, const Event::Join& e);
-	StateOpt operator()(State::Dueling& s, const Event::Response& e);
-	StateOpt operator()(State::Dueling& s, const Event::Surrender& e);
-	StateOpt operator()(State::Dueling& s, const Event::TimerExpired& e);
+	StateOpt operator()(State::Dueling& s) noexcept;
+	StateOpt operator()(State::Dueling& s, const Event::ConnectionLost& e) noexcept;
+	StateOpt operator()(State::Dueling& s, const Event::Join& e) noexcept;
+	StateOpt operator()(State::Dueling& s, const Event::Response& e) noexcept;
+	StateOpt operator()(State::Dueling& s, const Event::Surrender& e) noexcept;
+	StateOpt operator()(State::Dueling& s, const Event::TimerExpired& e) noexcept;
 	// State/Rematching.cpp
-	StateOpt operator()(State::Rematching&);
-	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e);
-	StateOpt operator()(State::Rematching& s, const Event::Rematch& e);
-	StateOpt operator()(State::Rematching&, const Event::Join& e);
+	StateOpt operator()(State::Rematching&) noexcept;
+	StateOpt operator()(State::Rematching&, const Event::ConnectionLost& e) noexcept;
+	StateOpt operator()(State::Rematching& s, const Event::Rematch& e) noexcept;
+	StateOpt operator()(State::Rematching&, const Event::Join& e) noexcept;
 	// State/RockPaperScissor.cpp
-	StateOpt operator()(State::RockPaperScissor&);
-	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e);
-	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e);
-	StateOpt operator()(State::RockPaperScissor&, const Event::Join& e);
+	StateOpt operator()(State::RockPaperScissor&) noexcept;
+	StateOpt operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e) noexcept;
+	StateOpt operator()(State::RockPaperScissor&, const Event::ConnectionLost& e) noexcept;
+	StateOpt operator()(State::RockPaperScissor&, const Event::Join& e) noexcept;
 	// State/Sidedecking.cpp
-	StateOpt operator()(State::Sidedecking&);
-	StateOpt operator()(State::Sidedecking&, const Event::ConnectionLost& e);
-	StateOpt operator()(State::Sidedecking& s, const Event::UpdateDeck& e);
-	StateOpt operator()(State::Sidedecking&, const Event::Join& e);
+	StateOpt operator()(State::Sidedecking&) noexcept;
+	StateOpt operator()(State::Sidedecking&, const Event::ConnectionLost& e) noexcept;
+	StateOpt operator()(State::Sidedecking& s, const Event::UpdateDeck& e) noexcept;
+	StateOpt operator()(State::Sidedecking&, const Event::Join& e) noexcept;
 	// State/Waiting.cpp
-	StateOpt operator()(State::Waiting&, const Event::Close&);
-	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e);
-	StateOpt operator()(State::Waiting& s, const Event::Join& e);
-	StateOpt operator()(State::Waiting& s, const Event::ToDuelist& e);
-	StateOpt operator()(State::Waiting& s, const Event::ToObserver& e);
-	StateOpt operator()(State::Waiting&, const Event::Ready& e);
-	StateOpt operator()(State::Waiting& s, const Event::TryKick& e);
-	StateOpt operator()(State::Waiting& s, const Event::TryStart& e);
-	StateOpt operator()(State::Waiting&, const Event::UpdateDeck& e);
+	StateOpt operator()(State::Waiting&, const Event::Close&) noexcept;
+	StateOpt operator()(State::Waiting& s, const Event::ConnectionLost& e) noexcept;
+	StateOpt operator()(State::Waiting& s, const Event::Join& e) noexcept;
+	StateOpt operator()(State::Waiting& s, const Event::ToDuelist& e) noexcept;
+	StateOpt operator()(State::Waiting& s, const Event::ToObserver& e) noexcept;
+	StateOpt operator()(State::Waiting&, const Event::Ready& e) noexcept;
+	StateOpt operator()(State::Waiting& s, const Event::TryKick& e) noexcept;
+	StateOpt operator()(State::Waiting& s, const Event::TryStart& e) noexcept;
+	StateOpt operator()(State::Waiting&, const Event::UpdateDeck& e) noexcept;
 
 	// Chat handling is the same for all states.
 	template<typename State>
-	inline StateOpt operator()(State&, const Event::Chat& e)
+	inline StateOpt operator()(State&, const Event::Chat& e) noexcept
 	{
 		MakeAndSendChat(e.client, e.msg);
 		return std::nullopt;
@@ -120,14 +120,14 @@ public:
 
 	// Ignore rest of state entries.
 	template<typename S>
-	inline StateOpt operator()(S&)
+	inline StateOpt operator()(S&) noexcept
 	{
 		return std::nullopt;
 	}
 
 	// Ignore rest of state and event combinations.
 	template<typename S, typename E>
-	inline StateOpt operator()(S&, E&)
+	inline StateOpt operator()(S&, E&) noexcept
 	{
 		return std::nullopt;
 	}
@@ -196,16 +196,16 @@ private:
 
 	/*** STATE SPECIFIC FUNCTIONS ***/
 	// State/Dueling.cpp
-	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team);
-	std::optional<DuelFinishReason> Process(State::Dueling& s);
-	StateVariant Finish(State::Dueling& s, const DuelFinishReason& dfr);
+	Client& GetCurrentTeamClient(State::Dueling& s, uint8_t team) noexcept;
+	std::optional<DuelFinishReason> Process(State::Dueling& s) noexcept;
+	StateVariant Finish(State::Dueling& s, const DuelFinishReason& dfr) noexcept;
 	static const YGOPro::STOCMsg& SaveToSpectatorCache(
 		State::Dueling& s,
-		YGOPro::STOCMsg&& msg);
+		YGOPro::STOCMsg&& msg) noexcept;
 	// State/RockPaperScissor.cpp
-	void SendRPS();
+	void SendRPS() noexcept;
 	// State/Waiting.cpp
-	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {});
+	bool TryEmplaceDuelist(Client& client, Client::PosType hint = {}) noexcept;
 };
 
 } // namespace Room

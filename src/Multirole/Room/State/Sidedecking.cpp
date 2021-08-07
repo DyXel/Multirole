@@ -7,7 +7,7 @@
 namespace Ignis::Multirole::Room
 {
 
-StateOpt Context::operator()(State::Sidedecking& /*unused*/)
+StateOpt Context::operator()(State::Sidedecking& /*unused*/) noexcept
 {
 	const auto msg = MakeAskSidedeck();
 	SendToTeam(0U, msg);
@@ -16,7 +16,7 @@ StateOpt Context::operator()(State::Sidedecking& /*unused*/)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::ConnectionLost& e)
+StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::ConnectionLost& e) noexcept
 {
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
@@ -31,7 +31,7 @@ StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::Connec
 	return State::Closing{};
 }
 
-StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::Join& e)
+StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::Join& e) noexcept
 {
 	SetupAsSpectator(e.client);
 	e.client.Send(MakeDuelStart());
@@ -39,7 +39,7 @@ StateOpt Context::operator()(State::Sidedecking& /*unused*/, const Event::Join& 
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e)
+StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) noexcept
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;

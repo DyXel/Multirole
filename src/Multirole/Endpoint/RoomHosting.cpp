@@ -229,6 +229,18 @@ private:
 				isRelay = false;
 				hi.duelFlagsLow &= ~DUEL_RELAY;
 			}
+			// Deduce LP if its set to 0.
+			if(hi.startingLP == 0U)
+			{
+				if((hi.t0Count == 1U && hi.t1Count == 1U) || isRelay)
+				{
+					hi.startingLP = 8000U;
+				}
+				else // Tag mode.
+				{
+					hi.startingLP = std::max(hi.t0Count, hi.t1Count) * 8000U;
+				}
+			}
 			// Add flag that client should be setting.
 			// NOLINTNEXTLINE: DUEL_PSEUDO_SHUFFLE
 			hi.duelFlagsLow |= (!hi.dontShuffleDeck) ? 0x0 : 0x10;

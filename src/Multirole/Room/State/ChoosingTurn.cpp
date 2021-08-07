@@ -6,13 +6,13 @@
 namespace Ignis::Multirole::Room
 {
 
-StateOpt Context::operator()(State::ChoosingTurn& s)
+StateOpt Context::operator()(State::ChoosingTurn& s) noexcept
 {
 	s.turnChooser->Send(MakeAskIfGoingFirst());
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
+StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e) noexcept
 {
 	if(s.turnChooser != &e.client)
 		return std::nullopt;
@@ -50,7 +50,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 	};
 }
 
-StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::ConnectionLost& e)
+StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::ConnectionLost& e) noexcept
 {
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
@@ -64,7 +64,7 @@ StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::Conne
 	return State::Closing{};
 }
 
-StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::Join& e)
+StateOpt Context::operator()(State::ChoosingTurn& /*unused*/, const Event::Join& e) noexcept
 {
 	SetupAsSpectator(e.client);
 	e.client.Send(MakeDuelStart());

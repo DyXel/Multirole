@@ -3,7 +3,7 @@
 namespace Ignis::Multirole::Room
 {
 
-StateOpt Context::operator()(State::Rematching& /*unused*/)
+StateOpt Context::operator()(State::Rematching& /*unused*/) noexcept
 {
 	SendToAll(MakeRematchWait());
 	const auto msg = MakeAskIfRematch();
@@ -12,7 +12,7 @@ StateOpt Context::operator()(State::Rematching& /*unused*/)
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::ConnectionLost& e)
+StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::ConnectionLost& e) noexcept
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 	{
@@ -23,7 +23,7 @@ StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::Connect
 	return State::Closing{};
 }
 
-StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::Join& e)
+StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::Join& e) noexcept
 {
 	SetupAsSpectator(e.client);
 	e.client.Send(MakeDuelStart());
@@ -31,7 +31,7 @@ StateOpt Context::operator()(State::Rematching& /*unused*/, const Event::Join& e
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::Rematching& s, const Event::Rematch& e)
+StateOpt Context::operator()(State::Rematching& s, const Event::Rematch& e) noexcept
 {
 	if(e.client.Position() == Client::POSITION_SPECTATOR)
 		return std::nullopt;

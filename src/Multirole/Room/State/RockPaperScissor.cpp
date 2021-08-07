@@ -5,13 +5,13 @@
 namespace Ignis::Multirole::Room
 {
 
-StateOpt Context::operator()(State::RockPaperScissor& /*unused*/)
+StateOpt Context::operator()(State::RockPaperScissor& /*unused*/) noexcept
 {
 	SendRPS();
 	return std::nullopt;
 }
 
-StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e)
+StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS& e) noexcept
 {
 	const auto& pos = e.client.Position();
 	if(pos.second != 0U || e.value > 3U)
@@ -40,7 +40,7 @@ StateOpt Context::operator()(State::RockPaperScissor& s, const Event::ChooseRPS&
 		),0U}]};
 }
 
-StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::ConnectionLost& e)
+StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::ConnectionLost& e) noexcept
 {
 	const auto p = e.client.Position();
 	if(p == Client::POSITION_SPECTATOR)
@@ -54,7 +54,7 @@ StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::C
 	return State::Closing{};
 }
 
-StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::Join& e)
+StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::Join& e) noexcept
 {
 	SetupAsSpectator(e.client);
 	e.client.Send(MakeDuelStart());
@@ -62,7 +62,7 @@ StateOpt Context::operator()(State::RockPaperScissor& /*unused*/, const Event::J
 }
 
 // Sends Rock, Paper, Scissor hand selection to the first player of each team
-void Context::SendRPS()
+void Context::SendRPS() noexcept
 {
 	auto msg = MakeAskRPS();
 	duelists[{0U, 0U}]->Send(msg);
