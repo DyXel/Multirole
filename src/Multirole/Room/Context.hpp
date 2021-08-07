@@ -61,12 +61,12 @@ public:
 		uint8_t winner; // 2 == DRAW
 	};
 
-	Context(CreateInfo&& info);
-	~Context();
+	Context(CreateInfo&& info) noexcept;
+	~Context() noexcept;
 
-	const YGOPro::HostInfo& HostInfo() const;
-	bool IsPrivate() const;
-	std::map<uint8_t, std::string> GetDuelistsNames() const;
+	const YGOPro::HostInfo& HostInfo() const noexcept;
+	bool IsPrivate() const noexcept;
+	std::map<uint8_t, std::string> GetDuelistsNames() const noexcept;
 
 	/*** STATE AND EVENT HANDLERS ***/
 	// State/ChoosingTurn.cpp
@@ -159,40 +159,40 @@ private:
 	std::array<int32_t, 2U> wins{};
 
 	// Get if tiebreaker mode is enabled (match last until there is a winner).
-	bool IsTiebreaking() const;
+	bool IsTiebreaking() const noexcept;
 
 	// Get correctly swapped teams based on team1 going first or not.
-	uint8_t GetSwappedTeam(uint8_t team) const;
+	uint8_t GetSwappedTeam(uint8_t team) const noexcept;
 
 	// Get the number of duelists on each team.
-	std::array<uint8_t, 2U> GetTeamCounts() const;
+	std::array<uint8_t, 2U> GetTeamCounts() const noexcept;
 
 	// Utilities to send a message to multiple clients.
-	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg);
-	void SendToSpectators(const YGOPro::STOCMsg& msg);
-	void SendToAll(const YGOPro::STOCMsg& msg);
-	void SendToAllExcept(Client& client, const YGOPro::STOCMsg& msg);
+	void SendToTeam(uint8_t team, const YGOPro::STOCMsg& msg) noexcept;
+	void SendToSpectators(const YGOPro::STOCMsg& msg) noexcept;
+	void SendToAll(const YGOPro::STOCMsg& msg) noexcept;
+	void SendToAllExcept(Client& client, const YGOPro::STOCMsg& msg) noexcept;
 
 	// Creates the PlayerEnter and TypeChange messages for each duelist
 	// and sends that information to the given client.
-	void SendDuelistsInfo(Client& client);
+	void SendDuelistsInfo(Client& client) noexcept;
 
 	// Adds given client to the spectators set, sends the join message as
 	// well as duelists information.
-	void SetupAsSpectator(Client& client, bool sendJoin = true);
+	void SetupAsSpectator(Client& client, bool sendJoin = true) noexcept;
 
 	// Creates and sends to all a chat message from a client.
-	void MakeAndSendChat(Client& client, std::string_view msg);
+	void MakeAndSendChat(Client& client, std::string_view msg) noexcept;
 
 	// Creates a YGOPro::Deck from the given vectors, making sure
 	// that the deck is only composed of non-zero card codes, also,
 	// sets its internal error to whatever was the lastest unknown card.
 	std::unique_ptr<YGOPro::Deck> LoadDeck(
 		const std::vector<uint32_t>& main,
-		const std::vector<uint32_t>& side) const;
+		const std::vector<uint32_t>& side) const noexcept;
 
 	// Check if a given deck is valid on the current room options.
-	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const;
+	std::unique_ptr<YGOPro::STOCMsg> CheckDeck(const YGOPro::Deck& deck) const noexcept;
 
 	/*** STATE SPECIFIC FUNCTIONS ***/
 	// State/Dueling.cpp
