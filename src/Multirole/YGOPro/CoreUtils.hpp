@@ -143,7 +143,7 @@ QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb) noexcept;
 
 // Creates a QueryBuffer which might have information stripped if it had the
 // hidden flag set, aditionally, that flag can be overriden with isPublic.
-QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic) noexcept;
+QueryBuffer SerializeSingleQuery(const QueryOpt& qOpt, bool isPublic) noexcept;
 
 // Same as the above function, but for all the queries in the vector.
 QueryBuffer SerializeLocationQuery(const QueryOptVector& qs, bool isPublic) noexcept;

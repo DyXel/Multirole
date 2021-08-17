@@ -624,39 +624,22 @@ QueryOptVector DeserializeLocationQueryBuffer(const QueryBuffer& qb) noexcept
 	return ret;
 }
 
-QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic) noexcept
+QueryBuffer SerializeSingleQuery(const QueryOpt& qOpt, bool isPublic) noexcept
 {
 	QueryBuffer qb;
-	auto Insert = [&qb](auto&& v)
+	if(!qOpt.has_value()) // Nothing to serialize.
 	{
-		const std::size_t sz = qb.size();
-		if constexpr(!std::is_same_v<decltype(v), LocInfo>)
-		{
-			qb.resize(sz + sizeof(decltype(v)));
-			std::memcpy(&qb[sz], &v, sizeof(decltype(v)));
-		}
-		else // Specialization for LocInfo
-		{
-			qb.resize(sz + LocInfo::SIZE);
-			auto* ptr = &qb[sz];
-			Write<uint8_t>(ptr, v.con);
-			Write<uint8_t>(ptr, v.loc);
-			Write<uint32_t>(ptr, v.seq);
-			Write<uint32_t>(ptr, v.pos);
-		}
-	};
-	if(!q) // Nothing to serialize
-	{
-		Insert(uint16_t(0U));
+		qb.resize(sizeof(uint16_t), uint8_t{0U});
 		return qb;
 	}
+	const auto& q = qOpt.value();
 	// Check if a certain query is public or if the whole query object
 	// itself is public.
 	auto IsPublic = [&q](uint64_t flag) constexpr -> bool
 	{
-		if((q->flags & QUERY_IS_PUBLIC) && q->isPublic)
+		if((q.flags & QUERY_IS_PUBLIC) && q.isPublic)
 			return true;
-		if((q->flags & QUERY_POSITION) && (q->pos & POS_FACEUP))
+		if((q.flags & QUERY_POSITION) && (q.pos & POS_FACEUP))
 			return true;
 		switch(flag)
 		{
@@ -726,9 +709,9 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic) noexcept
 		       (var.size() * sizeof(decltype(var)::value_type)); \
 		break; \
 	}
-			X(QUERY_TARGET_CARD, q->targets)
-			X(QUERY_OVERLAY_CARD, q->overlays)
-			X(QUERY_COUNTERS, q->counters)
+			X(QUERY_TARGET_CARD, q.targets)
+			X(QUERY_OVERLAY_CARD, q.overlays)
+			X(QUERY_COUNTERS, q.counters)
 #undef X
 			case QUERY_LINK:
 			{
@@ -741,62 +724,98 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& q, bool isPublic) noexcept
 			}
 		}
 	};
+	const auto totalQuerySize = [&]() constexpr -> std::size_t
+	{
+		std::size_t size = 0U;
+		for(uint64_t flag = 1U; flag <= QUERY_END; flag <<= 1U)
+		{
+			if((q.flags & flag) != flag)
+				continue;
+			if(flag == QUERY_REASON_CARD && q.reasonCard.loc == 0U)
+				continue;
+			if(flag == QUERY_EQUIP_CARD && q.equipCard.loc == 0U)
+				continue;
+			if((q.flags & QUERY_IS_HIDDEN) && q.isHidden && !IsPublic(flag))
+				continue;
+			if(isPublic && !IsPublic(flag))
+				continue;
+			size += sizeof(uint16_t) + sizeof(uint32_t);
+			size += ComputeQuerySize(flag);
+		}
+		return size;
+	}();
+	qb.resize(totalQuerySize);
+	auto Insert = [ptr = qb.data()](auto&& value) mutable
+	{
+		using Base = std::remove_cv_t<std::remove_reference_t<decltype(value)>>;
+		if constexpr(std::is_same_v<Base, LocInfo>)
+		{
+			Write<uint8_t>(ptr, value.con);
+			Write<uint8_t>(ptr, value.loc);
+			Write<uint32_t>(ptr, value.seq);
+			Write<uint32_t>(ptr, value.pos);
+		}
+		else
+		{
+			Write<Base>(ptr, value);
+		}
+	};
 	for(uint64_t flag = 1U; flag <= QUERY_END; flag <<= 1U)
 	{
-		if((q->flags & flag) != flag)
+		if((q.flags & flag) != flag)
 			continue;
-		if(flag == QUERY_REASON_CARD && q->reasonCard.loc == 0U)
+		if(flag == QUERY_REASON_CARD && q.reasonCard.loc == 0U)
 			continue;
-		if(flag == QUERY_EQUIP_CARD && q->equipCard.loc == 0U)
+		if(flag == QUERY_EQUIP_CARD && q.equipCard.loc == 0U)
 			continue;
-		if((q->flags & QUERY_IS_HIDDEN) && q->isHidden && !IsPublic(flag))
+		if((q.flags & QUERY_IS_HIDDEN) && q.isHidden && !IsPublic(flag))
 			continue;
 		if(isPublic && !IsPublic(flag))
 			continue;
-		Insert(uint16_t(ComputeQuerySize(flag) + sizeof(uint32_t)));
-		Insert(uint32_t(flag));
+		Insert(static_cast<uint16_t>(ComputeQuerySize(flag) + sizeof(uint32_t)));
+		Insert(static_cast<uint32_t>(flag));
 		switch(flag)
 		{
 #define X(qtype, var) case qtype: { Insert(var); break; }
-			X(QUERY_CODE, q->code)
-			X(QUERY_POSITION, q->pos)
-			X(QUERY_ALIAS, q->alias)
-			X(QUERY_TYPE, q->type)
-			X(QUERY_LEVEL, q->level)
-			X(QUERY_RANK, q->rank)
-			X(QUERY_ATTRIBUTE, q->attribute)
-			X(QUERY_RACE, q->race)
-			X(QUERY_ATTACK, q->attack)
-			X(QUERY_DEFENSE, q->defense)
-			X(QUERY_BASE_ATTACK, q->bAttack)
-			X(QUERY_BASE_DEFENSE, q->bDefense)
-			X(QUERY_REASON, q->reason)
-			X(QUERY_OWNER, q->owner)
-			X(QUERY_STATUS, q->status)
-			X(QUERY_IS_PUBLIC, q->isPublic)
-			X(QUERY_LSCALE, q->lscale)
-			X(QUERY_RSCALE, q->rscale)
-			X(QUERY_REASON_CARD, q->reasonCard)
-			X(QUERY_EQUIP_CARD, q->equipCard)
-			X(QUERY_IS_HIDDEN, q->isHidden)
-			X(QUERY_COVER, q->cover)
+			X(QUERY_CODE, q.code)
+			X(QUERY_POSITION, q.pos)
+			X(QUERY_ALIAS, q.alias)
+			X(QUERY_TYPE, q.type)
+			X(QUERY_LEVEL, q.level)
+			X(QUERY_RANK, q.rank)
+			X(QUERY_ATTRIBUTE, q.attribute)
+			X(QUERY_RACE, q.race)
+			X(QUERY_ATTACK, q.attack)
+			X(QUERY_DEFENSE, q.defense)
+			X(QUERY_BASE_ATTACK, q.bAttack)
+			X(QUERY_BASE_DEFENSE, q.bDefense)
+			X(QUERY_REASON, q.reason)
+			X(QUERY_OWNER, q.owner)
+			X(QUERY_STATUS, q.status)
+			X(QUERY_IS_PUBLIC, q.isPublic)
+			X(QUERY_LSCALE, q.lscale)
+			X(QUERY_RSCALE, q.rscale)
+			X(QUERY_REASON_CARD, q.reasonCard)
+			X(QUERY_EQUIP_CARD, q.equipCard)
+			X(QUERY_IS_HIDDEN, q.isHidden)
+			X(QUERY_COVER, q.cover)
 #undef X
 #define X(qtype, var) \
 	case qtype: \
 	{ \
-		Insert(uint32_t(var.size())); \
+		Insert(static_cast<uint16_t>(var.size())); \
 		for(const auto& elem : var) \
 			Insert(elem); \
 		break; \
 	}
-			X(QUERY_TARGET_CARD, q->targets)
-			X(QUERY_OVERLAY_CARD, q->overlays)
-			X(QUERY_COUNTERS, q->counters)
+			X(QUERY_TARGET_CARD, q.targets)
+			X(QUERY_OVERLAY_CARD, q.overlays)
+			X(QUERY_COUNTERS, q.counters)
 #undef X
 			case QUERY_LINK:
 			{
-				Insert(q->link);
-				Insert(q->linkMarker);
+				Insert(q.link);
+				Insert(q.linkMarker);
 				break;
 			}
 			default:
