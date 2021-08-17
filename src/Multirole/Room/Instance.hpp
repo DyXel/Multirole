@@ -70,7 +70,9 @@ private:
 	const std::string notes;
 	const std::string pass;
 	Context ctx;
+
 	StateVariant state;
+	mutable std::shared_mutex mState;
 
 	std::set<std::string> kicked;
 	mutable std::mutex mKicked;

@@ -29,6 +29,7 @@ bool Instance::IsPrivate() const
 
 bool Instance::Started() const
 {
+	std::shared_lock lock(mState);
 	return !std::holds_alternative<State::Waiting>(state);
 }
 
@@ -84,6 +85,7 @@ boost::asio::io_context::strand& Instance::Strand()
 
 void Instance::Dispatch(const EventVariant& e)
 {
+	std::scoped_lock lock(mState);
 	for(StateOpt newState = std::visit(ctx, state, e); newState;)
 	{
 		state = std::move(*newState);
