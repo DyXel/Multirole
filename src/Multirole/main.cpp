@@ -45,7 +45,7 @@ inline int CreateAndRunServerInstance() noexcept
 int main()
 {
 	git_libgit2_init();
-	sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
+	sqlite3_config(SQLITE_CONFIG_MULTITHREAD);
 	sqlite3_initialize();
 	int exitFlag = CreateAndRunServerInstance();
 	sqlite3_shutdown();

@@ -46,6 +46,8 @@ private:
 	sqlite3_stmt* sStmt{};
 	sqlite3_stmt* s2Stmt{};
 
+	mutable std::mutex mDb;
+
 	mutable std::unordered_map<uint32_t, OCG_CardData> dataCache;
 	mutable std::unordered_map<uint32_t, std::unique_ptr<uint16_t[]>> scCache;
 	mutable std::mutex mDataCache;
