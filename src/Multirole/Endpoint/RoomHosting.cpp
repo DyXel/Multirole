@@ -42,7 +42,7 @@ constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
 	if(doubleDeck && limit20)
 	{
 		// NOTE: main deck boundaries are same as official
-		l.extra.max = 10;
+		l.extra.max = 12;
 		l.side.max = 12;
 	}
 	else if(doubleDeck)
@@ -54,7 +54,7 @@ constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
 	else if(limit20)
 	{
 		l.main.min = 20; l.main.max = 30;
-		l.extra.max = 5;
+		l.extra.max = 6;
 		l.side.max = 6;
 	}
 	return l;
