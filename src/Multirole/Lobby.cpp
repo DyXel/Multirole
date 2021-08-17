@@ -75,7 +75,7 @@ std::shared_ptr<Room::Instance> Lobby::MakeRoom(Room::Instance::CreateInfo& info
 void Lobby::CollectRooms(const std::function<void(const RoomProps&)>& f)
 {
 	RoomProps props{};
-	std::shared_lock lock(mRooms);
+	std::scoped_lock lock(mRooms);
 	for(auto it = rooms.begin(), last = rooms.end(); it != last;)
 	{
 		if(auto room = it->second.lock(); room)
