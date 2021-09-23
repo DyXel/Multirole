@@ -66,9 +66,10 @@ private:
 	}
 };
 
-DiscordWebhookSink::DiscordWebhookSink(boost::asio::io_context& ioCtx, std::string_view uri) :
+DiscordWebhookSink::DiscordWebhookSink(boost::asio::io_context& ioCtx, std::string_view uri, std::string_view ridFormat) :
 	ioCtx(ioCtx),
-	sslCtx(boost::asio::ssl::context::sslv23)
+	sslCtx(boost::asio::ssl::context::sslv23),
+	ridFormat(ridFormat)
 {
 	sslCtx.set_default_verify_paths();
 	const auto scpos = uri.find(':'); // scheme colon position
@@ -146,13 +147,18 @@ void DiscordWebhookSink::Log(const Timestamp& /*ts*/, const SinkLogProps& props,
 	{
 		const auto& ecLogProps = std::get<1>(props);
 		embed.emplace("title", EC_TITLES[AsSizeT(ecLogProps.first)]);
+		embed.emplace("color", 0xFF0000U);
 		auto& desc = *embed.emplace("description", "```\n").first->value().if_string();
 		desc.append(str);
 		desc.append("\n```");
-		embed.emplace("color", 0xFF0000U);
-		auto& footer = *embed.emplace("footer", boost::json::object(1U, &mr)).first->value().if_object();
-		auto& footerText = *footer.emplace("text", "Replay ID: ").first->value().if_string();
-		footerText.append(std::to_string(ecLogProps.second));
+		try
+		{
+			desc.append(fmt::format(ridFormat, ecLogProps.second));
+		}
+		catch(const fmt::format_error&)
+		{
+			desc.append(I18N::DWH_RIDFORMAT_ERROR);
+		}
 	}
 	const auto strJ = boost::json::serialize(j); // DUMP EET
 	auto payload = fmt::format(HTTP_HEADER_FORMAT_STRING, path, host, strJ.size());

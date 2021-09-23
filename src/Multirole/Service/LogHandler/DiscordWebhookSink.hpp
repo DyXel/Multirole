@@ -12,7 +12,7 @@ namespace Ignis::Multirole::LogHandlerDetail
 class DiscordWebhookSink final : public ISink
 {
 public:
-	DiscordWebhookSink(boost::asio::io_context& ioCtx, std::string_view uri);
+	DiscordWebhookSink(boost::asio::io_context& ioCtx, std::string_view uri, std::string_view ridFormat);
 	~DiscordWebhookSink() noexcept;
 
 	void Log(const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept override;
@@ -21,6 +21,7 @@ private:
 
 	boost::asio::io_context& ioCtx;
 	boost::asio::ssl::context sslCtx;
+	const std::string ridFormat;
 	std::string scheme;
 	std::string host;
 	std::string path;

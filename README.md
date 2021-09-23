@@ -98,6 +98,8 @@ The configuration file must be placed in the same working directory as Multirole
 
         * `uri`: URL where log calls will be HTTP POST'd to. Check Discord's documentation for more details.
 
+        * `ridFormat`: Format string used to display the Replay ID of the error shown. Defaults to `"\nReplay ID: {0}"`, if not defined.
+
       * `"file"`: Log messages to a particular file:
 
         * `path`: Which file to log to, will append the text output to it. NOTE: The file will be created if it doesn't exist, but the directory will not be created.

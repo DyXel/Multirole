@@ -12,25 +12,44 @@
 namespace Ignis::Multirole
 {
 
+namespace
+{
+
+using Str = const char* const;
+
+template<typename JsonValue>
+constexpr Str AsStr(const JsonValue& jv)
+{
+	return jv.as_string().data();
+};
+
+} // namespace
+
 Service::LogHandler::LogHandler(boost::asio::io_context& ioCtx, const boost::json::object& cfg) :
 	logRooms(cfg.at("roomLogging").at("enabled").as_bool()),
-	roomLogsDir(cfg.at("roomLogging").at("path").as_string().data()),
+	roomLogsDir(AsStr(cfg.at("roomLogging").at("path"))),
 	mStderr(),
 	mStdout()
 {
 	using namespace LogHandlerDetail;
-	using Str = const char* const;
 	constexpr Str SERVICE_SINKS = "serviceSinks";
 	constexpr Str EC_SINKS = "ecSinks";
-	auto MakeOneSink = [&](Str cat, Str name) -> std::unique_ptr<ISink>
+	auto MakeOneSink = [&](Str category, Str name) -> std::unique_ptr<ISink>
 	{
-		const auto& obj = cfg.at(cat).at(name);
+		const auto& obj = cfg.at(category).at(name);
 		const auto& type = obj.at("type").as_string();
-		const auto& props = obj.at("properties");
+		const auto& props = obj.at("properties").as_object();
+		const auto ridFormat = [&]() -> Str
+		{
+			if(const auto s = props.find("ridFormat"); s != props.cend())
+				return AsStr(s->value());
+			else
+				return "\nReplay ID: {0}";
+		}();
 		if(type == "discordWebhook")
-			return std::make_unique<DiscordWebhookSink>(ioCtx, props.at("uri").as_string().data());
+			return std::make_unique<DiscordWebhookSink>(ioCtx, AsStr(props.at("uri")), ridFormat);
 		if(type == "file")
-			return std::make_unique<FileSink>(props.at("path").as_string().data());
+			return std::make_unique<FileSink>(AsStr(props.at("path")));
 		if(type == "stderr")
 			return std::make_unique<StderrSink>(mStderr);
 		if(type == "stdout")

@@ -96,6 +96,7 @@ Str DWH_URI_TOO_SHORT = "URI length unexpectedly short.";
 Str DWH_URI_NO_PATH = "URI has no path.";
 Str DWH_ERROR_RESOLVING_HOST = "Resolving host yielded no endpoints.";
 Str DWH_SERVICE_MESSAGE_TITLE = "Service Message";
+Str DWH_RIDFORMAT_ERROR = "\n**¡¡¡ERROR FORMATTING TEXT!!!** Check your `ridFormat` format string.";
 
 Str REPLAY_MANAGER_NOT_SAVING_REPLAYS = "Not saving replays, replay IDs will always be 0";
 Str REPLAY_MANAGER_COULD_NOT_CREATE_DIR = "ReplayManager: Could not create replay directory.";
