@@ -58,7 +58,7 @@ StateOpt Context::operator()(State::Dueling& s) noexcept
 	X(EXTRA_RULE_DIMENSION_DUEL,     511600002U); // NOLINT
 	X(EXTRA_RULE_TURBO_DUEL,         110000000U); // NOLINT
 	X(EXTRA_RULE_COMMAND_DUEL,       95200000U);  // NOLINT
-	X(EXTRA_RULE_DECK_MASTER,        300U);       // NOLINT
+	X(EXTRA_RULE_DECK_MASTER,        153999999U); // NOLINT
 	X(EXTRA_RULE_ACTION_DUEL,        151999999U); // NOLINT
 #undef X
 	// Construct replay.
