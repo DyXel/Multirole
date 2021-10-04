@@ -1,48 +1,67 @@
-FROM ubuntu:20.04
+FROM debian:bullseye-slim as base
 
 # Install all the stuff we are going to need in one go.
 RUN apt-get update && \
 	apt-get --no-install-recommends --yes install \
 		build-essential \
 		ca-certificates \
-		g++ \
 		libfmt-dev \
 		libgit2-dev \
 		libsqlite3-dev \
 		libssl-dev \
+		python3 \
+		libtcmalloc-minimal4 && \
+	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+FROM base as build-base
+
+RUN apt-get update && \
+	apt-get --no-install-recommends --yes install \
+		g++ \
 		meson \
 		ninja-build \
 		pkg-config \
-		python3 \
-		wget
+		build-essential \
+		ca-certificates \
+		tar \
+		bzip2 \
+		wget && \
+	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 
 # Build and install boost libraries (we'll only need filesystem to be compiled),
 # we require >=1.75.0 because it has Boost.JSON and apt doesn't have it.
+FROM build-base as boost-builder
+
 WORKDIR /root/boost-src
-RUN wget http://sourceforge.net/projects/boost/files/boost/1.75.0/boost_1_75_0.tar.bz2 && \
-	tar --bzip2 -xf boost_1_75_0.tar.bz2 && \
+RUN wget -O - http://sourceforge.net/projects/boost/files/boost/1.75.0/boost_1_75_0.tar.bz2 | tar --bzip2 -xf - && \
 	cd boost_1_75_0 && \
-	./bootstrap.sh --prefix=/usr/ --with-libraries=filesystem && \
-	./b2 install
+	./bootstrap.sh --prefix=/usr/local/boost --with-libraries=filesystem && \
+	./b2 install && \
+	cd ..
 
 # Build multirole.
+FROM build-base as multirole-builder
+
 WORKDIR /root/multirole-src
 COPY src/ ./src/
 COPY meson.build .
-RUN BOOST_ROOT=/usr/ meson setup build --buildtype=release && \
+COPY meson_options.txt .
+COPY --from=boost-builder /usr/local/boost /usr/local/boost
+RUN BOOST_ROOT=/usr/local/boost/ meson setup build --buildtype=release && \
 	cd build && \
 	ninja
 
 # Setup the final environment.
+FROM base
+
 WORKDIR /multirole
 COPY etc/config.json .
 COPY util/area-zero.py .
-RUN cp /root/multirole-src/build/hornet . && \
-	cp /root/multirole-src/build/multirole .
-
-# Clean up.
-RUN rm -rf /var/lib/apt/lists/* && rm -rf /root/boost-src && rm -rf /root/multirole-src
+COPY --from=boost-builder /usr/local/boost/lib/libboost_filesystem.so /usr/lib/libboost_filesystem.so.1.75.0
+COPY --from=multirole-builder /root/multirole-src/build/hornet .
+COPY --from=multirole-builder /root/multirole-src/build/multirole .
 
 # Execute.
 EXPOSE 7922 7911 34343 62672 49382 43632
-CMD [ "./area-zero.py" ]
+CMD [ "python3", "./area-zero.py" ]
