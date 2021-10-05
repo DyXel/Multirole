@@ -27,9 +27,9 @@ Context::Context(CreateInfo&& info) noexcept
 	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR)),
 	isPrivate(info.isPrivate),
 	rl(svc.logHandler.MakeRoomLogger(id)),
-	scriptLogger(svc.logHandler, hostInfo)
+	scriptLogger(svc.logHandler, hostInfo),
+	rng(info.seed)
 {
-	rng.seed(info.seed);
 	if(rl)
 		rl->Log(I18N::ROOM_LOGGER_ROOM_NOTES, info.notes);
 }

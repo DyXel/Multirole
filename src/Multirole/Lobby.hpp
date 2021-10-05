@@ -3,9 +3,9 @@
 #include <functional>
 #include <list>
 #include <shared_mutex>
-#include <random>
 #include <unordered_map>
 
+#include "RNG/SplitMix64.hpp"
 #include "Room/Instance.hpp"
 
 namespace Ignis::Multirole
@@ -50,7 +50,7 @@ public:
 	void DecrementConnectionCount(const std::string& ip);
 private:
 	const int maxConnections;
-	std::mt19937 rng;
+	RNG::SplitMix64 rng;
 	bool closed;
 	std::unordered_map<uint32_t, std::weak_ptr<Room::Instance>> rooms;
 	mutable std::shared_mutex mRooms;

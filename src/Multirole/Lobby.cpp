@@ -1,5 +1,6 @@
 #include "Lobby.hpp"
 
+#include "RNG/Xoshiro256.hpp"
 #include <chrono>
 
 namespace Ignis::Multirole
@@ -8,9 +9,11 @@ namespace Ignis::Multirole
 namespace
 {
 
-inline std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
+using Clock = std::chrono::high_resolution_clock;
+
+inline std::chrono::time_point<Clock>::rep TimeNowInt64()
 {
-	return std::chrono::system_clock::now().time_since_epoch().count();
+	return Clock::now().time_since_epoch().count();
 }
 
 } // namespace
@@ -19,7 +22,7 @@ inline std::chrono::time_point<std::chrono::system_clock>::rep TimeNowInt()
 
 Lobby::Lobby(int maxConnections) :
 	maxConnections(maxConnections),
-	rng(static_cast<std::mt19937::result_type>(TimeNowInt())),
+	rng(static_cast<RNG::SplitMix64::StateType>(TimeNowInt64())),
 	closed(false)
 {}
 
@@ -65,7 +68,13 @@ std::shared_ptr<Room::Instance> Lobby::MakeRoom(Room::Instance::CreateInfo& info
 			break;
 		}
 	}
-	info.seed = rng();
+	info.seed = RNG::Xoshiro256StarStar::StateType
+	{{
+		rng(),
+		rng(),
+		rng(),
+		rng(),
+	}};
 	auto room = std::make_shared<Room::Instance>(info);
 	if(!closed)
 		rooms.emplace(info.id, room);

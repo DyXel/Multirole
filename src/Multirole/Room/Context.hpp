@@ -3,13 +3,13 @@
 #include <map>
 #include <set>
 #include <shared_mutex>
-#include <random>
 
 #include "Event.hpp"
 #include "ScriptLogger.hpp"
 #include "State.hpp"
 #include "../Service.hpp"
 #include "../STOCMsgFactory.hpp"
+#include "../RNG/Xoshiro256.hpp"
 
 namespace YGOPro
 {
@@ -39,7 +39,7 @@ public:
 		Service& svc;
 		TimerAggregator& tagg;
 		uint32_t id;
-		uint32_t seed;
+		RNG::Xoshiro256StarStar::StateType seed;
 		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
 		YGOPro::DeckLimits limits;
@@ -146,6 +146,7 @@ private:
 	const bool isPrivate;
 	std::unique_ptr<RoomLogger> rl;
 	ScriptLogger scriptLogger;
+	RNG::Xoshiro256StarStar rng;
 
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;
@@ -155,7 +156,6 @@ private:
 	// Additional data used by room states.
 	int duelsHad{};
 	uint8_t isTeam1GoingFirst{};
-	std::mt19937 rng{};
 	std::array<int32_t, 2U> wins{};
 
 	// Get if tiebreaker mode is enabled (match last until there is a winner).
