@@ -43,7 +43,7 @@ const YGOPro::HostInfo& Instance::HostInfo() const noexcept
 	return ctx.HostInfo();
 }
 
-std::map<uint8_t, std::string> Instance::DuelistNames() const
+DuelistsMap Instance::DuelistNames() const noexcept
 {
 	return ctx.GetDuelistsNames();
 }

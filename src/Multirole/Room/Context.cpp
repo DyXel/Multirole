@@ -46,13 +46,21 @@ bool Context::IsPrivate() const noexcept
 	return isPrivate;
 }
 
-std::map<uint8_t, std::string> Context::GetDuelistsNames() const noexcept
+DuelistsMap Context::GetDuelistsNames() const noexcept
 {
-	std::map<uint8_t, std::string> ret;
+	DuelistsMap ret{0U, {}};
+	std::shared_lock lock(mDuelists);
+	for(const auto& kv : duelists)
 	{
-		std::shared_lock lock(mDuelists);
-		for(const auto& kv : duelists)
-			ret.emplace(EncodePosition(kv.first), kv.second->Name());
+		if(ret.usedCount >= ret.pairs.size())
+			break; // We can't store the rest of names.
+		const auto& strName = kv.second->Name();
+		auto& duelist = ret.pairs[ret.usedCount];
+		duelist.pos = EncodePosition(kv.first);
+		duelist.nameLength = std::min(duelist.name.size(), strName.size());
+		std::copy_n(strName.cbegin(), duelist.nameLength, duelist.name.begin());
+		duelist.name.back() = '\0'; // NOTE: Let's be extra safe.
+		ret.usedCount++;
 	}
 	return ret;
 }

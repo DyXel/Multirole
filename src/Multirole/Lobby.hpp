@@ -22,7 +22,7 @@ public:
 		const std::string* notes;
 		bool passworded : 1;
 		bool started : 1;
-		std::map<uint8_t, std::string> duelists;
+		Room::DuelistsMap duelists;
 	};
 
 	Lobby(int maxConnections);

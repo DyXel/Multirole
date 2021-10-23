@@ -119,14 +119,14 @@ void LobbyListing::DoSerialize()
 			room.emplace("no_shuffle", static_cast<bool>(hi.dontShuffleDeck));
 			room.emplace("banlist_hash", hi.banlistHash);
 			room.emplace("istart", rp.started ? "start" : "waiting");
-			auto& ac = *room.emplace("users", boost::json::array(rp.duelists.size(), &mr)).first->value().if_array();
-			std::size_t i = 0U;
-			for(const auto& kv : rp.duelists)
+			const auto dCount = rp.duelists.usedCount;
+			auto& ac = *room.emplace("users", boost::json::array(dCount, &mr)).first->value().if_array();
+			for(std::size_t i = 0; i < dCount; i++)
 			{
+				const auto& duelist = rp.duelists.pairs[i];
 				auto& client = ac[i].emplace_object();
-				client.emplace("name", kv.second);
-				client.emplace("pos", kv.first);
-				i++;
+				client.emplace("pos", duelist.pos);
+				client.emplace("name", std::string_view{duelist.name.data(), duelist.nameLength});
 			}
 		});
 		{

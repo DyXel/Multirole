@@ -4,6 +4,7 @@
 #include <set>
 #include <shared_mutex>
 
+#include "DuelistData.hpp"
 #include "Event.hpp"
 #include "ScriptLogger.hpp"
 #include "State.hpp"
@@ -66,7 +67,7 @@ public:
 
 	const YGOPro::HostInfo& HostInfo() const noexcept;
 	bool IsPrivate() const noexcept;
-	std::map<uint8_t, std::string> GetDuelistsNames() const noexcept;
+	DuelistsMap GetDuelistsNames() const noexcept;
 
 	/*** STATE AND EVENT HANDLERS ***/
 	// State/ChoosingTurn.cpp

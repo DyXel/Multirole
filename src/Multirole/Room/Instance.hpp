@@ -46,8 +46,8 @@ public:
 	// Get the game options of the room.
 	const YGOPro::HostInfo& HostInfo() const noexcept;
 
-	// Get each duelist index along with their name.
-	std::map<uint8_t, std::string> DuelistNames() const;
+	// Get each duelist index (encoded position) along with their name.
+	DuelistsMap DuelistNames() const noexcept;
 
 	// Check if the given string matches the set password,
 	// always return true if the password is empty.
