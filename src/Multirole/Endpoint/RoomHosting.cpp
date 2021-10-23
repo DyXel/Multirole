@@ -329,7 +329,7 @@ RoomHosting::RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lo
 	DoAccept();
 }
 
-void RoomHosting::Stop()
+void RoomHosting::Stop() noexcept
 {
 	acceptor.close();
 }

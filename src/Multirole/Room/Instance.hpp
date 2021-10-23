@@ -32,39 +32,39 @@ public:
 	};
 
 	// Ctor and registering.
-	Instance(CreateInfo& info);
+	Instance(CreateInfo& info) noexcept;
 
 	// Get whether or not the room is private (has password set).
-	bool IsPrivate() const;
+	bool IsPrivate() const noexcept;
 
 	// Check if the room state is not Waiting.
-	bool Started() const;
+	bool Started() const noexcept;
 
 	// Get the notes of the room.
-	const std::string& Notes() const;
+	const std::string& Notes() const noexcept;
 
 	// Get the game options of the room.
-	const YGOPro::HostInfo& HostInfo() const;
+	const YGOPro::HostInfo& HostInfo() const noexcept;
 
 	// Get each duelist index along with their name.
 	std::map<uint8_t, std::string> DuelistNames() const;
 
 	// Check if the given string matches the set password,
 	// always return true if the password is empty.
-	bool CheckPassword(std::string_view str) const;
+	bool CheckPassword(std::string_view str) const noexcept;
 
 	// Check whether or not the IP was kicked before from this room.
-	bool CheckKicked(std::string_view ip) const;
+	bool CheckKicked(std::string_view ip) const noexcept;
 
 	// Tries to remove the room if its not started.
 	// Returns true if room was signaled, false otherwise.
-	bool TryClose();
+	bool TryClose() noexcept;
 
 	// Adds an IP to the kicked list, checked with CheckKicked.
-	void AddKicked(std::string_view ip);
+	void AddKicked(std::string_view ip) noexcept;
 
-	boost::asio::io_context::strand& Strand();
-	void Dispatch(const EventVariant& e);
+	boost::asio::io_context::strand& Strand() noexcept;
+	void Dispatch(const EventVariant& e) noexcept;
 private:
 	boost::asio::io_context::strand strand;
 	TimerAggregator tagg;

@@ -22,7 +22,7 @@ class RoomHosting final
 {
 public:
 	RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lobby, unsigned short port);
-	void Stop();
+	void Stop() noexcept;
 private:
 	enum class PrebuiltMsgId
 	{

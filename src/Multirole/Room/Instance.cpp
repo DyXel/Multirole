@@ -3,7 +3,7 @@
 namespace Ignis::Multirole::Room
 {
 
-Instance::Instance(CreateInfo& info)
+Instance::Instance(CreateInfo& info) noexcept
 	:
 	strand(info.ioCtx),
 	tagg(*this),
@@ -22,23 +22,23 @@ Instance::Instance(CreateInfo& info)
 	state(State::Waiting{nullptr})
 {}
 
-bool Instance::IsPrivate() const
+bool Instance::IsPrivate() const noexcept
 {
 	return ctx.IsPrivate();
 }
 
-bool Instance::Started() const
+bool Instance::Started() const noexcept
 {
 	std::shared_lock lock(mState);
 	return !std::holds_alternative<State::Waiting>(state);
 }
 
-const std::string& Instance::Notes() const
+const std::string& Instance::Notes() const noexcept
 {
 	return notes;
 }
 
-const YGOPro::HostInfo& Instance::HostInfo() const
+const YGOPro::HostInfo& Instance::HostInfo() const noexcept
 {
 	return ctx.HostInfo();
 }
@@ -48,18 +48,18 @@ std::map<uint8_t, std::string> Instance::DuelistNames() const
 	return ctx.GetDuelistsNames();
 }
 
-bool Instance::CheckPassword(std::string_view str) const
+bool Instance::CheckPassword(std::string_view str) const noexcept
 {
 	return !IsPrivate() || pass == str;
 }
 
-bool Instance::CheckKicked(std::string_view ip) const
+bool Instance::CheckKicked(std::string_view ip) const noexcept
 {
 	std::scoped_lock lock(mKicked);
 	return kicked.count(ip.data()) > 0U;
 }
 
-bool Instance::TryClose()
+bool Instance::TryClose() noexcept
 {
 	if(Started())
 		return false;
@@ -72,18 +72,18 @@ bool Instance::TryClose()
 	return true;
 }
 
-void Instance::AddKicked(std::string_view ip)
+void Instance::AddKicked(std::string_view ip) noexcept
 {
 	std::scoped_lock lock(mKicked);
 	kicked.insert(ip.data());
 }
 
-boost::asio::io_context::strand& Instance::Strand()
+boost::asio::io_context::strand& Instance::Strand() noexcept
 {
 	return strand;
 }
 
-void Instance::Dispatch(const EventVariant& e)
+void Instance::Dispatch(const EventVariant& e) noexcept
 {
 	std::scoped_lock lock(mState);
 	for(StateOpt newState = std::visit(ctx, state, e); newState;)
