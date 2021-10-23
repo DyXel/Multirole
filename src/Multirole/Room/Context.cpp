@@ -24,7 +24,6 @@ Context::Context(CreateInfo&& info) noexcept
 	cdb(svc.dataProvider.GetDatabase()),
 	neededWins((hostInfo.bestOf / 2) + (hostInfo.bestOf & 1)),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
-	retryErrorMsg(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR)),
 	isPrivate(info.isPrivate),
 	rl(svc.logHandler.MakeRoomLogger(id)),
 	scriptLogger(svc.logHandler, hostInfo),

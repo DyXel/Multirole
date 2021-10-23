@@ -143,7 +143,6 @@ private:
 	const std::shared_ptr<YGOPro::CardDatabase> cdb;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
-	const YGOPro::STOCMsg retryErrorMsg;
 	const bool isPrivate;
 	std::unique_ptr<RoomLogger> rl;
 	ScriptLogger scriptLogger;
