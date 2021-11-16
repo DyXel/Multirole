@@ -1,5 +1,6 @@
 #include "HornetWrapper.hpp"
 
+#include <cinttypes>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include "IDataSupplier.hpp"
@@ -29,9 +30,12 @@ namespace
 
 inline std::string MakeHornetName(uintptr_t addr)
 {
-	std::array<char, 25U> buf{};
-	std::snprintf(buf.data(), buf.size(), "Hornet0x%lX", addr);
-	return std::string(buf.data());
+#define PREFIX "Hornet0x%"
+	constexpr auto MAX_DIGIT_CNT = std::numeric_limits<uintptr_t>::digits / 4;
+	std::array<char, sizeof(PREFIX) + MAX_DIGIT_CNT> buf{};
+	int sz = std::snprintf(buf.data(), buf.size(), PREFIX PRIXPTR, addr);
+#undef PREFIX
+	return std::string(buf.data(), static_cast<std::size_t>(sz));
 }
 
 inline ipc::shared_memory_object MakeShm(const std::string& str)
