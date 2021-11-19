@@ -189,6 +189,7 @@ void Client::Shutdown()
 {
 	boost::system::error_code ignore;
 	socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignore);
+	socket.close(ignore);
 }
 
 void Client::HandleMsg()
