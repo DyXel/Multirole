@@ -152,9 +152,9 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryKick& e) noexcep
 		return std::nullopt;
 	Client* kicked = duelists[p];
 	kicked->MarkKicked();
-	kicked->Disconnect();
 	{
 		std::scoped_lock lock(mDuelists);
+		kicked->Disconnect();
 		duelists.erase(p);
 	}
 	SendToAll(MakePlayerChange(*kicked, PCHANGE_TYPE_LEAVE));

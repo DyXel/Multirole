@@ -5,10 +5,10 @@ namespace Ignis::Multirole::Room
 
 StateOpt Context::operator()(State::Closing& /*unused*/) noexcept
 {
-	for(const auto& kv : duelists)
-		kv.second->Disconnect();
 	{
 		std::scoped_lock lock(mDuelists);
+		for(const auto& kv : duelists)
+			kv.second->Disconnect();
 		duelists.clear();
 	}
 	for(const auto& c : spectators)
