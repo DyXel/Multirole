@@ -1,3 +1,8 @@
+# TODO
+
+* Keep repositories closed and only open them when performing operations
+  * Should drastically reduce the file descriptor count over prolonged use
+
 # Wishlist
 * Make logging mechanism entirely disableable as compile configuration
 * Make `GitRepo` webhook update system optional upon construction via config file
