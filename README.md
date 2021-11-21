@@ -13,12 +13,12 @@ This project's original inception was to replace [srvpro](https://github.com/myc
 ## Features
 
   * High performance and scalability.
-  * Core crash resilience (EDOPro's core crashing does not propagate to the cluster).
+  * Core scripting engine sandboxing (Core crashes and/or unresponsiveness is handled gracefully).
   * Automatic scripts, databases, banlists and core updates through remote git repositories pulling + webhook mechanism.
   * Flexible script and core error logging mechanism.
   * Optional server-side replay saving, for debug or analytic purposes.
   * Optional room notes and chat logging, for moderation purposes.
-  * Relatively easy compilation and/or deployment through docker.
+  * Easy compilation and deployment through docker with very small container image.
 
 ## Building
 A C++17 compliant compiler is needed as well as [Meson](https://mesonbuild.com/) which is the build system that Multirole uses.
@@ -38,18 +38,18 @@ This project depends on the following libraries:
 Once you have all necessary tools and dependencies, compiling should be as simple as doing:
 
 ```sh
-    # For Linux and other POSIX-oriented OSs
-    meson setup build && meson compile -C build
-    # For Windows
-    meson setup build --vsenv --backend=vs
-    meson compile -C build # Alternatively, open the generated Solution and build it
+# For Linux and other POSIX-oriented OS
+meson setup build && meson compile -C build
+# For Windows
+meson setup build --vsenv --backend=vs
+meson compile -C build # Alternatively, open the generated solution and build it
 ```
 
 You should take a look at the github workflow files to learn how to setup the development environment for your platform. You can also use the Dockerfile, which should handle everything related to building for you.
 
 ## Configuring and Running
 
-Once you have built everything you should configure the environment in which the server will run as well as the server itself to suit your needs, the [default configuration file](https://github.com/DyXel/Multirole/blob/master/etc/config.json) works fine if you just want to run a server instance as quickly as possible by using [Project Ignis](https://github.com/ProjectIgnis/) banlists, databases, scripts, as well as EDOPro's core.
+Once you have built everything you should configure the environment in which the server will run as well as the server itself to suit your needs, the [default configuration file](https://github.com/DyXel/Multirole/blob/master/etc/config.json) works fine if you just want to run a server instance as quickly as possible by using [Project Ignis](https://github.com/ProjectIgnis/)' banlists, databases, scripts, as well as EDOPro's core.
 
 The configuration file must be placed in the same working directory as Multirole and must be called `config.json`. Here is a non-exhaustive explanation of the settings that Multirole reads from said file, for more details please read the source code, starting from [here](https://github.com/DyXel/Multirole/blob/master/src/Multirole/Instance.cpp):
 
