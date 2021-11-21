@@ -9,7 +9,9 @@ namespace Ignis::Multirole::LogHandlerDetail
 class ISink
 {
 public:
-	virtual void Log(const Timestamp& ts, const SinkLogProps& props, std::string_view str) noexcept
+	virtual void Log([[maybe_unused]] const Timestamp& ts,
+	                 [[maybe_unused]] const SinkLogProps& props,
+	                 [[maybe_unused]] std::string_view str) noexcept
 	{};
 	virtual ~ISink() noexcept = default;
 };

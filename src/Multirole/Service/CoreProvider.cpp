@@ -32,7 +32,7 @@ Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fn
 		throw std::runtime_error(I18N::CORE_PROVIDER_PATH_IS_FILE_NOT_DIR);
 }
 
-Service::CoreProvider::~CoreProvider()
+Service::CoreProvider::~CoreProvider() noexcept
 {
 	for(const auto& fn : pLocs)
 		boost::filesystem::remove(fn);
