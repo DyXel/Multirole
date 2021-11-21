@@ -18,6 +18,8 @@ enum class ServiceType
 	SERVICE_TYPE_COUNT
 };
 
+#undef ERROR // NOTE: MSVC seems to define this but we don't care about it.
+
 enum class Level
 {
 	INFO,

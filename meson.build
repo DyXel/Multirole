@@ -1,14 +1,16 @@
-project('multirole', ['c', 'cpp'], default_options : 'cpp_std=c++17')
+project('multirole', ['c', 'cpp'], default_options : ['cpp_std=c++17', 'b_vscrt=static_from_buildtype'])
+
+static_deps = host_machine.system() == 'windows'
 
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
-boost_dep   = dependency('boost', version : '>=1.75', modules : ['filesystem'])
+boost_dep   = dependency('boost', version : '>=1.75', modules : ['filesystem'], static : static_deps)
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
-fmt_dep     = dependency('fmt', version : '>=6.0.0')
-libgit2_dep = dependency('libgit2')
-openssl_dep = dependency('openssl')
+fmt_dep     = dependency('fmt', version : '>=6.0.0', static : static_deps)
+libgit2_dep = dependency('libgit2', static : static_deps)
+openssl_dep = dependency('openssl', static : static_deps)
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
-sqlite3_dep = dependency('sqlite3')
-tcm_dep     = dependency('libtcmalloc', required : get_option('use_tcmalloc'))
+sqlite3_dep = dependency('sqlite3', static : static_deps)
+tcm_dep     = dependency('libtcmalloc', required : get_option('use_tcmalloc'), static : static_deps)
 thread_dep  = dependency('threads')
 
 multirole_src_files = files([
@@ -73,7 +75,8 @@ executable('multirole', multirole_src_files,
 	],
 	cpp_args: [
 		'-DBOOST_DATE_TIME_NO_LIB',
-		'-DBOOST_JSON_STANDALONE'
+		'-DBOOST_JSON_STANDALONE',
+		'-DNOMINMAX'
 	],
 	dependencies: [
 		atomic_dep,

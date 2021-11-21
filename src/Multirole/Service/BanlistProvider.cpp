@@ -48,7 +48,7 @@ void Service::BanlistProvider::LoadBanlists(const boost::filesystem::path& path,
 		LOG_INFO(I18N::BANLIST_PROVIDER_LOADING_ONE, fullPath.string());
 		try
 		{
-			std::ifstream f(fullPath);
+			std::ifstream f(fullPath.native());
 			YGOPro::ParseForBanlists(f, tmp);
 		}
 		catch(const std::exception& e)

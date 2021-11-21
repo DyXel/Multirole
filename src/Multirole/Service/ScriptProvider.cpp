@@ -50,7 +50,7 @@ void Service::ScriptProvider::LoadScripts(const boost::filesystem::path& path, c
 			continue;
 		const auto fullPath = (path / fn).lexically_normal();
 		// Open file, checking if it exists
-		std::ifstream file(fullPath, std::ifstream::binary);
+		std::ifstream file(fullPath.native(), std::ifstream::binary);
 		if(!file.is_open())
 		{
 			LOG_ERROR(I18N::SCRIPT_PROVIDER_COULD_NOT_OPEN, fullPath.string());

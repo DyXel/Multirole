@@ -1,0 +1,41 @@
+name: x64-windows
+on: push
+env:
+  VCPKG_TRIPLET: x64-windows-static
+jobs:
+  build:
+    runs-on: windows-2022
+    if: >-
+      !(
+        contains(github.event.head_commit.message, '[ci skip]') ||
+        contains(github.event.head_commit.message, '[skip ci]') ||
+        contains(github.event.head_commit.message, '[actions skip]') ||
+        contains(github.event.head_commit.message, '[skip actions]')
+      )
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install pre-requisites
+      shell: bash
+      run: |
+        choco install pkgconfiglite
+        pip install meson ninja
+    - name: Install dependencies
+      uses: lukka/run-vcpkg@v7
+      with:
+        vcpkgGitCommitId: 70033dbb31527fb3e69654731f540f59c87787f9
+        vcpkgTriplet: ${{ env.VCPKG_TRIPLET }}
+        vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 openssl sqlite3
+    - name: Fix Boost.Filesystem library location
+      shell: bash
+      run: |
+        VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
+        cp $VCPKG_LIBRARYDIR/boost_filesystem-vc140-mt.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc140-mt-s.lib
+    - name: Meson build
+      shell: bash
+      run: |
+        export PKG_CONFIG_PATH=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
+        export BOOST_ROOT=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
+        meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
+        meson compile -C build -j2

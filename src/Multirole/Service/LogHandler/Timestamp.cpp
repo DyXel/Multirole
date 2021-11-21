@@ -1,6 +1,7 @@
 #include "Timestamp.hpp"
 
 #include <array>
+#include <ctime>
 
 namespace Ignis::Multirole::LogHandlerDetail
 {

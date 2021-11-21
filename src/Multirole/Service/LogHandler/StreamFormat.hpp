@@ -1,6 +1,7 @@
 #ifndef MULTIROLE_SERVICE_LOGHANDLER_STREAMFORMAT_HPP
 #define MULTIROLE_SERVICE_LOGHANDLER_STREAMFORMAT_HPP
 #include <ostream>
+#include <string_view>
 
 #include "SinkArgs.hpp"
 #include "Timestamp.hpp"

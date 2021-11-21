@@ -3,6 +3,7 @@
 #include <memory>
 #include <mutex>
 
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/steady_timer.hpp>
 

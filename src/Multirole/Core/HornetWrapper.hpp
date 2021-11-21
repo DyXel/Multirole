@@ -3,8 +3,10 @@
 #include "IWrapper.hpp"
 
 #include <mutex>
+#define BOOST_USE_WINDOWS_H // NOTE: Workaround for Boost on Windows.
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
+#undef BOOST_USE_WINDOWS_H
 
 #include "../../Process.hpp"
 

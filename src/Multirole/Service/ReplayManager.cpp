@@ -43,14 +43,14 @@ Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const 
 	uint64_t id = 1U;
 	if(!exists(lastId))
 	{
-		std::fstream f(lastId, IOS_BINARY_OUT);
+		std::fstream f(lastId.native(), IOS_BINARY_OUT);
 		if(!f.is_open())
 			throw std::runtime_error(I18N::REPLAY_MANAGER_ERROR_WRITING_INITIAL_ID);
 		f.write(reinterpret_cast<char*>(&id), sizeof(id));
 	}
 	lLastId = boost::interprocess::file_lock(lastId.string().data());
 	boost::interprocess::scoped_lock<boost::interprocess::file_lock> plock(lLastId);
-	if(std::fstream f(lastId, IOS_BINARY_IN); f.is_open())
+	if(std::fstream f(lastId.native(), IOS_BINARY_IN); f.is_open())
 	{
 		f.ignore(std::numeric_limits<std::streamsize>::max());
 		std::streamsize fsize = f.gcount();
@@ -72,7 +72,7 @@ void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) con
 		return;
 	const auto fn = dir / (std::to_string(id) + ".yrpX");
 	const auto& bytes = replay.Bytes();
-	if(std::fstream f(fn, IOS_BINARY_OUT); f.is_open())
+	if(std::fstream f(fn.native(), IOS_BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 	else
 		LOG_ERROR(I18N::REPLAY_MANAGER_UNABLE_TO_SAVE, fn.string());
@@ -86,7 +86,7 @@ uint64_t Service::ReplayManager::NewId() noexcept
 	uint64_t id = 0U;
 	std::scoped_lock tlock(mLastId);
 	boost::interprocess::scoped_lock<boost::interprocess::file_lock> plock(lLastId);
-	if(std::fstream f(lastId, IOS_BINARY_IN); f.is_open())
+	if(std::fstream f(lastId.native(), IOS_BINARY_IN); f.is_open())
 	{
 		f.ignore(std::numeric_limits<std::streamsize>::max());
 		std::streamsize fsize = f.gcount();
@@ -105,7 +105,7 @@ uint64_t Service::ReplayManager::NewId() noexcept
 		return 0U;
 	}
 	prevId = id++;
-	if(std::fstream f(lastId, IOS_BINARY_OUT); f.is_open())
+	if(std::fstream f(lastId.native(), IOS_BINARY_OUT); f.is_open())
 	{
 		f.write(reinterpret_cast<char*>(&id), sizeof(id));
 		return prevId;

@@ -1,9 +1,11 @@
 #ifndef HORNETCOMMON_HPP
 #define HORNETCOMMON_HPP
 #include <array>
+#define BOOST_USE_WINDOWS_H // NOTE: Workaround for Boost on Windows.
 #include <boost/interprocess/sync/interprocess_condition.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
+#undef BOOST_USE_WINDOWS_H
 
 namespace ipc = boost::interprocess;
 

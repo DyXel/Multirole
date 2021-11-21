@@ -122,7 +122,7 @@ std::unique_ptr<RoomLogger> Service::LogHandler::MakeRoomLogger(uint32_t roomId)
 // RoomLogger
 
 RoomLogger::RoomLogger(const boost::filesystem::path& path) :
-	f(path)
+	f(path.native())
 {
 	if(!f.is_open())
 		throw std::runtime_error(I18N::ROOM_LOGGER_FILE_IS_NOT_OPEN);
