@@ -3,6 +3,7 @@
 </p>
 
 ![x64-linux](https://github.com/ProjectIgnis/Multirole/workflows/x64-linux/badge.svg)
+![x64-windows](https://github.com/ProjectIgnis/Multirole/workflows/x64-windows/badge.svg)
 
 # Multirole: A C++ server for EDOPro
 Multirole manages client connections to a singular lobby where rooms can be hosted and a list of said rooms fetched by other clients to join. It is in charge of creating, processing and logging duels by interfacing with [EDOPro's core](https://github.com/edo9300/ygopro-core).
@@ -36,11 +37,15 @@ This project depends on the following libraries:
 
 Once you have all necessary tools and dependencies, compiling should be as simple as doing:
 
-    meson setup build --buildtype=release
-    cd build
-    ninja
+```sh
+    # For Linux and other POSIX-oriented OSs
+    meson setup build && meson compile -C build
+    # For Windows
+    meson setup build --vsenv --backend=vs
+    meson compile -C build # Alternatively, open the generated Solution and build it
+```
 
-You can (and should) take a look at the github workflow file to ease this process. You can also use the Dockerfile, which should handle everything related to building for you.
+You should take a look at the github workflow files to learn how to setup the development environment for your platform. You can also use the Dockerfile, which should handle everything related to building for you.
 
 ## Configuring and Running
 
