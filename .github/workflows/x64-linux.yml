@@ -1,7 +1,7 @@
 name: x64-linux
 on: push
 jobs:
-  build:
+  x64-linux:
     runs-on: ubuntu-20.04
     if: >-
       !(
