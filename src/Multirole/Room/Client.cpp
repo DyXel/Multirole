@@ -129,7 +129,7 @@ void Client::Disconnect()
 void Client::DoReadHeader()
 {
 	auto buffer = boost::asio::buffer(incoming.Data(), YGOPro::CTOSMsg::HEADER_LENGTH);
-	auto self(shared_from_this());
+	auto self = shared_from_this();
 	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
 	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
@@ -148,7 +148,7 @@ void Client::DoReadHeader()
 void Client::DoReadBody()
 {
 	auto buffer = boost::asio::buffer(incoming.Body(), incoming.GetLength());
-	auto self(shared_from_this());
+	auto self = shared_from_this();
 	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
 	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
@@ -169,7 +169,7 @@ void Client::DoReadBody()
 
 void Client::DoWrite()
 {
-	auto self(shared_from_this());
+	auto self = shared_from_this();
 	const auto& front = outgoing.front();
 	boost::asio::async_write(socket, boost::asio::buffer(front.Data(), front.Length()),
 	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
