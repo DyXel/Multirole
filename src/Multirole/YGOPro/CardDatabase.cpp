@@ -146,7 +146,7 @@ bool CardDatabase::Merge(std::string_view absFilePath) noexcept
 	return true;
 }
 
-const OCG_CardData& CardDatabase::DataFromCode(uint32_t code) const
+const OCG_CardData& CardDatabase::DataFromCode(uint32_t code) const noexcept
 {
 	std::scoped_lock lock(mDataCache);
 	if(auto search = dataCache.find(code); search != dataCache.end())
@@ -185,13 +185,13 @@ const OCG_CardData& CardDatabase::DataFromCode(uint32_t code) const
 	return cd;
 }
 
-void CardDatabase::DataUsageDone([[maybe_unused]] const OCG_CardData& data) const
+void CardDatabase::DataUsageDone([[maybe_unused]] const OCG_CardData& data) const noexcept
 {
 	// We could remove the elements here, but then what would be the
 	// the point of the cache?
 }
 
-const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code) noexcept
+const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code) const noexcept
 {
 	std::scoped_lock lock(mExtraCache);
 	if(auto search = extraCache.find(code); search != extraCache.end())

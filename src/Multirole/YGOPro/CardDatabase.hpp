@@ -35,11 +35,11 @@ public:
 	bool Merge(std::string_view absFilePath) noexcept;
 
 	// Core::IDataSupplier overrides
-	const OCG_CardData& DataFromCode(uint32_t code) const override;
-	void DataUsageDone(const OCG_CardData& data) const override;
+	const OCG_CardData& DataFromCode(uint32_t code) const noexcept override;
+	void DataUsageDone(const OCG_CardData& data) const noexcept override;
 
 	// Query extra data
-	const CardExtraData& ExtraFromCode(uint32_t code) noexcept;
+	const CardExtraData& ExtraFromCode(uint32_t code) const noexcept;
 private:
 	sqlite3* db{};
 	sqlite3_stmt* aStmt{};
