@@ -162,7 +162,7 @@ const OCG_CardData& CardDatabase::DataFromCode(uint32_t code) const noexcept
 		setcodes[SETCODES] = 0U;
 		return setcodes.get();
 	};
-	OCG_CardData& cd = dataCache[code]; // implicit insertion
+	auto& cd = dataCache.emplace(code, OCG_CardData{}).first->second;
 	sqlite3_reset(sStmt);
 	sqlite3_bind_int(sStmt, 1, code);
 	if(sqlite3_step(sStmt) == SQLITE_ROW)
@@ -197,7 +197,7 @@ const CardExtraData& CardDatabase::ExtraFromCode(uint32_t code) const noexcept
 	if(auto search = extraCache.find(code); search != extraCache.end())
 		return search->second;
 	std::scoped_lock lock2(mDb);
-	CardExtraData& ced = extraCache[code]; // implicit insertion
+	auto& ced = extraCache.emplace(code, CardExtraData{}).first->second;
 	sqlite3_reset(s2Stmt);
 	sqlite3_bind_int(s2Stmt, 1, code);
 	if(sqlite3_step(s2Stmt) == SQLITE_ROW)
