@@ -27,36 +27,36 @@ public:
 	using PosType = std::pair<uint8_t, uint8_t>;
 	static constexpr PosType POSITION_SPECTATOR = {UINT8_MAX, UINT8_MAX};
 
-	Client(Lobby& lobby, std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string ip, std::string name);
-	~Client();
-	void Start();
+	Client(Lobby& lobby, std::shared_ptr<Instance> r, boost::asio::ip::tcp::socket socket, std::string ip, std::string name) noexcept;
+	~Client() noexcept;
+	void Start() noexcept;
 
 	// Getters
-	const std::string& Ip() const;
-	const std::string& Name() const;
-	PosType Position() const;
-	bool Ready() const;
-	const YGOPro::Deck* OriginalDeck() const;
+	const std::string& Ip() const noexcept;
+	const std::string& Name() const noexcept;
+	PosType Position() const noexcept;
+	bool Ready() const noexcept;
+	const YGOPro::Deck* OriginalDeck() const noexcept;
 	// Returns current deck or original (NOTE: this might still be nullptr)
-	const YGOPro::Deck* CurrentDeck() const;
+	const YGOPro::Deck* CurrentDeck() const noexcept;
 
 	// Set this client as kicked from the room its in, preventing its IP
 	// from joining in the future.
-	void MarkKicked() const;
+	void MarkKicked() const noexcept;
 
 	// Setters
-	void SetPosition(const PosType& p);
-	void SetReady(bool r);
-	void SetOriginalDeck(std::unique_ptr<YGOPro::Deck>&& newDeck);
-	void SetCurrentDeck(std::unique_ptr<YGOPro::Deck>&& newDeck);
+	void SetPosition(const PosType& p) noexcept;
+	void SetReady(bool r) noexcept;
+	void SetOriginalDeck(std::unique_ptr<YGOPro::Deck>&& newDeck) noexcept;
+	void SetCurrentDeck(std::unique_ptr<YGOPro::Deck>&& newDeck) noexcept;
 
 	// Adds a message to the queue that is written to the client socket
-	void Send(const YGOPro::STOCMsg& msg);
+	void Send(const YGOPro::STOCMsg& msg) noexcept;
 
 	// Tries to disconnect immediately if there are no messages in the queue,
 	// sets a flag if there are messages in the queue to disconnect
 	// upon finishing writes.
-	void Disconnect();
+	void Disconnect() noexcept;
 private:
 	Lobby& lobby;
 	std::shared_ptr<Instance> room;
@@ -76,16 +76,16 @@ private:
 	std::mutex mOutgoing;
 
 	// Asynchronous calls
-	void DoReadHeader();
-	void DoReadBody();
-	void DoWrite();
+	void DoReadHeader() noexcept;
+	void DoReadBody() noexcept;
+	void DoWrite() noexcept;
 
 	// Shuts down socket immediately, disallowing any read or writes,
 	// doing that starts the graceful connection closure.
-	void Shutdown();
+	void Shutdown() noexcept;
 
 	// Handles received CTOS message
-	void HandleMsg();
+	void HandleMsg() noexcept;
 };
 
 } // namespace Room
