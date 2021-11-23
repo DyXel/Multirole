@@ -108,7 +108,7 @@ void Client::SetCurrentDeck(std::unique_ptr<YGOPro::Deck>&& newDeck)
 
 void Client::Send(const YGOPro::STOCMsg& msg)
 {
-	if(connectionLost || !socket.is_open())
+	if(!socket.is_open())
 		return;
 	std::scoped_lock lock(mOutgoing);
 	const bool writeInProgress = !outgoing.empty();
@@ -133,13 +133,12 @@ void Client::DoReadHeader()
 	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
 	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
-		if(!ec && incoming.IsHeaderValid())
+		if(!ec && socket.is_open() && incoming.IsHeaderValid())
 		{
 			DoReadBody();
 		}
 		else if(ec != boost::asio::error::operation_aborted)
 		{
-			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
 		}
 	}));
@@ -152,7 +151,7 @@ void Client::DoReadBody()
 	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
 	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
-		if(!ec)
+		if(!ec && socket.is_open())
 		{
 			// Unlike Endpoint::RoomHosting, we dont want to finish connection
 			// if the message is not properly handled. Just ignore it.
@@ -161,7 +160,6 @@ void Client::DoReadBody()
 		}
 		else if(ec != boost::asio::error::operation_aborted)
 		{
-			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
 		}
 	}));
