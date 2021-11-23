@@ -32,6 +32,7 @@ private:
 	const bool save;
 	const boost::filesystem::path dir;
 	const boost::filesystem::path lastId;
+	const boost::filesystem::path lastIdLock;
 	std::mutex mLastId; // guarantees thread-safety
 	boost::interprocess::file_lock lLastId; // guarantees process-safety
 };

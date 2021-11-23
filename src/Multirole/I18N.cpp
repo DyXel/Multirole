@@ -102,6 +102,7 @@ Str REPLAY_MANAGER_NOT_SAVING_REPLAYS = "Not saving replays, replay IDs will alw
 Str REPLAY_MANAGER_COULD_NOT_CREATE_DIR = "ReplayManager: Could not create replay directory.";
 Str REPLAY_MANAGER_PATH_IS_FILE_NOT_DIR = "ReplayManager: Replay directory path points to a file.";
 Str REPLAY_MANAGER_ERROR_WRITING_INITIAL_ID = "ReplayManager: Unable to write initial ID!";
+Str REPLAY_MANAGER_ERROR_CREATING_LOCK = "ReplayManager: Unable to create lastId lock file";
 Str REPLAY_MANAGER_CURRENT_ID = "Current ID is {0}.";
 Str REPLAY_MANAGER_LASTID_SIZE_CORRUPTED =
 "lastId file byte size corrupted: It's {0}. Should be {1}.";

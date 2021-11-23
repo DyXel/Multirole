@@ -17,9 +17,25 @@ namespace Ignis::Multirole
 namespace
 {
 
+using FileScopedLock = boost::interprocess::scoped_lock<boost::interprocess::file_lock>;
+
 constexpr auto IOS_BINARY = std::ios_base::binary;
-constexpr auto IOS_BINARY_IN = IOS_BINARY | std::ios_base::in;
+constexpr auto IOS_BINARY_IN_ATE = IOS_BINARY | std::ios_base::in | std::ios_base::ate;
 constexpr auto IOS_BINARY_OUT = IOS_BINARY | std::ios_base::out;
+
+inline uint64_t ReadId(std::fstream& f) noexcept
+{
+	uint64_t id{};
+	f.seekg(0, std::ios_base::beg);
+	f.read(reinterpret_cast<char*>(&id), sizeof(id));
+	return id;
+}
+
+inline void WriteId(std::fstream& f, uint64_t id) noexcept
+{
+	f.seekg(0, std::ios_base::beg);
+	f.write(reinterpret_cast<char*>(&id), sizeof(id));
+}
 
 } // namespace
 
@@ -28,6 +44,7 @@ Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const 
 	save(save),
 	dir(dir),
 	lastId(dir / "lastId"),
+	lastIdLock(dir / "lastId.lock"),
 	mLastId()
 {
 	if(!save)
@@ -46,19 +63,23 @@ Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const 
 		std::fstream f(lastId.native(), IOS_BINARY_OUT);
 		if(!f.is_open())
 			throw std::runtime_error(I18N::REPLAY_MANAGER_ERROR_WRITING_INITIAL_ID);
-		f.write(reinterpret_cast<char*>(&id), sizeof(id));
+		WriteId(f, id);
 	}
-	lLastId = boost::interprocess::file_lock(lastId.string().data());
-	boost::interprocess::scoped_lock<boost::interprocess::file_lock> plock(lLastId);
-	if(std::fstream f(lastId.native(), IOS_BINARY_IN); f.is_open())
+	if(!exists(lastIdLock))
 	{
-		f.ignore(std::numeric_limits<std::streamsize>::max());
-		std::streamsize fsize = f.gcount();
+		std::fstream f(lastIdLock.native(), IOS_BINARY_OUT);
+		if(!f.is_open())
+			throw std::runtime_error(I18N::REPLAY_MANAGER_ERROR_CREATING_LOCK);
+	}
+	lLastId = boost::interprocess::file_lock(lastIdLock.native().data());
+	FileScopedLock plock(lLastId);
+	if(std::fstream f(lastId.native(), IOS_BINARY_IN_ATE); f.is_open())
+	{
+		const auto fsize = f.tellg();
 		f.clear();
 		if(fsize == sizeof(id))
 		{
-			f.seekg(0, std::ios_base::beg);
-			f.read(reinterpret_cast<char*>(&id), sizeof(id));
+			id = ReadId(f);
 			LOG_INFO(I18N::REPLAY_MANAGER_CURRENT_ID, id);
 			return;
 		}
@@ -85,19 +106,17 @@ uint64_t Service::ReplayManager::NewId() noexcept
 	uint64_t prevId = 0U;
 	uint64_t id = 0U;
 	std::scoped_lock tlock(mLastId);
-	boost::interprocess::scoped_lock<boost::interprocess::file_lock> plock(lLastId);
-	if(std::fstream f(lastId.native(), IOS_BINARY_IN); f.is_open())
+	FileScopedLock plock(lLastId);
+	if(std::fstream f(lastId.native(), IOS_BINARY_IN_ATE); f.is_open())
 	{
-		f.ignore(std::numeric_limits<std::streamsize>::max());
-		std::streamsize fsize = f.gcount();
+		const auto fsize = f.tellg();
 		f.clear();
 		if(fsize != sizeof(id))
 		{
 			LOG_ERROR(I18N::REPLAY_MANAGER_LASTID_SIZE_CORRUPTED, fsize, sizeof(id));
 			return 0U;
 		}
-		f.seekg(0, std::ios_base::beg);
-		f.read(reinterpret_cast<char*>(&id), sizeof(id));
+		id = ReadId(f);
 	}
 	else
 	{
@@ -107,7 +126,7 @@ uint64_t Service::ReplayManager::NewId() noexcept
 	prevId = id++;
 	if(std::fstream f(lastId.native(), IOS_BINARY_OUT); f.is_open())
 	{
-		f.write(reinterpret_cast<char*>(&id), sizeof(id));
+		WriteId(f, id);
 		return prevId;
 	}
 	LOG_ERROR(I18N::REPLAY_MANAGER_CANNOT_WRITE_ID);
