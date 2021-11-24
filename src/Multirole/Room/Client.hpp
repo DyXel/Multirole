@@ -64,6 +64,7 @@ private:
 	boost::asio::ip::tcp::socket socket;
 	const std::string ip;
 	const std::string name;
+	bool connectionLost;
 	bool disconnecting;
 	PosType position;
 	bool ready;

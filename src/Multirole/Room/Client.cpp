@@ -24,6 +24,7 @@ Client::Client(
 	socket(std::move(socket)),
 	ip(std::move(ip)),
 	name(std::move(name)),
+	connectionLost(false),
 	disconnecting(false),
 	position(POSITION_SPECTATOR),
 	ready(false),
@@ -107,7 +108,7 @@ void Client::SetCurrentDeck(std::unique_ptr<YGOPro::Deck>&& newDeck) noexcept
 
 void Client::Send(const YGOPro::STOCMsg& msg) noexcept
 {
-	if(!socket.is_open())
+	if(connectionLost || !socket.is_open())
 		return;
 	std::scoped_lock lock(mOutgoing);
 	const bool writeInProgress = !outgoing.empty();
@@ -132,12 +133,13 @@ void Client::DoReadHeader() noexcept
 	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
 	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
-		if(!ec && socket.is_open() && incoming.IsHeaderValid())
+		if(!ec && incoming.IsHeaderValid())
 		{
 			DoReadBody();
 		}
 		else if(ec != boost::asio::error::operation_aborted)
 		{
+			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
 		}
 	}));
@@ -150,7 +152,7 @@ void Client::DoReadBody() noexcept
 	boost::asio::async_read(socket, buffer, boost::asio::bind_executor(strand,
 	[this, self](boost::system::error_code ec, std::size_t /*unused*/)
 	{
-		if(!ec && socket.is_open())
+		if(!ec)
 		{
 			// Unlike Endpoint::RoomHosting, we dont want to finish connection
 			// if the message is not properly handled. Just ignore it.
@@ -159,6 +161,7 @@ void Client::DoReadBody() noexcept
 		}
 		else if(ec != boost::asio::error::operation_aborted)
 		{
+			connectionLost = true;
 			room->Dispatch(Event::ConnectionLost{*this});
 		}
 	}));
@@ -186,7 +189,6 @@ void Client::Shutdown() noexcept
 {
 	boost::system::error_code ignore;
 	socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignore);
-	socket.close(ignore);
 }
 
 void Client::HandleMsg() noexcept
