@@ -1,4 +1,9 @@
-project('multirole', ['c', 'cpp'], default_options : ['cpp_std=c++17', 'b_vscrt=static_from_buildtype'])
+project('multirole', 'c', 'cpp',
+	default_options : ['cpp_std=c++17', 'b_vscrt=static_from_buildtype'],
+	license : 'AGPL-3.0-or-later',
+	meson_version : '>=0.60.0',
+	version : '1.0.0'
+)
 
 static_deps = host_machine.system() == 'windows'
 
@@ -10,7 +15,7 @@ libgit2_dep = dependency('libgit2', static : static_deps)
 openssl_dep = dependency('openssl', static : static_deps)
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 sqlite3_dep = dependency('sqlite3', static : static_deps)
-tcm_dep     = dependency('libtcmalloc', required : get_option('use_tcmalloc'), static : static_deps)
+tcm_dep     = dependency('libtcmalloc_minimal', required : get_option('use_tcmalloc'), static : static_deps)
 thread_dep  = dependency('threads')
 
 multirole_src_files = files([

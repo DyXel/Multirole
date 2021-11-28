@@ -1,7 +1,7 @@
 name: x64-linux
 on: push
 jobs:
-  build:
+  x64-linux:
     runs-on: ubuntu-20.04
     if: >-
       !(
@@ -16,7 +16,8 @@ jobs:
         fetch-depth: 1
     - name: Install dependencies
       run: |
-        sudo apt-get --no-install-recommends --yes install libfmt-dev libgit2-dev libsqlite3-dev libssl-dev meson ninja-build
+        sudo apt-get --no-install-recommends --yes install libfmt-dev libgit2-dev libsqlite3-dev libssl-dev ninja-build
+        pip install meson
     - name: Get boost
       run: |
         wget http://sourceforge.net/projects/boost/files/boost/1.75.0/boost_1_75_0.tar.bz2
@@ -26,6 +27,8 @@ jobs:
         sudo ./b2 install
     - name: Meson build
       run: |
-        CC=clang CXX=clang++ BOOST_ROOT=/usr/boost_root/ meson setup build
-        cd build
-        ninja
+        export CC=clang
+        export CXX=clang++
+        export BOOST_ROOT=/usr/boost_root/
+        meson setup build -Dwarning_level=3
+        meson compile -C build -j2
