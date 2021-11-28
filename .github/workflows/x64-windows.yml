@@ -39,3 +39,17 @@ jobs:
         export BOOST_ROOT=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
         meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
         meson compile -C build -j2
+    - name: Generate ZIP
+      shell: bash
+      run: |
+        export RDIR=Multirole
+        mkdir $RDIR
+        cp build/hornet.exe $RDIR/
+        cp build/multirole.exe $RDIR/
+        cp etc/config.json $RDIR/
+        sed -i "s/libocgcore\\\\\\\.so/ocgcore\\\\\\\.dll/g" $RDIR/config.json
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: Multirole
+        path: Multirole/
