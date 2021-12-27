@@ -29,9 +29,8 @@ Lobby::Lobby(int maxConnections) :
 std::shared_ptr<Room::Instance> Lobby::GetRoomById(uint32_t id) const
 {
 	std::shared_lock lock(mRooms);
-	auto search = rooms.find(id);
-	if(search != rooms.end())
-		return search->second.lock();
+	if(id != 0U && id <= rooms.size())
+		return rooms[id - 1U].second.lock();
 	return nullptr;
 }
 
@@ -49,8 +48,8 @@ std::size_t Lobby::Close()
 {
 	std::size_t count = 0U;
 	std::scoped_lock lock(mRooms);
-	for(auto& kv : rooms)
-		if(auto room = kv.second.lock(); room)
+	for(auto& slot : rooms)
+		if(auto room = slot.second.lock(); room)
 			count += static_cast<std::size_t>(!room->TryClose());
 	rooms.clear();
 	closed = true;
@@ -60,14 +59,17 @@ std::size_t Lobby::Close()
 std::shared_ptr<Room::Instance> Lobby::MakeRoom(Room::Instance::CreateInfo& info)
 {
 	std::scoped_lock lock(mRooms);
-	for(uint32_t newId = 1U; true; newId++)
+	info.id = [&]()
 	{
-		if(rooms.count(newId) == 0U)
+		uint32_t id = 1U;
+		for(const auto& slot : rooms)
 		{
-			info.id = newId;
-			break;
+			if(!slot.first)
+				break;
+			id++;
 		}
-	}
+		return id;
+	}();
 	info.seed = RNG::Xoshiro256StarStar::StateType
 	{{
 		rng(),
@@ -77,19 +79,31 @@ std::shared_ptr<Room::Instance> Lobby::MakeRoom(Room::Instance::CreateInfo& info
 	}};
 	auto room = std::make_shared<Room::Instance>(info);
 	if(!closed)
-		rooms.emplace(info.id, room);
+	{
+		if(info.id <= rooms.size())
+		{
+			auto& slot = rooms[info.id - 1U];
+			slot.first = true;
+			slot.second = room;
+		}
+		else
+		{
+			rooms.emplace_back(true, room);
+		}
+	}
 	return room;
 }
 
 void Lobby::CollectRooms(const std::function<void(const RoomProps&)>& f)
 {
 	RoomProps props{};
+	uint32_t id = 1U;
 	std::scoped_lock lock(mRooms);
-	for(auto it = rooms.begin(), last = rooms.end(); it != last;)
+	for(auto& slot : rooms)
 	{
-		if(auto room = it->second.lock(); room)
+		if(auto room = slot.second.lock(); room)
 		{
-			props.id = it->first;
+			props.id = id;
 			auto& r = *room;
 			props.hostInfo = &r.HostInfo();
 			props.notes = &r.Notes();
@@ -97,10 +111,13 @@ void Lobby::CollectRooms(const std::function<void(const RoomProps&)>& f)
 			props.started = r.Started();
 			props.duelists = r.DuelistNames();
 			f(props);
-			++it;
-			continue;
 		}
-		it = rooms.erase(it);
+		else if(slot.first)
+		{
+			slot.first = false;
+			slot.second.reset(); // deallocates memory.
+		}
+		id++;
 	}
 }
 

@@ -1,7 +1,7 @@
 #ifndef LOBBY_HPP
 #define LOBBY_HPP
+#include <deque>
 #include <functional>
-#include <list>
 #include <shared_mutex>
 #include <unordered_map>
 
@@ -52,7 +52,7 @@ private:
 	const int maxConnections;
 	RNG::SplitMix64 rng;
 	bool closed;
-	std::unordered_map<uint32_t, std::weak_ptr<Room::Instance>> rooms;
+	std::deque<std::pair<bool, std::weak_ptr<Room::Instance>>> rooms;
 	mutable std::shared_mutex mRooms;
 	std::unordered_map<std::string, int> connections;
 	mutable std::shared_mutex mConnections;
