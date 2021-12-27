@@ -23,10 +23,11 @@ static void DataReader(void* payload, uint32_t code, OCG_CardData* data)
 static int ScriptReader(void* payload, OCG_Duel duel, const char* name)
 {
 	auto& ssd = *static_cast<Detail::ScriptSupplierData*>(payload);
-	std::string script = ssd.supplier.ScriptFromFilePath(name);
-	if(script.empty())
+	const auto script = ssd.supplier.ScriptFromFilePath(name);
+	const char* const data = IScriptSupplier::GetData(script);
+	if(data == nullptr)
 		return 0;
-	return ssd.OCG_LoadScript(duel, script.data(), script.length(), name);
+	return ssd.OCG_LoadScript(duel, data, IScriptSupplier::GetSize(script), name);
 }
 
 static void LogHandler(void* payload, const char* str, int t)

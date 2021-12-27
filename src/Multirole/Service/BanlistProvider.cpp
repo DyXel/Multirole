@@ -1,6 +1,7 @@
 #include "BanlistProvider.hpp"
 
 #include <fstream>
+#include <mutex>
 
 #include "LogHandler.hpp"
 #define LOG_INFO(...) lh.Log(ServiceType::BANLIST_PROVIDER, Level::INFO, __VA_ARGS__)

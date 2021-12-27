@@ -336,11 +336,12 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 			auto* supplier = static_cast<IScriptSupplier*>(Read<void*>(rptr));
 			const auto nameSz = Read<std::size_t>(rptr);
 			const std::string_view nameSv(reinterpret_cast<const char*>(rptr), nameSz);
-			std::string script = supplier->ScriptFromFilePath(nameSv);
+			const auto script = supplier->ScriptFromFilePath(nameSv);
+			const auto size = IScriptSupplier::GetSize(script);
 			auto* wptr = hss->bytes.data();
-			Write<std::size_t>(wptr, script.size());
-			if(!script.empty())
-				std::memcpy(wptr, script.data(), script.size());
+			Write<std::size_t>(wptr, size);
+			if(const char* const data = IScriptSupplier::GetData(script); data != nullptr)
+				std::memcpy(wptr, data, size);
 			act = Hornet::Action::CB_DONE;
 			break;
 		}

@@ -97,8 +97,9 @@ StateOpt Context::operator()(State::Dueling& s) noexcept
 		s.duelPtr = s.core->CreateDuel(dopts);
 		auto LoadScript = [&](std::string_view file)
 		{
-			if(auto scr = svc.scriptProvider.ScriptFromFilePath(file); !scr.empty())
-				s.core->LoadScript(s.duelPtr, file, scr);
+			const auto script = svc.scriptProvider.ScriptFromFilePath(file);
+			if(const char* const data = Core::IScriptSupplier::GetData(script); data != nullptr)
+				s.core->LoadScript(s.duelPtr, file, {data, Core::IScriptSupplier::GetSize(script)});
 		};
 		LoadScript("constant.lua");
 		LoadScript("utility.lua");

@@ -22,11 +22,11 @@ public:
 	void OnDiff(const boost::filesystem::path& path, const GitDiff& diff) override;
 
 	// Core::IScriptSupplier overrides
-	std::string ScriptFromFilePath(std::string_view fp) const noexcept override;
+	ScriptType ScriptFromFilePath(std::string_view fp) const noexcept override;
 private:
 	Service::LogHandler& lh;
 	const std::regex fnRegex;
-	std::unordered_map<std::string, std::string> scripts;
+	std::unordered_map<std::string, ScriptType> scripts;
 	mutable std::shared_mutex mScripts;
 
 	void LoadScripts(const boost::filesystem::path& path, const PathVector& fileList) noexcept;

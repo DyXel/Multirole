@@ -1,8 +1,9 @@
 #include "ScriptProvider.hpp"
 
-#include <stdexcept> // std::runtime_error
 #include <fstream>
+#include <mutex>
 #include <sstream>
+#include <stdexcept> // std::runtime_error
 
 #include "LogHandler.hpp"
 #define LOG_INFO(...) lh.Log(ServiceType::SCRIPT_PROVIDER, Level::INFO, __VA_ARGS__)
@@ -29,12 +30,12 @@ void Service::ScriptProvider::OnDiff(const boost::filesystem::path& path, const 
 	LoadScripts(path, diff.added);
 }
 
-std::string Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) const noexcept
+Core::IScriptSupplier::ScriptType Service::ScriptProvider::ScriptFromFilePath(std::string_view fp) const noexcept
 {
 	std::shared_lock lock(mScripts);
 	if(auto search = scripts.find(fp.data()); search != scripts.end())
 		return search->second;
-	return std::string();
+	return nullptr;
 }
 
 // private
@@ -59,7 +60,7 @@ void Service::ScriptProvider::LoadScripts(const boost::filesystem::path& path, c
 		// Read actual file into memory and place into script map
 		std::stringstream buffer;
 		buffer << file.rdbuf();
-		scripts.insert_or_assign(fn.filename().string(), buffer.str());
+		scripts.insert_or_assign(fn.filename().string(), std::make_shared<const std::string>(buffer.str()));
 		total++;
 	}
 	LOG_INFO(I18N::SCRIPT_PROVIDER_TOTAL_FILES_LOADED, total);
