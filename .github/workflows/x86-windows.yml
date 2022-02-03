@@ -1,9 +1,9 @@
-name: x64-windows
+name: x86-windows
 on: push
 env:
-  VCPKG_TRIPLET: x64-windows-static
+  VCPKG_TRIPLET: x86-windows-static
 jobs:
-  x64-windows:
+  x86-windows:
     runs-on: windows-2022
     if: >-
       !(
@@ -32,14 +32,18 @@ jobs:
       run: |
         VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
         cp $VCPKG_LIBRARYDIR/boost_filesystem-vc140-mt.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc140-mt-s.lib
+    - name: Sets x86 windows build tools as default
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+          arch: win32
     - name: Meson build
-      shell: bash
+      shell: cmd
       run: |
-        export PKG_CONFIG_PATH=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
-        export BOOST_ROOT=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
-        meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
+        set PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\lib\pkgconfig
+        set BOOST_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
+        meson setup build -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
         meson compile -C build -j2
-    - name: Generate ZIP
+    - name: Setup artifacts directory
       shell: bash
       run: |
         export RDIR=Multirole
