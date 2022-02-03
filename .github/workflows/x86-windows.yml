@@ -39,7 +39,7 @@ jobs:
         export BOOST_ROOT=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
         meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true -Dc_args=-m32 -Dc_link_args=-m32 -Dcpp_args=-m32 -Dcpp_link_args=-m32
         meson compile -C build -j2
-    - name: Generate ZIP
+    - name: Setup artifacts directory
       shell: bash
       run: |
         export RDIR=Multirole
