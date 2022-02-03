@@ -1,7 +1,7 @@
 name: x86-windows
 on: push
 env:
-  VCPKG_TRIPLET: x64-windows-static
+  VCPKG_TRIPLET: x86-windows-static
 jobs:
   x64-windows:
     runs-on: windows-2022
