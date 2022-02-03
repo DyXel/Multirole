@@ -3,7 +3,7 @@ on: push
 env:
   VCPKG_TRIPLET: x86-windows-static
 jobs:
-  x64-windows:
+  x86-windows:
     runs-on: windows-2022
     if: >-
       !(
