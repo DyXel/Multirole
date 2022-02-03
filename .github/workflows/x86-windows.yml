@@ -40,7 +40,7 @@ jobs:
       shell: cmd
       run: |
         set PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\lib\pkgconfig
-        set BOOST_ROOT=%VCPKG_ROOT%\nstalled\%VCPKG_TRIPLET%
+        set BOOST_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
         meson setup build -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
         meson compile -C build -j2
     - name: Setup artifacts directory
