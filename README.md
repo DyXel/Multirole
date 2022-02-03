@@ -3,9 +3,10 @@
 </p>
 
 ![x64-linux](https://github.com/ProjectIgnis/Multirole/workflows/x64-linux/badge.svg)
-![x64-windows](https://github.com/ProjectIgnis/Multirole/workflows/x64-windows/badge.svg)
+![x86-windows](https://github.com/ProjectIgnis/Multirole/workflows/x86-windows/badge.svg)
 
 # Multirole: A C++ server for EDOPro
+
 Multirole manages client connections to a singular lobby where rooms can be hosted and a list of said rooms fetched by other clients to join. It is in charge of creating, processing and logging duels by interfacing with [EDOPro's core](https://github.com/edo9300/ygopro-core).
 
 This project's original inception was to replace [srvpro](https://github.com/mycard/srvpro) due to how cumbersome it is to work with CoffeScript/JavaScript and its interface for native data structures, while also doubling as a learning exercise about high performance networking and serving as a very small documentation for YGOPro's ecosystem.
@@ -21,6 +22,7 @@ This project's original inception was to replace [srvpro](https://github.com/myc
   * Easy compilation and deployment through docker with very small container image.
 
 ## Building
+
 A C++17 compliant compiler is needed as well as [Meson](https://mesonbuild.com/) which is the build system that Multirole uses.
 
 This project depends on the following libraries:
