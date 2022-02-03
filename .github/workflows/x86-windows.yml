@@ -37,8 +37,7 @@ jobs:
       run: |
         export PKG_CONFIG_PATH=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
         export BOOST_ROOT=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
-        export PROCESSOR_ARCHITEW6432=x86
-        meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true
+        meson setup build --cross-file meson_x86_windows_cross_file.ini --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true
         meson compile -C build -j2
     - name: Setup artifacts directory
       shell: bash
