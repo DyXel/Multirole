@@ -1,7 +1,7 @@
-name: x64-windows
+name: x86-windows
 on: push
 env:
-  VCPKG_TRIPLET: x64-windows-static
+  VCPKG_TRIPLET: x86-windows-static
 jobs:
   x64-windows:
     runs-on: windows-2022
@@ -37,7 +37,7 @@ jobs:
       run: |
         export PKG_CONFIG_PATH=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
         export BOOST_ROOT=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
-        meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
+        meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true -Dc_args=-m32 -Dc_link_args=-m32 -Dcpp_args=-m32 -Dcpp_link_args=-m32
         meson compile -C build -j2
     - name: Generate ZIP
       shell: bash
