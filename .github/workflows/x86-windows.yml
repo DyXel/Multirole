@@ -32,12 +32,16 @@ jobs:
       run: |
         VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
         cp $VCPKG_LIBRARYDIR/boost_filesystem-vc140-mt.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc140-mt-s.lib
+    - name: Sets x86 windows build tools as default
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+          arch: win32
     - name: Meson build
       shell: bash
       run: |
         export PKG_CONFIG_PATH=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
         export BOOST_ROOT=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
-        meson setup build --cross-file meson_x86_windows_cross_file.ini --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true
+        meson setup build --vsenv -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
         meson compile -C build -j2
     - name: Setup artifacts directory
       shell: bash
