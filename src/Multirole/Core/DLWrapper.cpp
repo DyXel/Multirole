@@ -83,7 +83,7 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 	auto ssdIter = ssdList.insert(ssdList.end(), {opts.scriptSupplier, OCG_LoadScript});
 	OCG_DuelOptions options =
 	{
-		opts.seed,
+		{opts.seed[0U], opts.seed[1U], opts.seed[2U], opts.seed[3U]},
 		opts.flags,
 		opts.team1,
 		opts.team2,

@@ -39,7 +39,7 @@ constexpr auto CORE_EXC_REASON = Context::DuelFinishReason
 StateOpt Context::operator()(State::Dueling& s) noexcept
 {
 	using namespace YGOPro;
-	const uint64_t seed[4U] =
+	const auto seed = Core::IWrapper::DuelOptions::SeedType
 	{{
 		rng(),
 		rng(),
@@ -77,7 +77,7 @@ StateOpt Context::operator()(State::Dueling& s) noexcept
 	s.replay = std::make_unique<YGOPro::Replay>
 	(
 		static_cast<uint32_t>(CurrentTime()),
-		seed,
+		static_cast<uint32_t>(seed[0U]), // FIXME: Use the entire value!
 		hostInfo,
 		extraCards
 	);
