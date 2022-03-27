@@ -43,7 +43,7 @@ public:
 		IDataSupplier& dataSupplier;
 		IScriptSupplier& scriptSupplier;
 		ILogger* optLogger;
-		uint32_t seed;
+		uint64_t seed[4U];
 		uint64_t flags;
 		Player team1;
 		Player team2;
