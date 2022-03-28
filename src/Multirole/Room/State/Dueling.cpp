@@ -77,7 +77,7 @@ StateOpt Context::operator()(State::Dueling& s) noexcept
 	s.replay = std::make_unique<YGOPro::Replay>
 	(
 		static_cast<uint32_t>(CurrentTime()),
-		static_cast<uint32_t>(seed[0U]), // FIXME: Use the entire value!
+		seed,
 		hostInfo,
 		extraCards
 	);
