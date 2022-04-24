@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       uses: lukka/run-vcpkg@v7
       with:
-        vcpkgGitCommitId: 70033dbb31527fb3e69654731f540f59c87787f9
+        vcpkgGitCommitId: e809a42f87565e803b2178a0c11263f462d1800a
         vcpkgTriplet: ${{ env.VCPKG_TRIPLET }}
         vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 openssl sqlite3
     - name: Fix Boost.Filesystem library location
