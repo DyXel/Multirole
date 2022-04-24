@@ -47,7 +47,7 @@ Str CLIENT_ROOM_HOSTING_MAX_CONNECTION_REACHED =
 "You have too many connections open. Close some of them.";
 
 Str CLIENT_ROOM_MSG_RETRY_ERROR =
-"Error while processing your response. Make sure you have the lastest client.";
+"Error while processing your response. Make sure you have the latest client.";
 
 Str ROOM_DUELING_CORE_EXCEPT_CREATION = "Core exception at creation: {0}";
 Str ROOM_DUELING_CORE_EXCEPT_EXTRA_CARDS = "Core exception at extra cards addition: {0}";
