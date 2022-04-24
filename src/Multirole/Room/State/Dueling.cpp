@@ -4,8 +4,8 @@
 #include "../../I18N.hpp"
 #include "../../Core/IWrapper.hpp"
 #include "../../Service/LogHandler.hpp"
-#define LOG_INFO(...) svc.logHandler.Log(ErrorCategory::CORE, s.replayId, __VA_ARGS__)
-#define LOG_ERROR(...) svc.logHandler.Log(ErrorCategory::CORE, s.replayId, __VA_ARGS__)
+#define LOG_INFO(...) svc.logHandler.Log(ErrorCategory::CORE, s.replayId, s.turnCounter, __VA_ARGS__)
+#define LOG_ERROR(...) svc.logHandler.Log(ErrorCategory::CORE, s.replayId, s.turnCounter, __VA_ARGS__)
 #include "../../Service/ReplayManager.hpp"
 #include "../../Service/ScriptProvider.hpp"
 #include "../../YGOPro/CardDatabase.hpp"
@@ -344,6 +344,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s) noe
 		else if(msgType == MSG_NEW_TURN)
 		{
 			ResetTimers(s, hostInfo.timeLimitInSeconds);
+			scriptLogger.SetTurnCounter(++s.turnCounter);
 		}
 		else if(DoesMessageRequireAnswer(msgType))
 		{

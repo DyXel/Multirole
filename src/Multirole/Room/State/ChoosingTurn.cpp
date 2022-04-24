@@ -38,6 +38,7 @@ StateOpt Context::operator()(State::ChoosingTurn& s, const Event::ChooseTurn& e)
 		svc.coreProvider.GetCore(),
 		nullptr,
 		0U,
+		0U,
 		nullptr,
 		DecidePlayerOrder(),
 		{uint8_t(0U), uint8_t(0U)},

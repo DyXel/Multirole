@@ -41,6 +41,7 @@ struct Dueling
 	std::shared_ptr<Core::IWrapper> core;
 	void* duelPtr;
 	uint64_t replayId;
+	uint32_t turnCounter;
 	std::unique_ptr<YGOPro::Replay> replay;
 	std::array<uint8_t, 2U> currentPos;
 	std::array<uint8_t, 2U> retryCount;

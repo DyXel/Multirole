@@ -52,8 +52,9 @@ void StreamFormat(std::ostream& os, const Timestamp& ts, const SinkLogProps& pro
 	else // std::holds_alternative<ECLogProps>(props)
 	{
 		const auto& ecLogProps = std::get<1>(props);
-		os << " [EC:" << EC_NAMES[AsSizeT(ecLogProps.first)] << ']'
-		   << " [ReplayID:" << ecLogProps.second << ']';
+		os << " [EC:" << EC_NAMES[AsSizeT(std::get<0>(ecLogProps))] << ']'
+		   << " [ReplayID:" << std::get<1>(ecLogProps) << ']'
+		   << " [Turn:" << std::get<2>(ecLogProps) << ']';
 	}
 	os << ' ' << str << '\n';
 }

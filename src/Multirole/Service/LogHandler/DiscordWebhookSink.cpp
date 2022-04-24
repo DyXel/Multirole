@@ -146,14 +146,15 @@ void DiscordWebhookSink::Log(const Timestamp& /*ts*/, const SinkLogProps& props,
 	else // std::holds_alternative<ECLogProps>(props)
 	{
 		const auto& ecLogProps = std::get<1>(props);
-		embed.emplace("title", EC_TITLES[AsSizeT(ecLogProps.first)]);
+		embed.emplace("title", EC_TITLES[AsSizeT(std::get<0>(ecLogProps))]);
 		embed.emplace("color", 0xFF0000U);
 		auto& desc = *embed.emplace("description", "```\n").first->value().if_string();
 		desc.append(str);
 		desc.append("\n```");
+		desc.append(fmt::format("Turn: {} | ", std::get<2>(ecLogProps)));
 		try
 		{
-			desc.append(fmt::format(ridFormat, ecLogProps.second));
+			desc.append(fmt::format(ridFormat, std::get<1>(ecLogProps)));
 		}
 		catch(const fmt::format_error&)
 		{

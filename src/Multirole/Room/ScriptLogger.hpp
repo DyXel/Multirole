@@ -21,6 +21,7 @@ public:
 	ScriptLogger(Service::LogHandler& lh, const YGOPro::HostInfo& hostInfo);
 
 	void SetReplayID(uint64_t rid);
+	void SetTurnCounter(uint32_t count);
 
 	void Log(LogType type, std::string_view str) override;
 private:
@@ -29,6 +30,7 @@ private:
 	std::string prevMsg;
 	std::string currMsg;
 	uint64_t replayId;
+	uint32_t turnCounter;
 };
 
 } // namespace Ignis::Multirole::Room

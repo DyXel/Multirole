@@ -30,12 +30,18 @@ ScriptLogger::ScriptLogger(Service::LogHandler& lh, const YGOPro::HostInfo& host
 	}(hostInfo)),
 	prevMsg(),
 	currMsg(),
-	replayId(0U)
+	replayId(0U),
+	turnCounter(0U)
 {}
 
 void ScriptLogger::SetReplayID(uint64_t rid)
 {
 	replayId = rid;
+}
+
+void ScriptLogger::SetTurnCounter(uint32_t count)
+{
+	turnCounter = count;
 }
 
 void ScriptLogger::Log(LogType type, std::string_view str)
@@ -56,7 +62,7 @@ void ScriptLogger::Log(LogType type, std::string_view str)
 		return; // Do not log just yet.
 	}
 	if(currMsg != prevMsg)
-		lh.Log(ec, replayId, (prevMsg = currMsg));
+		lh.Log(ec, replayId, turnCounter, (prevMsg = currMsg));
 	currMsg.clear();
 }
 

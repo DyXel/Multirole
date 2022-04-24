@@ -95,11 +95,11 @@ void Service::LogHandler::Log(ServiceType svc, Level lvl, std::string_view str) 
 	sink->Log(TimestampNow(), SvcLogProps{svc, lvl}, str);
 }
 
-void Service::LogHandler::Log(ErrorCategory cat, uint64_t replayId, std::string_view str) const noexcept
+void Service::LogHandler::Log(ErrorCategory cat, uint64_t replayId, uint32_t turnCounter, std::string_view str) const noexcept
 {
 	using namespace LogHandlerDetail;
 	const auto& sink = ecSinks[static_cast<std::size_t>(cat)];
-	sink->Log(TimestampNow(), ECLogProps{cat, replayId}, str);
+	sink->Log(TimestampNow(), ECLogProps{cat, replayId, turnCounter}, str);
 }
 
 std::unique_ptr<RoomLogger> Service::LogHandler::MakeRoomLogger(uint32_t roomId) const noexcept
