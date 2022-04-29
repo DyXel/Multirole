@@ -40,14 +40,13 @@ launch_multirole_if_not_running() {
 
 term_and_launch_multirole() {
 	ts_echo "Signaling Multirole"
-	disown %%
+	saved_traps=$(trap)
+	trap - CHLD
 	kill $multirole_pid >/dev/null
 	ts_echo "Waiting signaling period (3 seconds)"
-	saved_traps=$(trap)
-	trap - CHLD # Prevents tripping SIGCHLD handler after relaunching.
 	sleep 3
-	eval "$saved_traps"
 	launch_multirole
+	eval "$saved_traps"
 }
 
 trap "launch_multirole_if_not_running" CHLD
