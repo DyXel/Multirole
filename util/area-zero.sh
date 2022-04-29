@@ -21,7 +21,7 @@ launch_multirole_if_not_running() {
 term_and_launch_multirole() {
 	ts_echo "Signaling Multirole..."
 	save_traps=$(trap)
-	[ $MULTIROLE_PID -ne 0 ] && kill $MULTIROLE_PID >/dev/null
+	kill $MULTIROLE_PID >/dev/null
 	launch_multirole
 	eval "$save_traps"
 }
