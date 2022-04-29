@@ -20,7 +20,7 @@
 # to the operating system. After that, it's just a matter of signaling Multirole
 # with SIGTERM so it can finish its execution gracefully.
 
-MULTIROLE_PID=0
+multirole_pid=0
 
 ts_echo() {
 	date "+[%Y-%m-%d %T.???] $1..."
@@ -29,11 +29,11 @@ ts_echo() {
 launch_multirole() {
 	ts_echo "Launching Multirole"
 	./multirole &
-	MULTIROLE_PID=$!
+	multirole_pid=$!
 }
 
 launch_multirole_if_not_running() {
-	kill -s 0 $MULTIROLE_PID 2>/dev/null && return
+	kill -s 0 $multirole_pid 2>/dev/null && return
 	ts_echo "Multirole exited without my signaling! Relaunching"
 	launch_multirole
 }
@@ -41,7 +41,12 @@ launch_multirole_if_not_running() {
 term_and_launch_multirole() {
 	ts_echo "Signaling Multirole"
 	disown %%
-	kill $MULTIROLE_PID >/dev/null
+	kill $multirole_pid >/dev/null
+	ts_echo "Waiting signaling period (3 seconds)"
+	saved_traps=$(trap)
+	trap - CHLD # Prevents tripping SIGCHLD handler after relaunching.
+	sleep 3
+	eval "$saved_traps"
 	launch_multirole
 }
 
