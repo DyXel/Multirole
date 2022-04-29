@@ -20,15 +20,14 @@ launch_multirole_if_not_running() {
 
 term_and_launch_multirole() {
 	ts_echo "Signaling Multirole..."
-	save_traps=$(trap)
+	disown %%
 	kill $MULTIROLE_PID >/dev/null
 	launch_multirole
-	eval "$save_traps"
 }
 
+trap "launch_multirole_if_not_running" CHLD
 launch_multirole
 trap "term_and_launch_multirole" TERM
-trap "launch_multirole_if_not_running" CHLD
 
 while true; do
 	sleep 1
