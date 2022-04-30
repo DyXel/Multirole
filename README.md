@@ -135,7 +135,7 @@ The configuration file must be placed in the same working directory as Multirole
 
   * Multirole uses the TCP keepalive probing mechanism, so it is strongly recommended to configure the system-wide timers and retries for it to be relatively low in order to avoid too many dead connections preventing Multirole from doing internal memory cleanups.
 
-  * Multirole registers a handle to capture the SIGTERM signal to close its acceptors and free repositories locks so that another instance can be launched without having to terminate the current duels ([area-zero.py](https://github.com/DyXel/Multirole/blob/master/util/area-zero.py) provides an easy way of "restarting" Multirole with no down time by using this signal handling).
+  * Multirole registers a handle to capture the SIGTERM signal to close its acceptors and free repositories locks so that another instance can be launched without having to terminate the current duels ([area-zero.sh](https://github.com/DyXel/Multirole/blob/master/util/area-zero.sh) provides an easy way of "restarting" Multirole with no down time by using this signal handling).
 
   * Server users might want to raise the number of file descriptors Multirole can have open as the default system-wide amount is too low for very high volume of clients, also, depending on the version of libgit2 library used, after updating git repositories several times, operations will start failing with `Too many open files`; This is a known issue, [fixed upstream](https://github.com/libgit2/libgit2/pull/5386). See the issue linked by the PR for details on how to raise those limits.
 
