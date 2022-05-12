@@ -29,8 +29,7 @@ bool Instance::IsPrivate() const noexcept
 
 bool Instance::Started() const noexcept
 {
-	std::shared_lock lock(mState);
-	return !std::holds_alternative<State::Waiting>(state);
+	return ctx.IsStarted();
 }
 
 const std::string& Instance::Notes() const noexcept

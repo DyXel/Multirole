@@ -66,6 +66,7 @@ public:
 	~Context() noexcept;
 
 	const YGOPro::HostInfo& HostInfo() const noexcept;
+	bool IsStarted() const noexcept;
 	bool IsPrivate() const noexcept;
 	DuelistsMap GetDuelistsNames() const noexcept;
 
@@ -144,6 +145,7 @@ private:
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;
 	const bool isPrivate;
+	bool isStarted;
 	std::unique_ptr<RoomLogger> rl;
 	ScriptLogger scriptLogger;
 	RNG::Xoshiro256StarStar rng;

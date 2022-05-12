@@ -226,6 +226,7 @@ StateOpt Context::operator()(State::Waiting& s, const Event::TryStart& e) noexce
 			return std::nullopt;
 	if(!ValidateDuelistsSetup())
 		return std::nullopt;
+	isStarted = true;
 	SendToAll(MakeDuelStart());
 	return State::RockPaperScissor{};
 }

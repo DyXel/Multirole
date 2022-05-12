@@ -25,6 +25,7 @@ Context::Context(CreateInfo&& info) noexcept
 	neededWins((hostInfo.bestOf / 2) + (hostInfo.bestOf & 1)),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
 	isPrivate(info.isPrivate),
+	isStarted(false),
 	rl(svc.logHandler.MakeRoomLogger(id)),
 	scriptLogger(svc.logHandler, hostInfo),
 	rng(info.seed)
@@ -38,6 +39,11 @@ Context::~Context() noexcept = default;
 const YGOPro::HostInfo& Context::HostInfo() const noexcept
 {
 	return hostInfo;
+}
+
+bool Context::IsStarted() const noexcept
+{
+	return isStarted;
 }
 
 bool Context::IsPrivate() const noexcept
