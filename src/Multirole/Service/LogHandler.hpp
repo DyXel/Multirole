@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string_view>
 
 #include <boost/asio/io_context.hpp>
