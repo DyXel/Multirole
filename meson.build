@@ -8,7 +8,7 @@ project('multirole', 'c', 'cpp',
 static_deps = host_machine.system() == 'windows'
 
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
-boost_dep   = dependency('boost', version : '>=1.75', modules : ['filesystem'], static : static_deps)
+boost_dep   = dependency('boost', version : '>=1.78', modules : ['filesystem'], static : static_deps)
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 fmt_dep     = dependency('fmt', version : '>=6.0.0', static : static_deps)
 libgit2_dep = dependency('libgit2', static : static_deps)

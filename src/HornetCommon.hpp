@@ -22,6 +22,7 @@ enum class Action : uint8_t
 	NO_WORK = 0U, // Callbacks: doesn't apply
 	HEARTBEAT, // Callbacks: doesn't apply
 	EXIT, // Callbacks: doesn't apply
+	EXIT_CONFIRMED, // Callbacks: doesn't apply
 	OCG_GET_VERSION, // Callbacks: none
 	OCG_CREATE_DUEL, // Callbacks: ScriptReader
 	OCG_DESTROY_DUEL, // Callbacks: none

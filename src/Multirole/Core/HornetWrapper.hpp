@@ -49,7 +49,6 @@ private:
 	boost::interprocess::mapped_region region;
 	Hornet::SharedSegment* hss;
 	Process::Data proc;
-	bool hanged;
 	std::mutex mtx;
 
 	void DestroySharedSegment();
