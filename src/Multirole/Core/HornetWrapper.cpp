@@ -1,6 +1,6 @@
 #include "HornetWrapper.hpp"
 
-#include <cinttypes>
+#include <cinttypes> // PRIXPTR
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include "IDataSupplier.hpp"
@@ -12,11 +12,11 @@
 #include "../../Process.hpp"
 
 #ifndef MULTIROLE_HORNET_MAX_LOOP_COUNT
-#define MULTIROLE_HORNET_MAX_LOOP_COUNT 512U
+#define MULTIROLE_HORNET_MAX_LOOP_COUNT 64U
 #endif // MULTIROLE_HORNET_MAX_LOOP_COUNT
 
 #ifndef MULTIROLE_HORNET_MAX_WAIT_COUNT
-#define MULTIROLE_HORNET_MAX_WAIT_COUNT 5U
+#define MULTIROLE_HORNET_MAX_WAIT_COUNT 15U
 #endif // MULTIROLE_HORNET_MAX_WAIT_COUNT
 
 namespace Ignis::Multirole::Core
@@ -24,6 +24,16 @@ namespace Ignis::Multirole::Core
 
 namespace
 {
+
+static_assert(MULTIROLE_HORNET_MAX_LOOP_COUNT >= 1U);
+static_assert(MULTIROLE_HORNET_MAX_WAIT_COUNT >= 1U);
+
+// Time in seconds to wait before concluding that Hornet is unresponsive.
+const auto SECS_TO_KILL = boost::posix_time::seconds(1U);
+// Time in seconds per wait round to check if Hornet is dead. This multiplied by
+// MULTIROLE_HORNET_MAX_WAIT_COUNT is the total amount of time to spend before
+// giving up and throwing a exception.
+const auto SECS_PER_WAIT = boost::posix_time::seconds(2U);
 
 #include "../../Read.inl"
 #include "../../Write.inl"
@@ -82,13 +92,6 @@ HornetWrapper::HornetWrapper(std::string_view absFilePath) :
 
 HornetWrapper::~HornetWrapper()
 {
-	// Time to wait before concluding that Hornet is unresponsive.
-	auto NowPlusOffset = []() -> boost::posix_time::ptime
-	{
-		auto now = boost::posix_time::second_clock::universal_time();
-		now += boost::posix_time::seconds(2U);
-		return now;
-	};
 	// Scenarios:
 	// 1. Hornet waits on CV as normal.
 	// 2. Hornet is dead.
@@ -103,7 +106,7 @@ HornetWrapper::~HornetWrapper()
 		hss->act = EXIT;
 		hss->cv.notify_one();
 		// We do a small timed wait to verify if Hornet is unresponsive.
-		if(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != EXIT;}))
+		if(!hss->cv.wait_for(lock, SECS_TO_KILL, [&](){return hss->act != EXIT;}))
 		{
 			// Hornet was unresponsive or dead. Lets guarantee that it is dead.
 			Process::Kill(proc);
@@ -315,18 +318,11 @@ void HornetWrapper::DestroySharedSegment()
 
 void HornetWrapper::NotifyAndWait(Hornet::Action act)
 {
-	// Time to wait before checking for process being dead
-	auto NowPlusOffset = []() -> boost::posix_time::ptime
-	{
-		auto now = boost::posix_time::second_clock::universal_time();
-		now += boost::posix_time::seconds(10U);
-		return now;
-	};
 	Hornet::Action recvAct = Hornet::Action::NO_WORK;
 	std::size_t loopCount = 0U;
 	do
 	{
-		if(loopCount++ > MULTIROLE_HORNET_MAX_LOOP_COUNT)
+		if(loopCount++ == MULTIROLE_HORNET_MAX_LOOP_COUNT)
 			throw Core::Exception(I18N::HWRAPPER_EXCEPT_MAX_LOOP_COUNT);
 		// Atomically perform action and fetch next one, if any.
 		{
@@ -334,13 +330,12 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 			Hornet::LockType lock(hss->mtx);
 			hss->act = act;
 			hss->cv.notify_one();
-			while(!hss->cv.timed_wait(lock, NowPlusOffset(), [&](){return hss->act != act;}))
+			while(!hss->cv.wait_for(lock, SECS_PER_WAIT, [&](){return hss->act != act;}))
 			{
 				if(!Process::IsRunning(proc))
 					throw Core::Exception(I18N::HWRAPPER_EXCEPT_PROC_CRASHED);
-				if(waitCount++ <= MULTIROLE_HORNET_MAX_WAIT_COUNT)
-					continue;
-				throw Core::Exception(I18N::HWRAPPER_EXCEPT_PROC_UNRESPONSIVE);
+				if(++waitCount >= MULTIROLE_HORNET_MAX_WAIT_COUNT)
+					throw Core::Exception(I18N::HWRAPPER_EXCEPT_PROC_UNRESPONSIVE);
 			}
 			recvAct = hss->act;
 		}
