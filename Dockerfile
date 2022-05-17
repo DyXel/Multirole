@@ -1,72 +1,34 @@
-FROM debian:bullseye-slim as base
-
 # Install all the runtime dependencies for Multirole.
-RUN apt-get update && \
-	apt-get --no-install-recommends --yes install \
-		ca-certificates \
-		libfmt7 \
-		liblzma5 \
-		libgit2-1.1 \
-		libsqlite3-0 \
-		libssl1.1 \
-		libtcmalloc-minimal4 && \
-	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-FROM base as build-base
+FROM alpine:edge AS base
+RUN apk add boost-filesystem ca-certificates fmt libgit2 libssl1.1 sqlite-libs
 
 # Install all the development environment that Multirole needs.
-RUN apt-get update && \
-	apt-get --no-install-recommends --yes install \
-		build-essential \
-		libfmt-dev \
-		liblzma-dev \
-		libgit2-dev \
-		libsqlite3-dev \
-		libssl-dev \
-		libgoogle-perftools-dev \
-		g++ \
-		python3 \
-		python3-pip \
-		ninja-build \
-		pkg-config \
-		tar \
-		bzip2 \
-		wget && \
-	pip install meson && \
-	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+FROM base AS base-dev
+RUN apk add boost-dev fmt-dev g++ libgit2-dev meson ninja openssl-dev sqlite-dev
 
-# Build and install boost libraries (we'll only need filesystem to be compiled),
-# we require >=1.79.0 and apt doesn't have it.
-FROM build-base as boost-builder
-
-WORKDIR /root/boost-src
-RUN wget -O - http://sourceforge.net/projects/boost/files/boost/1.79.0/boost_1_79_0.tar.bz2 | tar --bzip2 -xf - && \
-	cd boost_1_79_0 && \
-	./bootstrap.sh --prefix=/usr/local/boost --with-libraries=filesystem && \
-	./b2 install && \
-	cd ..
-
-# Build multirole.
-FROM build-base as multirole-builder
-
+# Build multirole, stripping debug symbols to their own files.
+FROM base-dev AS built
 WORKDIR /root/multirole-src
 COPY src/ ./src/
 COPY meson.build .
 COPY meson_options.txt .
-COPY --from=boost-builder /usr/local/boost /usr/local/boost
-RUN BOOST_ROOT=/usr/local/boost/ meson setup build -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true -Duse_tcmalloc=enabled && \
-	meson compile -C build
+ENV BOOST_INCLUDEDIR=/usr/include/boost BOOST_LIBRARYDIR=/usr/lib
+RUN meson setup build --buildtype=debugoptimized -Doptimization=3 -Db_lto=true && \
+	cd "build" && \
+	meson compile && \
+	objcopy --only-keep-debug "hornet" "hornet.debug" && \
+	strip --strip-debug --strip-unneeded "hornet" && \
+	objcopy --add-gnu-debuglink="hornet.debug" "hornet" && \
+	objcopy --only-keep-debug "multirole" "multirole.debug" && \
+	strip --strip-debug --strip-unneeded "multirole" && \
+	objcopy --add-gnu-debuglink="multirole.debug" "multirole"
 
-# Setup the final environment.
+# Setup the final execution environment.
 FROM base
-
 WORKDIR /multirole
 COPY etc/config.json .
 COPY util/area-zero.sh .
-COPY --from=boost-builder /usr/local/boost/lib/libboost_filesystem.so /usr/lib/libboost_filesystem.so.1.79.0
-COPY --from=multirole-builder /root/multirole-src/build/hornet .
-COPY --from=multirole-builder /root/multirole-src/build/multirole .
-
-# Execute.
+COPY --from=built /root/multirole-src/build/hornet .
+COPY --from=built /root/multirole-src/build/multirole .
 EXPOSE 7922 7911 34343 62672 49382 43632
 CMD [ "./area-zero.sh" ]
