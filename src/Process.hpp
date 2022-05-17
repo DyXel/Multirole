@@ -85,8 +85,8 @@ void Kill(const Data& data)
 }
 
 #else
+#include <signal.h>
 #include <unistd.h>
-#include <sys/signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
