@@ -8,7 +8,6 @@ RUN apt-get update && \
 		libgit2-1.1 \
 		libsqlite3-0 \
 		libssl1.1 \
-		python3 \
 		libtcmalloc-minimal4 && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -24,6 +23,7 @@ RUN apt-get update && \
 		libssl-dev \
 		libgoogle-perftools-dev \
 		g++ \
+		python3 \
 		python3-pip \
 		ninja-build \
 		pkg-config \
@@ -60,11 +60,11 @@ FROM base
 
 WORKDIR /multirole
 COPY etc/config.json .
-COPY util/area-zero.py .
+COPY util/area-zero.sh .
 COPY --from=boost-builder /usr/local/boost/lib/libboost_filesystem.so /usr/lib/libboost_filesystem.so.1.79.0
 COPY --from=multirole-builder /root/multirole-src/build/hornet .
 COPY --from=multirole-builder /root/multirole-src/build/multirole .
 
 # Execute.
 EXPOSE 7922 7911 34343 62672 49382 43632
-CMD [ "python3", "./area-zero.py" ]
+CMD [ "./area-zero.sh" ]
