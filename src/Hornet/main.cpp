@@ -11,10 +11,6 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
-#if !defined(_WIN32) && !defined(BOOST_INTERPROCESS_POSIX_ROBUST_MUTEXES)
-#error "Robust mutexes required to ensure consistent, UB-free execution."
-#endif
-
 #include "../DLOpen.hpp"
 #include "../HornetCommon.hpp"
 #include "../ocgapi_types.h"
