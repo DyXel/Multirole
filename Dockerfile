@@ -1,10 +1,12 @@
 # Install all the runtime dependencies for Multirole.
 FROM alpine:edge AS base
-RUN apk add boost-filesystem ca-certificates fmt libgit2 libssl1.1 sqlite-libs
+RUN apk add --no-cache boost-filesystem ca-certificates fmt libgit2 libssl1.1 sqlite-libs && \
+	rm -rf /var/log/* /tmp/* /var/tmp/*
 
 # Install all the development environment that Multirole needs.
 FROM base AS base-dev
-RUN apk add boost-dev fmt-dev g++ libgit2-dev meson ninja openssl-dev sqlite-dev
+RUN apk add --no-cache boost-dev fmt-dev g++ libgit2-dev meson ninja openssl-dev sqlite-dev && \
+	rm -rf /var/log/* /tmp/* /var/tmp/*
 
 # Build multirole, stripping debug symbols to their own files.
 FROM base-dev AS built
