@@ -20,8 +20,10 @@ thread_dep  = dependency('threads')
 
 # Get fmt dependency and configure so it's header-only
 fmt_dep = dependency('fmt', version : '>=6.0.0')
-fmt_dep = declare_dependency(compile_args : '-DFMT_HEADER_ONLY', dependencies : fmt_dep)
-fmt_dep = fmt_dep.partial_dependency(compile_args : true, includes : true)
+if get_option('fmt_ho')
+	fmt_dep = declare_dependency(compile_args : '-DFMT_HEADER_ONLY', dependencies : fmt_dep)
+	fmt_dep = fmt_dep.partial_dependency(compile_args : true, includes : true)
+endif
 
 multirole_src_files = files([
 	'src/DLOpen.cpp',

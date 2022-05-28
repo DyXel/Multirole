@@ -15,7 +15,7 @@ COPY src/ ./src/
 COPY meson.build .
 COPY meson_options.txt .
 ENV BOOST_INCLUDEDIR=/usr/include/boost BOOST_LIBRARYDIR=/usr/lib
-RUN meson setup build --buildtype=debugoptimized -Doptimization=3 -Db_lto=true -Db_pie=true -Dcpp_link_args="-static-libstdc++" && \
+RUN meson setup build --buildtype=debugoptimized -Doptimization=3 -Db_lto=true -Db_pie=true -Dcpp_link_args="-static-libstdc++" -Dfmt_ho=true && \
 	cd "build" && \
 	meson compile && \
 	objcopy --only-keep-debug "hornet" "hornet.debug" && \
