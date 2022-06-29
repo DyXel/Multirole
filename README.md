@@ -34,6 +34,7 @@ This project depends on the following libraries:
     * json
   * fmt
   * libgit2
+  * liblzma (provided as xz in some systems)
   * openssl
   * sqlite3
 

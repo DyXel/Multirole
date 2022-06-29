@@ -2,12 +2,11 @@
 
 #include <cassert>
 #include <cstring>
+#include <lzma.h>
 
 #include "Config.hpp"
 #include "Constants.hpp"
 #include "StringUtils.hpp"
-#include "LZMA/LzmaEnc.h"
-#include "LZMA/Alloc.h" // g_Alloc
 
 namespace YGOPro
 {
@@ -308,27 +307,20 @@ void Replay::Serialize() noexcept
 		{}
 	};
 	// Compress past-the-header data.
-	std::vector<uint8_t> compData(pthData.size() * 2U);
-	CLzmaEncProps props;
-	LzmaEncProps_Init(&props);
-	props.numThreads = 1; // NOLINT: No multithreading.
-	SizeT destLen = compData.size();
-	SizeT outPropSize = LZMA_PROPS_SIZE;
-	LzmaEncode
-	(
-		compData.data(),
-		&destLen,
-		pthData.data(),
-		pthData.size(),
-		&props,
-		header.props,
-		&outPropSize,
-		0,
-		nullptr,
-		&g_Alloc,
-		&g_Alloc
-	);
-	compData.resize(destLen);
+	std::vector<uint8_t> compData(pthData.size());
+	lzma_options_lzma opts;
+	lzma_lzma_preset(&opts, 5);
+	opts.dict_size = 1 << 24;
+	lzma_filter filters[]
+	{
+		{LZMA_FILTER_LZMA1, &opts},
+		{LZMA_VLI_UNKNOWN, nullptr},
+	};
+	lzma_properties_encode(filters, header.props);
+	size_t compSize{};
+	lzma_raw_buffer_encode(filters, nullptr, pthData.data(), pthData.size(),
+	                       compData.data(), &compSize, compData.size());
+	compData.resize(compSize);
 	header.flags |= REPLAY_COMPRESSED;
 	pthData = std::move(compData);
 	// Write final binary replay.

@@ -5,6 +5,7 @@ RUN apt-get update && \
 	apt-get --no-install-recommends --yes install \
 		ca-certificates \
 		libfmt7 \
+		liblzma5 \
 		libgit2-1.1 \
 		libsqlite3-0 \
 		libssl1.1 \
@@ -18,6 +19,7 @@ RUN apt-get update && \
 	apt-get --no-install-recommends --yes install \
 		build-essential \
 		libfmt-dev \
+		liblzma-dev \
 		libgit2-dev \
 		libsqlite3-dev \
 		libssl-dev \
