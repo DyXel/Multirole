@@ -18,7 +18,7 @@ std::u16string BufferToUTF16(const void* data, std::size_t maxByteCount) noexcep
 	{
 		char16_t toAppend{};
 		std::memcpy(&toAppend, p, sizeof(toAppend));
-		if(!toAppend)
+		if(!toAppend || toAppend == L'\n' || toAppend == L'\r')
 			break;
 		str.append(1U, toAppend);
 	}
