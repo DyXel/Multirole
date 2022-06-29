@@ -100,7 +100,7 @@ executable('hornet', hornet_src_files,
 		'-DNOMINMAX'
 	],
 	dependencies: [
-		boost_dep,
+		boost_dep.partial_dependency(compile_args: true, includes: true),
 		dl_dep,
 		rt_dep
 	])
