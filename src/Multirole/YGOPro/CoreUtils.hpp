@@ -62,7 +62,7 @@ struct Query
 	uint32_t rank;
 	uint32_t link;
 	uint32_t attribute;
-	uint32_t race;
+	uint64_t race;
 	int32_t attack;
 	int32_t defense;
 	int32_t bAttack;

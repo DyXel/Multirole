@@ -684,7 +684,6 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& qOpt, bool isPublic) noexcept
 			case QUERY_LEVEL:
 			case QUERY_RANK:
 			case QUERY_ATTRIBUTE:
-			case QUERY_RACE:
 			case QUERY_ATTACK:
 			case QUERY_DEFENSE:
 			case QUERY_BASE_ATTACK:
@@ -696,6 +695,10 @@ QueryBuffer SerializeSingleQuery(const QueryOpt& qOpt, bool isPublic) noexcept
 			case QUERY_COVER:
 			{
 				return sizeof(uint32_t);
+			}
+			case QUERY_RACE:
+			{
+				return sizeof(uint64_t);
 			}
 			case QUERY_REASON_CARD:
 			case QUERY_EQUIP_CARD:
