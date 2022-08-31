@@ -94,7 +94,8 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 		&LogHandler,
 		opts.optLogger,
 		&DataReaderDone,
-		&opts.dataSupplier
+		&opts.dataSupplier,
+		0
 	};
 	if(OCG_CreateDuel(&duel, options) != OCG_DUEL_CREATION_SUCCESS)
 	{

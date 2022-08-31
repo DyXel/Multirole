@@ -169,7 +169,8 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 		nullptr, // NOTE: Set on Hornet
 		opts.optLogger,
 		nullptr, // NOTE: Set on Hornet
-		&opts.dataSupplier
+		&opts.dataSupplier,
+		0
 	});
 	NotifyAndWait(Hornet::Action::OCG_CREATE_DUEL);
 	const auto* rptr = hss->bytes.data();
