@@ -10,7 +10,6 @@ static_deps = host_machine.system() == 'windows'
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
 boost_dep   = dependency('boost', version : '>=1.78', modules : ['filesystem'], static : static_deps)
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
-fmt_dep     = dependency('fmt', version : '>=6.0.0', static : static_deps)
 libgit2_dep = dependency('libgit2', static : static_deps)
 lzma_dep    = dependency('liblzma')
 openssl_dep = dependency('openssl', static : static_deps)
@@ -18,6 +17,13 @@ rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 sqlite3_dep = dependency('sqlite3', static : static_deps)
 tcm_dep     = dependency('libtcmalloc_minimal', required : get_option('use_tcmalloc'), static : static_deps)
 thread_dep  = dependency('threads')
+
+# Get fmt dependency and configure so it's header-only
+fmt_dep = dependency('fmt', version : '>=6.0.0')
+if get_option('fmt_ho')
+	fmt_dep = declare_dependency(compile_args : '-DFMT_HEADER_ONLY', dependencies : fmt_dep)
+	fmt_dep = fmt_dep.partial_dependency(compile_args : true, includes : true)
+endif
 
 multirole_src_files = files([
 	'src/DLOpen.cpp',
