@@ -179,7 +179,7 @@ const OCG_CardData& CardDatabase::DataFromCode(uint32_t code) const noexcept
 		cd.level = dbLevel & 0x800000FF;
 		cd.lscale = (dbLevel >> 24U) & 0xFF;
 		cd.rscale = (dbLevel >> 16U) & 0xFF;
-		cd.race = sqlite3_column_int(sStmt, 7);
+		cd.race = sqlite3_column_int64(sStmt, 7);
 		cd.attribute = sqlite3_column_int(sStmt, 8);
 	}
 	return cd;
