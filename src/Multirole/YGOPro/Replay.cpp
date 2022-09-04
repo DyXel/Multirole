@@ -240,7 +240,7 @@ void Replay::Serialize() noexcept
 	// the whole YRPX past-the-header data.
 	[&](std::vector<uint8_t>& vec)
 	{
-		vec.resize(1U + sizeof(ReplayHeader) + YRPPastHeaderSize());
+		vec.resize(1U + sizeof(ExtendedReplayHeader) + YRPPastHeaderSize());
 		uint8_t* ptr = vec.data();
 		auto WriteCodeVector = [&ptr](const std::vector<uint32_t>& vec)
 		{
