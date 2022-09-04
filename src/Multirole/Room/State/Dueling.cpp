@@ -39,7 +39,13 @@ constexpr auto CORE_EXC_REASON = Context::DuelFinishReason
 StateOpt Context::operator()(State::Dueling& s) noexcept
 {
 	using namespace YGOPro;
-	const auto seed = static_cast<uint32_t>(rng());
+	const auto seed = Core::IWrapper::DuelOptions::SeedType
+	{{
+		rng(),
+		rng(),
+		rng(),
+		rng(),
+	}};
 	// Enable extra rules for the duel.
 	// These are controlled simply by adding custom cards
 	// with the rulesets to the game as playable cards, they will

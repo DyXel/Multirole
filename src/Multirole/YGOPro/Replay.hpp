@@ -25,7 +25,7 @@ public:
 
 	Replay(
 		uint32_t unixTimestamp,
-		uint32_t seed,
+		const std::array<uint64_t, 4U>& seed,
 		const HostInfo& info,
 		const CodeVector& extraCards) noexcept;
 
@@ -41,7 +41,7 @@ public:
 	void Serialize() noexcept;
 private:
 	const uint32_t unixTimestamp;
-	const uint32_t seed;
+	const std::array<uint64_t, 4U> seed;
 	const uint32_t startingLP;
 	const uint32_t startingDrawCount;
 	const uint32_t drawCountPerTurn;

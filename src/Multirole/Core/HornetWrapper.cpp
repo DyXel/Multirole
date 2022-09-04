@@ -158,7 +158,7 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 	auto* wptr = hss->bytes.data();
 	Write<OCG_DuelOptions>(wptr,
 	{
-		opts.seed,
+		{opts.seed[0U], opts.seed[1U], opts.seed[2U], opts.seed[3U]},
 		opts.flags,
 		opts.team1,
 		opts.team2,

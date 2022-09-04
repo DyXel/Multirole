@@ -1,5 +1,6 @@
 #ifndef IWRAPPER_HPP
 #define IWRAPPER_HPP
+#include <array>
 #include <cstdint>
 #include <vector>
 #include <stdexcept>
@@ -40,10 +41,12 @@ public:
 
 	struct DuelOptions
 	{
+		using SeedType = std::array<uint64_t, 4>;
+
 		IDataSupplier& dataSupplier;
 		IScriptSupplier& scriptSupplier;
 		ILogger* optLogger;
-		uint32_t seed;
+		SeedType seed;
 		uint64_t flags;
 		Player team1;
 		Player team2;

@@ -29,15 +29,16 @@ enum ReplayTypes
 
 enum ReplayFlags
 {
-	REPLAY_COMPRESSED     = 0x1,
-	REPLAY_TAG            = 0x2,
-	REPLAY_DECODED        = 0x4,
-	REPLAY_SINGLE_MODE    = 0x8,
-	REPLAY_LUA64          = 0x10,
-	REPLAY_NEWREPLAY      = 0x20,
-	REPLAY_HAND_TEST      = 0x40,
-	REPLAY_DIRECT_SEED    = 0x80,
-	REPLAY_64BIT_DUELFLAG = 0x100,
+	REPLAY_COMPRESSED      = 0x1,
+	REPLAY_TAG             = 0x2,
+	REPLAY_DECODED         = 0x4,
+	REPLAY_SINGLE_MODE     = 0x8,
+	REPLAY_LUA64           = 0x10,
+	REPLAY_NEWREPLAY       = 0x20,
+	REPLAY_HAND_TEST       = 0x40,
+	REPLAY_DIRECT_SEED     = 0x80,
+	REPLAY_64BIT_DUELFLAG  = 0x100,
+	REPLAY_EXTENDED_HEADER = 0x200,
 };
 
 struct ReplayHeader
@@ -45,10 +46,24 @@ struct ReplayHeader
 	uint32_t type; // See ReplayTypes.
 	uint32_t version; // Unused atm, should be set to YGOPro::ClientVersion.
 	uint32_t flags; // See ReplayFlags.
-	uint32_t seed; // Unix timestamp for YRPX. Core duel seed for YRP.
+	uint32_t timestamp; // Unix timestamp.
 	uint32_t size; // Uncompressed size of whatever is after this header.
 	uint32_t hash; // Unused.
-	uint8_t props[8]; // Used for LZMA compression (check their apis).
+	uint8_t props[8U]; // Used for LZMA compression (check their apis).
+};
+
+constexpr uint32_t YRPX_FLAGS = REPLAY_LUA64 | REPLAY_NEWREPLAY |
+                                REPLAY_64BIT_DUELFLAG;
+constexpr uint32_t YRP_FLAGS = YRPX_FLAGS | REPLAY_DIRECT_SEED |
+                               REPLAY_EXTENDED_HEADER;
+
+struct ExtendedReplayHeader
+{
+	static constexpr uint64_t CURRENT_VERSION = 1U;
+
+	ReplayHeader base;
+	uint64_t version; // Version of this extended header.
+	uint64_t seed[4U]; // New 256bit seed.
 };
 
 // ***** YRPX Binary format *****
@@ -64,7 +79,7 @@ struct ReplayHeader
 // 	data [uint8_t * length]
 
 // ***** YRP Binary format *****
-// ReplayHeader
+// ExtendedReplayHeader
 // team0Count [uint32_t]
 // team0Names [20 char16_t * team0Count]
 // team1Count [uint32_t]
@@ -87,7 +102,7 @@ struct ReplayHeader
 
 Replay::Replay(
 	uint32_t unixTimestamp,
-	uint32_t seed,
+	const std::array<uint64_t, 4U>& seed,
 	const HostInfo& info,
 	const CodeVector& extraCards) noexcept
 	:
@@ -236,15 +251,19 @@ void Replay::Serialize() noexcept
 		// NOLINTNEXTLINE: Message type, Called OLD_REPLAY_FORMAT in common.h.
 		Write<uint8_t>(ptr, 231U);
 		// Replay header for YRP replay format.
-		Write(ptr, ReplayHeader
+		Write(ptr, ExtendedReplayHeader
 		{
-			REPLAY_YRP1,
-			ENCODED_SERVER_VERSION,
-			REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_DIRECT_SEED | REPLAY_64BIT_DUELFLAG,
-			seed,
-			static_cast<uint32_t>(YRPPastHeaderSize()),
-			0U,
-			{}
+			{
+				REPLAY_YRP1,
+				ENCODED_SERVER_VERSION,
+				YRP_FLAGS,
+				0U, // NOTE: Zero'd by extended header. Used to be 32bit seed.
+				static_cast<uint32_t>(YRPPastHeaderSize()),
+				0U,
+				{}
+			},
+			ExtendedReplayHeader::CURRENT_VERSION,
+			{seed[0U], seed[1U], seed[2U], seed[3U]}
 		});
 		// Duelists count and their names.
 		WriteDuelists(ptr);
