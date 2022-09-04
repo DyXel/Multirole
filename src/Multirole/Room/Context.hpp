@@ -43,7 +43,6 @@ public:
 		RNG::Xoshiro256StarStar::StateType seed;
 		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
-		YGOPro::DeckLimits limits;
 		bool isPrivate;
 		const std::string& notes;
 	};
@@ -140,7 +139,6 @@ private:
 	const uint32_t id;
 	const YGOPro::BanlistPtr banlist;
 	const YGOPro::HostInfo hostInfo;
-	const YGOPro::DeckLimits limits;
 	const std::shared_ptr<YGOPro::CardDatabase> cdb;
 	const int32_t neededWins;
 	const YGOPro::STOCMsg joinMsg;

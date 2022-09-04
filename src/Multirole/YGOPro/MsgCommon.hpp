@@ -41,6 +41,14 @@ struct ClientVersion
 	} client, core;
 };
 
+struct DeckLimits
+{
+	struct Boundary
+	{
+		uint16_t min, max;
+	}main, extra, side;
+};
+
 struct HostInfo
 {
 	uint32_t banlistHash;
@@ -62,6 +70,7 @@ struct HostInfo
 	uint32_t duelFlagsLow; // OR'd with duelFlagsHigh
 	int32_t forb; // Forbidden types
 	uint16_t extraRules; // Double deck, Speed duel, etc
+	DeckLimits limits;
 
 	static constexpr uint64_t OrDuelFlags(uint32_t high, uint32_t low) noexcept
 	{

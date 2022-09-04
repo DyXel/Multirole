@@ -119,6 +119,12 @@ void LobbyListing::DoSerialize()
 			room.emplace("no_shuffle", static_cast<bool>(hi.dontShuffleDeck));
 			room.emplace("banlist_hash", hi.banlistHash);
 			room.emplace("istart", rp.started ? "start" : "waiting");
+			room.emplace("main_min", hi.limits.main.min);
+			room.emplace("main_max", hi.limits.main.max);
+			room.emplace("extra_min", hi.limits.extra.min);
+			room.emplace("extra_max", hi.limits.extra.max);
+			room.emplace("side_min", hi.limits.side.min);
+			room.emplace("side_max", hi.limits.side.max);
 			const auto dCount = rp.duelists.usedCount;
 			auto& ac = *room.emplace("users", boost::json::array(dCount, &mr)).first->value().if_array();
 			for(std::size_t i = 0; i < dCount; i++)

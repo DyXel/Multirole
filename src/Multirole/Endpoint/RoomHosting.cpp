@@ -34,32 +34,6 @@ constexpr bool operator!=(
 		v2.core.minor);
 }
 
-constexpr YGOPro::DeckLimits LimitsFromFlags(uint16_t flag)
-{
-	const bool doubleDeck = (flag & YGOPro::EXTRA_RULE_DOUBLE_DECK) != 0;
-	const bool limit20 = (flag & YGOPro::EXTRA_RULE_DECK_LIMIT_20) != 0;
-	YGOPro::DeckLimits l; // initialized with official values
-	if(doubleDeck && limit20)
-	{
-		// NOTE: main deck boundaries are same as official
-		l.extra.max = 12;
-		l.side.max = 12;
-	}
-	else if(doubleDeck)
-	{
-		l.main.min = l.main.max = 100;
-		l.extra.max = 30;
-		l.side.max = 30;
-	}
-	else if(limit20)
-	{
-		l.main.min = 20; l.main.max = 30;
-		l.extra.max = 6;
-		l.side.max = 6;
-	}
-	return l;
-}
-
 template<typename Buffer>
 inline std::string Utf16BufferToStr(const Buffer& buffer)
 {
@@ -210,8 +184,7 @@ private:
 				0U, // NOTE: id, set by lobby.
 				{{}}, // NOTE: seed, set by lobby.
 				roomHosting.svc.banlistProvider.GetBanlistByHash(p->hostInfo.banlistHash),
-				p->hostInfo,
-				LimitsFromFlags(p->hostInfo.extraRules)
+				p->hostInfo
 			};
 			// Fix some of the options back into expected values in case of
 			// exceptions.
@@ -221,6 +194,17 @@ private:
 			hi.t0Count = std::clamp(hi.t0Count, 1, 3);
 			hi.t1Count = std::clamp(hi.t1Count, 1, 3);
 			hi.bestOf = std::max(hi.bestOf, 1);
+			// Cap limits due to resource contrains.
+			auto FixLimit = [](auto& lim)
+			{
+				// Maximum limit is arbitrarily limited due to packet size.
+				lim.max = std::min(lim.max, uint16_t{999});
+				// Minimum limit should never be greater than max.
+				lim.min = std::min(lim.min, lim.max);
+			};
+			FixLimit(hi.limits.main);
+			FixLimit(hi.limits.extra);
+			FixLimit(hi.limits.side);
 			// Remove Relay flag if its 1v1.
 			constexpr uint32_t DUEL_RELAY = 0x80;
 			bool isRelay = (hi.duelFlagsLow & DUEL_RELAY) != 0U;

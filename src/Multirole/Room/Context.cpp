@@ -20,7 +20,6 @@ Context::Context(CreateInfo&& info) noexcept
 	id(info.id),
 	banlist(std::move(info.banlist)),
 	hostInfo(info.hostInfo),
-	limits(info.limits),
 	cdb(svc.dataProvider.GetDatabase()),
 	neededWins((hostInfo.bestOf / 2) + (hostInfo.bestOf & 1)),
 	joinMsg(YGOPro::STOCMsg::JoinGame{hostInfo}),
@@ -234,6 +233,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	if(const auto error = deck.Error(); error != 0U)
 		return MakeErrorPtr(CARD_UNKNOWN, error);
 	// Check if the deck obeys the limits.
+	auto const& limits = hostInfo.limits;
 	auto OutOfBound = [](const auto& lim, const CodeVector& vector) -> auto
 	{
 		std::pair<std::size_t, bool> p{vector.size(), false};

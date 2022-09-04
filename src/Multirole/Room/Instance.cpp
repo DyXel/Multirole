@@ -16,7 +16,6 @@ Instance::Instance(CreateInfo& info) noexcept
 		info.seed,
 		std::move(info.banlist),
 		info.hostInfo,
-		info.limits,
 		!pass.empty(),
 		notes}),
 	state(State::Waiting{nullptr})

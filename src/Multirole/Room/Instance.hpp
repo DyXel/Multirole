@@ -28,7 +28,6 @@ public:
 		RNG::Xoshiro256StarStar::StateType seed;
 		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
-		YGOPro::DeckLimits limits;
 	};
 
 	// Ctor and registering.

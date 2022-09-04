@@ -10,14 +10,6 @@ namespace YGOPro
 using CodeMap = std::map<uint32_t, std::size_t>;
 using CodeVector = std::vector<uint32_t>;
 
-struct DeckLimits
-{
-	struct Boundary
-	{
-		std::size_t min, max;
-	}main{40U, 60U}, extra{0U, 15U}, side{0U, 15U}; // NOLINT
-};
-
 class Deck final
 {
 public:
