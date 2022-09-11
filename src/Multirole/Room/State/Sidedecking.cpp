@@ -2,6 +2,7 @@
 
 #include <algorithm> // std::equal
 
+#include "../../YGOPro/CardDatabase.hpp"
 #include "../../YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole::Room
@@ -45,16 +46,33 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) 
 		return std::nullopt;
 	if(s.sidedecked.count(&e.client) == 0U)
 	{
+		auto CountSkills = [this](auto& map) {
+			std::size_t skills = 0;
+			for(const auto [code, count] : map) {
+				const auto cardType = cdb->DataFromCode(code).type;
+				if(cardType & TYPE_SKILL)
+					skills += count;
+			}
+			return skills;
+		};
 		// NOTE: assuming client original deck is always valid here
 		const auto* ogDeck = e.client.OriginalDeck();
 		auto sideDeck = LoadDeck(e.main, e.side);
 		const auto ogMap = ogDeck->GetCodeMap();
 		const auto sideMap = sideDeck->GetCodeMap();
+		const auto oldSkills = CountSkills(ogMap);
+		const auto newSkills = CountSkills(sideMap);
+
+		// ideally the check should be only newSkills > 1, but the player might host with don't check deck
+		// and thus have more than 1 skill in the deck, do this check to ensure that the sided deck will
+		// always be valid in such case and prevent softlocking during side decking
+		if(newSkills > std::max<std::size_t>(oldSkills, 1U))
+			e.client.Send(MakeSideError());
 		// A full side deck is considered valid in respect to the
 		// original full deck if:
 		//	the number of cards in each deck is equal to the original's
 		//	the sum of card codes is equal to the original's
-		if(ogDeck->Main().size() == sideDeck->Main().size() &&
+		if((ogDeck->Main().size() - oldSkills) == (sideDeck->Main().size() - newSkills) &&
 		   ogDeck->Extra().size() == sideDeck->Extra().size() &&
 		   ogDeck->Side().size() == sideDeck->Side().size() &&
 		   std::equal(ogMap.begin(), ogMap.end(), sideMap.begin()))

@@ -18,7 +18,7 @@ ScriptLogger::ScriptLogger(Service::LogHandler& lh, const YGOPro::HostInfo& host
 			// NOLINTNEXTLINE: DUEL_TCG_SEGOC_NONPUBLIC
 			return (f == c) || (f == (c | 0x100000000U));
 		};
-		if(hi.banlistHash == 0U || hi.dontCheckDeck != 0U || hi.extraRules != 0U)
+		if(hi.banlistHash == 0U || hi.dontCheckDeckContent != 0U || hi.extraRules != 0U)
 			return ErrorCategory::UNOFFICIAL;
 		if(Check(0x2E800U)) // NOLINT: DUEL_MODE_MR5
 			return ErrorCategory::OFFICIAL;

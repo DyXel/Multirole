@@ -55,7 +55,7 @@ struct HostInfo
 	uint8_t allowed; // OCG/TCG, etc
 	uint8_t mode; // NOTE: UNUSED
 	uint8_t duelRule; // NOTE: UNUSED
-	uint8_t dontCheckDeck;
+	uint8_t dontCheckDeckContent;
 	uint8_t dontShuffleDeck;
 	uint32_t startingLP;
 	uint8_t startingDrawCount;

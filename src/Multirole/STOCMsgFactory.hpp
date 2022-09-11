@@ -18,17 +18,19 @@ enum Join : uint32_t
 
 enum DeckOrCard : uint8_t
 {
-	DECK_BAD_MAIN_COUNT  = 0x6,
-	DECK_BAD_EXTRA_COUNT = 0x7,
-	DECK_BAD_SIDE_COUNT  = 0x8,
-	DECK_INVALID_SIZE    = 0xB,
-	CARD_BANLISTED       = 0x1,
-	CARD_OCG_ONLY        = 0x2,
-	CARD_TCG_ONLY        = 0x3,
-	CARD_UNKNOWN         = 0x4,
-	CARD_MORE_THAN_3     = 0x5,
-	CARD_UNOFFICIAL      = 0xA,
-	CARD_FORBIDDEN_TYPE  = 0x9,
+	DECK_BAD_MAIN_COUNT   = 0x6,
+	DECK_BAD_EXTRA_COUNT  = 0x7,
+	DECK_BAD_SIDE_COUNT   = 0x8,
+	DECK_INVALID_SIZE     = 0xB,
+	DECK_TOO_MANY_LEGENDS = 0xC,
+	DECK_TOO_MANY_SKILLS  = 0xD,
+	CARD_BANLISTED        = 0x1,
+	CARD_OCG_ONLY         = 0x2,
+	CARD_TCG_ONLY         = 0x3,
+	CARD_UNKNOWN          = 0x4,
+	CARD_MORE_THAN_3      = 0x5,
+	CARD_UNOFFICIAL       = 0xA,
+	CARD_FORBIDDEN_TYPE   = 0x9,
 };
 
 } // namespace Error

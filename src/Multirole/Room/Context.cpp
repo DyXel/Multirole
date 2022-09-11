@@ -232,30 +232,78 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	// Check if the deck had any error while loading.
 	if(const auto error = deck.Error(); error != 0U)
 		return MakeErrorPtr(CARD_UNKNOWN, error);
-	// Check if the deck obeys the limits.
+	// Check if the deck obeys the size limits.
 	auto const& limits = hostInfo.limits;
-	auto OutOfBound = [](const auto& lim, const CodeVector& vector) -> auto
+	auto OutOfBound = [](const auto& lim, const CodeVector& vector, std::size_t toIgnore = 0) -> auto
 	{
-		std::pair<std::size_t, bool> p{vector.size(), false};
+		std::pair<std::size_t, bool> p{vector.size() - toIgnore, false};
 		return (p.second = p.first < lim.min || p.first > lim.max), p;
 	};
-	if(const auto p = OutOfBound(limits.main, deck.Main()); p.second)
+	// Check per-code properties.
+	// Get un-aliased map that will be updated a bit later...
+	auto aliased = deck.GetCodeMap();
+
+	// Get the total amount of skill cards as they should not be counted alongside
+	// the size of the main deck, since we're already iterating the unaliased cards
+	// and retrieving the type, also gather the forbidden types that will be used
+	// afterwards in case the deck contents have to be checked.
+	// Note: we need the card count of the unaliased card to have the same behaviour as legends
+	// for skills it shouldn't be much important as they're currently not aliased but for legend
+	// handling it is
+	const auto [totalSkills, forbiddenTypes] = [&aliased, this]() {
+		std::size_t skills = 0;
+		uint32_t forbiddenTypes = 0;
+		for(const auto [code, count] : aliased) {
+			const auto cardType = cdb->DataFromCode(code).type;
+			if(cardType & TYPE_SKILL)
+				skills += count;
+			forbiddenTypes |= cardType & hostInfo.forb;
+		}
+		return std::pair{ skills, forbiddenTypes };
+	}();
+	if(const auto p = OutOfBound(limits.main, deck.Main(), totalSkills); p.second)
 		return MakeErrorLimitsPtr(DECK_BAD_MAIN_COUNT, p.first, limits.main);
 	if(const auto p = OutOfBound(limits.extra, deck.Extra()); p.second)
 		return MakeErrorLimitsPtr(DECK_BAD_EXTRA_COUNT, p.first, limits.extra);
 	if(const auto p = OutOfBound(limits.side, deck.Side()); p.second)
 		return MakeErrorLimitsPtr(DECK_BAD_SIDE_COUNT, p.first, limits.side);
-	// Check per-code properties.
-	// Get un-aliased map that will be updated a bit later...
-	auto aliased = deck.GetCodeMap();
-	// Make copy of "un-aliased" card codes.
-	const auto codes = [&aliased]()
+
+	// If only the deck sizes have to be checked, stop here
+
+	if(hostInfo.dontCheckDeckContent != 0U)
+		return nullptr;
+
+	// Check if the deck had any error while loading.
+	if(const auto error = deck.Error(); error != 0U)
+		return MakeErrorPtr(CARD_UNKNOWN, error);
+
+	if(totalSkills > 1)
+		return MakeErrorPtr(DECK_TOO_MANY_SKILLS, 0);
+
+	if(forbiddenTypes != 0)
+		return MakeErrorPtr(CARD_FORBIDDEN_TYPE, 0);
+
+	// Note: as above, we want the unaliased count of the cards for
+	// scenarios where a legend card with an alias is played alongside
+	// 2 other copies of the original card, that should be a valid
+	// combination
 	{
+		bool hasLegend = false;
+		for(const auto [code, count] : aliased) {
+			const auto cardScope = cdb->ExtraFromCode(code).scope;
+			if(cardScope & SCOPE_LEGEND && (count > 1 || std::exchange(hasLegend, true)))
+				return MakeErrorPtr(DECK_TOO_MANY_LEGENDS, 0);
+		}
+	}
+
+	// Make copy of "un-aliased" card codes.
+	const auto codes = [&aliased]() {
 		std::set<uint32_t> ret;
 		for(const auto& kv : aliased)
 			ret.insert(kv.first);
 		return ret;
 	}();
+
 	// Save alias mapping while updating map to only store aliased counts.
 	const auto aliases = [&]()
 	{
@@ -336,13 +384,12 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		return ((it != eit) && static_cast<int32_t>(count) > it->second) ||
 		       ((it == eit) && bl.IsWhitelist());
 	};
+
 	for(const auto code : codes)
 	{
 		const uint32_t totalCount = GetTotalCount(code);
 		if(totalCount > 3U)
 			return MakeErrorPtr(CARD_MORE_THAN_3, code);
-		if((cdb->DataFromCode(code).type & hostInfo.forb) != 0U)
-			return MakeErrorPtr(CARD_FORBIDDEN_TYPE, code);
 		const auto& ced = cdb->ExtraFromCode(code);
 		if(CheckUnofficial(ced.scope, hostInfo.allowed))
 			return MakeErrorPtr(CARD_UNOFFICIAL, code);
