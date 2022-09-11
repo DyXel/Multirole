@@ -242,9 +242,10 @@ int HornetWrapper::LoadScript(Duel duel, std::string_view name, std::string_view
 	std::scoped_lock lock(mtx);
 	auto* wptr = hss->bytes.data();
 	Write<OCG_Duel>(wptr, duel);
-	Write<std::size_t>(wptr, name.size());
+	Write<std::size_t>(wptr, name.size() + 1U);
 	std::memcpy(wptr, name.data(), name.size());
 	wptr += name.size();
+	Write<uint8_t>(wptr, 0);
 	Write<std::size_t>(wptr, str.size());
 	std::memcpy(wptr, str.data(), str.size());
 	NotifyAndWait(Hornet::Action::OCG_LOAD_SCRIPT);
