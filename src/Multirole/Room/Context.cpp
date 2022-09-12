@@ -239,27 +239,20 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		std::pair<std::size_t, bool> p{vector.size() - toIgnore, false};
 		return (p.second = p.first < lim.min || p.first > lim.max), p;
 	};
-	// Check per-code properties.
-	// Get un-aliased map that will be updated a bit later...
-	auto aliased = deck.GetCodeMap();
 
-	// Get the total amount of skill cards as they should not be counted alongside
-	// the size of the main deck, since we're already iterating the unaliased cards
-	// and retrieving the type, also gather the forbidden types that will be used
-	// afterwards in case the deck contents have to be checked.
+	// Get the total amount of skill cards in the main deck as they should not be counted
 	// Note: we need the card count of the unaliased card to have the same behaviour as legends
 	// for skills it shouldn't be much important as they're currently not aliased but for legend
 	// handling it is
-	const auto [totalSkills, forbiddenTypes] = [&aliased, this]() {
+	const auto totalSkills = [&mainDeck=deck.Main(), this]() {
 		std::size_t skills = 0;
 		uint32_t forbiddenTypes = 0;
-		for(const auto [code, count] : aliased) {
+		for(const auto code : mainDeck) {
 			const auto cardType = cdb->DataFromCode(code).type;
 			if(cardType & TYPE_SKILL)
-				skills += count;
-			forbiddenTypes |= cardType & hostInfo.forb;
+				++skills;
 		}
-		return std::pair{ skills, forbiddenTypes };
+		return skills;
 	}();
 	if(const auto p = OutOfBound(limits.main, deck.Main(), totalSkills); p.second)
 		return MakeErrorLimitsPtr(DECK_BAD_MAIN_COUNT, p.first, limits.main);
@@ -280,19 +273,34 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	if(totalSkills > 1)
 		return MakeErrorPtr(DECK_TOO_MANY_SKILLS, 0);
 
-	if(forbiddenTypes != 0)
-		return MakeErrorPtr(CARD_FORBIDDEN_TYPE, 0);
-
 	// Note: as above, we want the unaliased count of the cards for
 	// scenarios where a legend card with an alias is played alongside
 	// 2 other copies of the original card, that should be a valid
 	// combination
 	{
 		bool hasLegend = false;
-		for(const auto [code, count] : aliased) {
+		for(const auto code : deck.Main()) {
 			const auto cardScope = cdb->ExtraFromCode(code).scope;
-			if(cardScope & SCOPE_LEGEND && (count > 1 || std::exchange(hasLegend, true)))
+			if(cardScope & SCOPE_LEGEND && std::exchange(hasLegend, true))
 				return MakeErrorPtr(DECK_TOO_MANY_LEGENDS, 0);
+		}
+		for(const auto code : deck.Extra()) {
+			const auto cardScope = cdb->ExtraFromCode(code).scope;
+			if(cardScope & SCOPE_LEGEND && std::exchange(hasLegend, true))
+				return MakeErrorPtr(DECK_TOO_MANY_LEGENDS, 0);
+		}
+	}
+
+	// Check per-code properties.
+	// Get un-aliased map that will be updated a bit later...
+	auto aliased = deck.GetCodeMap();
+
+	{
+		bool hasLegend = false;
+		for(const auto [code, count] : aliased) {
+			const auto cardType = cdb->DataFromCode(code).type;
+			if(cardType & hostInfo.forb)
+				return MakeErrorPtr(CARD_FORBIDDEN_TYPE, 0);
 		}
 	}
 

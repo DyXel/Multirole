@@ -48,10 +48,10 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) 
 	{
 		auto CountSkills = [this](auto& map) {
 			std::size_t skills = 0;
-			for(const auto [code, count] : map) {
+			for(const auto code : map) {
 				const auto cardType = cdb->DataFromCode(code).type;
 				if(cardType & TYPE_SKILL)
-					skills += count;
+					++skills;
 			}
 			return skills;
 		};
@@ -60,8 +60,8 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) 
 		auto sideDeck = LoadDeck(e.main, e.side);
 		const auto ogMap = ogDeck->GetCodeMap();
 		const auto sideMap = sideDeck->GetCodeMap();
-		const auto oldSkills = CountSkills(ogMap);
-		const auto newSkills = CountSkills(sideMap);
+		const auto oldSkills = CountSkills(ogDeck->Main());
+		const auto newSkills = CountSkills(sideDeck->Main());
 
 		// ideally the check should be only newSkills > 1, but the player might host with don't check deck
 		// and thus have more than 1 skill in the deck, do this check to ensure that the sided deck will
