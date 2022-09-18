@@ -46,41 +46,36 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) 
 		return std::nullopt;
 	if(s.sidedecked.count(&e.client) == 0U)
 	{
-		auto CountSkills = [this](auto& map) {
-			std::size_t skills = 0;
-			for(const auto code : map) {
-				const auto cardType = cdb->DataFromCode(code).type;
-				if(cardType & TYPE_SKILL)
-					++skills;
-			}
-			return skills;
+		auto CountSkills = [this](const auto& map)
+		{
+			std::size_t count = 0;
+			for(const auto code : map)
+				count += (cdb->DataFromCode(code).type & TYPE_SKILL) != 0;
+			return count;
 		};
-		auto CountLegends = [this](auto& deck) {
-			std::size_t legends = 0;
-			for(const auto code : deck->Main()) {
-				const auto cardScope = cdb->ExtraFromCode(code).scope;
-				if(cardScope & SCOPE_LEGEND)
-					++legends;
-			}
-			for(const auto code : deck->Extra()) {
-				const auto cardScope = cdb->ExtraFromCode(code).scope;
-				if(cardScope & SCOPE_LEGEND)
-					++legends;
-			}
-			return legends;
+		auto CountLegends = [this](const auto& deck)
+		{
+			std::size_t count = 0;
+			for(const auto code : deck->Main())
+				count += (cdb->ExtraFromCode(code).scope & SCOPE_LEGEND) != 0;
+			for(const auto code : deck->Extra())
+				count += (cdb->ExtraFromCode(code).scope & SCOPE_LEGEND) != 0;
+			return count;
 		};
-		auto SidedeckingError = [&]() {
+		auto SidedeckingError = [&]()
+		{
 			e.client.Send(MakeSideError());
 			return std::nullopt;
 		};
-		// NOTE: assuming client original deck is always valid here
+		// NOTE: Assuming client original deck is always valid here.
 		const auto* ogDeck = e.client.OriginalDeck();
 		auto sideDeck = LoadDeck(e.main, e.side);
 		const auto oldLegends = CountLegends(ogDeck);
 		const auto newLegends = CountLegends(sideDeck);
-		// ideally the check should be only newSkills/Legends > 1, but the player might host with don't check deck
-		// and thus have more than 1 skill/LEGEND in the deck, do this check to ensure that the sided deck will
-		// always be valid in such case and prevent softlocking during side decking
+		// Ideally the check should be only newSkills/Legends > 1, but a player
+		// might host with "don't check deck" and have more than 1 skill/LEGEND.
+		// This check ensures that the sided deck will always be valid in such
+		// case and prevent softlocking.
 		if(newLegends > std::max<std::size_t>(oldLegends, 1U))
 			return SidedeckingError();
 		const auto oldSkills = CountSkills(ogDeck->Main());
