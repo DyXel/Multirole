@@ -115,7 +115,7 @@ void LobbyListing::DoSerialize()
 			room.emplace("draw_count", hi.drawCountPerTurn);
 			room.emplace("time_limit", hi.timeLimitInSeconds);
 			room.emplace("rule", hi.allowed);
-			room.emplace("no_check", static_cast<bool>(hi.dontCheckDeck));
+			room.emplace("no_check", static_cast<bool>(hi.dontCheckDeckContent));
 			room.emplace("no_shuffle", static_cast<bool>(hi.dontShuffleDeck));
 			room.emplace("banlist_hash", hi.banlistHash);
 			room.emplace("istart", rp.started ? "start" : "waiting");

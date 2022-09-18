@@ -186,6 +186,7 @@
 #define TYPE_PENDULUM    0x1000000
 #define TYPE_SPSUMMON    0x2000000
 #define TYPE_LINK        0x4000000
+#define TYPE_SKILL       0x8000000
 
 #define WIN_REASON_SURRENDERED     0x00
 #define WIN_REASON_TIMED_OUT       0x03

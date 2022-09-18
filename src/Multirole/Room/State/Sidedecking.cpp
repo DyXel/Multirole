@@ -2,6 +2,7 @@
 
 #include <algorithm> // std::equal
 
+#include "../../YGOPro/CardDatabase.hpp"
 #include "../../YGOPro/Constants.hpp"
 
 namespace Ignis::Multirole::Room
@@ -45,28 +46,57 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) 
 		return std::nullopt;
 	if(s.sidedecked.count(&e.client) == 0U)
 	{
-		// NOTE: assuming client original deck is always valid here
+		auto CountSkills = [this](const auto& map)
+		{
+			std::size_t count = 0;
+			for(const auto code : map)
+				count += (cdb->DataFromCode(code).type & TYPE_SKILL) != 0;
+			return count;
+		};
+		auto CountLegends = [this](const auto& deck)
+		{
+			std::size_t count = 0;
+			for(const auto code : deck->Main())
+				count += (cdb->ExtraFromCode(code).scope & SCOPE_LEGEND) != 0;
+			for(const auto code : deck->Extra())
+				count += (cdb->ExtraFromCode(code).scope & SCOPE_LEGEND) != 0;
+			return count;
+		};
+		auto SidedeckingError = [&]()
+		{
+			e.client.Send(MakeSideError());
+			return std::nullopt;
+		};
+		// NOTE: Assuming client original deck is always valid here.
 		const auto* ogDeck = e.client.OriginalDeck();
 		auto sideDeck = LoadDeck(e.main, e.side);
-		const auto ogMap = ogDeck->GetCodeMap();
-		const auto sideMap = sideDeck->GetCodeMap();
+		const auto oldLegends = CountLegends(ogDeck);
+		const auto newLegends = CountLegends(sideDeck);
+		// Ideally the check should be only newSkills/Legends > 1, but a player
+		// might host with "don't check deck" and have more than 1 skill/LEGEND.
+		// This check ensures that the sided deck will always be valid in such
+		// case and prevent softlocking.
+		if(newLegends > std::max<std::size_t>(oldLegends, 1U))
+			return SidedeckingError();
+		const auto oldSkills = CountSkills(ogDeck->Main());
+		const auto newSkills = CountSkills(sideDeck->Main());
+		if(newSkills > std::max<std::size_t>(oldSkills, 1U))
+			return SidedeckingError();
 		// A full side deck is considered valid in respect to the
 		// original full deck if:
 		//	the number of cards in each deck is equal to the original's
 		//	the sum of card codes is equal to the original's
-		if(ogDeck->Main().size() == sideDeck->Main().size() &&
-		   ogDeck->Extra().size() == sideDeck->Extra().size() &&
-		   ogDeck->Side().size() == sideDeck->Side().size() &&
-		   std::equal(ogMap.begin(), ogMap.end(), sideMap.begin()))
-		{
-			e.client.SetCurrentDeck(std::move(sideDeck));
-			s.sidedecked.insert(&e.client);
-			e.client.Send(MakeDuelStart());
-		}
-		else
-		{
-			e.client.Send(MakeSideError());
-		}
+		if((ogDeck->Main().size() - oldSkills) != (sideDeck->Main().size() - newSkills))
+			return SidedeckingError();
+		if(ogDeck->Extra().size() != sideDeck->Extra().size())
+			return SidedeckingError();
+		const auto ogMap = ogDeck->GetCodeMap();
+		const auto sideMap = sideDeck->GetCodeMap();
+		if(!std::equal(ogMap.begin(), ogMap.end(), sideMap.begin()))
+			return SidedeckingError();
+		e.client.SetCurrentDeck(std::move(sideDeck));
+		s.sidedecked.insert(&e.client);
+		e.client.Send(MakeDuelStart());
 		if(s.sidedecked.size() == duelists.size())
 		{
 			SendToSpectators(MakeDuelStart());
