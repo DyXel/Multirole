@@ -275,7 +275,7 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 		bool hasLegend = false;
 		auto CheckLegends = [&](const auto& deckPile) -> std::unique_ptr<YGOPro::STOCMsg>
 		{
-			for(const auto code : deck.Main())
+			for(const auto code : deckPile)
 			{
 				const auto cardScope = cdb->ExtraFromCode(code).scope;
 				if((cardScope & SCOPE_LEGEND) && std::exchange(hasLegend, true))
