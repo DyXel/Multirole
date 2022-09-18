@@ -52,10 +52,8 @@ struct ReplayHeader
 	uint8_t props[8U]; // Used for LZMA compression (check their apis).
 };
 
-constexpr uint32_t YRPX_FLAGS = REPLAY_LUA64 | REPLAY_NEWREPLAY |
-                                REPLAY_64BIT_DUELFLAG;
-constexpr uint32_t YRP_FLAGS = YRPX_FLAGS | REPLAY_DIRECT_SEED |
-                               REPLAY_EXTENDED_HEADER;
+constexpr uint32_t HEADER_FLAGS = REPLAY_LUA64 | REPLAY_64BIT_DUELFLAG |
+                                  REPLAY_NEWREPLAY | REPLAY_EXTENDED_HEADER;
 
 struct ExtendedReplayHeader
 {
@@ -256,7 +254,7 @@ void Replay::Serialize() noexcept
 			{
 				REPLAY_YRP1,
 				ENCODED_SERVER_VERSION,
-				YRP_FLAGS,
+				HEADER_FLAGS,
 				0U, // NOTE: Zero'd by extended header. Used to be 32bit seed.
 				static_cast<uint32_t>(YRPPastHeaderSize()),
 				0U,
@@ -315,16 +313,21 @@ void Replay::Serialize() noexcept
 		return vec;
 	}();
 	// Replay header for YRPX replay format.
-	ReplayHeader header
+	ExtendedReplayHeader extHeader
 	{
-		REPLAY_YRPX,
-		ENCODED_SERVER_VERSION,
-		REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG,
-		unixTimestamp,
-		static_cast<uint32_t>(pthData.size()),
-		0U,
+		{
+			REPLAY_YRPX,
+			ENCODED_SERVER_VERSION,
+			HEADER_FLAGS,
+			unixTimestamp,
+			static_cast<uint32_t>(pthData.size()),
+			0U,
+			{}
+		},
+		ExtendedReplayHeader::CURRENT_VERSION,
 		{}
 	};
+	auto& header = extHeader.base;
 	// Compress past-the-header data.
 	std::vector<uint8_t> compData(pthData.size());
 	lzma_options_lzma opts;
@@ -343,9 +346,9 @@ void Replay::Serialize() noexcept
 	header.flags |= REPLAY_COMPRESSED;
 	pthData = std::move(compData);
 	// Write final binary replay.
-	bytes.resize(sizeof(ReplayHeader) + pthData.size());
+	bytes.resize(sizeof(ExtendedReplayHeader) + pthData.size());
 	uint8_t* ptr = bytes.data();
-	Write<ReplayHeader>(ptr, header);
+	Write<ExtendedReplayHeader>(ptr, extHeader);
 	std::memcpy(ptr, pthData.data(), pthData.size());
 	// Remove message that was appended for serializing purposes.
 	messages.pop_back();
