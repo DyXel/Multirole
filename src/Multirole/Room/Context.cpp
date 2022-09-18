@@ -268,24 +268,26 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	// Check that there is no more than 1 skill on the deck.
 	if(skillsCount > 1)
 		return MakeErrorPtr(DECK_TOO_MANY_SKILLS, 0);
-	// NOTE: As mentioned above, we want the unaliased count of the cards for
-	// scenarios where a legend card with an alias is played alongside 2 other
-	// copies of the original card, which should be a valid combination.
-	auto CheckLegends = [&](const auto& deckPile) -> std::unique_ptr<YGOPro::STOCMsg>
+	// Check that there is only 1 Legend amongst both Main and Extra deck. We
+	// use unaliased card codes to accomplish this as aliased codes could be
+	// wrongly counted for Legend count, when they are not Legend.
 	{
 		bool hasLegend = false;
-		for(const auto code : deck.Main())
+		auto CheckLegends = [&](const auto& deckPile) -> std::unique_ptr<YGOPro::STOCMsg>
 		{
-			const auto cardScope = cdb->ExtraFromCode(code).scope;
-			if((cardScope & SCOPE_LEGEND) && std::exchange(hasLegend, true))
-				return MakeErrorPtr(DECK_TOO_MANY_LEGENDS, 0);
-		}
-		return nullptr;
-	};
-	if(auto error = CheckLegends(deck.Main()); error)
-		return error;
-	if(auto error = CheckLegends(deck.Extra()); error)
-		return error;
+			for(const auto code : deck.Main())
+			{
+				const auto cardScope = cdb->ExtraFromCode(code).scope;
+				if((cardScope & SCOPE_LEGEND) && std::exchange(hasLegend, true))
+					return MakeErrorPtr(DECK_TOO_MANY_LEGENDS, 0);
+			}
+			return nullptr;
+		};
+		if(auto error = CheckLegends(deck.Main()); error)
+			return error;
+		if(auto error = CheckLegends(deck.Extra()); error)
+			return error;
+	}
 	// Check per-code properties.
 	// un-aliased map that will be updated a bit later...
 	auto aliased = deck.GetCodeMap();
