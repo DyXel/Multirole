@@ -7,9 +7,9 @@
 
 # Multirole: A C++ server for EDOPro
 
-Multirole manages client connections to a singular lobby where rooms can be hosted and a list of said rooms fetched by other clients to join. It is in charge of creating, processing and logging duels by interfacing with [EDOPro's core](https://github.com/edo9300/ygopro-core).
+Multirole is a cross-platform server software that manages client connections to a singular lobby where rooms can be hosted by a client and a list of said rooms fetched by other clients to join. It is in charge of creating, processing and logging automated Yu-Gi-Oh! duels by interfacing with [EDOPro's core](https://github.com/edo9300/ygopro-core).
 
-This project's original inception was to replace [srvpro](https://github.com/mycard/srvpro) due to how cumbersome it is to work with CoffeScript/JavaScript and its interface for native data structures, while also doubling as a learning exercise about high performance networking and serving as a very small documentation for YGOPro's ecosystem.
+Docker containers are provided at [Dockerhub](https://hub.docker.com/r/dyxel/multirole) and x86 Windows binaries are provided on the [release page](https://github.com/DyXel/Multirole/releases). For a quick start, those ought to suffice, for Linux and MacOS it is recommended to manually compile in order to maximize performance and customization needs.
 
 ## Features
 
@@ -133,6 +133,8 @@ The configuration file must be placed in the same working directory as Multirole
     * `fileRegex`: Regular expression that will match or discard files to load.
 
 ## Remarks
+
+  * This project's original inception was to replace [srvpro](https://github.com/mycard/srvpro) due to how cumbersome it is to work with CoffeScript/JavaScript and its interface for native data structures, while also doubling as a learning exercise about high performance networking and serving as a very small documentation for YGOPro's ecosystem.
 
   * Multirole uses the TCP keepalive probing mechanism, so it is strongly recommended to configure the system-wide timers and retries for it to be relatively low in order to avoid too many dead connections preventing Multirole from doing internal memory cleanups.
 
