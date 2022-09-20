@@ -2,7 +2,7 @@ project('multirole', 'c', 'cpp',
 	default_options : ['cpp_std=c++17', 'b_vscrt=static_from_buildtype'],
 	license : 'AGPL-3.0-or-later',
 	meson_version : '>=0.59.3',
-	version : '1.0.1'
+	version : '1.0.2'
 )
 
 static_deps = host_machine.system() == 'windows'
