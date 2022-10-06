@@ -17,6 +17,7 @@ using BanlistMap = std::unordered_map<BanlistHash, BanlistPtr>;
 #ifdef YGOPRO_BANLIST_PARSER_IMPLEMENTATION
 #ifndef YGOPRO_BANLIST_PARSER_IMPL_HPP
 #define YGOPRO_BANLIST_PARSER_IMPL_HPP
+#include <charconv>
 #include <fmt/format.h>
 
 namespace YGOPro
@@ -59,10 +60,12 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 	std::size_t lc = 0U;
 	auto MakeException = [&lc](std::string_view str)
 	{
-		return std::runtime_error(fmt::format("{:d}:{:s}", lc, str));
+		return std::runtime_error(fmt::format("line {:d}: {:s}", lc, str));
 	};
 	while(++lc, std::getline(stream, l))
 	{
+		if(l.empty())
+			continue;
 		if(l.find("$whitelist") != std::string::npos)
 		{
 			whitelist = true;
@@ -82,16 +85,39 @@ void ParseForBanlists(Stream& stream, BanlistMap& banlists)
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 		{
-			std::size_t p = l.find(' ');
-			if(p == std::string::npos)
+			uint32_t code;
+			int32_t count;
+
+			const auto separator = l.find(' ');
+			if(separator == std::string::npos)
 				throw MakeException("Card code separator not found");
-			std::size_t c = l.find_first_not_of("-0123456789", p + 1U);
-			if(c != std::string::npos)
-				c -= p;
-			auto code = static_cast<uint32_t>(std::stoul(l.substr(0U, p)));
-			if(code == 0U)
-				throw MakeException("Card code cannot be 0");
-			auto count = static_cast<int32_t>(std::stol(l.substr(p, c)));
+
+			{
+				const auto [_, error]
+				{
+					std::from_chars(l.data(), l.data() + separator, code)
+				};
+				if(error != std::errc())
+					throw MakeException("Could not parse code");
+				if(code == 0U)
+					throw MakeException("Card code cannot be 0");
+			}
+			{
+				static constexpr auto INT_CHARS = "-0123456789";
+				const auto begin = l.find_first_of(INT_CHARS, separator);
+				if(begin == std::string::npos)
+					throw MakeException("Could not find count begin");
+				auto end = l.find_first_not_of(INT_CHARS, begin);
+				if(end == std::string::npos)
+					end = l.size();
+				const auto [_, error]
+				{
+					std::from_chars(l.data() + begin, l.data() + end, count)
+				};
+				if(error != std::errc())
+					throw MakeException("Could not parse count");
+			}
+
 			hash = Detail::Salt(hash, code, count);
 			dict[code] = count;
 			continue;
