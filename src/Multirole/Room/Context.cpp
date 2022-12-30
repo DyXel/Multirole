@@ -272,14 +272,18 @@ std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) co
 	// use unaliased card codes to accomplish this as aliased codes could be
 	// wrongly counted for Legend count, when they are not Legend.
 	{
-		bool hasLegend = false;
+		uint32_t currentLegends = 0;
 		auto CheckLegends = [&](const auto& deckPile) -> std::unique_ptr<YGOPro::STOCMsg>
 		{
 			for(const auto code : deckPile)
 			{
 				const auto cardScope = cdb->ExtraFromCode(code).scope;
-				if((cardScope & SCOPE_LEGEND) && std::exchange(hasLegend, true))
+				if((cardScope & SCOPE_LEGEND) == 0)
+					continue;
+				const auto cardType = cdb->DataFromCode(code).type & (TYPE_MONSTER | TYPE_SPELL | TYPE_TRAP);
+				if((cardType & currentLegends) != 0)
 					return MakeErrorPtr(DECK_TOO_MANY_LEGENDS, 0);
+				currentLegends |= cardType;
 			}
 			return nullptr;
 		};

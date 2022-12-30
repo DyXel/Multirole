@@ -55,12 +55,22 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) 
 		};
 		auto CountLegends = [this](const auto& deck)
 		{
-			std::size_t count = 0;
-			for(const auto code : deck->Main())
-				count += (cdb->ExtraFromCode(code).scope & SCOPE_LEGEND) != 0;
-			for(const auto code : deck->Extra())
-				count += (cdb->ExtraFromCode(code).scope & SCOPE_LEGEND) != 0;
-			return count;
+			std::size_t monsterCount = 0;
+			std::size_t spellCount = 0;
+			std::size_t trapCount = 0;
+			auto Count = [&](const auto& main_or_extra) {
+				for(const auto code : main_or_extra) {
+					if((cdb->ExtraFromCode(code).scope & SCOPE_LEGEND) == 0)
+						continue;
+					const auto cardType = cdb->DataFromCode(code).type;
+					monsterCount += (cardType & TYPE_MONSTER) != 0;
+					spellCount += (cardType & TYPE_SPELL) != 0;
+					trapCount += (cardType & TYPE_TRAP) != 0;
+				}
+			};
+			Count(deck->Main());
+			Count(deck->Extra());
+			return std::tuple{ monsterCount, spellCount, trapCount };
 		};
 		auto SidedeckingError = [&]()
 		{
@@ -70,13 +80,17 @@ StateOpt Context::operator()(State::Sidedecking& s, const Event::UpdateDeck& e) 
 		// NOTE: Assuming client original deck is always valid here.
 		const auto* ogDeck = e.client.OriginalDeck();
 		auto sideDeck = LoadDeck(e.main, e.side);
-		const auto oldLegends = CountLegends(ogDeck);
-		const auto newLegends = CountLegends(sideDeck);
+		const auto [oldMonsterLegends, oldSpellLegends, oldTrapLegends] = CountLegends(ogDeck);
+		const auto [newMonsterLegends, newSpellLegends, newTrapLegends] = CountLegends(sideDeck);
 		// Ideally the check should be only newSkills/Legends > 1, but a player
 		// might host with "don't check deck" and have more than 1 skill/LEGEND.
 		// This check ensures that the sided deck will always be valid in such
 		// case and prevent softlocking.
-		if(newLegends > std::max<std::size_t>(oldLegends, 1U))
+		if(newMonsterLegends > std::max<std::size_t>(oldMonsterLegends, 1U))
+			return SidedeckingError();
+		if(newSpellLegends > std::max<std::size_t>(oldSpellLegends, 1U))
+			return SidedeckingError();
+		if(newTrapLegends > std::max<std::size_t>(oldTrapLegends, 1U))
 			return SidedeckingError();
 		const auto oldSkills = CountSkills(ogDeck->Main());
 		const auto newSkills = CountSkills(sideDeck->Main());
