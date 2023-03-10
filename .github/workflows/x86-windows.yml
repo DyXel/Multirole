@@ -19,7 +19,7 @@ jobs:
     - name: Install pre-requisites
       shell: bash
       run: |
-        choco install pkgconfiglite
+        choco install --allow-empty-checksums pkgconfiglite
         pip install meson ninja
     - name: Install dependencies
       uses: lukka/run-vcpkg@v7
@@ -32,7 +32,7 @@ jobs:
       run: |
         VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
         cp $VCPKG_LIBRARYDIR/boost_filesystem-vc140-mt.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc140-mt-s.lib
-    - name: Sets x86 windows build tools as default
+    - name: Set x86 windows build tools as default
       uses: ilammy/msvc-dev-cmd@v1
       with:
           arch: win32
@@ -43,7 +43,7 @@ jobs:
         set BOOST_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
         meson setup build -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
         meson compile -C build -j2
-    - name: Setup artifacts directory
+    - name: Setup directory with artifacts
       shell: bash
       run: |
         export RDIR=Multirole
@@ -52,7 +52,7 @@ jobs:
         cp build/multirole.exe $RDIR/
         cp etc/config.json $RDIR/
         sed -i "s/libocgcore\\\\\\\.so/ocgcore\\\\\\\.dll/g" $RDIR/config.json
-    - name: Upload artifact
+    - name: Upload artifacts
       uses: actions/upload-artifact@v2.2.4
       with:
         name: Multirole
