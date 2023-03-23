@@ -166,6 +166,14 @@ private:
 		}
 		case YGOPro::CTOSMsg::MsgType::CREATE_GAME:
 		{
+			// NOTE: Implicitly checks that we already received and processed
+			// CTOS PLAYER_INFO successfully.
+			if(ip.empty() || name.empty())
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_INVALID_NAME);
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+				return Status::STATUS_ERROR;
+			}
 			auto p = incoming.GetCreateGame();
 			if(!p || p->hostInfo.handshake != YGOPro::SERVER_HANDSHAKE ||
 			    p->hostInfo.version != YGOPro::SERVER_VERSION)
@@ -241,7 +249,15 @@ private:
 		}
 		case YGOPro::CTOSMsg::MsgType::JOIN_GAME:
 		{
-			auto p = incoming.GetJoinGame();
+			// NOTE: Implicitly checks that we already received and processed
+			// CTOS PLAYER_INFO successfully.
+			if(ip.empty() || name.empty())
+			{
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_INVALID_NAME);
+				PushToWriteQueue(PrebuiltMsgId::PREBUILT_GENERIC_JOIN_ERROR);
+				return Status::STATUS_ERROR;
+			}
+			const auto p = incoming.GetJoinGame();
 			if(!p || p->version != YGOPro::SERVER_VERSION)
 			{
 				PushToWriteQueue(PrebuiltMsgId::PREBUILT_MSG_VERSION_MISMATCH);
@@ -302,6 +318,7 @@ RoomHosting::RoomHosting(boost::asio::io_context& ioCtx, Service& svc, Lobby& lo
 		SrvMsg(I18N::CLIENT_ROOM_HOSTING_KICKED_BEFORE),
 		SrvMsg(I18N::CLIENT_ROOM_HOSTING_CANNOT_RESOLVE_IP),
 		SrvMsg(I18N::CLIENT_ROOM_HOSTING_MAX_CONNECTION_REACHED),
+		SrvMsg(I18N::CLIENT_ROOM_HOSTING_NO_PLAYER_INFO_SENT),
 	}),
 	ioCtx(ioCtx),
 	svc(svc),

@@ -45,6 +45,8 @@ Str CLIENT_ROOM_HOSTING_CANNOT_RESOLVE_IP =
 "Error resolving your IP address. Try again later.";
 Str CLIENT_ROOM_HOSTING_MAX_CONNECTION_REACHED =
 "You have too many connections open. Close some of them.";
+Str CLIENT_ROOM_HOSTING_NO_PLAYER_INFO_SENT =
+"Tried to host or join a room without sending player information first.";
 
 Str CLIENT_ROOM_MSG_RETRY_ERROR =
 "Error while processing your response. Make sure you have the latest client.";
