@@ -1,0 +1,63 @@
+diff --git a/src/Multirole/Room/State/Dueling.cpp b/src/Multirole/Room/State/Dueling.cpp
+index d5e9f9b..9c44269 100644
+--- a/src/Multirole/Room/State/Dueling.cpp
++++ b/src/Multirole/Room/State/Dueling.cpp
+@@ -312,7 +312,7 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s) noe
+ 		uint8_t msgType = GetMessageType(msg);
+ 		if(msgType == MSG_RETRY)
+ 		{
+-			if(s.retryCount[s.replier->Position().first]++ < 1)
++			if(false)
+ 			{
+ 				s.replier->Send(MakeChat(CHAT_MSG_TYPE_ERROR, I18N::CLIENT_ROOM_MSG_RETRY_ERROR));
+ 				if(!s.lastHint.empty())
+@@ -371,15 +371,11 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s) noe
+ 					0U
+ 				};
+ 				const auto fullBuffer = s.core->Query(s.duelPtr, qInfo);
+-				const auto query = DeserializeSingleQueryBuffer(fullBuffer);
+-				const auto ownerBuffer = SerializeSingleQuery(query, false);
+-				const auto strippedBuffer = SerializeSingleQuery(query, true);
+-				s.replay->RecordMsg(MakeUpdateCardMsg(req.con, req.loc, req.seq, fullBuffer));
+-				auto strippedMsg = MakeMsg(strippedBuffer);
+-				uint8_t team = GetSwappedTeam(req.con);
+-				SendToTeam(team, MakeMsg(ownerBuffer));
+-				SendToTeam(1U - team, strippedMsg);
+-				SendToSpectators(SaveToSpectatorCache(s, std::move(strippedMsg)));
++				auto msg = MakeMsg(fullBuffer);
++				const uint8_t team = GetSwappedTeam(req.con);
++				SendToTeam(team, msg);
++				SendToTeam(1U - team, msg);
++				SendToSpectators(SaveToSpectatorCache(s, std::move(msg)));
+ 			}
+ 			else /*if(std::holds_alternative<QueryLocationRequest>(reqVar))*/
+ 			{
+@@ -396,23 +392,12 @@ std::optional<Context::DuelFinishReason> Context::Process(State::Dueling& s) noe
+ 					0U,
+ 					0U
+ 				};
+-				uint8_t team = GetSwappedTeam(req.con);
+ 				const auto fullBuffer = s.core->QueryLocation(s.duelPtr, qInfo);
+-				s.replay->RecordMsg(MakeUpdateDataMsg(req.con, req.loc, fullBuffer));
+-				if(req.loc == LOCATION_DECK)
+-					continue;
+-				if(req.loc == LOCATION_EXTRA)
+-				{
+-					SendToTeam(team, MakeMsg(fullBuffer));
+-					continue;
+-				}
+-				const auto query = DeserializeLocationQueryBuffer(fullBuffer);
+-				const auto ownerBuffer = SerializeLocationQuery(query, false);
+-				const auto strippedBuffer = SerializeLocationQuery(query, true);
+-				auto strippedMsg = MakeMsg(strippedBuffer);
+-				SendToTeam(team, MakeMsg(ownerBuffer));
+-				SendToTeam(1U - team, strippedMsg);
+-				SendToSpectators(SaveToSpectatorCache(s, std::move(strippedMsg)));
++				auto msg = MakeMsg(fullBuffer);
++				const uint8_t team = GetSwappedTeam(req.con);
++				SendToTeam(team, msg);
++				SendToTeam(1U - team, msg);
++				SendToSpectators(SaveToSpectatorCache(s, std::move(msg)));
+ 			}
+ 		}
+ 	};
