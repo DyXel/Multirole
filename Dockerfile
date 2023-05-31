@@ -1,6 +1,6 @@
 # Install all the runtime dependencies for Multirole.
 FROM alpine:edge AS base
-RUN apk add --no-cache --repository "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" boost-filesystem ca-certificates libgit2 libssl1.1 tcmalloc-minimal@testing sqlite-libs xz && \
+RUN apk add --no-cache --repository "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" boost-filesystem ca-certificates libgit2 libssl3 tcmalloc-minimal@testing sqlite-libs xz && \
 	rm -rf /var/log/* /tmp/* /var/tmp/*
 
 # Install all the development environment that Multirole needs.
@@ -15,7 +15,7 @@ COPY src/ ./src/
 COPY meson.build .
 COPY meson_options.txt .
 ENV BOOST_INCLUDEDIR=/usr/include/boost BOOST_LIBRARYDIR=/usr/lib
-RUN meson setup build --buildtype=debugoptimized -Doptimization=3 -Db_lto=true -Db_pie=true -Dcpp_link_args="-static-libstdc++" -Duse_tcmalloc=enabled -Dfmt_ho=true && \
+RUN meson setup build -Doptimization=3 -Ddebug=true -Db_lto=true -Db_pie=true -Dcpp_link_args="-static-libstdc++" -Duse_tcmalloc=enabled -Dfmt_ho=true && \
 	cd "build" && \
 	meson compile && \
 	objcopy --only-keep-debug "hornet" "hornet.debug" && \

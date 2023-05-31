@@ -1,7 +1,8 @@
 #include "StringUtils.hpp"
 
-#include <cstring>
 #include <codecvt>
+#include <cstdint>
+#include <cstring>
 #include <locale>
 
 namespace YGOPro
