@@ -75,7 +75,7 @@ Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const 
 	FileScopedLock plock(lLastId);
 	if(std::fstream f(lastId.native(), IOS_BINARY_IN_ATE); f.is_open())
 	{
-		const auto fsize = f.tellg();
+		const auto fsize = static_cast<size_t>(f.tellg());
 		f.clear();
 		if(fsize == sizeof(id))
 		{
@@ -109,7 +109,7 @@ uint64_t Service::ReplayManager::NewId() noexcept
 	FileScopedLock plock(lLastId);
 	if(std::fstream f(lastId.native(), IOS_BINARY_IN_ATE); f.is_open())
 	{
-		const auto fsize = f.tellg();
+		const auto fsize = static_cast<size_t>(f.tellg());
 		f.clear();
 		if(fsize != sizeof(id))
 		{
