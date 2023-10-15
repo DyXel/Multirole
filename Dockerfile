@@ -15,7 +15,8 @@ COPY src/ ./src/
 COPY meson.build .
 COPY meson_options.txt .
 ENV BOOST_INCLUDEDIR=/usr/include/boost BOOST_LIBRARYDIR=/usr/lib
-RUN meson setup build -Doptimization=3 -Ddebug=true -Db_lto=true -Db_pie=true -Dcpp_link_args="-static-libstdc++" -Duse_tcmalloc=enabled -Dfmt_ho=true && \
+RUN echo "Description: See https://gitlab.alpinelinux.org/alpine/aports/-/issues/15364" >> "/usr/lib/pkgconfig/libtcmalloc_minimal.pc" && \
+	meson setup build -Doptimization=3 -Ddebug=true -Db_lto=true -Db_pie=true -Dcpp_link_args="-static-libstdc++" -Duse_tcmalloc=enabled -Dfmt_ho=true && \
 	cd "build" && \
 	meson compile && \
 	objcopy --only-keep-debug "hornet" "hornet.debug" && \
