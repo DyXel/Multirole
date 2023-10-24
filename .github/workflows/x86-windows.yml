@@ -19,39 +19,30 @@ jobs:
     - name: Install pre-requisites
       shell: bash
       run: |
+        choco install --allow-empty-checksums pkgconfiglite
         pip install meson ninja
     - name: Install dependencies
       uses: lukka/run-vcpkg@v7
       with:
         vcpkgGitCommitId: 8eb57355a4ffb410a2e94c07b4dca2dffbee8e50
         vcpkgTriplet: ${{ env.VCPKG_TRIPLET }}
-        vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 liblzma openssl pkgconf sqlite3
-    - name: Fix pkgconf and Boost.Filesystem
+        vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 liblzma openssl sqlite3
+    - name: Fix Boost.Filesystem library location
       shell: bash
       run: |
-        VCPKG_TRIPLET_DIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET
-        # Meson expects the executable to be named exactly `pkg-config`
-        cp $VCPKG_TRIPLET_DIR/tools/pkgconf/pkgconf.exe $VCPKG_TRIPLET_DIR/tools/pkgconf/pkg-config.exe
-        # Meson expects the library name to start with `libboost_` and end with `-s.lib` for static multithreaded boost
-        cp $VCPKG_TRIPLET_DIR/lib/boost_filesystem-vc140-mt.lib $VCPKG_TRIPLET_DIR/lib/libboost_filesystem-vc140-mt-s.lib
-    - name: Set x86 Windows build environment
+        VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
+        cp $VCPKG_LIBRARYDIR/boost_filesystem-vc140-mt.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc140-mt-s.lib
+    - name: Set x86 windows build tools as default
       uses: ilammy/msvc-dev-cmd@v1
       with:
           arch: win32
     - name: Meson build
       shell: cmd
       run: |
-        set PATH=%PATH%;%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\tools\pkgconf
         set PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\lib\pkgconfig
         set BOOST_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
         meson setup build -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
         meson compile -C build -j2
-    - name: Upload build logs
-      if: failure()
-      uses: actions/upload-artifact@v2.2.4
-      with:
-        name: Meson Logs
-        path: build/meson-logs/
     - name: Setup directory with artifacts
       shell: bash
       run: |
