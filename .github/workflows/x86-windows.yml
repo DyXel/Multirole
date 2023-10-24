@@ -4,7 +4,7 @@ env:
   VCPKG_TRIPLET: x86-windows-static
 jobs:
   x86-windows:
-    runs-on: windows-2022
+    runs-on: windows-2019
     if: >-
       !(
         contains(github.event.head_commit.message, '[ci skip]') ||
@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       uses: lukka/run-vcpkg@v7
       with:
-        vcpkgGitCommitId: dbd30811862212d24bf929db99361c7c12326783
+        vcpkgGitCommitId: 8eb57355a4ffb410a2e94c07b4dca2dffbee8e50
         vcpkgTriplet: ${{ env.VCPKG_TRIPLET }}
         vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 liblzma openssl sqlite3
     - name: Fix Boost.Filesystem library location
