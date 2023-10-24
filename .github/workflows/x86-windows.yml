@@ -43,6 +43,12 @@ jobs:
         set BOOST_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
         meson setup build -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
         meson compile -C build -j2
+    - name: Upload build logs
+      if: failure()
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: Meson Logs
+        path: build/meson-logs/
     - name: Setup directory with artifacts
       shell: bash
       run: |
