@@ -2,8 +2,8 @@
 	<img src="./logo.svg" alt="Multirole logo"/>
 </p>
 
-![x64-linux](https://github.com/ProjectIgnis/Multirole/workflows/x64-linux/badge.svg)
-![x86-windows](https://github.com/ProjectIgnis/Multirole/workflows/x86-windows/badge.svg)
+[![x64-linux](https://github.com/DyXel/Multirole/actions/workflows/x64-linux.yml/badge.svg)](https://github.com/DyXel/Multirole/actions/workflows/x64-linux.yml)
+[![x86-windows](https://github.com/DyXel/Multirole/actions/workflows/x86-windows.yml/badge.svg)](https://github.com/DyXel/Multirole/actions/workflows/x86-windows.yml)
 
 # Multirole: A C++ server for EDOPro
 
