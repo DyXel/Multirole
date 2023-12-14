@@ -45,6 +45,7 @@ private:
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket;
 	const Endpoints& endpoints;
 	const std::string payload;
+	std::string read_buffer;
 
 	void DoHandshake() noexcept
 	{
@@ -62,7 +63,32 @@ private:
 	{
 		auto self(shared_from_this());
 		boost::asio::async_write(socket, boost::asio::buffer(payload),
-		[self](boost::system::error_code /*unused*/, std::size_t /*unused*/){});
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(ec)
+				return;
+			DoRead();
+		});
+	}
+
+	void DoRead() noexcept
+	{
+		auto self(shared_from_this());
+		boost::asio::async_read_until(socket, boost::asio::dynamic_buffer(read_buffer), "\r\n\r\n",
+		[this, self](boost::system::error_code ec, std::size_t /*unused*/)
+		{
+			if(ec)
+				return;
+			DoShutdown();
+		});
+	}
+
+	void DoShutdown() noexcept
+	{
+		auto self(shared_from_this());
+		socket.async_shutdown([this, self](boost::system::error_code ec){
+			socket.lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+		});
 	}
 };
 
