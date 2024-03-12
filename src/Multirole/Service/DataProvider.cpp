@@ -18,7 +18,8 @@ namespace Ignis::Multirole
 
 Service::DataProvider::DataProvider(Service::LogHandler& lh, std::string_view fnRegexStr) :
 	lh(lh),
-	fnRegex(fnRegexStr.data())
+	fnRegex(fnRegexStr.data()),
+	db(std::make_shared<YGOPro::CardDatabase>())
 {}
 
 std::shared_ptr<YGOPro::CardDatabase> Service::DataProvider::GetDatabase() const noexcept
