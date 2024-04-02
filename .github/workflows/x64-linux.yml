@@ -16,7 +16,7 @@ jobs:
         fetch-depth: 1
     - name: Install dependencies
       run: |
-        sudo apt-get --no-install-recommends --yes install libfmt-dev liblzma-dev libgit2-dev libsqlite3-dev libssl-dev ninja-build
+        sudo apt-get --no-install-recommends --yes install libfmt-dev libgit2-dev libsqlite3-dev libssl-dev ninja-build
         pip install meson
     - name: Get boost
       run: |

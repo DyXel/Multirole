@@ -11,7 +11,6 @@ atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
 boost_dep   = dependency('boost', version : '>=1.78', modules : ['filesystem'], static : static_deps)
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
 libgit2_dep = dependency('libgit2', static : static_deps)
-lzma_dep    = dependency('liblzma')
 openssl_dep = dependency('openssl', static : static_deps)
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
 sqlite3_dep = dependency('sqlite3', static : static_deps)
@@ -68,6 +67,9 @@ multirole_src_files = files([
 	'src/Multirole/YGOPro/Deck.cpp',
 	'src/Multirole/YGOPro/Replay.cpp',
 	'src/Multirole/YGOPro/StringUtils.cpp',
+	'src/Multirole/YGOPro/LZMA/Alloc.c',
+	'src/Multirole/YGOPro/LZMA/LzFind.c',
+	'src/Multirole/YGOPro/LZMA/LzmaEnc.c'
 ])
 
 hornet_src_files = files([
@@ -77,6 +79,7 @@ hornet_src_files = files([
 
 executable('multirole', multirole_src_files,
 	c_args: [
+		'-D_7ZIP_ST',
 		'-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS',
 		'-D_WINSOCK_DEPRECATED_NO_WARNINGS',
 		'-DNOMINMAX'
@@ -92,7 +95,6 @@ executable('multirole', multirole_src_files,
 		dl_dep,
 		fmt_dep,
 		libgit2_dep,
-		lzma_dep,
 		openssl_dep,
 		rt_dep,
 		sqlite3_dep,

@@ -26,7 +26,7 @@ jobs:
       with:
         vcpkgGitCommitId: 8eb57355a4ffb410a2e94c07b4dca2dffbee8e50
         vcpkgTriplet: ${{ env.VCPKG_TRIPLET }}
-        vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 liblzma openssl sqlite3
+        vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 openssl sqlite3
     - name: Fix Boost.Filesystem library location
       shell: bash
       run: |
