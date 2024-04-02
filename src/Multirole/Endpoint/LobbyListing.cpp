@@ -97,6 +97,9 @@ void LobbyListing::DoSerialize()
 		auto& ar = *j.emplace("rooms", boost::json::array(&mr)).first->value().if_array();
 		lobby.CollectRooms([&](const Lobby::RoomProps& rp)
 		{
+			const auto dCount = rp.duelists.usedCount;
+			if(dCount == 0) // NOTE: Hide "ghost rooms".
+				return;
 			const auto& hi = *rp.hostInfo;
 			auto& room = *ar.emplace_back(boost::json::object(21U, &mr)).if_object();
 			room.emplace("roomid", rp.id);
@@ -125,7 +128,6 @@ void LobbyListing::DoSerialize()
 			room.emplace("extra_max", hi.limits.extra.max);
 			room.emplace("side_min", hi.limits.side.min);
 			room.emplace("side_max", hi.limits.side.max);
-			const auto dCount = rp.duelists.usedCount;
 			auto& ac = *room.emplace("users", boost::json::array(dCount, &mr)).first->value().if_array();
 			for(std::size_t i = 0; i < dCount; i++)
 			{
