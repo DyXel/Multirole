@@ -168,13 +168,19 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	const std::vector<uint32_t>& main,
 	const std::vector<uint32_t>& side) const noexcept
 {
-	auto IsExtraDeckCardType = [](uint32_t type) constexpr -> bool
+	auto IsExtraDeckCardType = [&](uint32_t type, uint32_t code) constexpr -> bool
 	{
 		if((type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) != 0U)
 			return true;
 		// NOTE: Link Spells exist.
 		if(((type & TYPE_LINK) != 0U) && ((type & TYPE_MONSTER) != 0U))
 			return true;
+		if((type & TYPE_MONSTER) != 0U && (type & TYPE_RITUAL) != 0U)
+		{
+			const auto cardScope = cdb->ExtraFromCode(code).scope;
+			if((cardScope & SCOPE_RUSH) != 0)
+				return true;
+		}
 		return false;
 	};
 	YGOPro::CodeVector m;
@@ -191,7 +197,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 		}
 		if((data.type & TYPE_TOKEN) != 0U)
 			continue;
-		if(IsExtraDeckCardType(data.type))
+		if(IsExtraDeckCardType(data.type, data.code))
 			e.push_back(code);
 		else
 			m.push_back(code);
