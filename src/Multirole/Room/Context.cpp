@@ -222,7 +222,6 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 		err);
 }
 
-
 std::unique_ptr<YGOPro::STOCMsg> Context::CheckDeck(const YGOPro::Deck& deck) const noexcept
 {
 	using namespace Error;
