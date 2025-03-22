@@ -168,8 +168,8 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	const std::vector<uint32_t>& main,
 	const std::vector<uint32_t>& side) const noexcept
 {
-	const uint64_t  DUEL_EXTRA_DECK_RITUAL = 0x800000000ULL;
-	uint64_t duelFlags = YGOPro::HostInfo::OrDuelFlags(hostInfo.duelFlagsHigh, hostInfo.duelFlagsLow);
+	const uint64_t DUEL_EXTRA_DECK_RITUAL = 0x800000000ULL;
+	const uint64_t duelFlags = YGOPro::HostInfo::OrDuelFlags(hostInfo.duelFlagsHigh, hostInfo.duelFlagsLow);
 	
 	auto IsExtraDeckCardType = [&](uint32_t type) constexpr -> bool
 	{
