@@ -168,19 +168,19 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	const std::vector<uint32_t>& main,
 	const std::vector<uint32_t>& side) const noexcept
 {
-	auto IsExtraDeckCardType = [&](uint32_t type, uint32_t code) constexpr -> bool
+	const uint64_t  DUEL_EXTRA_DECK_RITUAL = 0x800000000;
+	auto IsExtraDeckCardType = [this](uint32_t type) constexpr -> bool
 	{
 		if((type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) != 0U)
 			return true;
 		// NOTE: Link Spells exist.
 		if(((type & TYPE_LINK) != 0U) && ((type & TYPE_MONSTER) != 0U))
 			return true;
-		if((type & TYPE_MONSTER) != 0U && (type & TYPE_RITUAL) != 0U)
-		{
-			const auto cardScope = cdb->ExtraFromCode(code).scope;
-			if((cardScope & SCOPE_RUSH) != 0)
-				return true;
-		}
+		// In Rush, Ritual Monsters are placed in the Extra Deck
+		uint64_t duelFlags = YGOPro::HostInfo::OrDuelFlags(hostInfo.duelFlagsHigh, hostInfo.duelFlagsLow);
+		if ((type & TYPE_RITUAL) != 0U && (type & TYPE_MONSTER) != 0U && (duelFlags & DUEL_EXTRA_DECK_RITUAL) != 0U)
+			return true;
+
 		return false;
 	};
 	YGOPro::CodeVector m;
@@ -197,7 +197,7 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 		}
 		if((data.type & TYPE_TOKEN) != 0U)
 			continue;
-		if(IsExtraDeckCardType(data.type, data.code))
+		if(IsExtraDeckCardType(data.type))
 			e.push_back(code);
 		else
 			m.push_back(code);
