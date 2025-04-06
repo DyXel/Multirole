@@ -14,7 +14,7 @@ constexpr YGOPro::ClientVersion SERVER_VERSION =
 		0,  // NOLINT: Client version minor
 	},
 	{
-		10,  // NOLINT: Core version major
+		11,  // NOLINT: Core version major
 		0   // NOLINT: Core version minor
 	}
 };
