@@ -2,7 +2,7 @@ name: x64-linux
 on: push
 jobs:
   x64-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: >-
       !(
         contains(github.event.head_commit.message, '[ci skip]') ||
@@ -16,19 +16,11 @@ jobs:
         fetch-depth: 1
     - name: Install dependencies
       run: |
-        sudo apt-get --no-install-recommends --yes install libfmt-dev libgit2-dev libsqlite3-dev libssl-dev ninja-build
+        sudo apt-get --no-install-recommends --yes install libfmt-dev libgit2-dev libsqlite3-dev libssl-dev libboost-all-dev ninja-build
         pip install meson
-    - name: Get boost
-      run: |
-        wget http://sourceforge.net/projects/boost/files/boost/1.79.0/boost_1_79_0.tar.bz2
-        tar --bzip2 -xf boost_1_79_0.tar.bz2
-        cd boost_1_79_0
-        ./bootstrap.sh --prefix=/usr/boost_root --with-libraries=filesystem
-        sudo ./b2 install
     - name: Meson build
       run: |
         export CC=clang
         export CXX=clang++
-        export BOOST_ROOT=/usr/boost_root/
         meson setup build -Dwarning_level=3
         meson compile -C build -j2
