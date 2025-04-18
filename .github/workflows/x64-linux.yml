@@ -2,7 +2,7 @@ name: x64-linux
 on: push
 jobs:
   x64-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: >-
       !(
         contains(github.event.head_commit.message, '[ci skip]') ||

@@ -53,7 +53,7 @@ jobs:
         cp etc/config.json $RDIR/
         sed -i "s/libocgcore\\\\\\\.so/ocgcore\\\\\\\.dll/g" $RDIR/config.json
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2.2.4
+      uses: actions/upload-artifact@v4
       with:
         name: Multirole
         path: Multirole/
