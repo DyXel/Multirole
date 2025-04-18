@@ -3,13 +3,6 @@ on: push
 jobs:
   x64-linux:
     runs-on: ubuntu-24.04
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     steps:
     - uses: actions/checkout@v1
       with:

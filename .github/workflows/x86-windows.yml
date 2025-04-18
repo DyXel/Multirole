@@ -5,13 +5,6 @@ env:
 jobs:
   x86-windows:
     runs-on: windows-2019
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     steps:
     - uses: actions/checkout@v1
       with:
@@ -31,7 +24,7 @@ jobs:
       shell: bash
       run: |
         VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
-        cp $VCPKG_LIBRARYDIR/boost_filesystem-vc140-mt.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc140-mt-s.lib
+        cp $VCPKG_LIBRARYDIR/boost_filesystem-vc142-mt-x32-1_88.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc142-mt-s.lib
     - name: Set x86 windows build tools as default
       uses: ilammy/msvc-dev-cmd@v1
       with:
