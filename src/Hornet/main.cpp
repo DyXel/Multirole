@@ -150,7 +150,7 @@ void MainLoop()
 			opts.logHandler = &LogHandler;
 			opts.cardReaderDone = &DataReaderDone;
 			OCG_Duel duel = nullptr;
-			int r = OCG_CreateDuel(&duel, opts);
+			int r = OCG_CreateDuel(&duel, &opts);
 			auto* wptr = hss->bytes.data();
 			Write<int>(wptr, r);
 			Write<OCG_Duel>(wptr, duel);
@@ -166,7 +166,8 @@ void MainLoop()
 		{
 			const auto* rptr = hss->bytes.data();
 			const auto duel = Read<OCG_Duel>(rptr);
-			OCG_DuelNewCard(duel, Read<OCG_NewCardInfo>(rptr));
+			const auto card = Read<OCG_NewCardInfo>(rptr);
+			OCG_DuelNewCard(duel, &card);
 			break;
 		}
 		case Action::OCG_START_DUEL:
@@ -233,7 +234,7 @@ void MainLoop()
 			const auto duel = Read<OCG_Duel>(rptr);
 			const auto info = Read<OCG_QueryInfo>(rptr);
 			uint32_t qLength = 0U;
-			auto* qPtr = OCG_DuelQuery(duel, &qLength, info);
+			auto* qPtr = OCG_DuelQuery(duel, &qLength, &info);
 			auto* wptr = hss->bytes.data();
 			Write<uint32_t>(wptr, qLength);
 			std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));
@@ -245,7 +246,7 @@ void MainLoop()
 			const auto duel = Read<OCG_Duel>(rptr);
 			const auto info = Read<OCG_QueryInfo>(rptr);
 			uint32_t qLength = 0U;
-			auto* qPtr = OCG_DuelQueryLocation(duel, &qLength, info);
+			auto* qPtr = OCG_DuelQueryLocation(duel, &qLength, &info);
 			auto* wptr = hss->bytes.data();
 			Write<uint32_t>(wptr, qLength);
 			std::memcpy(wptr, qPtr, static_cast<std::size_t>(qLength));

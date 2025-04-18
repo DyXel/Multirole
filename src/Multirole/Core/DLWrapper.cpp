@@ -81,7 +81,7 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 	OCG_Duel duel{nullptr};
 	std::scoped_lock lock(ssdMutex);
 	auto ssdIter = ssdList.insert(ssdList.end(), {opts.scriptSupplier, OCG_LoadScript});
-	OCG_DuelOptions options =
+	const OCG_DuelOptions options =
 	{
 		{opts.seed[0U], opts.seed[1U], opts.seed[2U], opts.seed[3U]},
 		opts.flags,
@@ -97,7 +97,7 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 		&opts.dataSupplier,
 		0
 	};
-	if(OCG_CreateDuel(&duel, options) != OCG_DUEL_CREATION_SUCCESS)
+	if(OCG_CreateDuel(&duel, &options) != OCG_DUEL_CREATION_SUCCESS)
 	{
 		ssdList.erase(ssdIter);
 		throw Core::Exception(I18N::DLWRAPPER_EXCEPT_CREATE_DUEL);
@@ -117,7 +117,7 @@ void DLWrapper::DestroyDuel(Duel duel)
 
 void DLWrapper::AddCard(Duel duel, const OCG_NewCardInfo& info)
 {
-	OCG_DuelNewCard(duel, info);
+	OCG_DuelNewCard(duel, &info);
 }
 
 void DLWrapper::Start(Duel duel)
@@ -157,7 +157,7 @@ std::size_t DLWrapper::QueryCount(Duel duel, uint8_t team, uint32_t loc)
 IWrapper::Buffer DLWrapper::Query(Duel duel, const QueryInfo& info)
 {
 	uint32_t length = 0U;
-	auto* pointer = OCG_DuelQuery(duel, &length, info);
+	auto* pointer = OCG_DuelQuery(duel, &length, &info);
 	Buffer buffer(static_cast<Buffer::size_type>(length));
 	std::memcpy(buffer.data(), pointer, static_cast<std::size_t>(length));
 	return buffer;
@@ -166,7 +166,7 @@ IWrapper::Buffer DLWrapper::Query(Duel duel, const QueryInfo& info)
 IWrapper::Buffer DLWrapper::QueryLocation(Duel duel, const QueryInfo& info)
 {
 	uint32_t length = 0U;
-	auto* pointer = OCG_DuelQueryLocation(duel, &length, info);
+	auto* pointer = OCG_DuelQueryLocation(duel, &length, &info);
 	Buffer buffer(static_cast<Buffer::size_type>(length));
 	std::memcpy(buffer.data(), pointer, static_cast<std::size_t>(length));
 	return buffer;
