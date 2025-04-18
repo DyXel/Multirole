@@ -168,13 +168,20 @@ std::unique_ptr<YGOPro::Deck> Context::LoadDeck(
 	const std::vector<uint32_t>& main,
 	const std::vector<uint32_t>& side) const noexcept
 {
-	auto IsExtraDeckCardType = [](uint32_t type) constexpr -> bool
+	const uint64_t DUEL_EXTRA_DECK_RITUAL = 0x800000000ULL;
+	const uint64_t duelFlags = YGOPro::HostInfo::OrDuelFlags(hostInfo.duelFlagsHigh, hostInfo.duelFlagsLow);
+	
+	auto IsExtraDeckCardType = [&](uint32_t type) constexpr -> bool
 	{
 		if((type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) != 0U)
 			return true;
 		// NOTE: Link Spells exist.
 		if(((type & TYPE_LINK) != 0U) && ((type & TYPE_MONSTER) != 0U))
 			return true;
+		// In Rush, Ritual Monsters are placed in the Extra Deck
+		if ((type & TYPE_RITUAL) != 0U && (type & TYPE_MONSTER) != 0U && (duelFlags & DUEL_EXTRA_DECK_RITUAL) != 0U)
+			return true;
+
 		return false;
 	};
 	YGOPro::CodeVector m;
