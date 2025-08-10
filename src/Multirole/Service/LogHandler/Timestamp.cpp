@@ -17,7 +17,7 @@ void FmtTimestamp(std::ostream& os, const Timestamp& timestamp) noexcept
 	const auto tt = system_clock::to_time_t(timestamp);
 	const auto* lt = std::localtime(&tt);
 	std::array<char, 32U> tBuf{};
-	const auto sz1 = std::strftime(tBuf.data(), tBuf.size(), "%Y-%m-%d %T", lt);
+	const auto sz1 = std::strftime(tBuf.data(), tBuf.size(), "%Y-%m-%d %H:%M:%S", lt);
 	std::array<char, 4U> msBuf{};
 	const auto ms = static_cast<unsigned>(duration_cast<milliseconds>(timestamp.time_since_epoch()).count() % 1000U);
 	const auto sz2 = std::snprintf(msBuf.data(), msBuf.size(), "%03u", ms);
