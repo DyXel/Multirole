@@ -254,6 +254,7 @@ MsgDistType GetMessageDistributionType(const Msg& msg) noexcept
 	case MSG_SHUFFLE_EXTRA:
 	case MSG_SET:
 	case MSG_MOVE:
+	case MSG_SPSUMMONING:
 	case MSG_DRAW:
 	case MSG_TAG_SWAP:
 	{
@@ -348,6 +349,18 @@ Msg StripMessageForTeam(uint8_t team, Msg msg) noexcept
 			break;
 		ptr -= 4U + (LocInfo::SIZE * 2U);
 		Write<uint32_t>(ptr, 0U);
+		break;
+	}
+	case MSG_SPSUMMONING:
+	{
+		ptr += 4U; // Card code
+		const auto current = Read<LocInfo>(ptr);
+		if(current.con == team)
+			break;
+		if(current.pos & POS_FACEDOWN) {
+			ptr -= 4U + LocInfo::SIZE;
+			Write<uint32_t>(ptr, 0U);
+		}
 		break;
 	}
 	case MSG_DRAW:
