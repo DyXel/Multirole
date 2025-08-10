@@ -4,7 +4,7 @@ env:
   VCPKG_TRIPLET: x86-windows-static
 jobs:
   x86-windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - uses: actions/checkout@v1
       with:
