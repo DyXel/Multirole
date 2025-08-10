@@ -24,7 +24,7 @@ jobs:
       shell: bash
       run: |
         VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
-        cp $VCPKG_LIBRARYDIR/boost_filesystem-vc142-mt-x32-1_88.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc142-mt-s.lib
+        cp $VCPKG_LIBRARYDIR/boost_filesystem-vc143-mt-x32-1_88.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc143-mt-s.lib
     - name: Set x86 windows build tools as default
       uses: ilammy/msvc-dev-cmd@v1
       with:
