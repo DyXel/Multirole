@@ -5,21 +5,38 @@ project('multirole', 'c', 'cpp',
 	version : '1.1.0'
 )
 
-static_deps = host_machine.system() == 'windows'
+cc = meson.get_compiler('cpp')
 
-atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
+is_windows = host_machine.system() == 'windows'
+is_not_msvc = cc.get_id() != 'msvc'
+static_deps = is_windows
+is_mingw = is_windows and is_not_msvc
+
+atomic_dep  = cc.find_library('atomic', required : false)
 boost_dep   = dependency('boost', version : '>=1.78', static : static_deps)
-dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
-fs_dep      = meson.get_compiler('cpp').find_library('stdc++fs', required : false)
+dl_dep      = cc.find_library('dl', required : false)
+fs_dep      = cc.find_library('stdc++fs', required : false)
 libgit2_dep = dependency('libgit2', static : static_deps)
 openssl_dep = dependency('openssl', static : static_deps)
-rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
+rt_dep      = cc.find_library('rt', required : false)
 sqlite3_dep = dependency('sqlite3', static : static_deps)
 tcm_dep     = dependency('libtcmalloc_minimal', required : get_option('use_tcmalloc'), static : static_deps)
 thread_dep  = dependency('threads')
 
+mingw_deps=[]
+if is_mingw
+	mswsock_dep = cc.find_library('mswsock', required: true)
+	rpcrt4p_dep = cc.find_library('rpcrt4', required: true)
+	winhttp_dep = cc.find_library('winhttp', required: true)
+	mingw_deps = [
+		mswsock_dep,
+		rpcrt4p_dep,
+		winhttp_dep
+	]
+endif
+
 # Get fmt dependency and configure so it's header-only
-fmt_dep = dependency('fmt', version : '>=6.0.0')
+fmt_dep = dependency('fmt', version : '>=6.0.0', static : static_deps and not get_option('fmt_ho'))
 if get_option('fmt_ho')
 	fmt_dep = declare_dependency(compile_args : '-DFMT_HEADER_ONLY', dependencies : fmt_dep)
 	fmt_dep = fmt_dep.partial_dependency(compile_args : true, includes : true)
@@ -102,7 +119,7 @@ executable('multirole', multirole_src_files,
 		sqlite3_dep,
 		tcm_dep,
 		thread_dep
-	])
+	] + mingw_deps)
 
 executable('hornet', hornet_src_files,
 	cpp_args: [
