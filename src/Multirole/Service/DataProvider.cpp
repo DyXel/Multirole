@@ -28,7 +28,7 @@ std::shared_ptr<YGOPro::CardDatabase> Service::DataProvider::GetDatabase() const
 	return db;
 }
 
-void Service::DataProvider::OnAdd(const boost::filesystem::path& path, const PathVector& fileList)
+void Service::DataProvider::OnAdd(const std::filesystem::path& path, const PathVector& fileList)
 {
 	// Filter and add to set of dbs
 	for(const auto& fn : fileList)
@@ -40,7 +40,7 @@ void Service::DataProvider::OnAdd(const boost::filesystem::path& path, const Pat
 	ReloadDatabases();
 }
 
-void Service::DataProvider::OnDiff(const boost::filesystem::path& path, const GitDiff& diff)
+void Service::DataProvider::OnDiff(const std::filesystem::path& path, const GitDiff& diff)
 {
 	// Filter and remove from sets of dbs
 	for(const auto& fn : diff.removed)

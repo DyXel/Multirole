@@ -26,19 +26,19 @@ YGOPro::BanlistPtr Service::BanlistProvider::GetBanlistByHash(YGOPro::BanlistHas
 	return nullptr;
 }
 
-void Service::BanlistProvider::OnAdd(const boost::filesystem::path& path, const PathVector& fileList)
+void Service::BanlistProvider::OnAdd(const std::filesystem::path& path, const PathVector& fileList)
 {
 	LoadBanlists(path, fileList);
 }
 
-void Service::BanlistProvider::OnDiff(const boost::filesystem::path& path, const GitDiff& diff)
+void Service::BanlistProvider::OnDiff(const std::filesystem::path& path, const GitDiff& diff)
 {
 	LoadBanlists(path, diff.added);
 }
 
 // private
 
-void Service::BanlistProvider::LoadBanlists(const boost::filesystem::path& path, const PathVector& fileList) noexcept
+void Service::BanlistProvider::LoadBanlists(const std::filesystem::path& path, const PathVector& fileList) noexcept
 {
 	YGOPro::BanlistMap tmp;
 	for(const auto& fn : fileList)
@@ -49,7 +49,7 @@ void Service::BanlistProvider::LoadBanlists(const boost::filesystem::path& path,
 		LOG_INFO(I18N::BANLIST_PROVIDER_LOADING_ONE, fullPath.string());
 		try
 		{
-			std::ifstream f(fullPath.native());
+			std::ifstream f(fullPath);
 			YGOPro::ParseForBanlists(f, tmp);
 		}
 		catch(const std::exception& e)

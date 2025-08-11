@@ -19,15 +19,15 @@ public:
 	YGOPro::BanlistPtr GetBanlistByHash(YGOPro::BanlistHash hash) const noexcept;
 
 	// IGitRepoObserver overrides
-	void OnAdd(const boost::filesystem::path& path, const PathVector& fileList) override;
-	void OnDiff(const boost::filesystem::path& path, const GitDiff& diff) override;
+	void OnAdd(const std::filesystem::path& path, const PathVector& fileList) override;
+	void OnDiff(const std::filesystem::path& path, const GitDiff& diff) override;
 private:
 	Service::LogHandler& lh;
 	const std::regex fnRegex;
 	YGOPro::BanlistMap banlists;
 	mutable std::shared_mutex mBanlists;
 
-	void LoadBanlists(const boost::filesystem::path& path, const PathVector& fileList) noexcept;
+	void LoadBanlists(const std::filesystem::path& path, const PathVector& fileList) noexcept;
 };
 
 } // namespace Ignis::Multirole
