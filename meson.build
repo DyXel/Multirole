@@ -8,8 +8,9 @@ project('multirole', 'c', 'cpp',
 static_deps = host_machine.system() == 'windows'
 
 atomic_dep  = meson.get_compiler('cpp').find_library('atomic', required : false)
-boost_dep   = dependency('boost', version : '>=1.78', modules : ['filesystem'], static : static_deps)
+boost_dep   = dependency('boost', version : '>=1.78', static : static_deps)
 dl_dep      = meson.get_compiler('cpp').find_library('dl', required : false)
+fs_dep      = meson.get_compiler('cpp').find_library('stdc++fs', required : false)
 libgit2_dep = dependency('libgit2', static : static_deps)
 openssl_dep = dependency('openssl', static : static_deps)
 rt_dep      = meson.get_compiler('cpp').find_library('rt', required : false)
@@ -93,6 +94,7 @@ executable('multirole', multirole_src_files,
 		atomic_dep,
 		boost_dep,
 		dl_dep,
+		fs_dep,
 		fmt_dep,
 		libgit2_dep,
 		openssl_dep,

@@ -2,13 +2,13 @@
 #define SERVICE_LOGHANDLER_HPP
 #include <array>
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <mutex>
 #include <string_view>
 
 #include <boost/asio/io_context.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/json/object.hpp>
 #include <fmt/format.h>
 
@@ -52,7 +52,7 @@ public:
 	}
 private:
 	const bool logRooms;
-	const boost::filesystem::path roomLogsDir;
+	const std::filesystem::path roomLogsDir;
 	std::mutex mStderr;
 	std::mutex mStdout;
 	std::array<
@@ -68,7 +68,7 @@ private:
 class RoomLogger
 {
 public:
-	RoomLogger(const boost::filesystem::path& path);
+	RoomLogger(const std::filesystem::path& path);
 
 	void Log(std::string_view str) noexcept;
 

@@ -18,8 +18,8 @@ public:
 	ScriptProvider(Service::LogHandler& lh, std::string_view fnRegexStr);
 
 	// IGitRepoObserver overrides
-	void OnAdd(const boost::filesystem::path& path, const PathVector& fileList) override;
-	void OnDiff(const boost::filesystem::path& path, const GitDiff& diff) override;
+	void OnAdd(const std::filesystem::path& path, const PathVector& fileList) override;
+	void OnDiff(const std::filesystem::path& path, const GitDiff& diff) override;
 
 	// Core::IScriptSupplier overrides
 	ScriptType ScriptFromFilePath(std::string_view fp) const noexcept override;
@@ -29,7 +29,7 @@ private:
 	std::unordered_map<std::string, ScriptType> scripts;
 	mutable std::shared_mutex mScripts;
 
-	void LoadScripts(const boost::filesystem::path& path, const PathVector& fileList) noexcept;
+	void LoadScripts(const std::filesystem::path& path, const PathVector& fileList) noexcept;
 };
 
 } // namespace Ignis::Multirole

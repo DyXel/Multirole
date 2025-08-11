@@ -1,8 +1,7 @@
 #include "CoreProvider.hpp"
 
+#include <filesystem>
 #include <fstream>
-
-#include <boost/filesystem.hpp>
 
 #include "LogHandler.hpp"
 #define LOG_INFO(...) lh.Log(ServiceType::CORE_PROVIDER, Level::INFO, __VA_ARGS__)
@@ -14,7 +13,7 @@
 namespace Ignis::Multirole
 {
 
-Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, const boost::filesystem::path& tmpDir, CoreType type, bool loadPerCall)
+Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, const std::filesystem::path& tmpDir, CoreType type, bool loadPerCall)
 	:
 	lh(lh),
 	fnRegex(fnRegexStr.data()),
@@ -25,7 +24,6 @@ Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fn
 	loadCount(0U),
 	shouldTest(true)
 {
-	using namespace boost::filesystem;
 	if(!exists(tmpDir) && !create_directory(tmpDir))
 		throw std::runtime_error(I18N::CORE_PROVIDER_COULD_NOT_CREATE_TMP_DIR);
 	if(!is_directory(tmpDir))
@@ -35,7 +33,7 @@ Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fn
 Service::CoreProvider::~CoreProvider() noexcept
 {
 	for(const auto& fn : pLocs)
-		boost::filesystem::remove(fn);
+		remove(fn);
 }
 
 Service::CoreProvider::CorePtr Service::CoreProvider::GetCore() const
@@ -46,12 +44,12 @@ Service::CoreProvider::CorePtr Service::CoreProvider::GetCore() const
 	return core;
 }
 
-void Service::CoreProvider::OnAdd(const boost::filesystem::path& path, const PathVector& fileList)
+void Service::CoreProvider::OnAdd(const std::filesystem::path& path, const PathVector& fileList)
 {
 	OnGitUpdate(path, fileList);
 }
 
-void Service::CoreProvider::OnDiff(const boost::filesystem::path& path, const GitDiff& diff)
+void Service::CoreProvider::OnDiff(const std::filesystem::path& path, const GitDiff& diff)
 {
 	OnGitUpdate(path, diff.added);
 }
@@ -67,7 +65,7 @@ Service::CoreProvider::CorePtr Service::CoreProvider::LoadCore() const
 	throw std::runtime_error(I18N::CORE_PROVIDER_WRONG_CORE_TYPE);
 }
 
-void Service::CoreProvider::OnGitUpdate(const boost::filesystem::path& path, const PathVector& fileList)
+void Service::CoreProvider::OnGitUpdate(const std::filesystem::path& path, const PathVector& fileList)
 {
 	auto it = fileList.begin();
 	for(; it != fileList.end(); ++it)
@@ -80,13 +78,13 @@ void Service::CoreProvider::OnGitUpdate(const boost::filesystem::path& path, con
 		return;
 	}
 	std::scoped_lock lock(mCore);
-	const boost::filesystem::path oldCoreLoc = coreLoc;
-	const boost::filesystem::path repoCore = (path / *it).lexically_normal();
+	const std::filesystem::path oldCoreLoc = coreLoc;
+	const std::filesystem::path repoCore = (path / *it).lexically_normal();
 	coreLoc = (tmpDir / fmt::format("{}-{}-{}", uniqueId, loadCount++, repoCore.filename().string())).lexically_normal();
 	LOG_INFO(I18N::CORE_PROVIDER_COPYING_CORE_FILE, repoCore.string(), coreLoc.string());
 	pLocs.emplace_back(coreLoc);
-	boost::filesystem::copy_file(repoCore, coreLoc);
-	if(!boost::filesystem::exists(coreLoc))
+	copy_file(repoCore, coreLoc);
+	if(!exists(coreLoc))
 	{
 		LOG_ERROR(I18N::CORE_PROVIDER_FAILED_TO_COPY_CORE_FILE);
 		coreLoc = oldCoreLoc;

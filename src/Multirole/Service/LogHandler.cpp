@@ -1,6 +1,6 @@
 #include "LogHandler.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "../I18N.hpp"
 #include "LogHandler/ISink.hpp"
@@ -79,7 +79,6 @@ Service::LogHandler::LogHandler(boost::asio::io_context& ioCtx, const boost::jso
 	};
 	if(!logRooms)
 		return;
-	using namespace boost::filesystem;
 	if(!exists(roomLogsDir) && !create_directory(roomLogsDir))
 		throw std::runtime_error(I18N::LOG_HANDLER_COULD_NOT_CREATE_DIR);
 	if(!is_directory(roomLogsDir))
@@ -121,8 +120,8 @@ std::unique_ptr<RoomLogger> Service::LogHandler::MakeRoomLogger(uint32_t roomId)
 
 // RoomLogger
 
-RoomLogger::RoomLogger(const boost::filesystem::path& path) :
-	f(path.native())
+RoomLogger::RoomLogger(const std::filesystem::path& path) :
+	f(path)
 {
 	if(!f.is_open())
 		throw std::runtime_error(I18N::ROOM_LOGGER_FILE_IS_NOT_OPEN);
