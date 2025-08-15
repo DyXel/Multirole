@@ -1,41 +1,23 @@
 name: x86-windows
 on: push
-env:
-  VCPKG_TRIPLET: x86-windows-static
 jobs:
   x86-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-    - name: Install pre-requisites
-      shell: bash
-      run: |
-        choco install --allow-empty-checksums pkgconfiglite
-        pip install meson ninja
-    - name: Install dependencies
-      uses: lukka/run-vcpkg@v7
+    - name: Setup msys2
+      uses: msys2/setup-msys2@v2
       with:
-        vcpkgGitCommitId: 095a29ce59608465032c3747307dd0009b3e089c
-        vcpkgTriplet: ${{ env.VCPKG_TRIPLET }}
-        vcpkgArguments: boost-asio boost-filesystem boost-date-time boost-interprocess boost-json fmt libgit2 openssl sqlite3
-    - name: Fix Boost.Filesystem library location
-      shell: bash
-      run: |
-        VCPKG_LIBRARYDIR=$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib
-        cp $VCPKG_LIBRARYDIR/boost_filesystem-vc143-mt-x32-1_88.lib $VCPKG_LIBRARYDIR/libboost_filesystem-vc143-mt-s.lib
-    - name: Set x86 windows build tools as default
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-          arch: win32
+        update: true
+        msystem: mingw32
+        install: mingw-w64-i686-toolchain make mingw-w64-i686-libgit2-winhttp mingw-w64-i686-fmt mingw-w64-i686-boost mingw-w64-i686-sqlite3 mingw-w64-i686-openssl pkgconf mingw-w64-i686-meson
     - name: Meson build
-      shell: cmd
+      shell: msys2 {0}
       run: |
-        set PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\lib\pkgconfig
-        set BOOST_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
-        meson setup build -Dbackend=ninja -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
-        meson compile -C build -j2
+        LDFLAGS="-static-libstdc++ -static-libgcc -static" meson setup build -Dbuildtype=release -Dstrip=true -Db_lto=true -Db_ndebug=true
+        meson compile -C build -j$(nproc)
     - name: Setup directory with artifacts
       shell: bash
       run: |

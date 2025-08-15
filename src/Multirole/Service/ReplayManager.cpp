@@ -1,7 +1,7 @@
 #include "ReplayManager.hpp"
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include <filesystem>
+
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 #include "LogHandler.hpp"
@@ -39,7 +39,7 @@ inline void WriteId(std::fstream& f, uint64_t id) noexcept
 
 } // namespace
 
-Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const boost::filesystem::path& dir) :
+Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const std::filesystem::path& dir) :
 	lh(lh),
 	save(save),
 	dir(dir),
@@ -52,7 +52,6 @@ Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const 
 		LOG_INFO(I18N::REPLAY_MANAGER_NOT_SAVING_REPLAYS);
 		return;
 	}
-	using namespace boost::filesystem;
 	if(!exists(dir) && !create_directory(dir))
 		throw std::runtime_error(I18N::REPLAY_MANAGER_COULD_NOT_CREATE_DIR);
 	if(!is_directory(dir))
@@ -60,20 +59,20 @@ Service::ReplayManager::ReplayManager(Service::LogHandler& lh, bool save, const 
 	uint64_t id = 1U;
 	if(!exists(lastId))
 	{
-		std::fstream f(lastId.native(), IOS_BINARY_OUT);
+		std::fstream f(lastId, IOS_BINARY_OUT);
 		if(!f.is_open())
 			throw std::runtime_error(I18N::REPLAY_MANAGER_ERROR_WRITING_INITIAL_ID);
 		WriteId(f, id);
 	}
 	if(!exists(lastIdLock))
 	{
-		std::fstream f(lastIdLock.native(), IOS_BINARY_OUT);
+		std::fstream f(lastIdLock, IOS_BINARY_OUT);
 		if(!f.is_open())
 			throw std::runtime_error(I18N::REPLAY_MANAGER_ERROR_CREATING_LOCK);
 	}
-	lLastId = boost::interprocess::file_lock(lastIdLock.native().data());
+	lLastId = boost::interprocess::file_lock(lastIdLock.c_str());
 	FileScopedLock plock(lLastId);
-	if(std::fstream f(lastId.native(), IOS_BINARY_IN_ATE); f.is_open())
+	if(std::fstream f(lastId, IOS_BINARY_IN_ATE); f.is_open())
 	{
 		const auto fsize = static_cast<size_t>(f.tellg());
 		f.clear();
@@ -93,7 +92,7 @@ void Service::ReplayManager::Save(uint64_t id, const YGOPro::Replay& replay) con
 		return;
 	const auto fn = dir / (std::to_string(id) + ".yrpX");
 	const auto& bytes = replay.Bytes();
-	if(std::fstream f(fn.native(), IOS_BINARY_OUT); f.is_open())
+	if(std::fstream f(fn, IOS_BINARY_OUT); f.is_open())
 		f.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 	else
 		LOG_ERROR(I18N::REPLAY_MANAGER_UNABLE_TO_SAVE, fn.string());
@@ -107,7 +106,7 @@ uint64_t Service::ReplayManager::NewId() noexcept
 	uint64_t id = 0U;
 	std::scoped_lock tlock(mLastId);
 	FileScopedLock plock(lLastId);
-	if(std::fstream f(lastId.native(), IOS_BINARY_IN_ATE); f.is_open())
+	if(std::fstream f(lastId, IOS_BINARY_IN_ATE); f.is_open())
 	{
 		const auto fsize = static_cast<size_t>(f.tellg());
 		f.clear();
@@ -124,7 +123,7 @@ uint64_t Service::ReplayManager::NewId() noexcept
 		return 0U;
 	}
 	prevId = id++;
-	if(std::fstream f(lastId.native(), IOS_BINARY_OUT); f.is_open())
+	if(std::fstream f(lastId, IOS_BINARY_OUT); f.is_open())
 	{
 		WriteId(f, id);
 		return prevId;

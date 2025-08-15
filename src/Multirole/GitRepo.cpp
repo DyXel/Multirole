@@ -1,6 +1,7 @@
 #include "GitRepo.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
+
 #include <boost/json/value.hpp>
 
 #include "I18N.hpp"
@@ -42,7 +43,7 @@ GitRepo::GitRepo(Service::LogHandler& lh, boost::asio::io_context& ioCtx, const 
 			cred->at("username").as_string().data(),
 			cred->at("password").as_string().data());
 	}
-	if(boost::filesystem::exists(path) && !boost::filesystem::is_directory(path))
+	if(exists(path) && !is_directory(path))
 		throw std::runtime_error(I18N::GIT_REPO_PATH_IS_NOT_DIR);
 	if(!CheckIfRepoExists())
 	{
