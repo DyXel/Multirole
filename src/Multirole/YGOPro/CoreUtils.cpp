@@ -39,14 +39,14 @@ inline void AddRefreshAllHands(std::vector<QueryRequest>& qreqs) noexcept
 
 inline void AddRefreshAllMZones(std::vector<QueryRequest>& qreqs) noexcept
 {
-	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3881FFF});
-	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3881FFF});
+	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3981FFF});
+	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3981FFF});
 }
 
 inline void AddRefreshAllSZones(std::vector<QueryRequest>& qreqs) noexcept
 {
-	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x3E81FFF});
-	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x3E81FFF});
+	qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x3F81FFF});
+	qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x3F81FFF});
 }
 
 inline QueryOpt DeserializeOneQuery(const uint8_t*& ptr) noexcept
@@ -582,10 +582,10 @@ std::vector<QueryRequest> GetPostDistQueryRequests(const Msg& msg) noexcept
 		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_DECK, 0x1181FFF});
 		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_EXTRA, 0x381FFF});
 		qreqs.emplace_back(QueryLocationRequest{player, LOCATION_HAND, 0x3781FFF});
-		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3081FFF});
-		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3081FFF});
-		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x30681FFF});
-		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x30681FFF});
+		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_MZONE, 0x3181FFF});
+		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_MZONE, 0x3181FFF});
+		qreqs.emplace_back(QueryLocationRequest{0U, LOCATION_SZONE, 0x3781FFF});
+		qreqs.emplace_back(QueryLocationRequest{1U, LOCATION_SZONE, 0x3781FFF});
 		break;
 	}
 	case MSG_RELOAD_FIELD:
