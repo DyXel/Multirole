@@ -12,6 +12,8 @@ public:
 
 	virtual const CardData& DataFromCode(uint32_t code) const noexcept = 0;
 	virtual void DataUsageDone(const CardData& data) const noexcept = 0;
+
+	virtual int CountDeclarableCards(uint64_t const* ops, int opsSize) const noexcept = 0;
 protected:
 	inline ~IDataSupplier() = default;
 };

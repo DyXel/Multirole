@@ -396,6 +396,18 @@ void HornetWrapper::NotifyAndWait(Hornet::Action act)
 			act = Hornet::Action::CB_DONE;
 			break;
 		}
+		case Hornet::Action::CB_COUNT_DECLARABLE_CARDS:
+		{
+			const auto* rptr = hss->bytes.data();
+			auto* supplier = static_cast<IDataSupplier*>(Read<void*>(rptr));
+			const auto opsSize = Read<int>(rptr);
+			const auto ops = reinterpret_cast<uint64_t const*>(rptr);
+			int count = supplier->CountDeclarableCards(ops, opsSize);
+			auto* wptr = hss->bytes.data();
+			Write<int>(wptr, count);
+			act = Hornet::Action::CB_DONE;
+			break;
+		}
 		// Explicitly ignore these, in case we ever add more functionality...
 		case Hornet::Action::NO_WORK:
 		case Hornet::Action::HEARTBEAT:
