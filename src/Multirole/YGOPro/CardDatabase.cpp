@@ -1,5 +1,6 @@
 #include "CardDatabase.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <stdexcept> // std::runtime_error
 #include <string>
@@ -91,7 +92,7 @@ class OpsToSqlQueryEmitter
 {
 public:
 	OpsToSqlQueryEmitter(uint64_t const* ops, std::string& stmt) noexcept :
-		ops(ops), og_stmt(stmt) {}
+		ops(ops), ogStmt(stmt) {}
 
 	int Parse(int opsSize) noexcept
 	{
@@ -100,13 +101,15 @@ public:
 			Emit("((datas.type&0x4000)==0)AND");
 		if(!allowAliases)
 			Emit("(datas.alias!=0)AND");
-		og_stmt.append(stmt.rbegin(), stmt.rend());
+		Emit(ogStmt);
+		std::reverse(stmt.begin(), stmt.end());
+		ogStmt.swap(stmt);
 		return r;
 	}
 
 private:
 	uint64_t const* ops;
-	std::string& og_stmt;
+	std::string& ogStmt;
 	std::string stmt;
 	bool allowAliases = false;
 	bool allowTokens = false;
