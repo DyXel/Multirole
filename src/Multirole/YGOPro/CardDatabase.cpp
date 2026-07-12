@@ -115,7 +115,7 @@ private:
 		auto const op = ops[top];
 		switch(op)
 		{
-#define DESCENT() top = Visit(top - 1); if(top < 0) break
+#define DESCENT() if(top = Visit(top - 1); top < 0) break
 #define NULLARY_VAL(opcode, val) \
 	case opcode: \
 	{ \
@@ -210,13 +210,15 @@ private:
 		case OPCODE_ALLOW_ALIASES:
 		{
 			allowAliases = true;
-			DESCENT();
+			if(check(1))
+				DESCENT();
 			break;
 		}
 		case OPCODE_ALLOW_TOKENS:
 		{
 			allowTokens = true;
-			DESCENT();
+			if(check(1))
+				DESCENT();
 			break;
 		}
 		default:
