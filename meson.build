@@ -104,7 +104,6 @@ executable('multirole', multirole_src_files,
 	],
 	cpp_args: [
 		'-DBOOST_DATE_TIME_NO_LIB',
-		'-DBOOST_JSON_STANDALONE',
 		'-DNOMINMAX'
 	],
 	dependencies: [
