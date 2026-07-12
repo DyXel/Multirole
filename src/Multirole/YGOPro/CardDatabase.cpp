@@ -399,9 +399,9 @@ int CardDatabase::CountDeclarableCards(uint64_t const* ops, int opsSize) const n
 	sqlite3_stmt* stmt{};
 	int r = sqlite3_prepare_v2(db, stmtStr.c_str(), -1, &stmt, nullptr);
 	if(r != SQLITE_OK)
-		return -7;
-	if(stmt == nullptr)
 		return -8;
+	if(stmt == nullptr)
+		return -9;
 	int count = 0;
 	if(sqlite3_step(stmt) == SQLITE_ROW)
 		count = sqlite3_column_int(stmt, 0);
