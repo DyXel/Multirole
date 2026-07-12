@@ -97,6 +97,8 @@ public:
 	int Parse(int opsSize) noexcept
 	{
 		int r = Visit(opsSize - 1);
+		if(r < 0)
+			return r;
 		if(!allowTokens)
 			Emit("((datas.type&0x4000)==0)AND");
 		if(!allowAliases)
