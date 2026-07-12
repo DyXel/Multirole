@@ -199,6 +199,8 @@ private:
 			constexpr size_t split = 16;
 			Emit(stencil);
 			cursor -= split;
+			if(!check(1))
+				return -7;
 			DESCENT();
 			cursor -= stencil.size() - split;
 			break;
