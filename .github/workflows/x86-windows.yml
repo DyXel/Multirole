@@ -12,7 +12,12 @@ jobs:
       with:
         update: true
         msystem: mingw32
-        install: mingw-w64-i686-toolchain make mingw-w64-i686-libgit2-winhttp mingw-w64-i686-fmt mingw-w64-i686-boost mingw-w64-i686-sqlite3 mingw-w64-i686-openssl pkgconf mingw-w64-i686-meson
+        install: mingw-w64-i686-toolchain make mingw-w64-i686-libgit2-winhttp mingw-w64-i686-fmt mingw-w64-i686-sqlite3 mingw-w64-i686-openssl pkgconf mingw-w64-i686-meson mingw-w64-i686-cmake patch
+    - name: Build boost
+      shell: msys2 {0}
+      run: |
+        cd .github/mingw-w64-boost
+        MAKEFLAGS="--jobs=$(nproc)" PKGEXT='.pkg.tar' CARCH=i686 makepkg -i --noconfirm
     - name: Meson build
       shell: msys2 {0}
       run: |
