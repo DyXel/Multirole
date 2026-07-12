@@ -4,6 +4,7 @@
 #include <stdexcept> // std::runtime_error
 #include <string>
 
+#include <fmt/format.h>
 #include <sqlite3.h>
 
 #include "Constants.hpp"
@@ -90,22 +91,23 @@ class OpsToSqlQueryEmitter
 {
 public:
 	OpsToSqlQueryEmitter(uint64_t const* ops, std::string& stmt) noexcept :
-		ops(ops), stmt(&stmt), cursor(stmt.size()) {}
+		ops(ops), og_stmt(stmt) {}
 
 	int Parse(int opsSize) noexcept
 	{
 		int r = Visit(opsSize - 1);
-		if(!allowAliases)
-			Emit("(datas.alias!=0)AND");
 		if(!allowTokens)
 			Emit("((datas.type&0x4000)==0)AND");
+		if(!allowAliases)
+			Emit("(datas.alias!=0)AND");
+		og_stmt.append(stmt.rbegin(), stmt.rend());
 		return r;
 	}
 
 private:
 	uint64_t const* ops;
-	std::string* stmt;
-	size_t cursor;
+	std::string& og_stmt;
+	std::string stmt;
 	bool allowAliases = false;
 	bool allowTokens = false;
 
@@ -119,9 +121,7 @@ private:
 #define NULLARY_VAL(opcode, val) \
 	case opcode: \
 	{ \
-		constexpr auto stencil = std::string_view{"(datas." #val ")"}; \
-		Emit(stencil); \
-		cursor -= stencil.size(); \
+		Emit("(datas." #val ")"); \
 		break; \
 	}
 #define UNARY_OP(opcode, optor) \
@@ -129,11 +129,9 @@ private:
 	{ \
 		if(!check(1)) \
 			return -3; \
-		constexpr auto stencil = std::string_view{"(" #optor ")"}; \
-		Emit(stencil); \
-		cursor -= 1; \
+		Emit(")"); \
 		DESCENT(); \
-		cursor -= stencil.size() - 1; \
+		Emit("(" #optor); \
 		break; \
 	}
 #define UNARY_VAL_PRED(opcode, val, pred) \
@@ -141,11 +139,9 @@ private:
 	{ \
 		if(!check(1)) \
 			return -4; \
-		constexpr auto stencil = std::string_view{"(datas." #val #pred ")"}; \
-		Emit(stencil); \
-		cursor -= 1; \
+		Emit(")"); \
 		DESCENT(); \
-		cursor -= stencil.size() - 1; \
+		Emit("(datas." #val #pred); \
 		break; \
 	}
 #define BINARY_OP(opcode, optor) \
@@ -153,13 +149,11 @@ private:
 	{ \
 		if(!check(2)) \
 			return -5; \
-		constexpr auto stencil = std::string_view{"(" #optor ")"}; \
-		Emit(stencil); \
-		cursor -= 1; \
+		Emit(")"); \
 		DESCENT(); \
-		cursor -= stencil.size() - 2; \
+		Emit(#optor); \
 		DESCENT(); \
-		cursor -= 1; \
+		Emit("("); \
 		break; \
 	}
 		NULLARY_VAL(OPCODE_GETCODE, id);
@@ -195,14 +189,11 @@ private:
 		// sqlite3_create_function
 		case OPCODE_ISSETCARD:
 		{
-			constexpr auto stencil = std::string_view{"(ocg_is_set(,datas.setcode))"};
-			constexpr size_t split = 16;
-			Emit(stencil);
-			cursor -= split;
 			if(!check(1))
 				return -7;
+			Emit(",datas.setcode))");
 			DESCENT();
-			cursor -= stencil.size() - split;
+			Emit("(ocg_is_set(");
 			break;
 		}
 		// Special cases: These set a state, the actual expression
@@ -223,9 +214,7 @@ private:
 		}
 		default:
 		{
-			auto const literal = "(" + std::to_string(op) + ")";
-			Emit(literal);
-			cursor -= literal.size();
+			Emit(fmt::format("({})", op));
 			break;
 		}
 		}
@@ -235,8 +224,8 @@ private:
 
 	auto Emit(std::string_view s) -> void
 	{
-		stmt->insert(cursor, s);
-		cursor += s.size();
+		// append the string reversed so that the allocations are done to the right, avoiding moving the memory
+		stmt.append(s.rbegin(), s.rend());
 	}
 };
 
