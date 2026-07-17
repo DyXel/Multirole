@@ -6,7 +6,6 @@
 #include <stdexcept> // std::runtime_error
 #include <string>
 
-#include <fmt/format.h>
 #include <sqlite3.h>
 
 #include "Constants.hpp"
@@ -97,7 +96,7 @@ public:
 
 	int Parse(int opsSize) noexcept
 	{
-		auto offset = stmt.size();
+		auto offset = stmt->size();
 		int r = Visit(opsSize - 1);
 		if(r < 0)
 			return r;
@@ -105,13 +104,13 @@ public:
 			Emit("((datas.type&0x4000)==0)AND");
 		if(!allowAliases)
 			Emit("(datas.alias!=0)AND");
-		std::reverse(std::next(stmt.begin(), offset), stmt.end());
+		std::reverse(std::next(stmt->begin(), offset), stmt->end());
 		return r;
 	}
 
 private:
 	uint64_t const* ops;
-	std::string& stmt;
+	std::string* stmt;
 	bool allowAliases = false;
 	bool allowTokens = false;
 
@@ -225,7 +224,9 @@ private:
 		}
 		default:
 		{
-			Emit(fmt::format("({})", op));
+			Emit(")");
+			Emit(std::to_string(op));
+			Emit("(");
 			break;
 		}
 		}
@@ -236,7 +237,7 @@ private:
 	auto Emit(std::string_view s) -> void
 	{
 		// append the string reversed so that the allocations are done to the right, avoiding moving the memory
-		stmt.append(s.rbegin(), s.rend());
+		stmt->append(s.rbegin(), s.rend());
 	}
 };
 
