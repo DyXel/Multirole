@@ -187,7 +187,14 @@ private:
 #undef NULLARY_VAL
 		// Special case: SQLite does not have a binary XOR operator
 		case OPCODE_BXOR:
-			return -6;
+			if(!check(2))
+				return -6;
+			Emit("))");
+			DESCENT();
+			Emit(",");
+			DESCENT();
+			Emit("(ocg_bxor(");
+			break;
 		// Special case: could be multiple values packed together OR
 		// a blob, so we need a named function added before-hand with
 		// sqlite3_create_function
@@ -268,9 +275,17 @@ void sqlOcgIsSet(sqlite3_context *context, int argc, sqlite3_value **argv)
 	sqlite3_result_int(context, match);
 }
 
+void sqlOcgBxor(sqlite3_context *context, int argc, sqlite3_value **argv)
+{
+	auto result = static_cast<uint64_t>(sqlite3_value_int64(argv[0])) ^
+				  static_cast<uint64_t>(sqlite3_value_int64(argv[1]));
+	sqlite3_result_int64(context, static_cast<sqlite3_int64>(result));
+}
+
 std::array constexpr ocgOpcodeSqliteFuncs
 {
 	std::pair{"ocg_is_set", &sqlOcgIsSet},
+	std::pair{"ocg_bxor", &sqlOcgBxor},
 };
 
 } // namespace
