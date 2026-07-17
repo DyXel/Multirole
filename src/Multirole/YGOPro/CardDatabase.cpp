@@ -92,7 +92,7 @@ class OpsToSqlQueryEmitter
 {
 public:
 	OpsToSqlQueryEmitter(uint64_t const* ops, std::string& stmt) noexcept :
-		ops(ops), ogStmt(stmt) {}
+		ops(ops), offset(stmt.size()), stmt(stmt) {}
 
 	int Parse(int opsSize) noexcept
 	{
@@ -103,16 +103,14 @@ public:
 			Emit("((datas.type&0x4000)==0)AND");
 		if(!allowAliases)
 			Emit("(datas.alias!=0)AND");
-		Emit(ogStmt);
-		std::reverse(stmt.begin(), stmt.end());
-		ogStmt.swap(stmt);
+		std::reverse(std::next(stmt.begin(), offset), stmt.end());
 		return r;
 	}
 
 private:
 	uint64_t const* ops;
-	std::string& ogStmt;
-	std::string stmt;
+	size_t offset;
+	std::string& stmt;
 	bool allowAliases = false;
 	bool allowTokens = false;
 
