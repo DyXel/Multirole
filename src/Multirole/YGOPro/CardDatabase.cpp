@@ -310,8 +310,8 @@ CardDatabase::CardDatabase(std::string_view absFilePath)
 	// Add function(s) for opcode-based search (see OpsToSqlQueryEmitter)
 	for(auto const& [sqliteFuncName, sqliteFuncPtr] : ocgOpcodeSqliteFuncs)
 	{
-		if(sqlite3_create_function_v2(db, sqliteFuncName, 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC,
-		   nullptr, sqliteFuncPtr, nullptr, nullptr, nullptr) != SQLITE_OK)
+		if(sqlite3_create_function(db, sqliteFuncName, 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC,
+		   nullptr, sqliteFuncPtr, nullptr, nullptr) != SQLITE_OK)
 		{
 			std::string errStr(sqlite3_errmsg(db));
 			sqlite3_close(db);
