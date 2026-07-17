@@ -234,13 +234,14 @@ private:
 
 void sqlOcgIsSet(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
-	auto const [setType, setSubtype] = [&]()
+	auto const setTuple = [&]()
 	{
 		auto const setCode = static_cast<uint16_t>(sqlite3_value_int64(argv[0]));
 		return std::tuple(setCode & 0x0FFF, setCode & 0xF000);
 	}();
 	auto Check = [&](uint16_t setCode) -> bool
 	{
+		auto const [setType, setSubtype] = setTuple;
 		return (setCode & 0x0FFF) == setType &&
 		       (setCode & 0xF000 & setSubtype) == setSubtype;
 	};
