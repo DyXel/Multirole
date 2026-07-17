@@ -170,6 +170,8 @@ IWrapper::Duel HornetWrapper::CreateDuel(const DuelOptions& opts)
 		opts.optLogger,
 		nullptr, // NOTE: Set on Hornet
 		&opts.dataSupplier,
+		nullptr, // NOTE: Set on Hornet
+		&opts.dataSupplier,
 		0
 	});
 	NotifyAndWait(Hornet::Action::OCG_CREATE_DUEL);
