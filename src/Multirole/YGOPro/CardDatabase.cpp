@@ -1,6 +1,7 @@
 #include "CardDatabase.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <stdexcept> // std::runtime_error
 #include <string>
@@ -267,6 +268,11 @@ void sqlOcgIsSet(sqlite3_context *context, int argc, sqlite3_value **argv)
 	sqlite3_result_int(context, match);
 }
 
+std::array constexpr ocgOpcodeSqliteFuncs
+{
+	std::pair{"ocg_is_set", &sqlOcgIsSet},
+};
+
 } // namespace
 
 CardDatabase::CardDatabase() : CardDatabase(":memory:")
@@ -287,12 +293,15 @@ CardDatabase::CardDatabase(std::string_view absFilePath)
 		throw std::runtime_error(errStr);
 	}
 	// Add function(s) for opcode-based search (see OpsToSqlQueryEmitter)
-	if(sqlite3_create_function_v2(db, "ocg_is_set", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC,
-	   nullptr, sqlOcgIsSet, nullptr, nullptr, nullptr) != SQLITE_OK)
+	for(auto const& [sqliteFuncName, sqliteFuncPtr] : ocgOpcodeSqliteFuncs)
 	{
-		std::string errStr(sqlite3_errmsg(db));
-		sqlite3_close(db);
-		throw std::runtime_error(errStr);
+		if(sqlite3_create_function_v2(db, sqliteFuncName, 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC,
+		   nullptr, sqliteFuncPtr, nullptr, nullptr, nullptr) != SQLITE_OK)
+		{
+			std::string errStr(sqlite3_errmsg(db));
+			sqlite3_close(db);
+			throw std::runtime_error(errStr);
+		}
 	}
 	// Prepare attach statement
 	if(sqlite3_prepare_v2(db, ATTACH_STMT, -1, &aStmt, nullptr) != SQLITE_OK)
