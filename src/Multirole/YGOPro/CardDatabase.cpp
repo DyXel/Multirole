@@ -278,9 +278,7 @@ void sqlOcgIsSet(sqlite3_context *context, int argc, sqlite3_value **argv)
 
 void sqlOcgBxor(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
-	auto result = static_cast<uint64_t>(sqlite3_value_int64(argv[0])) ^
-				  static_cast<uint64_t>(sqlite3_value_int64(argv[1]));
-	sqlite3_result_int64(context, static_cast<sqlite3_int64>(result));
+	sqlite3_result_int64(context, sqlite3_value_int64(argv[0]) ^ sqlite3_value_int64(argv[1]));
 }
 
 std::array constexpr ocgOpcodeSqliteFuncs
