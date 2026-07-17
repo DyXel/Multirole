@@ -93,10 +93,11 @@ class OpsToSqlQueryEmitter
 {
 public:
 	OpsToSqlQueryEmitter(uint64_t const* ops, std::string& stmt) noexcept :
-		ops(ops), offset(stmt.size()), stmt(stmt) {}
+		ops(ops), stmt(&stmt) {}
 
 	int Parse(int opsSize) noexcept
 	{
+		auto offset = stmt.size();
 		int r = Visit(opsSize - 1);
 		if(r < 0)
 			return r;
@@ -110,7 +111,6 @@ public:
 
 private:
 	uint64_t const* ops;
-	size_t offset;
 	std::string& stmt;
 	bool allowAliases = false;
 	bool allowTokens = false;
