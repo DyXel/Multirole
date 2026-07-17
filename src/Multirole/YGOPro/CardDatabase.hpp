@@ -38,6 +38,8 @@ public:
 	const OCG_CardData& DataFromCode(uint32_t code) const noexcept override;
 	void DataUsageDone(const OCG_CardData& data) const noexcept override;
 
+	int CountDeclarableCards(uint64_t const* ops, int opsSize) const noexcept override;
+
 	// Query extra data
 	const CardExtraData& ExtraFromCode(uint32_t code) const noexcept;
 private:

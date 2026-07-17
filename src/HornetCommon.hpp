@@ -40,6 +40,7 @@ enum class Action : uint8_t
 	CB_SCRIPT_READER, // Callbacks: doesn't apply
 	CB_LOG_HANDLER, // Callbacks: doesn't apply
 	CB_DATA_READER_DONE, // Callbacks: doesn't apply
+	CB_COUNT_DECLARABLE_CARDS, // Callbacks: doesn't apply
 	CB_DONE, // Callbacks: doesn't apply
 };
 
