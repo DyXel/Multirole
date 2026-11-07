@@ -84,6 +84,7 @@ build() {
       -DBOOST_STACKTRACE_ENABLE_FROM_EXCEPTION=OFF \
       -DPython_EXECUTABLE=${MINGW_PREFIX}/bin/python \
       -DBUILD_TESTING=OFF \
+      -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
       -S ${_realname}-${_pkgver} \
       -B build-${MSYSTEM}-static
 
