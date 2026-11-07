@@ -10,7 +10,6 @@
 #include "State.hpp"
 #include "../Service.hpp"
 #include "../STOCMsgFactory.hpp"
-#include "../RNG/Xoshiro256.hpp"
 
 namespace YGOPro
 {
@@ -40,7 +39,6 @@ public:
 		Service& svc;
 		TimerAggregator& tagg;
 		uint32_t id;
-		RNG::Xoshiro256StarStar::StateType seed;
 		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
 		bool isPrivate;
@@ -146,7 +144,6 @@ private:
 	bool isStarted;
 	std::unique_ptr<RoomLogger> rl;
 	ScriptLogger scriptLogger;
-	RNG::Xoshiro256StarStar rng;
 
 	// Client management variables.
 	std::map<Client::PosType, Client*> duelists;

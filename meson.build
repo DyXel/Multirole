@@ -13,7 +13,7 @@ static_deps = is_windows
 is_mingw = is_windows and is_not_msvc
 
 atomic_dep  = cc.find_library('atomic', required : false)
-boost_dep   = dependency('boost', version : '>=1.78', static : static_deps)
+boost_dep   = dependency('boost', version : '>=1.78', modules : ['random'], static : static_deps)
 dl_dep      = cc.find_library('dl', required : false)
 fs_dep      = cc.find_library('stdc++fs', required : false)
 libgit2_dep = dependency('libgit2', static : static_deps)

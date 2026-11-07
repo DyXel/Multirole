@@ -26,8 +26,7 @@ Context::Context(CreateInfo&& info) noexcept
 	isPrivate(info.isPrivate),
 	isStarted(false),
 	rl(svc.logHandler.MakeRoomLogger(id)),
-	scriptLogger(svc.logHandler, hostInfo),
-	rng(info.seed)
+	scriptLogger(svc.logHandler, hostInfo)
 {
 	if(rl)
 		rl->Log(I18N::ROOM_LOGGER_ROOM_NOTES, info.notes);

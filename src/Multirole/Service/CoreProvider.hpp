@@ -2,23 +2,21 @@
 #define SERVICE_COREPROVIDER_HPP
 #include "../Service.hpp"
 
+#include <array>
 #include <chrono>
 #include <list>
 #include <regex>
 #include <memory>
 #include <shared_mutex>
+#include <mutex>
+
+#include <boost/random/random_device.hpp>
 
 #include "../IGitRepoObserver.hpp"
+#include "../Core/IWrapper.hpp"
 
 namespace Ignis::Multirole
 {
-
-namespace Core
-{
-
-class IWrapper;
-
-} // namespace Core
 
 class Service::CoreProvider final : public IGitRepoObserver
 {
@@ -33,6 +31,9 @@ public:
 
 	CoreProvider(Service::LogHandler& lh, std::string_view fnRegexStr, const std::filesystem::path& tmpDir, CoreType type, bool loadPerCall);
 	~CoreProvider() noexcept;
+
+	// Generate a random seed suitable for use with shufflers and new duels.
+	Core::IWrapper::DuelOptions::SeedType GenSeed() noexcept;
 
 	// Will return a core instance based on the options set.
 	CorePtr GetCore() const;
@@ -53,6 +54,8 @@ private:
 	CorePtr core;
 	std::list<std::filesystem::path> pLocs; // Previous locations for core file.
 	mutable std::shared_mutex mCore; // used for both corePath and core.
+	boost::random::random_device rng;
+	std::mutex mRng; // used for RNG access.
 
 	CorePtr LoadCore() const;
 
