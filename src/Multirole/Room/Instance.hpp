@@ -9,7 +9,6 @@
 
 #include "Context.hpp"
 #include "TimerAggregator.hpp"
-#include "../RNG/Xoshiro256.hpp"
 
 namespace Ignis::Multirole::Room
 {
@@ -25,7 +24,6 @@ public:
 		std::string pass;
 		Service& svc;
 		uint32_t id;
-		RNG::Xoshiro256StarStar::StateType seed;
 		YGOPro::BanlistPtr banlist;
 		YGOPro::HostInfo hostInfo;
 	};

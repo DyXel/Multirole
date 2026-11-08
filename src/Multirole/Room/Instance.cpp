@@ -13,7 +13,6 @@ Instance::Instance(CreateInfo& info) noexcept
 		info.svc,
 		tagg,
 		info.id,
-		info.seed,
 		std::move(info.banlist),
 		info.hostInfo,
 		!pass.empty(),

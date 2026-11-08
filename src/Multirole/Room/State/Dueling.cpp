@@ -6,6 +6,8 @@
 #include "../../Service/LogHandler.hpp"
 #define LOG_INFO(...) svc.logHandler.Log(ErrorCategory::CORE, s.replayId, s.turnCounter, __VA_ARGS__)
 #define LOG_ERROR(...) svc.logHandler.Log(ErrorCategory::CORE, s.replayId, s.turnCounter, __VA_ARGS__)
+#include "../../RNG/Xoshiro256.hpp"
+#include "../../Service/CoreProvider.hpp"
 #include "../../Service/ReplayManager.hpp"
 #include "../../Service/ScriptProvider.hpp"
 #include "../../YGOPro/CardDatabase.hpp"
@@ -39,13 +41,7 @@ constexpr auto CORE_EXC_REASON = Context::DuelFinishReason
 StateOpt Context::operator()(State::Dueling& s) noexcept
 {
 	using namespace YGOPro;
-	const auto seed = Core::IWrapper::DuelOptions::SeedType
-	{{
-		rng(),
-		rng(),
-		rng(),
-		rng(),
-	}};
+	const auto duelSeed = svc.coreProvider.GenSeed();
 	// Enable extra rules for the duel.
 	// These are controlled simply by adding custom cards
 	// with the rulesets to the game as playable cards, they will
@@ -78,7 +74,7 @@ StateOpt Context::operator()(State::Dueling& s) noexcept
 	s.replay = std::make_unique<YGOPro::Replay>
 	(
 		static_cast<uint32_t>(CurrentTime()),
-		seed,
+		duelSeed,
 		hostInfo,
 		extraCards
 	);
@@ -94,7 +90,7 @@ StateOpt Context::operator()(State::Dueling& s) noexcept
 		*cdb,
 		svc.scriptProvider,
 		&scriptLogger,
-		seed,
+		duelSeed,
 		HostInfo::OrDuelFlags(hostInfo.duelFlagsHigh, hostInfo.duelFlagsLow),
 		popt,
 		popt
@@ -135,9 +131,14 @@ StateOpt Context::operator()(State::Dueling& s) noexcept
 	auto ReversedOrShuffled = [&](CodeVector deck) // NOTE: Copy is intentional.
 	{
 		if(hostInfo.dontShuffleDeck != 0U)
+		{
 			std::reverse(deck.begin(), deck.end());
+		}
 		else
+		{
+			RNG::Xoshiro256StarStar rng(svc.coreProvider.GenSeed());
 			std::shuffle(deck.begin(), deck.end(), rng);
+		}
 		return deck;
 	};
 	try

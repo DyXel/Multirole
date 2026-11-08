@@ -22,7 +22,8 @@ Service::CoreProvider::CoreProvider(Service::LogHandler& lh, std::string_view fn
 	loadPerCall(loadPerCall),
 	uniqueId(std::chrono::system_clock::now().time_since_epoch().count()),
 	loadCount(0U),
-	shouldTest(true)
+	shouldTest(true),
+	rng()
 {
 	if(!exists(tmpDir) && !create_directory(tmpDir))
 		throw std::runtime_error(I18N::CORE_PROVIDER_COULD_NOT_CREATE_TMP_DIR);
@@ -34,6 +35,18 @@ Service::CoreProvider::~CoreProvider() noexcept
 {
 	for(const auto& fn : pLocs)
 		remove(fn);
+}
+
+Core::IWrapper::DuelOptions::SeedType Service::CoreProvider::GenSeed() noexcept
+{
+	std::scoped_lock lock(mRng);
+	auto Gen64 = [&]() -> uint64_t { return (uint64_t{rng()} << 32) | rng(); };
+	return {{
+		Gen64(),
+		Gen64(),
+		Gen64(),
+		Gen64(),
+	}};
 }
 
 Service::CoreProvider::CorePtr Service::CoreProvider::GetCore() const

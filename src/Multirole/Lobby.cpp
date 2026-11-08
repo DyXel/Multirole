@@ -6,23 +6,10 @@
 namespace Ignis::Multirole
 {
 
-namespace
-{
-
-using Clock = std::chrono::high_resolution_clock;
-
-inline std::chrono::time_point<Clock>::rep TimeNowInt64()
-{
-	return Clock::now().time_since_epoch().count();
-}
-
-} // namespace
-
 // public
 
 Lobby::Lobby(int maxConnections) :
 	maxConnections(maxConnections),
-	rng(static_cast<RNG::SplitMix64::StateType>(TimeNowInt64())),
 	closed(false)
 {}
 
@@ -70,13 +57,6 @@ std::shared_ptr<Room::Instance> Lobby::MakeRoom(Room::Instance::CreateInfo& info
 		}
 		return id;
 	}();
-	info.seed = RNG::Xoshiro256StarStar::StateType
-	{{
-		rng(),
-		rng(),
-		rng(),
-		rng(),
-	}};
 	auto room = std::make_shared<Room::Instance>(info);
 	if(!closed)
 	{

@@ -190,7 +190,6 @@ private:
 				Utf16BufferToStr(p->pass),
 				roomHosting.svc,
 				0U, // NOTE: id, set by lobby.
-				{{}}, // NOTE: seed, set by lobby.
 				roomHosting.svc.banlistProvider.GetBanlistByHash(p->hostInfo.banlistHash),
 				p->hostInfo
 			};
