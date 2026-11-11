@@ -90,6 +90,17 @@ void DataReaderDone(void* payload, OCG_CardData* data)
 	NotifyAndWait(Ignis::Hornet::Action::CB_DATA_READER_DONE);
 }
 
+int ExistCardsToDeclare(void* payload, uint64_t const* ops, int ops_size)
+{
+	auto* wptr = hss->bytes.data();
+	Write<void*>(wptr, payload);
+	Write<int>(wptr, ops_size);
+	std::memcpy(wptr, ops, ops_size * sizeof(uint64_t));
+	NotifyAndWait(Ignis::Hornet::Action::CB_COUNT_DECLARABLE_CARDS);
+	const auto* rptr = hss->bytes.data();
+	return Read<int>(rptr);
+}
+
 int LoadSO(const char* soPath)
 {
 	handle = DLOpen::LoadObject(soPath);
@@ -149,6 +160,7 @@ void MainLoop()
 			opts.scriptReader = &ScriptReader;
 			opts.logHandler = &LogHandler;
 			opts.cardReaderDone = &DataReaderDone;
+			opts.existCardsToDeclare = &ExistCardsToDeclare;
 			OCG_Duel duel = nullptr;
 			int r = OCG_CreateDuel(&duel, &opts);
 			auto* wptr = hss->bytes.data();
@@ -271,6 +283,7 @@ void MainLoop()
 		case Action::CB_SCRIPT_READER:
 		case Action::CB_LOG_HANDLER:
 		case Action::CB_DATA_READER_DONE:
+		case Action::CB_COUNT_DECLARABLE_CARDS:
 		case Action::CB_DONE:
 			break;
 		}

@@ -41,6 +41,11 @@ static void DataReaderDone(void* payload, OCG_CardData* data)
 	static_cast<IDataSupplier*>(payload)->DataUsageDone(*data);
 }
 
+static int ExistCardsToDeclare(void* payload, uint64_t const* ops, int opsSize)
+{
+	return static_cast<IDataSupplier*>(payload)->CountDeclarableCards(ops, opsSize);
+}
+
 } // namespace
 
 // public
@@ -94,6 +99,8 @@ IWrapper::Duel DLWrapper::CreateDuel(const DuelOptions& opts)
 		&LogHandler,
 		opts.optLogger,
 		&DataReaderDone,
+		&opts.dataSupplier,
+		&ExistCardsToDeclare,
 		&opts.dataSupplier,
 		0
 	};

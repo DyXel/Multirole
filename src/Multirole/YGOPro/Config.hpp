@@ -1,6 +1,7 @@
 #ifndef YGOPRO_CONFIG
 #define YGOPRO_CONFIG
 #include "MsgCommon.hpp"
+#include "../../ocgapi_types.h"
 
 namespace YGOPro
 {
@@ -14,8 +15,8 @@ constexpr YGOPro::ClientVersion SERVER_VERSION =
 		0,  // NOLINT: Client version minor
 	},
 	{
-		11,  // NOLINT: Core version major
-		0   // NOLINT: Core version minor
+		OCG_VERSION_MAJOR,
+		OCG_VERSION_MINOR
 	}
 };
 

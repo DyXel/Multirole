@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2019-2026, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 #ifndef OCGAPI_TYPES_H
 #define OCGAPI_TYPES_H
 #include <stdint.h>
 
-#define OCG_VERSION_MAJOR 9
+#define OCG_VERSION_MAJOR 11
 #define OCG_VERSION_MINOR 0
 
 typedef enum OCG_LogTypes {
@@ -17,7 +22,10 @@ typedef enum OCG_DuelCreationStatus {
 	OCG_DUEL_CREATION_NO_OUTPUT,
 	OCG_DUEL_CREATION_NOT_CREATED,
 	OCG_DUEL_CREATION_NULL_DATA_READER,
-	OCG_DUEL_CREATION_NULL_SCRIPT_READER
+	OCG_DUEL_CREATION_NULL_SCRIPT_READER,
+	OCG_DUEL_CREATION_INCOMPATIBLE_LUA_API,
+	OCG_DUEL_CREATION_NULL_RNG_SEED,
+	OCG_DUEL_CREATION_NULL_DECLARATION_FILTER
 }OCG_DuelCreationStatus;
 
 typedef enum OCG_DuelStatus {
@@ -53,9 +61,10 @@ typedef void (*OCG_DataReader)(void* payload, uint32_t code, OCG_CardData* data)
 typedef void (*OCG_DataReaderDone)(void* payload, OCG_CardData* data);
 typedef int (*OCG_ScriptReader)(void* payload, OCG_Duel duel, const char* name);
 typedef void (*OCG_LogHandler)(void* payload, const char* string, int type);
+typedef int (*OCG_ExistCardsToDeclare)(void* payload, const uint64_t* opcode_list, int opcode_num);
 
 typedef struct OCG_DuelOptions {
-	uint64_t seed[4U];
+	uint64_t seed[4];
 	uint64_t flags;
 	OCG_Player team1;
 	OCG_Player team2;
@@ -66,7 +75,9 @@ typedef struct OCG_DuelOptions {
 	OCG_LogHandler logHandler;
 	void* payload3; /* relayed to errorHandler */
 	OCG_DataReaderDone cardReaderDone;
-	void* payload4; /* relayed to cardReader */
+	void* payload4; /* relayed to cardReaderDone */
+	OCG_ExistCardsToDeclare existCardsToDeclare;
+	void* payload5; /* relayed to existCardsToDeclare */
 	uint8_t enableUnsafeLibraries;
 }OCG_DuelOptions;
 
