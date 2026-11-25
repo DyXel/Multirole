@@ -619,7 +619,8 @@ StateVariant Context::Finish(State::Dueling& s, const DuelFinishReason& dfr) noe
 				return State::Closing{};
 			}
 		}
-		else if(!IsTiebreaking() && duelsHad >= hostInfo.bestOf)
+		// always check for ties in case of tie earlier in match
+		if(!IsTiebreaking() && duelsHad >= hostInfo.bestOf)
 		{
 			SendToAll(MakeDuelEnd());
 			return State::Closing{};
